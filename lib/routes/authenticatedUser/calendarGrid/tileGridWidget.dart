@@ -144,10 +144,28 @@ class TileGridWidgetState extends GridPositionableState {
   late TilerEvent? tilerEvent;
   static final Duration minDuration = Duration(minutes: 20);
 
-  /// The caption (10px top/bottom
-  /// padding + a 13px line) needs ~32px to render legibly. Tiles shorter
-  /// than this pixel height collapse to a plain color bar (no name).
-  static const double collapsedTileHeight = 32;
+  /// Pixel floor for a rendered tile, so the (compact) name caption always
+  /// fits regardless of zoom. Must be >= [collapsedTileHeight].
+  static const double minTileHeightPx = 20;
+
+  /// Pure: the minimum RENDERED duration (ms) at [pxPerHour] — the larger
+  /// of [minDuration] and the duration that spans [minTileHeightPx]. Both
+  /// the tile's own height clamp and the overlap-column clustering use
+  /// this, so two short tiles whose inflated boxes overlap get columns.
+  static int minRenderedDurationMs(double pxPerHour) {
+    final int floorMs = pxPerHour > 0
+        ? (minTileHeightPx / pxPerHour * Duration.millisecondsPerHour).round()
+        : 0;
+    final int minDurationMs = minDuration.inMilliseconds;
+    return floorMs > minDurationMs ? floorMs : minDurationMs;
+  }
+
+  /// Below this pixel height a tile collapses to a plain color bar (no
+  /// name): one 11px line, vertically centred, needs ~16px. Between this
+  /// and [timeRangeTileHeight] the card renders the COMPACT caption tier
+  /// (single line, smaller font, no vertical padding) so names survive
+  /// zooming out.
+  static const double collapsedTileHeight = 16;
 
   /// Pure so the reflow threshold is
   /// unit-testable without pumping a tile — true when [tileHeight] is too
@@ -156,8 +174,22 @@ class TileGridWidgetState extends GridPositionableState {
       tileHeight < collapsedTileHeight;
 
   /// The second (time-range) line needs a name line + an 11px line + the
-  /// card's vertical padding — tiles shorter than this render the name only.
+  /// card's vertical padding — tiles shorter than this render the name only
+  /// (the compact tier).
   static const double timeRangeTileHeight = 48;
+
+  /// Pure: the compact single-line caption tier (name only, small font,
+  /// vertically centred) — between the bar and the full card.
+  static bool tileCaptionCompact(double tileHeight) =>
+      !tileContentCollapsed(tileHeight) && !tileTimeRangeVisible(tileHeight);
+
+  /// Pure: caption font size for [tileHeight] — 13 at the full tier,
+  /// stepping down to 11 for the shortest compact tiles.
+  static double captionFontSize(double tileHeight) {
+    if (tileHeight >= timeRangeTileHeight) return 13;
+    if (tileHeight >= 26) return 12;
+    return 11;
+  }
 
   /// Pure: true when [tileHeight] has room for the time-range line under
   /// the name.
@@ -287,10 +319,12 @@ class TileGridWidgetState extends GridPositionableState {
       this.widgetHeight =
           ((clampedEnd - clampedStart) / Duration.millisecondsPerHour) *
               pxPerHour;
-      // Minimum visible height (minDuration at the current zoom).
-      final minPx = (TileGridWidgetState.minDuration.inMilliseconds /
-              Duration.millisecondsPerHour) *
-          pxPerHour;
+      // Minimum visible height: the larger of minDuration at this zoom and
+      // the pixel floor (see [minRenderedDurationMs]).
+      final minPx =
+          (TileGridWidgetState.minRenderedDurationMs(pxPerHour) /
+                  Duration.millisecondsPerHour) *
+              pxPerHour;
       if (this.widgetHeight < minPx) {
         this.widgetHeight = minPx;
       }
@@ -649,12 +683,15 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
             if (content != null)
               Expanded(
                 child: ClipRect(
-                  child: OverflowBox(
-                    alignment: Alignment.topLeft,
-                    minHeight: 0,
-                    maxHeight: double.infinity,
-                    child: content,
-                  ),
+                  child: TileGridWidgetState.tileCaptionCompact(tileHeight)
+                      // Compact: fill the box so the line centres in it.
+                      ? content
+                      : OverflowBox(
+                          alignment: Alignment.topLeft,
+                          minHeight: 0,
+                          maxHeight: double.infinity,
+                          child: content,
+                        ),
                 ),
               ),
           ],
@@ -701,19 +738,26 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
         timeRange = TileCardStyle.compactTimeRange(
             fmt(tilerEvent.start!), fmt(tilerEvent.end!));
       }
+      final bool compact = TileGridWidgetState.tileCaptionCompact(tileHeight);
       final Widget content = Padding(
-        padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
+        // Compact tier: no vertical padding, the single line is centred by
+        // the Column below; full tier keeps the 10px top inset.
+        padding: compact
+            ? const EdgeInsets.symmetric(horizontal: 8)
+            : const EdgeInsets.fromLTRB(8, 10, 8, 6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment:
+              compact ? MainAxisAlignment.center : MainAxisAlignment.start,
+          mainAxisSize: compact ? MainAxisSize.max : MainAxisSize.min,
           children: [
             Text(
               name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 13.0,
-                height: 1.25,
+                fontSize: TileGridWidgetState.captionFontSize(tileHeight),
+                height: 1.2,
                 fontFamily: TileTextStyles.rubikFontName,
                 color: style.title,
                 fontWeight: FontWeight.w600,

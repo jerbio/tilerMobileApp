@@ -266,8 +266,8 @@ void main() {
         (tester) async {
       _setSurface(tester);
       final bloc = _RecordingScheduleBloc();
-      // 30 min at 80 px/h = 40 px: above the 32 px caption threshold, below
-      // the time-range threshold.
+      // 30 min at 80 px/h = 40 px: above the 16 px caption threshold, below
+      // the 48 px time-range threshold (the compact tier).
       final controller = DayGridController();
       addTearDown(controller.dispose);
       final tiles = [

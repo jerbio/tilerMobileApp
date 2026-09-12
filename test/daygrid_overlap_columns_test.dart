@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/overlapColumns.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.dart';
@@ -225,7 +226,100 @@ void main() {
     return -1;
   }
 
+  group('OverlapColumns.assign — rendered minimum (minDurationMs)', () {
+    test('touching short tiles cluster once inflated to the rendered minimum',
+        () {
+      // 9:00–9:05 and 9:05–9:10 do not overlap in time, but each renders at
+      // least 30 min tall -> the boxes overlap -> two columns.
+      final r = OverlapColumns.assign<String, SubCalendarEvent>(
+        tiles: [tile('a', at(9), at(9, 5)), tile('b', at(9, 5), at(9, 10))],
+        keyOf: (t) => t.uniqueId,
+        left: regionLeft,
+        width: regionWidth,
+        minDurationMs: 30 * 60 * 1000,
+      );
+      expect(r['a']!.width, lessThan(regionWidth));
+      expect(r['b']!.left, greaterThan(r['a']!.left));
+      expect(r['a']!.width, closeTo((regionWidth - gap) / 2, 0.01));
+    });
+
+    test('without a minimum the same tiles stay single-column (touching)',
+        () {
+      final r =
+          layout([tile('a', at(9), at(9, 5)), tile('b', at(9, 5), at(9, 10))]);
+      expect(r['a']!.width, regionWidth);
+      expect(r['b']!.width, regionWidth);
+    });
+
+    test('a tile far enough below the inflated box is not clustered', () {
+      final r = OverlapColumns.assign<String, SubCalendarEvent>(
+        tiles: [tile('a', at(9), at(9, 5)), tile('b', at(9, 45), at(10))],
+        keyOf: (t) => t.uniqueId,
+        left: regionLeft,
+        width: regionWidth,
+        minDurationMs: 30 * 60 * 1000,
+      );
+      expect(r['a']!.width, regionWidth);
+      expect(r['b']!.width, regionWidth);
+    });
+  });
+
+  group('TileGridWidgetState rendered minimum', () {
+    test('minRenderedDurationMs is the larger of 20 min and the pixel floor',
+        () {
+      // 80 px/h: 20 min = 26.7px >= the 20px floor -> 20 min.
+      expect(TileGridWidgetState.minRenderedDurationMs(80),
+          20 * 60 * 1000);
+      // 40 px/h: 20 min = 13.3px < 20px floor -> 30 min (20px).
+      expect(TileGridWidgetState.minRenderedDurationMs(40),
+          30 * 60 * 1000);
+      // The floor is at/above the caption threshold so a name always fits.
+      expect(TileGridWidgetState.minTileHeightPx,
+          greaterThanOrEqualTo(TileGridWidgetState.collapsedTileHeight));
+    });
+  });
+
   group('DayGridWidget overlap columns', () {
+    testWidgets(
+        'zoomed out, two touching 5-min tiles both keep their name and sit side by side',
+        (tester) async {
+      final controller = DayGridController()..setPxPerHour(40);
+      addTearDown(controller.dispose);
+      final tiles = <SubCalendarEvent>[
+        buildTile(
+            id: 'a',
+            name: 'Alpha',
+            start: DateTime(2026, 5, 15, 9),
+            end: DateTime(2026, 5, 15, 9, 5)),
+        buildTile(
+            id: 'b',
+            name: 'Beta',
+            start: DateTime(2026, 5, 15, 9, 5),
+            end: DateTime(2026, 5, 15, 9, 10)),
+      ];
+      await tester.pumpWidget(buildTestApp(
+        child: SizedBox(
+          width: 400,
+          height: 600,
+          child: DayGridWidget(
+            tiles: tiles,
+            now: DateTime(2026, 5, 14, 12),
+            controller: controller,
+          ),
+        ),
+      ));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Alpha'), findsOneWidget);
+      expect(find.text('Beta'), findsOneWidget);
+      expect(tileSize(tester, 'a').height,
+          greaterThanOrEqualTo(TileGridWidgetState.minTileHeightPx));
+      // Side by side, not stacked.
+      expect(tilePosition(tester, 'b').left!,
+          greaterThan(tilePosition(tester, 'a').left!));
+      expect(tileSize(tester, 'a').width, lessThan(regionWidth));
+    });
+
     testWidgets('non-overlapping tiles each keep the full region',
         (tester) async {
       final tiles = <SubCalendarEvent>[

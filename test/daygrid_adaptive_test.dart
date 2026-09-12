@@ -190,6 +190,19 @@ void main() {
           isFalse);
       expect(TileGridWidgetState.tileContentCollapsed(80), isFalse);
     });
+
+    test('the compact single-line tier sits between the bar and the full card',
+        () {
+      // Zoomed out, a 30-min tile at 40 px/h is 20px: name, no time range.
+      expect(TileGridWidgetState.tileCaptionCompact(20), isTrue);
+      expect(TileGridWidgetState.tileCaptionCompact(47.9), isTrue);
+      expect(TileGridWidgetState.tileCaptionCompact(48), isFalse);
+      expect(TileGridWidgetState.tileCaptionCompact(15.9), isFalse);
+      // The caption font steps down with the height.
+      expect(TileGridWidgetState.captionFontSize(80), 13);
+      expect(TileGridWidgetState.captionFontSize(30), 12);
+      expect(TileGridWidgetState.captionFontSize(18), 11);
+    });
   });
 
 group('DayGridWidget adaptive gutter (widget)', () {
@@ -265,17 +278,19 @@ group('DayGridWidget adaptive gutter (widget)', () {
   });
 
   group('Tile content reflow (widget)', () {
-    testWidgets('a short tile collapses to a plain bar; tall shows the name',
+    testWidgets('a short tile is inflated to the pixel floor and keeps its name',
         (tester) async {
       _setSurface(tester);
       final bloc = _RecordingScheduleBloc();
       final controller = DayGridController();
       controller.setPxPerHour(40);
 
-      // 30 min at 40 px/h = 20px — above the 13.33px min but below the
-      // 32px caption threshold.
+      // 15 min at 40 px/h would be 10px — below the 16px caption
+      // threshold — but the grid inflates every tile to the 20px pixel
+      // floor (TileGridWidgetState.minTileHeightPx), so the name shows even
+      // here. The bar tier remains only for the day-end clamp.
       final shortTile = _tile('short_tile', DateTime(2027, 1, 15, 9),
-          DateTime(2027, 1, 15, 9, 30));
+          DateTime(2027, 1, 15, 9, 15));
       await tester.pumpWidget(_buildApp(
         bloc: bloc,
         controller: controller,
@@ -286,15 +301,44 @@ group('DayGridWidget adaptive gutter (widget)', () {
       await tester.pump();
 
       expect(find.byType(TileGridWidget), findsOneWidget);
-      // Collapsed: no name caption anywhere.
-      expect(find.text('short_tile'), findsNothing);
+      expect(find.text('short_tile'), findsOneWidget,
+          reason: 'the pixel floor guarantees the name fits at any zoom');
+      expect(tester.getSize(find.byType(TileGridWidget)).height,
+          greaterThanOrEqualTo(TileGridWidgetState.minTileHeightPx));
 
-      // Zoom in: the same 30-min tile is 120px tall -> caption returns on
-      // the same element (no remount).
+      // Zoom in: the same 15-min tile is 60px tall -> full tier on the
+      // same element (no remount), name still present.
       controller.setPxPerHour(240);
       await tester.pump();
       expect(find.text('short_tile'), findsOneWidget);
 
+      await _closeBloc(tester, bloc);
+    });
+
+    testWidgets(
+        'zoomed out, a 30-min tile keeps its name (compact tier, no time range)',
+        (tester) async {
+      _setSurface(tester);
+      final bloc = _RecordingScheduleBloc();
+      final controller = DayGridController();
+      controller.setPxPerHour(40); // 30 min = 20px.
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        controller: controller,
+        tiles: [
+          _tile('half_hour', DateTime(2027, 1, 15, 9),
+              DateTime(2027, 1, 15, 9, 30)),
+        ],
+        now: now,
+        day: dayStart,
+      ));
+      await tester.pump();
+
+      expect(find.text('half_hour'), findsOneWidget,
+          reason: 'names must survive zooming out');
+      expect(find.textContaining('–'), findsNothing,
+          reason: 'no room for the time-range line at 20px');
+      expect(tester.takeException(), isNull);
       await _closeBloc(tester, bloc);
       controller.dispose();
     });

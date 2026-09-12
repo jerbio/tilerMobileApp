@@ -558,9 +558,24 @@ void main() {
           travelTimeBefore: 30 * 60 * 1000,
         );
 
-    testWidgets('the duration pill only appears at height >= 56px',
+    testWidgets('the full card (with the window line) only appears at height >= 56px',
         (tester) async {
-      // Just below the threshold: no pill -> no Text inside the band.
+      // Below the compact threshold: gutter tier -> no Text inside the band.
+      await pumpBand(
+          tester,
+          bandWidget(
+            tile: bandTile(),
+            kind: TravelBandKind.pre,
+            height: 11,
+          ));
+      expect(
+          find.descendant(
+            of: find.byKey(const ValueKey<String>('band_pre_11')),
+            matching: find.byType(Text),
+          ),
+          findsNothing);
+
+      // Just below the full threshold: the compact card (title only).
       await pumpBand(
           tester,
           bandWidget(
@@ -568,14 +583,11 @@ void main() {
             kind: TravelBandKind.pre,
             height: 55,
           ));
-      expect(
-          find.descendant(
-            of: find.byKey(const ValueKey<String>('band_pre_55')),
-            matching: find.byType(Text),
-          ),
-          findsNothing);
+      expect(find.text('Travel • 30 min'), findsOneWidget);
+      expect(find.textContaining('–'), findsNothing,
+          reason: 'the window line is the full tier only');
 
-      // At the threshold: the pill (duration + leave-by Texts) is shown.
+      // At the threshold: the full card (title + window Texts) is shown.
       await pumpBand(
           tester,
           bandWidget(
@@ -667,15 +679,39 @@ void main() {
           predicate<Rect>((r) => r.left >= 40, 'icon sits inside the column'));
     });
 
-    testWidgets('below 56px there is no card (gutter tier)', (tester) async {
+    testWidgets(
+        'a compact single-line card from 12px real height; gutter icon below it',
+        (tester) async {
+      // 12px real (rendered at the 18px minimum): compact card in the column.
       await pumpBand(
           tester,
           bandWidget(
             tile: bandTile(),
             kind: TravelBandKind.pre,
-            height: 55,
+            height: 12,
+            left: 40,
+            width: 300,
+          ));
+      final card = find.byKey(TravelBandWidget.cardKey);
+      expect(card, findsOneWidget);
+      expect(tester.getRect(card).left, closeTo(40, 0.5));
+      expect(tester.getRect(card).height, closeTo(18, 0.5));
+      expect(find.text('Travel • 30 min'), findsOneWidget);
+
+      // Below it: no card, the gutter icon only.
+      await pumpBand(
+          tester,
+          bandWidget(
+            tile: bandTile(),
+            kind: TravelBandKind.pre,
+            height: 11,
           ));
       expect(find.byKey(TravelBandWidget.cardKey), findsNothing);
+      final icon = tester.getRect(find.descendant(
+        of: find.byKey(const ValueKey<String>('band_pre_11')),
+        matching: find.byType(Icon),
+      ));
+      expect(icon.left, lessThan(40), reason: 'gutter icon sits left of the column');
     });
 
     testWidgets('a post band card shows the window after the tile',

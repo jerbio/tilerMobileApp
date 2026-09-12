@@ -9,8 +9,16 @@ import 'package:flutter/material.dart';
 /// uses the theme's on-surface tokens for contrast regardless of the tile
 /// color.
 class TileCardStyle {
-  /// Tint strength of the tile color over `surface` for the card body.
+  /// Tint strength of the tile color over `surface` for the card body
+  /// (light schemes).
   static const double tintAlpha = 0.18;
+
+  /// Dark schemes need a stronger tint: 18% of a saturated color over a
+  /// near-black surface reads as grey.
+  static const double tintAlphaDark = 0.34;
+
+  static double tintFor(ColorScheme scheme) =>
+      scheme.brightness == Brightness.dark ? tintAlphaDark : tintAlpha;
 
   final Color background;
   final Color accent;
@@ -27,7 +35,7 @@ class TileCardStyle {
   static TileCardStyle from(Color tileColor, ColorScheme scheme) {
     return TileCardStyle(
       background: Color.alphaBlend(
-        tileColor.withValues(alpha: tintAlpha),
+        tileColor.withValues(alpha: tintFor(scheme)),
         scheme.surface,
       ),
       accent: tileColor,

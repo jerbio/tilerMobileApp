@@ -124,9 +124,12 @@ class TravelBand {
 /// gutter (gradient hairline + travel-medium icon) with the same
 /// tap-to-directions behaviour as the list connectors.
 ///
-/// Zoom-aware tiers by band height:
-///   * `< 18px`  — a 2px gutter hairline only;
-///   * `>= 18px` — hairline + the 14px travel-medium icon in the gutter;
+/// Zoom-aware tiers by the band's REAL height (the render height is
+/// clamped to >= 18px so the icon stays legible):
+///   * `< 12px`  — gutter hairline + the 14px travel-medium icon (the
+///     window is too short to label in the column);
+///   * `>= 12px` — a compact single-line card inside the tile column
+///     (`Travel • 24 min`), so travel stays readable when zoomed out;
 ///   * `>= 56px` — a full-column pastel card inside the tile column
 ///     (`Travel • 24 min` + the travel window, e.g. `2:00 – 2:24 PM`),
 ///     replacing the gutter tier. The card is drawn in the grid's travel
@@ -175,8 +178,12 @@ class TravelBandWidget extends StatelessWidget {
   /// icon + hairline tier to the full-column card.
   static const double expandedHeightThreshold = 56;
 
-  /// Test/spotlight key for the expanded full-column card.
+  /// Test/spotlight key for the in-column card (compact or full).
   static const Key cardKey = ValueKey('daygrid_travel_band_card');
+
+  /// The band's REAL height (px) from which the compact single-line card
+  /// replaces the gutter icon tier (rendered at the 18px minimum).
+  static const double compactCardHeightThreshold = 12;
 
   /// The minimum band height (px) at which the travel-medium icon stays
   /// legible.
@@ -384,6 +391,9 @@ class TravelBandWidget extends StatelessWidget {
     // `TileColors.late` when the tile is tardy.
     final color = _isTardy ? TileColors.late : TileColors.travel;
     final expanded = effectiveHeight >= expandedHeightThreshold;
+    // Compact in-column card: the real window is tall enough to label.
+    final compactCard = !expanded && height >= compactCardHeightThreshold;
+    final showCard = expanded || compactCard;
     final showIcon = effectiveHeight >= iconHeightThreshold;
     // ReturnConnector shows the home icon instead of the medium icon
     // when the return destination is home.
@@ -417,10 +427,10 @@ class TravelBandWidget extends StatelessWidget {
     // tile column with the travel-medium glyph, `Travel • N min`, and the
     // travel window. Replaces the gutter hairline + icon at this tier.
     Widget? card;
-    if (expanded) {
+    if (showCard) {
       final window = _windowMs;
       String? windowLabel;
-      if (window != null) {
+      if (expanded && window != null) {
         final localizations = MaterialLocalizations.of(context);
         String fmt(int ms) => localizations.formatTimeOfDay(
             TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(ms)));
@@ -429,17 +439,19 @@ class TravelBandWidget extends StatelessWidget {
       }
       card = Container(
         key: cardKey,
-        padding: const EdgeInsets.fromLTRB(8, 6, 10, 6),
+        padding: expanded
+            ? const EdgeInsets.fromLTRB(8, 6, 10, 6)
+            : const EdgeInsets.symmetric(horizontal: 6),
         decoration: BoxDecoration(
           color: Color.alphaBlend(
               color.withValues(alpha: 0.16), colorScheme.surface),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(expanded ? 12 : 8),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 8),
+            Icon(icon, size: expanded ? 16 : 13, color: color),
+            SizedBox(width: expanded ? 8 : 5),
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -451,7 +463,8 @@ class TravelBandWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: TileTextStyles.rubikFontName,
-                      fontSize: 13,
+                      fontSize: expanded ? 13 : 11,
+                      height: 1.1,
                       fontWeight: FontWeight.w600,
                       color: colorScheme.onSurface,
                     ),
@@ -500,8 +513,8 @@ class TravelBandWidget extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           child: Stack(
           children: [
-            // Gutter tier (hairline + icon) — only below the card tier.
-            if (!expanded)
+            // Gutter tier (hairline + icon) — only below the card tiers.
+            if (!showCard)
               Positioned(
                 left: 0,
                 top: 0,
@@ -509,7 +522,7 @@ class TravelBandWidget extends StatelessWidget {
                 height: effectiveHeight,
                 child: line,
               ),
-            if (!expanded && showIcon)
+            if (!showCard && showIcon)
               Positioned(
                 left: 4,
                 top: (effectiveHeight - 14) / 2,

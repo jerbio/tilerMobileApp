@@ -1784,12 +1784,17 @@ class DayGridWidgetState extends State<DayGridWidget> {
             // [tileLeft, tileLeft + tileWidth] region (the single
             // tile geometry). Empty when tileWidth <= 0; the per-tile
             // fallback below then uses the full region.
+            // Clustered on the RENDERED range (each tile is at least the
+            // pixel-floor duration tall), so short tiles whose inflated
+            // boxes overlap get side-by-side columns instead of stacking.
             final columnLayout =
                 OverlapColumns.assign<String, SubCalendarEvent>(
               tiles: renderable,
               keyOf: (t) => t.uniqueId,
               left: tileLeft,
               width: tileWidth,
+              minDurationMs:
+                  TileGridWidgetState.minRenderedDurationMs(pxPerHour),
             );
 
             // Z-order: the tapped tile renders last (on top) — same

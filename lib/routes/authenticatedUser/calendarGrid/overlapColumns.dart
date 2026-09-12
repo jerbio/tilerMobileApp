@@ -8,6 +8,12 @@
 // B only when A.end > B.start && B.end > A.start), so *touching* intervals
 // (A.end == B.start) never share a conflict — a later tile may reuse a column
 // the instant the previous tile in it has ended.
+//
+// The rule is applied to each tile's RENDERED range: the grid draws every
+// tile at least `minDurationMs` tall (a pixel floor so the name always fits),
+// so a tile's end for clustering purposes is `max(end, start + minDurationMs)`.
+// Two short tiles that do not overlap in time but DO overlap once inflated to
+// the minimum therefore still get side-by-side columns instead of stacking.
 
 import 'package:tiler_app/data/timeRangeMix.dart';
 
@@ -54,10 +60,18 @@ class OverlapColumns {
     required double left,
     required double width,
     double gap = defaultGap,
+    int minDurationMs = 0,
   }) {
     final result = <K, TileColumnLayout>{};
     if (tiles.isEmpty || width <= 0) {
       return result;
+    }
+    // Rendered end: a tile is at least [minDurationMs] long for clustering.
+    int endOf(T tile) {
+      final start = _startMs(tile);
+      final end = _endMs(tile);
+      final floor = start + minDurationMs;
+      return end > floor ? end : floor;
     }
 
     // Deterministic order: earliest start, then earliest end, then key. Keeps
@@ -66,7 +80,7 @@ class OverlapColumns {
     ordered.sort((a, b) {
       final byStart = _startMs(a).compareTo(_startMs(b));
       if (byStart != 0) return byStart;
-      final byEnd = _endMs(a).compareTo(_endMs(b));
+      final byEnd = endOf(a).compareTo(endOf(b));
       if (byEnd != 0) return byEnd;
       return keyOf(a).toString().compareTo(keyOf(b).toString());
     });
@@ -79,17 +93,17 @@ class OverlapColumns {
     for (final tile in ordered) {
       if (clusters.isEmpty || _startMs(tile) >= clusterEnd) {
         clusters.add(<T>[tile]);
-        clusterEnd = _endMs(tile);
+        clusterEnd = endOf(tile);
       } else {
         clusters.last.add(tile);
-        if (_endMs(tile) > clusterEnd) {
-          clusterEnd = _endMs(tile);
+        if (endOf(tile) > clusterEnd) {
+          clusterEnd = endOf(tile);
         }
       }
     }
 
     for (final cluster in clusters) {
-      _assignCluster(result, cluster, keyOf, left, width, gap);
+      _assignCluster(result, cluster, keyOf, left, width, gap, endOf);
     }
     return result;
   }
@@ -103,6 +117,7 @@ class OverlapColumns {
     double left,
     double width,
     double gap,
+    int Function(T) endOf,
   ) {
     // `columns[i]` = the end-ms of the topmost (latest-ending) tile in col i.
     final columns = <int>[];
@@ -120,7 +135,7 @@ class OverlapColumns {
         col = columns.length;
         columns.add(0);
       }
-      columns[col] = _endMs(tile);
+      columns[col] = endOf(tile);
       columnOf[tile] = col;
     }
 
