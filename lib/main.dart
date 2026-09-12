@@ -46,6 +46,7 @@ import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/themerHelper.dart';
+import 'package:tiler_app/services/schedulePrimer.dart';
 import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/util.dart';
@@ -290,10 +291,11 @@ class _TilerAppState extends State<TilerApp> {
                               authentication?.deauthenticateCredentials();
                               retValue = SignInRoute();
                             } else {
-                              context.read<ScheduleBloc>().add(
-                                  LogInScheduleEvent(getContextCallBack: () {
-                                return context;
-                              }));
+                              // Stage 3.5: start loading the schedule
+                              // before the onboarding gate resolves, so
+                              // it is in flight while the essentials
+                              // pages show (parity with the sign-in path).
+                              primeScheduleAfterLogin(context);
                               AnalysticsSignal.send('LOGIN-VERIFIED');
                               retValue = FutureBuilder<bool>(
                                 future: Utility.checkOnboardingStatus(),

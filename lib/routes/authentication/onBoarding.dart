@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/components/onBoarding/bottmNavigatorBar/onBoardingBottomBar.dart';
@@ -11,6 +12,7 @@ import 'package:tiler_app/routes/authentication/AuthorizedRoute.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
+import 'package:tiler_app/util.dart';
 
 class OnboardingView extends StatefulWidget {
   static final String routeName = '/OnBoarding';
@@ -36,12 +38,21 @@ class OnboardingView extends StatefulWidget {
   /// the submit path never performs a real network request.
   final ScheduleApi? scheduleApi;
 
+  /// Optional schedule-bloc seam (stage 3.5). After a successful submit the
+  /// buzz revises the schedule server-side, so the schedule prefetched
+  /// during onboarding is stale; once the buzz completes the view asks this
+  /// bloc for a quiet forced refresh. When absent the view reads the
+  /// ancestor `ScheduleBloc` (the app root provides it) and, if there is
+  /// none, skips the refresh — it is best-effort.
+  final ScheduleBloc? scheduleBloc;
+
   const OnboardingView(
       {Key? key,
       this.bloc,
       this.skipDestinationBuilder,
       this.submitDestinationBuilder,
-      this.scheduleApi})
+      this.scheduleApi,
+      this.scheduleBloc})
       : super(key: key);
 
   @override
@@ -56,6 +67,37 @@ class _OnboardingViewState extends State<OnboardingView> {
     PrimaryLocationWidget(),
   ];
   late ScheduleApi scheduleApi;
+
+  /// The schedule bloc the post-submit refresh targets, resolved while the
+  /// onboarding context is still mounted (the route is replaced right
+  /// after submit, so it cannot be looked up once the buzz completes).
+  ScheduleBloc? _scheduleBlocOrNull() {
+    if (widget.scheduleBloc != null) return widget.scheduleBloc;
+    try {
+      return context.read<ScheduleBloc>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Stage 3.5: the buzz revises the schedule with the new profession /
+  /// location, so whatever was prefetched during onboarding is stale. Once
+  /// the revise completes, re-read the schedule quietly (the user keeps
+  /// seeing the prefetched tiles until the revised ones arrive). A failed
+  /// buzz revised nothing: the prefetched schedule stays valid and no
+  /// refresh is issued.
+  void _buzzThenRefreshSchedule() {
+    final ScheduleBloc? scheduleBloc = _scheduleBlocOrNull();
+    scheduleApi.buzzSchedule().then((_) {
+      scheduleBloc?.add(GetScheduleEvent()
+        ..forceRefresh = true
+        ..emitOnlyLoadedStated = true);
+    }, onError: (Object error) {
+      Utility.debugPrint(
+          'Onboarding: buzz after submit failed, keeping prefetched '
+          'schedule: $error');
+    });
+  }
 
   @override
   void initState() {
@@ -74,111 +116,108 @@ class _OnboardingViewState extends State<OnboardingView> {
     NotificationOverlayMessage notificationOverlayMessage =
         NotificationOverlayMessage();
     final onboarding = BlocConsumer<OnboardingBloc, OnboardingState>(
-        listener: (context, state) {
-          if (state.step == OnboardingStep.skipped) {
-            // Stage 3.3: skip navigation is terminal; the optional seam
-            // lets tests substitute the destination builder.
-            final Widget Function(BuildContext) skipBuilder =
-                widget.skipDestinationBuilder ??
-                    ((context) => AuthorizedRoute());
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: skipBuilder));
-          }
-          if (state.step == OnboardingStep.submitted) {
-            // Stage 3.4: atomic submit exit -- buzz the schedule, then
-            // navigate directly to the authorized app (the intro slider is
-            // cut from the essentials flow). The optional seam lets tests
-            // substitute the destination builder.
-            scheduleApi.buzzSchedule();
-            final Widget Function(BuildContext) submitBuilder =
-                widget.submitDestinationBuilder ??
-                    ((context) => AuthorizedRoute());
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: submitBuilder));
-          }
-          if (state.step == OnboardingStep.error && state.error != null) {
-            notificationOverlayMessage.showToast(
-              context,
-              state.error!,
-              NotificationOverlayMessageType.error,
-            );
-          }
-        },
-        builder: (context, state) {
-          return Scaffold(
-            body: Stack(
-              children: [
-                SafeArea(
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 16.0, horizontal: 30.0),
-                        child: OnBoardingProgressIndicator(
-                            currentPage: state.pageNumber ?? 0,
-                            totalPages: pages.length),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onHorizontalDragEnd: (details) {
-                            if (details.primaryVelocity! < 0) {
-                              context
-                                  .read<OnboardingBloc>()
-                                  .add(NextPageEvent());
-                            } else if (details.primaryVelocity! > 0) {
-                              context
-                                  .read<OnboardingBloc>()
-                                  .add(PreviousPageEvent());
-                            }
-                          },
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              return SingleChildScrollView(
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    minHeight: constraints.maxHeight,
-                                  ),
-                                  child: Center(
-                                    child: AnimatedSwitcher(
-                                      duration: Duration(milliseconds: 300),
-                                      transitionBuilder: (Widget child,
-                                          Animation<double> animation) {
-                                        return FadeTransition(
-                                          opacity: animation,
-                                          child: child,
-                                        );
-                                      },
-                                      child: Padding(
-                                        key: ValueKey<int>(
-                                            state.pageNumber ?? 0),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 30.0),
-                                        child: pages[state.pageNumber ?? 0],
-                                      ),
+      listener: (context, state) {
+        if (state.step == OnboardingStep.skipped) {
+          // Stage 3.3: skip navigation is terminal; the optional seam
+          // lets tests substitute the destination builder.
+          final Widget Function(BuildContext) skipBuilder =
+              widget.skipDestinationBuilder ?? ((context) => AuthorizedRoute());
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: skipBuilder));
+        }
+        if (state.step == OnboardingStep.submitted) {
+          // Stage 3.4: atomic submit exit -- buzz the schedule, then
+          // navigate directly to the authorized app (the intro slider is
+          // cut from the essentials flow). The optional seam lets tests
+          // substitute the destination builder. Navigation never waits on
+          // the buzz; the schedule refreshes once it completes (3.5).
+          _buzzThenRefreshSchedule();
+          final Widget Function(BuildContext) submitBuilder =
+              widget.submitDestinationBuilder ??
+                  ((context) => AuthorizedRoute());
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: submitBuilder));
+        }
+        if (state.step == OnboardingStep.error && state.error != null) {
+          notificationOverlayMessage.showToast(
+            context,
+            state.error!,
+            NotificationOverlayMessageType.error,
+          );
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          body: Stack(
+            children: [
+              SafeArea(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16.0, horizontal: 30.0),
+                      child: OnBoardingProgressIndicator(
+                          currentPage: state.pageNumber ?? 0,
+                          totalPages: pages.length),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onHorizontalDragEnd: (details) {
+                          if (details.primaryVelocity! < 0) {
+                            context.read<OnboardingBloc>().add(NextPageEvent());
+                          } else if (details.primaryVelocity! > 0) {
+                            context
+                                .read<OnboardingBloc>()
+                                .add(PreviousPageEvent());
+                          }
+                        },
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return SingleChildScrollView(
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                ),
+                                child: Center(
+                                  child: AnimatedSwitcher(
+                                    duration: Duration(milliseconds: 300),
+                                    transitionBuilder: (Widget child,
+                                        Animation<double> animation) {
+                                      return FadeTransition(
+                                        opacity: animation,
+                                        child: child,
+                                      );
+                                    },
+                                    child: Padding(
+                                      key: ValueKey<int>(state.pageNumber ?? 0),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 30.0),
+                                      child: pages[state.pageNumber ?? 0],
                                     ),
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                      OnboardingBottomNavigationBar(
-                        currentPage: state.pageNumber ?? 0,
-                        totalPages: pages.length,
-                      ),
-                    ],
-                  ),
+                    ),
+                    OnboardingBottomNavigationBar(
+                      currentPage: state.pageNumber ?? 0,
+                      totalPages: pages.length,
+                    ),
+                  ],
                 ),
-                if (state.step == OnboardingStep.loading)
-                  PendingWidget(
-                    blurSigma: 10,
-                  ),
-              ],
-            ),
-          );
-        },
+              ),
+              if (state.step == OnboardingStep.loading)
+                PendingWidget(
+                  blurSigma: 10,
+                ),
+            ],
+          ),
+        );
+      },
     );
     return widget.bloc != null
         ? BlocProvider<OnboardingBloc>.value(
