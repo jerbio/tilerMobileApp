@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
 
@@ -94,6 +95,7 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('de'),
     Locale('en'),
     Locale('es')
   ];
@@ -1286,198 +1288,6 @@ abstract class AppLocalizations {
   /// **'On time'**
   String get onTime;
 
-  /// No description provided for @todayStatusPlacedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Placed successfully'**
-  String get todayStatusPlacedTitle;
-
-  /// No description provided for @todayStatusAttentionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Need attention'**
-  String get todayStatusAttentionTitle;
-
-  /// No description provided for @todayStatusLateTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Running late'**
-  String get todayStatusLateTitle;
-
-  /// No description provided for @todayStatusAttentionHelper.
-  ///
-  /// In en, this message translates to:
-  /// **'These could not fit into today\'s available time.'**
-  String get todayStatusAttentionHelper;
-
-  /// No description provided for @todayStatusLateHelper.
-  ///
-  /// In en, this message translates to:
-  /// **'Travel time between these and your surrounding tiles means you can\'t get there on schedule.'**
-  String get todayStatusLateHelper;
-
-  /// Low-emphasis count beside a Today Status section heading
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 tile} other{{count} tiles}}'**
-  String todayStatusTileCount(int count);
-
-  /// Summary strip label under the completed count
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{Tile completed} other{Tiles completed}}'**
-  String todayStatusTilesPlaced(int count);
-
-  /// No description provided for @todayStatusTilesNeedAttention.
-  ///
-  /// In en, this message translates to:
-  /// **'Need attention'**
-  String get todayStatusTilesNeedAttention;
-
-  /// No description provided for @todayStatusTilesRunningLate.
-  ///
-  /// In en, this message translates to:
-  /// **'Running late'**
-  String get todayStatusTilesRunningLate;
-
-  /// No description provided for @todayStatusEverythingOnTrack.
-  ///
-  /// In en, this message translates to:
-  /// **'Everything is on track'**
-  String get todayStatusEverythingOnTrack;
-
-  /// No description provided for @todayStatusEverythingElseOnTrack.
-  ///
-  /// In en, this message translates to:
-  /// **'Everything else is on track'**
-  String get todayStatusEverythingElseOnTrack;
-
-  /// No description provided for @todayStatusOnTrackSubcopy.
-  ///
-  /// In en, this message translates to:
-  /// **'No scheduled tiles are running late.'**
-  String get todayStatusOnTrackSubcopy;
-
-  /// No description provided for @todayStatusClearDay.
-  ///
-  /// In en, this message translates to:
-  /// **'Your day is clear.'**
-  String get todayStatusClearDay;
-
-  /// No description provided for @todayStatusPreviewCta.
-  ///
-  /// In en, this message translates to:
-  /// **'Preview a better plan'**
-  String get todayStatusPreviewCta;
-
-  /// No description provided for @todayStatusPreviewLoading.
-  ///
-  /// In en, this message translates to:
-  /// **'Preparing preview…'**
-  String get todayStatusPreviewLoading;
-
-  /// No description provided for @todayStatusPreviewUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Preview couldn\'t be generated. Your plan is unchanged.'**
-  String get todayStatusPreviewUnavailable;
-
-  /// No description provided for @todayStatusUntitledTile.
-  ///
-  /// In en, this message translates to:
-  /// **'Untitled tile'**
-  String get todayStatusUntitledTile;
-
-  /// No description provided for @todayStatusShowAll.
-  ///
-  /// In en, this message translates to:
-  /// **'Show all'**
-  String get todayStatusShowAll;
-
-  /// Screen reader label for the collapsed section chevron
-  ///
-  /// In en, this message translates to:
-  /// **'Expand {section}'**
-  String todayStatusExpandSection(String section);
-
-  /// Screen reader label for the expanded section chevron
-  ///
-  /// In en, this message translates to:
-  /// **'Collapse {section}'**
-  String todayStatusCollapseSection(String section);
-
-  /// No description provided for @todayStatusReasonDueToday.
-  ///
-  /// In en, this message translates to:
-  /// **'Due today'**
-  String get todayStatusReasonDueToday;
-
-  /// No description provided for @todayStatusReasonNoOpenSlot.
-  ///
-  /// In en, this message translates to:
-  /// **'No open slot'**
-  String get todayStatusReasonNoOpenSlot;
-
-  /// No description provided for @todayStatusReasonTravelInfeasible.
-  ///
-  /// In en, this message translates to:
-  /// **'Travel makes this infeasible'**
-  String get todayStatusReasonTravelInfeasible;
-
-  /// No description provided for @todayStatusReasonOutsideHours.
-  ///
-  /// In en, this message translates to:
-  /// **'Outside available hours'**
-  String get todayStatusReasonOutsideHours;
-
-  /// No description provided for @todayStatusReasonDependencyBlocked.
-  ///
-  /// In en, this message translates to:
-  /// **'Waiting on another tile'**
-  String get todayStatusReasonDependencyBlocked;
-
-  /// Attention reason chip where the tile needs a longer gap than exists
-  ///
-  /// In en, this message translates to:
-  /// **'Needs {duration}'**
-  String todayStatusReasonNeedsTime(String duration);
-
-  /// No description provided for @todayStatusReasonManualHold.
-  ///
-  /// In en, this message translates to:
-  /// **'Needs your decision'**
-  String get todayStatusReasonManualHold;
-
-  /// No description provided for @todayStatusReasonUnknown.
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn\'t fit'**
-  String get todayStatusReasonUnknown;
-
-  /// How many sub-events a grouped tile holds on the Today Status screen
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 session} other{{count} sessions}}'**
-  String todayStatusSessionCount(int count);
-
-  /// No description provided for @todayStatusSelectTiles.
-  ///
-  /// In en, this message translates to:
-  /// **'Select tiles'**
-  String get todayStatusSelectTiles;
-
-  /// Screen reader label for expanding a grouped tile
-  ///
-  /// In en, this message translates to:
-  /// **'Expand {title} sessions'**
-  String todayStatusExpandGroup(String title);
-
-  /// Screen reader label for collapsing a grouped tile
-  ///
-  /// In en, this message translates to:
-  /// **'Collapse {title} sessions'**
-  String todayStatusCollapseGroup(String title);
-
   /// No description provided for @analysis.
   ///
   /// In en, this message translates to:
@@ -1688,12 +1498,6 @@ abstract class AppLocalizations {
   /// **'Delete Account?'**
   String get deleteYourTilerAccountQ;
 
-  /// No description provided for @yes.
-  ///
-  /// In en, this message translates to:
-  /// **'Yes'**
-  String get yes;
-
   /// No description provided for @no.
   ///
   /// In en, this message translates to:
@@ -1850,23 +1654,17 @@ abstract class AppLocalizations {
   /// **'Enter your address'**
   String get enterAddress;
 
-  /// No description provided for @wakeUpTimeQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'What time do you usually wake up in the morning?'**
-  String get wakeUpTimeQuestion;
-
-  /// No description provided for @workdayStartQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'What time do you typically start your workday?'**
-  String get workdayStartQuestion;
-
   /// No description provided for @primaryLocationQuestion.
   ///
   /// In en, this message translates to:
   /// **'What is your primary location for work or study?'**
   String get primaryLocationQuestion;
+
+  /// No description provided for @useDeviceLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my device location'**
+  String get useDeviceLocation;
 
   /// No description provided for @energyLevelDescriptionQuestion.
   ///
@@ -2459,6 +2257,12 @@ abstract class AppLocalizations {
   /// **'About Tiler'**
   String get aboutTiler;
 
+  /// No description provided for @howToUseTiler.
+  ///
+  /// In en, this message translates to:
+  /// **'How to use Tiler'**
+  String get howToUseTiler;
+
   /// No description provided for @darkMode.
   ///
   /// In en, this message translates to:
@@ -2518,30 +2322,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Slack'**
   String get slack;
-
-  /// No description provided for @addCalendar.
-  ///
-  /// In en, this message translates to:
-  /// **'Add calendar'**
-  String get addCalendar;
-
-  /// No description provided for @calendarConnected.
-  ///
-  /// In en, this message translates to:
-  /// **'Calendar connected'**
-  String get calendarConnected;
-
-  /// No description provided for @calendarConnectionDeclined.
-  ///
-  /// In en, this message translates to:
-  /// **'Calendar connection was cancelled'**
-  String get calendarConnectionDeclined;
-
-  /// No description provided for @calendarConnectionError.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not connect your calendar'**
-  String get calendarConnectionError;
 
   /// No description provided for @sleepDuration.
   ///
@@ -2813,53 +2593,17 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get integrationAdd;
 
-  /// No description provided for @timeAndLocationTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Time & Location'**
-  String get timeAndLocationTitle;
-
-  /// No description provided for @timeAndLocationSubTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Where are you right now?\nWhat is the time over there?'**
-  String get timeAndLocationSubTitle;
-
   /// No description provided for @timeAndLocationSecondarySubTitle.
   ///
   /// In en, this message translates to:
   /// **'Can we access your location to provide location-\nbased recommendations and notifications?'**
   String get timeAndLocationSecondarySubTitle;
 
-  /// No description provided for @workProfileQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'What is your typical daily routine like, set your work hours'**
-  String get workProfileQuestion;
-
-  /// No description provided for @personalProfileQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'Tell us about your ‘me time’ during the week'**
-  String get personalProfileQuestion;
-
-  /// No description provided for @grabACoffee.
-  ///
-  /// In en, this message translates to:
-  /// **'Grab a coffee'**
-  String get grabACoffee;
-
   /// No description provided for @recurringTasks.
   ///
   /// In en, this message translates to:
   /// **'Recurring Tasks'**
   String get recurringTasks;
-
-  /// No description provided for @recurringTasksQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'Are there any specific recurring tasks or activities you want to schedule in Tiler?'**
-  String get recurringTasksQuestion;
 
   /// No description provided for @yourProfession.
   ///
@@ -2939,66 +2683,6 @@ abstract class AppLocalizations {
   /// **'Tile Suggestions'**
   String get tileSuggestions;
 
-  /// No description provided for @tileSuggestionsQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'Select tiles that match your routine and let Tiler optimize your schedule'**
-  String get tileSuggestionsQuestion;
-
-  /// No description provided for @tileProfiling.
-  ///
-  /// In en, this message translates to:
-  /// **'Tiler is profiling you based on your preferences..'**
-  String get tileProfiling;
-
-  /// No description provided for @addPlus.
-  ///
-  /// In en, this message translates to:
-  /// **'Add +'**
-  String get addPlus;
-
-  /// No description provided for @personalScheduling.
-  ///
-  /// In en, this message translates to:
-  /// **'Personal scheduling'**
-  String get personalScheduling;
-
-  /// No description provided for @workPlanning.
-  ///
-  /// In en, this message translates to:
-  /// **'Work planning'**
-  String get workPlanning;
-
-  /// No description provided for @teamCoordination.
-  ///
-  /// In en, this message translates to:
-  /// **'Team coordination'**
-  String get teamCoordination;
-
-  /// No description provided for @fieldBaseCoordination.
-  ///
-  /// In en, this message translates to:
-  /// **'Field-base coordination'**
-  String get fieldBaseCoordination;
-
-  /// No description provided for @academicScheduling.
-  ///
-  /// In en, this message translates to:
-  /// **'Academic scheduling'**
-  String get academicScheduling;
-
-  /// No description provided for @clientManagement.
-  ///
-  /// In en, this message translates to:
-  /// **'Client management'**
-  String get clientManagement;
-
-  /// No description provided for @personalOrWork.
-  ///
-  /// In en, this message translates to:
-  /// **'Personal or Work??'**
-  String get personalOrWork;
-
   /// No description provided for @personalOrWorkQuestion.
   ///
   /// In en, this message translates to:
@@ -3010,60 +2694,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter at least 3 characters.'**
   String get enter3chars;
-
-  /// No description provided for @tilesVsBlocks.
-  ///
-  /// In en, this message translates to:
-  /// **'Tiles vs Blocks'**
-  String get tilesVsBlocks;
-
-  /// No description provided for @vsTilesDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Get auto-generated Tiles for your, workouts,\ndeadlines and block out times events that aren\'t\nflexible.'**
-  String get vsTilesDescription;
-
-  /// No description provided for @vsBlocksDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Blocks are fixed time periods reserved for important tiles that must happen at a specific time and date.'**
-  String get vsBlocksDescription;
-
-  /// No description provided for @swipeRight.
-  ///
-  /// In en, this message translates to:
-  /// **'Swipe Right>>'**
-  String get swipeRight;
-
-  /// No description provided for @swipeRightDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'No more planning from scratch—just swipe\nright, and Tiler fits everything into your\nschedule seamlessly.'**
-  String get swipeRightDescription;
-
-  /// No description provided for @googleCalendarAndMore.
-  ///
-  /// In en, this message translates to:
-  /// **'Google Calendar +\nmore calendars'**
-  String get googleCalendarAndMore;
-
-  /// No description provided for @googleCalendarAndMoreDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Sync your calendars, and let Tiler pull\neverything into one smart timeline.\nNo double booking, no stress'**
-  String get googleCalendarAndMoreDescription;
-
-  /// No description provided for @selectSuggestions.
-  ///
-  /// In en, this message translates to:
-  /// **'Select suggestions'**
-  String get selectSuggestions;
-
-  /// No description provided for @typeSomething.
-  ///
-  /// In en, this message translates to:
-  /// **'Type something here'**
-  String get typeSomething;
 
   /// Proactive alert for departure time
   ///
@@ -4283,11 +3913,143 @@ abstract class AppLocalizations {
   /// **'Let\'s Go!'**
   String get tutorialNavLetsGo;
 
+  /// No description provided for @welcomeExplainerHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiles vs Blocks'**
+  String get welcomeExplainerHeadline;
+
+  /// No description provided for @welcomeExplainerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick look at how Tiler plans your day.'**
+  String get welcomeExplainerSubtitle;
+
+  /// No description provided for @welcomeExplainerBlocksCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocks are fixed. They happen at a set time.'**
+  String get welcomeExplainerBlocksCaption;
+
+  /// No description provided for @welcomeExplainerTilesCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiles are flexible. Tiler fits them around your blocks.'**
+  String get welcomeExplainerTilesCaption;
+
+  /// No description provided for @welcomeExplainerReplanCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Dentist moved to {time} — Tiler re-plans your tiles around it.'**
+  String welcomeExplainerReplanCaption(String time);
+
+  /// No description provided for @welcomeExplainerMovedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved'**
+  String get welcomeExplainerMovedBadge;
+
+  /// No description provided for @welcomeExplainerReplannedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-planned'**
+  String get welcomeExplainerReplannedBadge;
+
+  /// No description provided for @welcomeExplainerBlockStandup.
+  ///
+  /// In en, this message translates to:
+  /// **'Team standup'**
+  String get welcomeExplainerBlockStandup;
+
+  /// No description provided for @welcomeExplainerBlockDentist.
+  ///
+  /// In en, this message translates to:
+  /// **'Dentist'**
+  String get welcomeExplainerBlockDentist;
+
+  /// No description provided for @welcomeExplainerTileWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout'**
+  String get welcomeExplainerTileWorkout;
+
+  /// No description provided for @welcomeExplainerTileReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Write report'**
+  String get welcomeExplainerTileReport;
+
+  /// No description provided for @welcomeExplainerTileGroceries.
+  ///
+  /// In en, this message translates to:
+  /// **'Groceries'**
+  String get welcomeExplainerTileGroceries;
+
+  /// No description provided for @welcomeExplainerLegendBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get welcomeExplainerLegendBlock;
+
+  /// No description provided for @welcomeExplainerLegendTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Tile'**
+  String get welcomeExplainerLegendTile;
+
   /// Step counter like 3/7
   ///
   /// In en, this message translates to:
   /// **'{current}/{total}'**
   String tutorialStepCounter(int current, int total);
+
+  /// No description provided for @tutorialStepSettingsTilesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tile Preferences'**
+  String get tutorialStepSettingsTilesTitle;
+
+  /// No description provided for @tutorialStepSettingsTilesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your AI preferences live here — how you travel, your work and personal hours, and block-out time.'**
+  String get tutorialStepSettingsTilesBody;
+
+  /// No description provided for @tutorialStepTilePrefsTransportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How you get around'**
+  String get tutorialStepTilePrefsTransportTitle;
+
+  /// No description provided for @tutorialStepTilePrefsTransportBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler budgets travel time between tiles from the way you usually travel.'**
+  String get tutorialStepTilePrefsTransportBody;
+
+  /// No description provided for @tutorialStepTilePrefsHoursTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Work and personal hours'**
+  String get tutorialStepTilePrefsHoursTitle;
+
+  /// No description provided for @tutorialStepTilePrefsHoursBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When Tiler may schedule work versus personal tiles. Tap either to set a profile.'**
+  String get tutorialStepTilePrefsHoursBody;
+
+  /// No description provided for @tutorialStepTilePrefsBlockOutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Block-out hours'**
+  String get tutorialStepTilePrefsBlockOutTitle;
+
+  /// No description provided for @tutorialStepTilePrefsBlockOutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Bed time and sleep duration — hours Tiler never schedules into.'**
+  String get tutorialStepTilePrefsBlockOutBody;
 
   /// No description provided for @chat.
   ///
@@ -5238,7 +5000,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'es'].contains(locale.languageCode);
+      <String>['de', 'en', 'es'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -5247,6 +5009,8 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'de':
+      return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
     case 'es':
