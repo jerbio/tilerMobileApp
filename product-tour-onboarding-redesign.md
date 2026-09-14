@@ -16,8 +16,10 @@ to the **Tile Preferences** page (section 3.4); stage 2.5 landed it, and
 stage 3.5 (schedule prefetch during onboarding) followed (`ecf5ab9`). Stage
 4.1 + 5.2 + the overlay remount fix landed in `59f771e`; the day-carousel
 remount fix (3.5 cycle 2) in `a4bd471`; 4.2 in `07686ef`. Stage 4.4
-(welcome explainer) landed. Next: **4.3 — kill-switch flag**
-(`constants.dart`), then 5.1 analytics and 5.3 manual QA.
+(explainer) landed in `ee758ab`; its cycle 2 (demo moved to after the
+essentials pages) and 4.3 (decommission instead of a kill switch) are
+**Green, awaiting review — uncommitted in the working tree**. After they
+commit, next: **5.1 — analytics signals**, then 5.3 manual QA.
 Resume protocol: (1) read this block, (2) the section 9 tracker row for
 the next stage, (3) the newest section 10 cycle entry. The tracker and
 cycle log are updated in the same commit as the code, so a mid-stage
@@ -34,7 +36,7 @@ matching commit — re-run that stage's tests to locate the break.
 | Essentials pages & order | 1. Profession (job description) → 2. Location |
 | Skip | One **global Skip** on both pages; terminal; discards unsubmitted data |
 | Submit | Single atomic submit on final page only |
-| Intro slider (`OnBoardingDescriptionSlider`) | Cut — replaced by a single animated **Tiles vs Blocks** explainer on the welcome screen (stage 4.4), shown only to devices that still need the essentials flow; the home tour covers the rest |
+| Intro slider (`OnBoardingDescriptionSlider`) | Deleted (stage 4.3) — replaced by a single animated **Tiles vs Blocks** demo shown right after the essentials pages, on Submit and on Skip (stage 4.4); the home tour covers the rest |
 | Onboarding gate | Local flag only (`essentialsOnboardingDone`); no blocking server round-trip |
 | Sign-in tour | None |
 | Home tour | Existing 8-step tour, unchanged content |
@@ -173,13 +175,16 @@ Info / Tile Preferences / Notifications / Connections). Reviewed 2026-09-12
 and cut to the 1-step pointer above: the list rows are self-explanatory,
 and the learning users actually need is on the Tile Preferences page.
 
-### 3.4b Welcome explainer (stage 4.4)
+### 3.4b Tiles vs Blocks demo (stage 4.4)
 
-`WelcomeScreen` runs the local gate immediately. A device that is done
-keeps the 800ms brand beat and routes itself (4.2). A device that still
-needs the essentials flow shows the greeting plus `TilesVsBlocksExplainer`
-(`lib/components/welcome/`) and a "Let's Go!" button — no auto-route; the
-user reads at their own pace.
+Every exit from the essentials pages — Submit and Skip alike — replaces
+the onboarding route with `OnboardingExplainerScreen`
+(`lib/routes/authentication/onboardingExplainerRoute.dart`): headline,
+`TilesVsBlocksExplainer` (`lib/components/welcome/`) and a "Let's Go!"
+button that replaces the whole stack with `AuthorizedRoute`. No auto-route;
+the user reads at their own pace. `WelcomeScreen` is untouched (the 4.2
+beat for everyone). Submit's post-buzz schedule refresh (3.5) is unaffected:
+the schedule bloc is captured before navigation.
 
 The explainer is built in Flutter (no Lottie asset) so captions and card
 labels are localised and colours follow the theme. A mini day timeline
@@ -189,7 +194,7 @@ labels are localised and colours follow the theme. A mini day timeline
 | --- | --- | --- |
 | blocks | "Team standup" 9:00 and "Dentist" 14:00 drop in with a pin | Blocks are fixed. They happen at a set time. |
 | tiles | "Workout", "Write report" (2h), "Groceries" slide into the gaps | Tiles are flexible. Tiler fits them around your blocks. |
-| replan | Dentist jumps to 11:00; the report and groceries tiles re-seat around it | Change a block and Tiler re-plans your tiles. |
+| replan | Dentist card first announces the change ("Moved" badge + highlight, first 20% of the beat), then jumps to 11:00; the report and groceries tiles re-seat around it, each picking up a Tiler mark ("Re-planned" + the app's `auto_awesome` AI glyph) as it moves — the untouched workout tile gets none | Dentist moved to 11:00 — Tiler re-plans your tiles around it. (time in the device format) |
 
 `MediaQuery.disableAnimations` shows the final frame immediately.
 
@@ -236,11 +241,16 @@ labels are localised and colours follow the theme. A mini day timeline
 1. `checkOnboardingStatus()` local-only; update all 8 call sites; shorten or
    remove the 3s `WelcomeScreen` delay.
 2. Set `essentialsOnboardingDone` on submit and on skip.
-3. Keep `OnboardingView` full flow reachable behind a debug flag (kill
-   switch, `constants.dart`); delete unused sub-widgets in a later cleanup pass.
+3. ~~Keep `OnboardingView` full flow reachable behind a debug flag~~ —
+   decided 2026-09-14: Phase 3 removed the bloc logic behind the legacy
+   pages, so a runtime flag would render questions whose answers go
+   nowhere. The legacy flow is recoverable from git (`70d643c^`); 4.3 is
+   the decommission instead: delete the dead sub-widgets, the intro
+   slider, its video player, the dead `/onBoardingWorkProfile` route and
+   the orphaned l10n strings.
 4. Optional background server reconcile.
-5. Welcome explainer: animated Tiles vs Blocks on the welcome screen for
-   devices that still need the essentials flow (section 3.4b).
+5. Tiles vs Blocks demo: animated explainer right after the essentials
+   pages, on Submit and Skip (section 3.4b).
 
 ### Phase 5 — Instrumentation, QA & rollout
 1. Analytics signals (section 6) + error logging (section 7).
@@ -267,7 +277,7 @@ patterns (`test/ai_consent_gate_test.dart` for injectable seams,
 | 3 | `test/essentials_onboarding_schedule_prefetch_test.dart` | `primeScheduleAfterLogin` dispatch order + payload; refresh exactly once and only after buzz completes; failed buzz → no refresh, no crash; Skip → no refresh; missing bloc tolerated |
 | 4 | `test/onboarding_gate_test.dart` | Gate is local-only (no API call); legacy `skipOnboarding` honored; new flag honored; fresh device → essentials |
 | 4 | `test/welcome_screen_navigation_test.dart` | Existing tests updated: delay removed/shortened, routes to essentials vs AuthorizedRoute by local flag |
-| 4 | `test/welcome_explainer_test.dart` | Three beats: captions per beat, tiles absent before beat 2, no overlap at rest, the replan moves the block and re-seats ≥2 tiles, final state holds (no loop), reduced motion → final frame; WelcomeScreen: new device shows the explainer and never auto-routes, "Let's Go!" → essentials with the stack cleared; done device keeps the beat |
+| 4 | `test/welcome_explainer_test.dart` | Three beats: captions per beat, tiles absent before beat 2, no overlap at rest, the replan moves the block and re-seats ≥2 tiles, final state holds (no loop), reduced motion → final frame; `OnboardingExplainerScreen`: headline + demo + "Let's Go!", never auto-routes, "Let's Go!" replaces the stack with the destination. Skip/submit/prefetch suites tap through the demo on every exit |
 
 Gate checks per stage before marking Done:
 
@@ -369,8 +379,8 @@ Status legend: `Not started` | `Red (test failing)` | `Green (test passing)` | `
 | 3.5 | Schedule prefetch during essentials onboarding | `test/essentials_onboarding_schedule_prefetch_test.dart`, `test/daily_carousel_remount_test.dart` | `services/schedulePrimer.dart`, `main.dart`, `onBoarding.dart`, `dailyTileList.dart` | Done | 5 tests. Cold start (`main.dart`) previously only reset the bloc (`LogInScheduleEvent`) and never fetched until the home list mounted; it now calls `primeScheduleAfterLogin` (parity with the sign-in path, which still inlines the same three dispatches — 4.1 should switch it over). `OnboardingView` gained an optional `scheduleBloc` seam; without it the view reads the ancestor bloc and, if none, skips the refresh (best-effort). Buzz errors were previously unhandled fire-and-forget; now logged |
 | 4.1 | Local-only gate + call sites | `test/onboarding_gate_test.dart` | `util.dart`, `signInComponent.dart`, `on_boarding_bloc.dart` | Done | `59f771e`. 5 tests: gate resolves from microtasks alone (fake-async, zero pending timers), legacy `skipOnboarding` honoured, `essentialsOnboardingDone` honoured, fresh device → essentials, Skip writes the canonical flag. The 6 `signInComponent` sites discarded the gate result and then `WelcomeScreen` ran it again — all 6 replaced by `primeScheduleAfterLogin(context)` (3.5), which also removed their inline schedule dispatches; `main.dart` keeps its `FutureBuilder` (now resolves in one microtask). 5.2 folded in |
 | 4.2 | WelcomeScreen delay + routing | `test/welcome_screen_navigation_test.dart` | `welcomeScreen.dart` | Done | 8 tests (2 pre-existing stack-clearing tests kept). The 3s sleep is a named `WelcomeScreen.displayDuration` = 800ms brand beat; the gate check runs concurrently with the beat (`Future.wait`), so the wait is `max(beat, check)`, never `beat + check`. Routing by the real local gate is pinned without a checker override (done flag / legacy skip → authorized; neither → essentials) |
-| 4.4 | Welcome explainer (Tiles vs Blocks) | `test/welcome_explainer_test.dart` (+ 2 tests in `welcome_screen_navigation_test.dart` updated) | `components/welcome/tilesVsBlocksExplainer.dart`, `welcomeScreen.dart`, l10n | Done | 7 new tests; 11 EN + 11 ES strings; reuses `tutorialNavLetsGo` for the CTA. Shown only when the gate says the device still needs onboarding — not replayable from "How to use Tiler" (could add a per-device flag later) |
-| 4.3 | Kill-switch flag for legacy flow | (manual) | `constants.dart` | Not started | `executionConstants.dart` holds one unrelated constant; `constants.dart` already owns `isDebug` |
+| 4.4 | Tiles vs Blocks demo | `test/welcome_explainer_test.dart` (+ skip/submit/prefetch suites tap through) | `components/welcome/tilesVsBlocksExplainer.dart`, `routes/authentication/onboardingExplainerRoute.dart`, `onBoarding.dart`, l10n | Done (cycle 2 awaiting review) | Cycle 1 (`ee758ab`) put the demo on the welcome screen; cycle 2 moves it to after the essentials pages (Submit and Skip) via `OnboardingExplainerScreen`, and `WelcomeScreen` reverts to the 4.2 beat. 12 EN + 12 ES strings; CTA reuses `tutorialNavLetsGo`. Not replayable from "How to use Tiler" (could add later) |
+| 4.3 | Decommission legacy flow (was: kill-switch flag) | (analyze + full suite) | 12 files deleted under `components/onBoarding/`, `main.dart`, `app_en.arb` | Green (awaiting review) | Kill switch dropped (Phase 4 item 3 note). Deleted: 9 legacy sub-widgets + `onBoardingPillTag`, `onBoardingSlider` (+ `IntroSlideData`), `videoPlayer`; the dead `/onBoardingWorkProfile` route; 28 orphaned EN strings (keys referenced only from the deleted files). Kept: `onBoardingSubWidget` (used by the two live pages), the bloc's tile-suggestion / recurring-task handlers (event/state surgery — follow-up), and the now-unused `video_player` dependency (dropping a plugin is a deliberate step) |
 | 5.1 | Analytics signals | (unit-light; verify names) | tour engine + onboarding files | Not started | |
 | 5.2 | Logging hardening (remove header/body prints) | (analyze pass) | `onBoardingApi.dart` | Done | Folded into 4.1 (`59f771e`): the `Request headers:` print (auth token) removed outright; response-body prints → `Utility.debugPrint` with the HTTP status only; exception prints → `Utility.debugPrint` |
 | 5.3 | Manual QA (section 8) | — | — | Not started | Android + iOS |
@@ -381,6 +391,10 @@ Record each meaningful cycle. Newest first.
 
 | Date | Stage | Cycle | Result | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-09-14 | 4.3 | 1 | Green (uncommitted, awaiting review) | Decommission instead of a kill switch (see Phase 4 item 3). Reference scan: every legacy sub-widget except `ProfessionWidget`/`PrimaryLocationWidget` had zero references; `/onBoardingWorkProfile` was registered but never navigated to; the slider and video player only referenced each other. 12 files `git rm`'d, the route and its import removed from `main.dart`, 28 l10n keys referenced only by the deleted files stripped from `app_en.arb` (the ES file never had them); the submit test's "no intro slider" assertion became "exits through the demo". `flutter gen-l10n` ok; analyze 493 (below the 502 baseline — dead code gone, zero new issues); full suite 523 pass / 5 pre-existing fails. |
+| 2026-09-14 | 4.4 | 4 | Green (uncommitted, awaiting review) | Review feedback: express that *Tiler* readjusts the other tiles. Red: beat-3 assertions that each re-seated tile carries a "Re-planned" mark with the app's `auto_awesome` glyph (one glyph per re-seated tile), the untouched workout tile carries none, no marks in beat 2 or before the block has moved, and the final frame shows exactly two. Green: `_readjustFor` fades the mark in over the first half of each tile's own move (mark and motion read as one act); shared `_pill` helper draws both the block's "Moved" badge (brand colour) and the inverted Tiler mark (surface colour on the brand-coloured tile). EN "Re-planned" / ES "Replanificado". 8/8; full suite 524 pass / 5 pre-existing fails; analyze 493. |
+| 2026-09-14 | 4.4 | 3 | Green (uncommitted, awaiting review) | Review feedback: the demo moved the dentist without saying so. Red: beat-3 assertions for a "Moved" badge inside the dentist card, none in beat 2, badge visible *before* the card starts moving, and a caption that names the block and its new time (`welcomeExplainerReplanCaption(time)` placeholder). Green: `_announceFor` drives a badge + border highlight over the first 20% of the re-plan beat; move windows pushed later (dentist 0.3–0.6, report 0.55–0.85, groceries 0.65–0.95) so cause precedes effect; caption formatted with `MaterialLocalizations.formatTimeOfDay`. Two things the tests caught: (1) the badge initially went on every moving card, tiles included — restricted to moving *blocks* (the tiles are the effect); (2) the longer two-line caption stole height from the timeline and shifted every card 14px mid-beat — the caption row is now a fixed two-line box. EN + ES (`Moved` / `Cambió`). 8/8; full suite 524 pass / 5 pre-existing fails; analyze 493. |
+| 2026-09-14 | 4.4 | 2 | Green (uncommitted, awaiting review) | Demo moved from the welcome screen to after the essentials pages. New `OnboardingExplainerScreen` route (headline, subtitle, `TilesVsBlocksExplainer`, "Let's Go!" → `pushAndRemoveUntil(destination)`); `OnboardingView._exitThroughExplainer` replaces the onboarding route with it on both Skip and Submit, keeping the existing destination seams as the *final* destination; `WelcomeScreen` and its tests revert to `07686ef` (4.2 beat for everyone). Red: the skip/submit/prefetch suites asserted the destination right after `pumpAndSettle` — now they assert the demo is showing and the destination is *not* built until "Let's Go!" (`_tapThroughExplainer` helper); the explainer file's WelcomeScreen group became an `OnboardingExplainerScreen` group (never auto-routes; stack cleared). `welcomeExplainerSubtitle` added (EN + ES). Final: 40/40 across the welcome + onboarding suites; full suite 523 pass / 5 pre-existing fails. |
 | 2026-09-12 | 4.4 | 1 | Green | Welcome explainer. Red: `test/welcome_explainer_test.dart` (7 tests) failed to compile — `TilesVsBlocksExplainer`/`TilesVsBlocksExplainerKeys` and the `welcomeExplainer*` l10n keys were missing. Green: (a) `lib/components/welcome/tilesVsBlocksExplainer.dart` — an `AnimationController` over 3 × 2s beats drives a `Stack` of hour rows and `Positioned` cards; per-card entry windows (blocks drop from above, tiles slide from the right) and re-plan move windows are declared as data (`_TimelineCard`), so the choreography is one table; caption cross-fades via `AnimatedSwitcher`; `onFinished` callback; reduced motion jumps to value 1. (b) `WelcomeScreen`: the gate runs first; done → 4.2 beat → authorized; not done → `_showExplainer` layout (greeting, headline, explainer, "Let's Go!" CTA; portrait and landscape) and `_continueToOnboarding` → `pushAndRemoveUntil`. (c) l10n 11 EN + 11 ES. Two 4.2 tests updated to tap through the explainer. Test mechanics: pumping exactly `n × beat` lands on the first frame of beat n+1, and the caption's `AnimatedSwitcher` only notices a beat change on a built frame, so the helper stops 450ms short, pumps 350ms for the cross-fade and 50ms to clear the outgoing child; beat advances are relative so they compose. Final: 15/15 across both welcome files; full suite 523 pass / 5 pre-existing fails; `flutter analyze` 502 (baseline). |
 | 2026-09-12 | 4.2 | 1 | Green | WelcomeScreen beat. Red: the two existing navigation tests pumped a literal 3s and the new tests asserted routing at `displayDuration` (≤ 1s) and a slow checker overlapping the beat — failed against the 3s sleep + sequential await. Green: `displayDuration` (800ms) + `Future.wait([beat, checker()])`; the stack-clearing `pushAndRemoveUntil` behavior is unchanged. 8/8. |
 | 2026-09-12 | 3.5 | 2 | Green (`a4bd471`) | On-device: after onboarding, the home tour ran over a stuck "Loading upcoming days..." page (screenshot at step 5/8, no spotlight). Cause: the real schedule renders a 7-day window (today = carousel page 4); `injectDummyTiles` reloads a single-day window with a bare `ScheduleStatus()` (no `evaluationId`), so `DailyTileList` kept the same carousel key; `carousel_slider.didUpdateWidget` re-creates its PageController at the *current* page and ignores `initialPage`, so page 4 of 3 clamped to the last page — the future-edge placeholder — and the "Control Your Tiles" step could not find the current tile. Newly reachable because 3.5's prefetch (+ 4.1 removing ~4s of gate delays) now reliably renders the 7-day carousel before the tour starts. Red: `test/daily_carousel_remount_test.dart` (5 unit tests on the extracted rule) — `carouselDaySpanId` / `shouldRemountCarousel` undefined. Green: `DailyTileList` re-creates the carousel (new key) whenever the rendered day span changes, not only on a new evaluation id, and drops the stale `carouselSliderIndex` on a span change so the carousel opens on today; same-span status-less refreshes keep the carousel (no scroll reset). No widget harness exists for `DailyTileList` (needs ~6 blocs), hence the pure-helper extraction (same pattern as `endOfDayDateTimeFor`). Final: 5/5; full suite 509 pass / 5 pre-existing fails; analyze 502. |
