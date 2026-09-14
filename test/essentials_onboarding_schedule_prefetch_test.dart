@@ -41,6 +41,7 @@ import 'package:tiler_app/data/onBoarding.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
+import 'package:tiler_app/routes/authentication/onboardingExplainerRoute.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -178,6 +179,18 @@ Future<void> _submitFinalPage(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 800));
 }
 
+/// Stage 4.4: every exit from the essentials pages passes through the
+/// animated "Tiles vs Blocks" demo. Waits for the onboarding route to be
+/// replaced by it, then taps "Let's Go!" so the exit destination builds.
+Future<void> _tapThroughExplainer(WidgetTester tester) async {
+  await tester.pumpAndSettle();
+  expect(find.byType(OnboardingExplainerScreen), findsOneWidget,
+      reason: 'The demo must sit between the essentials pages and the app.');
+  await tester.tap(
+      find.text(lookupAppLocalizations(const Locale('en')).tutorialNavLetsGo));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
@@ -247,9 +260,10 @@ void main() {
       await _submitFinalPage(tester);
       expect(bloc.state.step, OnboardingStep.submitted);
       await tester.pumpAndSettle();
-
-      expect(find.byType(_DestinationMarker), findsOneWidget,
+      expect(find.byType(OnboardingExplainerScreen), findsOneWidget,
           reason: 'Submit navigates immediately; it never waits on the buzz.');
+      await _tapThroughExplainer(tester);
+      expect(find.byType(_DestinationMarker), findsOneWidget);
       expect(scheduleApi.buzzCalls, 1);
       expect(scheduleBloc.fetches, isEmpty,
           reason: 'The schedule is stale until the revise finishes; '
@@ -284,7 +298,7 @@ void main() {
       await tester.pump();
       await _advanceToLocationPage(tester, bloc);
       await _submitFinalPage(tester);
-      await tester.pumpAndSettle();
+      await _tapThroughExplainer(tester);
       expect(find.byType(_DestinationMarker), findsOneWidget);
 
       scheduleApi.release.completeError(StateError('buzz failed'));
@@ -313,7 +327,7 @@ void main() {
       await tester.pump();
 
       await tester.tap(find.text(l10n.skip));
-      await tester.pumpAndSettle();
+      await _tapThroughExplainer(tester);
 
       expect(find.byType(_DestinationMarker), findsOneWidget);
       expect(scheduleApi.buzzCalls, 0);
@@ -337,7 +351,7 @@ void main() {
       await tester.pump();
       await _advanceToLocationPage(tester, bloc);
       await _submitFinalPage(tester);
-      await tester.pumpAndSettle();
+      await _tapThroughExplainer(tester);
 
       expect(find.byType(_DestinationMarker), findsOneWidget);
       scheduleApi.release.complete();

@@ -12,8 +12,9 @@
 //      The legacy payload fields (hours, day sections, recurring tasks,
 //      suggestion tiles, usage) are no longer collected and must not be
 //      sent. No fetch happens on submit.
-//   3. Submit never triggers the intro slider (the legacy
-//      OnBoardingDescriptionSlider is cut from the essentials flow).
+//   3. Submit never triggers the intro slider (the legacy slider was cut
+//      from the essentials flow and deleted in stage 4.3); the exit is
+//      the Tiles vs Blocks demo.
 //   4. On success, submit navigates (pushReplacement) directly to the
 //      exit destination route (AuthorizedRoute in production) -- verified
 //      through the OnboardingView.submitDestinationBuilder seam with a
@@ -39,11 +40,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
-import 'package:tiler_app/components/onBoarding/onBoardingSlider.dart';
 import 'package:tiler_app/data/onBoarding.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
+import 'package:tiler_app/routes/authentication/onboardingExplainerRoute.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -258,6 +259,18 @@ Future<void> _flushToasts(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 600));
 }
 
+/// Stage 4.4: every exit from the essentials pages passes through the
+/// animated "Tiles vs Blocks" demo. Waits for the onboarding route to be
+/// replaced by it, then taps "Let's Go!" so the exit destination builds.
+Future<void> _tapThroughExplainer(WidgetTester tester) async {
+  await tester.pumpAndSettle();
+  expect(find.byType(OnboardingExplainerScreen), findsOneWidget,
+      reason: 'The demo must sit between the essentials pages and the app.');
+  await tester.tap(
+      find.text(lookupAppLocalizations(const Locale('en')).tutorialNavLetsGo));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
@@ -270,7 +283,7 @@ void main() {
     final primaryLocationQuestion = l10n.primaryLocationQuestion;
     final useDeviceLocation = l10n.useDeviceLocation;
 
-testWidgets('submit is only available on page 2', (tester) async {
+    testWidgets('submit is only available on page 2', (tester) async {
       GeolocatorPlatform.instance =
           FakeGeolocatorPlatform(position: _testPosition);
       final api = FakeOnBoardingApi();
@@ -287,16 +300,14 @@ testWidgets('submit is only available on page 2', (tester) async {
 
       // Page 2: Next submits.
       await _submitFinalPage(tester);
-      expect(api.sendCalls, 1,
-          reason: 'Page-2 Next must submit exactly once.');
+      expect(api.sendCalls, 1, reason: 'Page-2 Next must submit exactly once.');
       expect(bloc.state.step, OnboardingStep.submitted);
 
       await tester.pumpAndSettle();
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('submit sends profession and location only',
-        (tester) async {
+    testWidgets('submit sends profession and location only', (tester) async {
       GeolocatorPlatform.instance =
           FakeGeolocatorPlatform(position: _testPosition);
       final api = FakeOnBoardingApi();
@@ -306,8 +317,7 @@ testWidgets('submit is only available on page 2', (tester) async {
       await tester.pump();
 
       // Pick a profession (state-driven, like a page-1 checkbox tap).
-      bloc
-          .add(SelectProfessionEvent(profession: 'Carpenter', isCustom: false));
+      bloc.add(SelectProfessionEvent(profession: 'Carpenter', isCustom: false));
       await tester.pump();
       expect(bloc.state.profession, 'Carpenter');
 
@@ -340,7 +350,7 @@ testWidgets('submit is only available on page 2', (tester) async {
       await tester.pumpWidget(const SizedBox());
     });
 
-testWidgets('submit includes device coords and timezone when captured',
+    testWidgets('submit includes device coords and timezone when captured',
         (tester) async {
       _mockTimezoneChannel(tester);
       final geolocator = FakeGeolocatorPlatform(position: _testPosition);
@@ -386,13 +396,16 @@ testWidgets('submit includes device coords and timezone when captured',
       expect(bloc.state.step, OnboardingStep.submitted);
       await tester.pumpAndSettle();
 
-      expect(find.byType(OnBoardingDescriptionSlider), findsNothing,
-          reason: 'The intro slider is cut from the essentials flow.');
+      // The legacy intro slider (OnBoardingDescriptionSlider) was deleted
+      // in the stage-4.3 decommission; the exit is the Tiles vs Blocks
+      // demo, never a slider.
+      expect(find.byType(OnboardingExplainerScreen), findsOneWidget,
+          reason: 'Submit exits through the demo, not the old intro slider.');
 
       await tester.pumpWidget(const SizedBox());
     });
 
-testWidgets(
+    testWidgets(
         'submit navigates to the exit destination and buzzes the schedule once',
         (tester) async {
       GeolocatorPlatform.instance =
@@ -413,6 +426,11 @@ testWidgets(
       await _submitFinalPage(tester);
       expect(bloc.state.step, OnboardingStep.submitted);
       await tester.pumpAndSettle();
+      expect(find.text(skipText), findsNothing,
+          reason: 'The onboarding flow is replaced by the demo.');
+      expect(submitObserver.destinationBuilt, isFalse,
+          reason: "The app is not entered until the user taps Let's Go.");
+      await _tapThroughExplainer(tester);
 
       expect(submitObserver.destinationBuilt, isTrue,
           reason: 'A successful submit must navigate to the exit '
@@ -450,8 +468,8 @@ testWidgets(
           isTrue,
           reason:
               'Submit must persist the local done flag for the launch gate.');
-      expect(await OnBoardingSharedPreferencesHelper.getSkipOnboarding(),
-          isFalse,
+      expect(
+          await OnBoardingSharedPreferencesHelper.getSkipOnboarding(), isFalse,
           reason: 'Submit must not write the skip preference.');
 
       await tester.pumpWidget(const SizedBox());
@@ -479,8 +497,7 @@ testWidgets(
       expect(api.sendCalls, 1, reason: 'A failed submit must not retry.');
       expect(bloc.state.step, OnboardingStep.error);
       expect(bloc.state.error, contains('Onboarding submit failed'),
-          reason:
-              'The error toast path must surface the API error message.');
+          reason: 'The error toast path must surface the API error message.');
       expect(bloc.state.pageNumber, 1,
           reason: 'The flow stays on the location page.');
       expect(find.text(primaryLocationQuestion), findsOneWidget);

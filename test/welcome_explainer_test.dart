@@ -4,22 +4,27 @@
 // (product-tour-onboarding-redesign.md, Phase 4 item 5 "Welcome
 // explainer").
 //
-// New devices get an animated "Tiles vs Blocks" explainer on the welcome
-// screen before the essentials onboarding; returning devices keep the
-// short brand beat (stage 4.2). Locks in:
+// After the essentials pages (profession, location) — on Submit and on
+// Skip alike — the user sees an animated "Tiles vs Blocks" demo before the
+// schedule. Locks in:
 //   1. The explainer plays three beats on a mini day timeline:
 //        blocks  — two pinned blocks land (fixed time);
 //        tiles   — three tiles slide into the free gaps (flexible);
-//        replan  — a block moves and the tiles re-flow around it.
+//        replan  — a block moves and the tiles re-flow around it. The
+//                  moving block announces itself ("Moved" badge from the
+//                  start of the beat) and the caption names it and its new
+//                  time, so the user sees the cause before the effect. Each
+//                  tile Tiler re-seats picks up a Tiler mark ("Re-planned"
+//                  + the app's AI glyph) as it moves; a tile Tiler leaves
+//                  alone gets none.
 //      Each beat has its own caption; tiles do not exist before their beat;
 //      at rest nothing overlaps; the replan actually moves the block and
 //      re-seats the tiles; the final state holds (no looping timers).
 //   2. Reduced motion (`MediaQuery.disableAnimations`) shows the final
 //      state immediately.
-//   3. WelcomeScreen: a device that still needs onboarding shows the
-//      explainer and does NOT auto-route; "Let's Go!" routes to the
-//      essentials flow (stack cleared). A device that is done keeps the
-//      4.2 behaviour: no explainer, routes after the beat.
+//   3. OnboardingExplainerScreen: shows headline + explainer + "Let's Go!";
+//      never auto-routes; "Let's Go!" replaces the whole stack with the
+//      destination (no onboarding underneath to go back to).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -27,7 +32,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:tiler_app/components/welcome/tilesVsBlocksExplainer.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
-import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
+import 'package:tiler_app/routes/authentication/onboardingExplainerRoute.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
 const _l10nDelegates = [
@@ -38,6 +43,12 @@ const _l10nDelegates = [
 ];
 
 final _l10n = lookupAppLocalizations(const Locale('en'));
+
+/// The re-plan caption names the dentist's new slot in the device's time
+/// format (11:00 in the demo).
+final String _replanCaption = _l10n.welcomeExplainerReplanCaption(
+    const DefaultMaterialLocalizations()
+        .formatTimeOfDay(const TimeOfDay(hour: 11, minute: 0)));
 
 Widget _explainerHarness({bool disableAnimations = false}) {
   return MaterialApp(
@@ -96,34 +107,41 @@ void _expectNoOverlap(WidgetTester tester, List<Key> keys, String when) {
   }
 }
 
-class _AuthorizedPage extends StatelessWidget {
-  const _AuthorizedPage();
+class _DestinationPage extends StatelessWidget {
+  const _DestinationPage();
   @override
   Widget build(BuildContext context) =>
-      const Scaffold(body: Text('AuthorizedPage'));
+      const Scaffold(body: Text('DestinationPage'));
 }
 
-class _OnboardingPage extends StatelessWidget {
-  const _OnboardingPage();
+class _QuestionsPage extends StatelessWidget {
+  const _QuestionsPage();
   @override
   Widget build(BuildContext context) =>
-      const Scaffold(body: Text('OnboardingPage'));
+      const Scaffold(body: Text('QuestionsPage'));
 }
 
-Widget _welcome({required bool onboardingDone}) {
-  return MaterialApp(
+/// Mounts the demo route the way OnboardingView pushes it: replacing the
+/// questions, with the app as the destination.
+Future<GlobalKey<NavigatorState>> _pushExplainer(WidgetTester tester) async {
+  final navigatorKey = GlobalKey<NavigatorState>();
+  await tester.pumpWidget(MaterialApp(
+    navigatorKey: navigatorKey,
     theme: TileThemeData.lightTheme,
     localizationsDelegates: _l10nDelegates,
     supportedLocales: const [Locale('en', '')],
-    home: WelcomeScreen(
-      welcomeType: WelcomeType.register,
-      firstName: 'Ada',
-      onboardingStatusChecker: () async => onboardingDone,
-      authorizedRouteBuilder: (_) => const _AuthorizedPage(),
-      onboardingRouteBuilder: (_) => const _OnboardingPage(),
+    home: const _QuestionsPage(),
+  ));
+  navigatorKey.currentState!.pushReplacement(MaterialPageRoute(
+    builder: (_) => const OnboardingExplainerScreen(
+      destinationBuilder: _buildDestination,
     ),
-  );
+  ));
+  await tester.pumpAndSettle();
+  return navigatorKey;
 }
+
+Widget _buildDestination(BuildContext _) => const _DestinationPage();
 
 void main() {
   group('TilesVsBlocksExplainer — three beats', () {
@@ -156,6 +174,10 @@ void main() {
         expect(find.byKey(k), findsOneWidget);
       }
       _expectNoOverlap(tester, [..._blockKeys, ..._tileKeys], 'after beat 2');
+      expect(find.text(_l10n.welcomeExplainerMovedBadge), findsNothing,
+          reason: 'Nothing has moved yet.');
+      expect(find.text(_l10n.welcomeExplainerReplannedBadge), findsNothing,
+          reason: 'Tiler has not re-planned anything yet.');
     });
 
     testWidgets(
@@ -171,22 +193,66 @@ void main() {
 
       await _pumpBeats(tester, 1);
 
-      expect(find.text(_l10n.welcomeExplainerReplanCaption), findsOneWidget);
+      expect(find.text(_replanCaption), findsOneWidget,
+          reason: 'The caption must say which block changed and to when.');
+      expect(
+        find.descendant(
+            of: find.byKey(TilesVsBlocksExplainerKeys.dentistBlock),
+            matching: find.text(_l10n.welcomeExplainerMovedBadge)),
+        findsOneWidget,
+        reason: 'The block that changed must announce it on the card.',
+      );
       final dentistAfter =
           tester.getRect(find.byKey(TilesVsBlocksExplainerKeys.dentistBlock));
       expect(dentistAfter.top, lessThan(dentistBefore.top),
           reason: 'The block must visibly move to an earlier slot.');
       final moved = _tileKeys
           .where((k) => tester.getRect(find.byKey(k)) != tilesBefore[k])
-          .length;
-      expect(moved, greaterThanOrEqualTo(2),
+          .toList();
+      expect(moved.length, greaterThanOrEqualTo(2),
           reason: 'Tiles must re-flow around the moved block — that is the '
               'point of the beat.');
+      for (final k in _tileKeys) {
+        final mark = find.descendant(
+            of: find.byKey(k),
+            matching: find.text(_l10n.welcomeExplainerReplannedBadge));
+        expect(mark, moved.contains(k) ? findsOneWidget : findsNothing,
+            reason: moved.contains(k)
+                ? 'A tile Tiler re-seated must carry the Tiler mark.'
+                : 'A tile Tiler left alone must not claim to be re-planned.');
+      }
+      expect(find.byIcon(Icons.auto_awesome), findsNWidgets(moved.length),
+          reason: 'The mark uses the app\'s own AI glyph, one per re-seated '
+              'tile.');
       _expectNoOverlap(tester, [..._blockKeys, ..._tileKeys], 'after beat 3');
       expect(
         tester.getRect(find.byKey(TilesVsBlocksExplainerKeys.standupBlock)),
         tester.getRect(find.byKey(TilesVsBlocksExplainerKeys.standupBlock)),
       );
+    });
+
+    testWidgets(
+        'the "Moved" badge appears before the dentist block starts moving',
+        (tester) async {
+      await tester.pumpWidget(_explainerHarness());
+      await _pumpBeats(tester, 2);
+      final before =
+          tester.getRect(find.byKey(TilesVsBlocksExplainerKeys.dentistBlock));
+
+      // Just inside beat 3: the badge is up, the card has not moved yet.
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+
+      expect(find.text(_l10n.welcomeExplainerMovedBadge), findsOneWidget,
+          reason: 'Announce the change before showing it.');
+      expect(
+        tester.getRect(find.byKey(TilesVsBlocksExplainerKeys.dentistBlock)).top,
+        before.top,
+        reason: 'The move starts only after the badge has landed.',
+      );
+      expect(find.text(_l10n.welcomeExplainerReplannedBadge), findsNothing,
+          reason: 'Tiler re-plans in response to the change, so the marks '
+              'come after the block has moved, never before.');
     });
 
     testWidgets('holds the final state — no looping timers', (tester) async {
@@ -203,7 +269,7 @@ void main() {
         expect(tester.getRect(find.byKey(k)), rects[k],
             reason: 'The explainer must settle, not loop.');
       }
-      expect(find.text(_l10n.welcomeExplainerReplanCaption), findsOneWidget);
+      expect(find.text(_replanCaption), findsOneWidget);
       // pumpAndSettle would hang on a looping animation.
       await tester.pumpAndSettle();
     });
@@ -213,7 +279,10 @@ void main() {
       await tester.pumpWidget(_explainerHarness(disableAnimations: true));
       await tester.pump();
 
-      expect(find.text(_l10n.welcomeExplainerReplanCaption), findsOneWidget);
+      expect(find.text(_replanCaption), findsOneWidget);
+      expect(find.text(_l10n.welcomeExplainerMovedBadge), findsOneWidget);
+      expect(find.text(_l10n.welcomeExplainerReplannedBadge), findsNWidgets(2),
+          reason: 'Final frame: the two re-seated tiles carry the mark.');
       for (final k in [..._blockKeys, ..._tileKeys]) {
         expect(find.byKey(k), findsOneWidget);
       }
@@ -221,44 +290,36 @@ void main() {
     });
   });
 
-  group('WelcomeScreen — explainer for new devices (stage 4.4)', () {
+  group('OnboardingExplainerScreen — after the essentials pages (4.4)', () {
     testWidgets(
-        'a device that needs onboarding shows the explainer and does not '
-        'auto-route; "Let\'s Go!" routes to the essentials flow',
+        "shows the headline, the demo and Let's Go, and never auto-routes",
         (tester) async {
-      await tester.pumpWidget(_welcome(onboardingDone: false));
-      await tester.pump();
+      await _pushExplainer(tester);
 
       expect(find.byType(TilesVsBlocksExplainer), findsOneWidget);
-      expect(find.text('Ada'), findsOneWidget, reason: 'The greeting stays.');
+      expect(find.text(_l10n.welcomeExplainerHeadline), findsOneWidget);
       expect(find.text(_l10n.tutorialNavLetsGo), findsOneWidget);
+      expect(find.text('QuestionsPage'), findsNothing,
+          reason: 'The questions are replaced, not covered.');
 
-      // Well past the 4.2 beat: still here, the user reads at their pace.
-      await tester.pump(WelcomeScreen.displayDuration * 3);
-      await tester.pump(TilesVsBlocksExplainer.totalDuration);
-      expect(find.text('OnboardingPage'), findsNothing);
-      expect(find.byType(TilesVsBlocksExplainer), findsOneWidget);
+      // Long after the demo has settled the user is still here.
+      await tester.pump(TilesVsBlocksExplainer.totalDuration * 2);
+      expect(find.text('DestinationPage'), findsNothing);
+      expect(find.byType(OnboardingExplainerScreen), findsOneWidget);
+    });
+
+    testWidgets("Let's Go replaces the stack with the destination",
+        (tester) async {
+      final navigatorKey = await _pushExplainer(tester);
 
       await tester.tap(find.text(_l10n.tutorialNavLetsGo));
       await tester.pumpAndSettle();
 
-      expect(find.text('OnboardingPage'), findsOneWidget);
-      expect(find.byType(WelcomeScreen), findsNothing,
-          reason: 'The welcome screen is removed from the stack.');
-    });
-
-    testWidgets(
-        'a device that is done keeps the beat: no explainer, routes to the '
-        'authorized app', (tester) async {
-      await tester.pumpWidget(_welcome(onboardingDone: true));
-      await tester.pump();
-
-      expect(find.byType(TilesVsBlocksExplainer), findsNothing);
-      expect(find.text(_l10n.tutorialNavLetsGo), findsNothing);
-
-      await tester.pump(WelcomeScreen.displayDuration);
-      await tester.pumpAndSettle();
-      expect(find.text('AuthorizedPage'), findsOneWidget);
+      expect(find.text('DestinationPage'), findsOneWidget);
+      expect(find.byType(OnboardingExplainerScreen), findsNothing);
+      expect(navigatorKey.currentState!.canPop(), isFalse,
+          reason: 'Nothing underneath to go back to — no demo, no '
+              'questions.');
     });
   });
 }

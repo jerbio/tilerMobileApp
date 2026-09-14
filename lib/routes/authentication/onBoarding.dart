@@ -9,6 +9,7 @@ import 'package:tiler_app/components/onBoarding/onBoardingProgressIndicator.dart
 import 'package:tiler_app/components/onBoarding/subWidgets/primaryLocationWidget.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/professionWidget.dart';
 import 'package:tiler_app/routes/authentication/AuthorizedRoute.dart';
+import 'package:tiler_app/routes/authentication/onboardingExplainerRoute.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -99,6 +100,21 @@ class _OnboardingViewState extends State<OnboardingView> {
     });
   }
 
+  /// Stage 4.4: every exit from the essentials pages — Skip and Submit
+  /// alike — passes through the animated "Tiles vs Blocks" demo, whose
+  /// "Let's Go!" then replaces the stack with [destination] (the
+  /// authorized app in production). The onboarding route itself is
+  /// replaced, so Back never returns to the questions.
+  void _exitThroughExplainer(BuildContext context, WidgetBuilder destination) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            OnboardingExplainerScreen(destinationBuilder: destination),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -122,8 +138,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           // lets tests substitute the destination builder.
           final Widget Function(BuildContext) skipBuilder =
               widget.skipDestinationBuilder ?? ((context) => AuthorizedRoute());
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: skipBuilder));
+          _exitThroughExplainer(context, skipBuilder);
         }
         if (state.step == OnboardingStep.submitted) {
           // Stage 3.4: atomic submit exit -- buzz the schedule, then
@@ -135,8 +150,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           final Widget Function(BuildContext) submitBuilder =
               widget.submitDestinationBuilder ??
                   ((context) => AuthorizedRoute());
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: submitBuilder));
+          _exitThroughExplainer(context, submitBuilder);
         }
         if (state.step == OnboardingStep.error && state.error != null) {
           notificationOverlayMessage.showToast(

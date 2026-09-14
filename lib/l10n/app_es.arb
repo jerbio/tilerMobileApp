@@ -551,9 +551,19 @@
     "tutorialNavSkip": "Omitir",
     "tutorialNavLetsGo": "¡Vamos!",
     "welcomeExplainerHeadline": "Tiles y Bloques",
+    "welcomeExplainerSubtitle": "Un vistazo rápido a cómo Tiler planifica tu día.",
     "welcomeExplainerBlocksCaption": "Los bloques son fijos. Ocurren a una hora determinada.",
     "welcomeExplainerTilesCaption": "Los tiles son flexibles. Tiler los acomoda alrededor de tus bloques.",
-    "welcomeExplainerReplanCaption": "Cambia un bloque y Tiler replanifica tus tiles.",
+    "welcomeExplainerReplanCaption": "El dentista pasa a las {time}: Tiler replanifica tus tiles a su alrededor.",
+    "@welcomeExplainerReplanCaption": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "welcomeExplainerMovedBadge": "Cambió",
+    "welcomeExplainerReplannedBadge": "Replanificado",
     "welcomeExplainerBlockStandup": "Reunión de equipo",
     "welcomeExplainerBlockDentist": "Dentista",
     "welcomeExplainerTileWorkout": "Ejercicio",

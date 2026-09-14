@@ -31,6 +31,7 @@ import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:tiler_app/data/onBoarding.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
+import 'package:tiler_app/routes/authentication/onboardingExplainerRoute.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/services/onBoardingHelper.dart';
@@ -197,6 +198,18 @@ Future<void> _advanceToLocationPage(
 // Tests
 // ─────────────────────────────────────────────────────────────────────────────
 
+/// Stage 4.4: every exit from the essentials pages passes through the
+/// animated "Tiles vs Blocks" demo. Waits for the onboarding route to be
+/// replaced by it, then taps "Let's Go!" so the exit destination builds.
+Future<void> _tapThroughExplainer(WidgetTester tester) async {
+  await tester.pumpAndSettle();
+  expect(find.byType(OnboardingExplainerScreen), findsOneWidget,
+      reason: 'The demo must sit between the essentials pages and the app.');
+  await tester.tap(
+      find.text(lookupAppLocalizations(const Locale('en')).tutorialNavLetsGo));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -245,8 +258,8 @@ void main() {
       final skipObserver = SkipDestinationObserver();
       _skipDestination = const _SkipDestinationMarker();
 
-      await tester.pumpWidget(
-          _wrapOnboarding(bloc, skipObserver: skipObserver));
+      await tester
+          .pumpWidget(_wrapOnboarding(bloc, skipObserver: skipObserver));
       await tester.pump();
 
       expect(find.byType(_SkipDestinationMarker), findsNothing);
@@ -258,12 +271,17 @@ void main() {
       expect(bloc.state.pageNumber, isNull,
           reason: 'The terminal skipped state clears the page number.');
 
-      // Let the replacement transition run to completion. The exit route
-      // (AuthorizedRoute in production) builds the marker stand-in in the
-      // test, which proves the navigation target without rendering
-      // AuthorizedRoute (its initState needs providers/channels that are
-      // unavailable in widget tests).
+      // Let the replacement transition run to completion: the onboarding
+      // route is replaced by the demo (the questions are gone), and its
+      // "Let's Go!" builds the exit route. The marker stand-in proves the
+      // navigation target without rendering AuthorizedRoute (its
+      // initState needs providers/channels unavailable in widget tests).
       await tester.pumpAndSettle();
+      expect(find.text(l10n.skip), findsNothing,
+          reason: 'The onboarding flow must be replaced by the demo.');
+      expect(skipObserver.destinationBuilt, isFalse,
+          reason: "The app is not entered until the user taps Let's Go.");
+      await _tapThroughExplainer(tester);
       expect(skipObserver.destinationBuilt, isTrue,
           reason: 'Skip must navigate to the exit destination route.');
       expect(find.byType(_SkipDestinationMarker), findsOneWidget);
@@ -274,15 +292,16 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('Skip persists the skip preference and does not call the '
+    testWidgets(
+        'Skip persists the skip preference and does not call the '
         'onboarding API', (tester) async {
       GeolocatorPlatform.instance =
           FakeGeolocatorPlatform(position: _testPosition);
       final api = FakeOnBoardingApi();
       final bloc = _seededBloc(api: api);
 
-      expect(await OnBoardingSharedPreferencesHelper.getSkipOnboarding(),
-          isFalse);
+      expect(
+          await OnBoardingSharedPreferencesHelper.getSkipOnboarding(), isFalse);
 
       await tester.pumpWidget(_wrapOnboarding(bloc));
       await tester.pump();
@@ -292,15 +311,13 @@ void main() {
       await tester.pumpWidget(const SizedBox()); // unmount before the
       // destination route is built.
 
-      expect(await OnBoardingSharedPreferencesHelper.getSkipOnboarding(),
-          isTrue,
+      expect(
+          await OnBoardingSharedPreferencesHelper.getSkipOnboarding(), isTrue,
           reason: 'Skip must persist the skip preference so the app can '
               'bypass onboarding next launch.');
 
-      expect(api.sendCalls, 0,
-          reason: 'Skip must not submit onboarding data.');
-      expect(api.fetchCalls, 0,
-          reason: 'Skip must not fetch onboarding data.');
+      expect(api.sendCalls, 0, reason: 'Skip must not submit onboarding data.');
+      expect(api.fetchCalls, 0, reason: 'Skip must not fetch onboarding data.');
       expect(bloc.state.step, OnboardingStep.skipped);
     });
 
@@ -341,7 +358,8 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('skipping on page 2 persists the preference and '
+    testWidgets(
+        'skipping on page 2 persists the preference and '
         'stays terminal', (tester) async {
       GeolocatorPlatform.instance =
           FakeGeolocatorPlatform(position: _testPosition);
@@ -349,8 +367,8 @@ void main() {
       final skipObserver = SkipDestinationObserver();
       _skipDestination = const _SkipDestinationMarker();
 
-      await tester.pumpWidget(
-          _wrapOnboarding(bloc, skipObserver: skipObserver));
+      await tester
+          .pumpWidget(_wrapOnboarding(bloc, skipObserver: skipObserver));
       await tester.pump();
       await _advanceToLocationPage(tester, bloc);
 
@@ -358,11 +376,11 @@ void main() {
       await tester.pump();
 
       expect(bloc.state.step, OnboardingStep.skipped);
-      await tester.pumpAndSettle();
+      await _tapThroughExplainer(tester);
       expect(skipObserver.destinationBuilt, isTrue,
           reason: 'Skipping from page 2 must navigate to the exit route.');
-      expect(await OnBoardingSharedPreferencesHelper.getSkipOnboarding(),
-          isTrue,
+      expect(
+          await OnBoardingSharedPreferencesHelper.getSkipOnboarding(), isTrue,
           reason: 'Skipping from page 2 must persist the same '
               'preference.');
 
@@ -394,8 +412,8 @@ void main() {
       expect(bloc.state.pageNumber, 1);
       expect(bloc.state.step, isNot(OnboardingStep.skipped),
           reason: 'Advancing the flow must never skip onboarding.');
-      expect(await OnBoardingSharedPreferencesHelper.getSkipOnboarding(),
-          isFalse,
+      expect(
+          await OnBoardingSharedPreferencesHelper.getSkipOnboarding(), isFalse,
           reason: 'Advancing the flow must not persist the skip '
               'preference.');
 
@@ -409,8 +427,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(bloc.state.pageNumber, 1);
       expect(bloc.state.step, isNot(OnboardingStep.skipped));
-      expect(await OnBoardingSharedPreferencesHelper.getSkipOnboarding(),
-          isFalse);
+      expect(
+          await OnBoardingSharedPreferencesHelper.getSkipOnboarding(), isFalse);
     });
   });
 }

@@ -16,7 +16,6 @@ import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
-import 'package:tiler_app/components/onBoarding/subWidgets/workProfileWidget.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tutorial/tourHost.dart';
 import 'package:tiler_app/components/tutorial/tours/settingsTour.dart';
@@ -234,7 +233,6 @@ class _TilerAppState extends State<TilerApp> {
                     '/Connections': (ctx) => Connections(),
                     '/Feedback': (ctx) => FeedbackPage(),
                     '/tilePreferences': buildTilePreferencesRoute,
-                    '/onBoardingWorkProfile': (ctx) => WorkProfileWidget(),
                     '/vibeChat': (ctx) => VibeChat()
                   },
                   localizationsDelegates: [

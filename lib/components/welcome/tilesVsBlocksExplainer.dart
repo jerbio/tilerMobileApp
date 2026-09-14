@@ -112,8 +112,10 @@ class _TilesVsBlocksExplainerState extends State<TilesVsBlocksExplainer>
       slotAfter: 2,
       enterStart: 0.25,
       enterEnd: 0.65,
-      moveStart: 0.05,
-      moveEnd: 0.4,
+      // The card announces the change first (badge + highlight over
+      // [_announceWindow]), then moves.
+      moveStart: 0.3,
+      moveEnd: 0.6,
     ),
     _TimelineCard(
       key: TilesVsBlocksExplainerKeys.workoutTile,
@@ -133,8 +135,8 @@ class _TilesVsBlocksExplainerState extends State<TilesVsBlocksExplainer>
       span: 2,
       enterStart: 0.2,
       enterEnd: 0.6,
-      moveStart: 0.4,
-      moveEnd: 0.8,
+      moveStart: 0.55,
+      moveEnd: 0.85,
     ),
     _TimelineCard(
       key: TilesVsBlocksExplainerKeys.groceriesTile,
@@ -144,10 +146,21 @@ class _TilesVsBlocksExplainerState extends State<TilesVsBlocksExplainer>
       slotAfter: 5,
       enterStart: 0.4,
       enterEnd: 0.8,
-      moveStart: 0.5,
-      moveEnd: 0.9,
+      moveStart: 0.65,
+      moveEnd: 0.95,
     ),
   ];
+
+  static const double _captionFontSize = 16;
+  static const double _captionLineHeight = 1.35;
+
+  /// Slot the moving block lands on, for the re-plan caption.
+  static const int _movedBlockSlotAfter = 2;
+
+  /// Window (0..1 of the re-plan beat) over which the moving block's
+  /// "Moved" badge and highlight fade in — before it starts moving.
+  static const double _announceStart = 0.0;
+  static const double _announceEnd = 0.2;
 
   static String _standupLabel(AppLocalizations l) =>
       l.welcomeExplainerBlockStandup;
@@ -236,15 +249,46 @@ class _TilesVsBlocksExplainerState extends State<TilesVsBlocksExplainer>
     return _window(t, card.enterStart, card.enterEnd);
   }
 
-  String _captionFor(AppLocalizations l10n, ExplainerBeat beat) {
+  String _captionFor(
+      BuildContext context, AppLocalizations l10n, ExplainerBeat beat) {
     switch (beat) {
       case ExplainerBeat.blocks:
         return l10n.welcomeExplainerBlocksCaption;
       case ExplainerBeat.tiles:
         return l10n.welcomeExplainerTilesCaption;
       case ExplainerBeat.replan:
-        return l10n.welcomeExplainerReplanCaption;
+        // Name the block that changed and where it went, so the tiles
+        // re-seating reads as a consequence rather than a shuffle.
+        final String newTime = MaterialLocalizations.of(context)
+            .formatTimeOfDay(
+                TimeOfDay(hour: _firstHour + _movedBlockSlotAfter, minute: 0));
+        return l10n.welcomeExplainerReplanCaption(newTime);
     }
+  }
+
+  /// 0..1 strength of the "this block is changing" announcement (badge +
+  /// highlight) for the given beat/progress. Only a *block* that moves
+  /// announces itself — it is the cause; the tiles that re-seat afterwards
+  /// are the effect and stay unbadged. Stays at 1 once shown so the badge
+  /// persists into the final frame.
+  double _announceFor(_TimelineCard card, ExplainerBeat beat, double t) {
+    if (!card.isBlock || !card.moves || beat != ExplainerBeat.replan) {
+      return 0.0;
+    }
+    return _window(t, _announceStart, _announceEnd);
+  }
+
+  /// 0..1 strength of the Tiler mark ("Re-planned" + the app's AI glyph)
+  /// on a tile Tiler re-seats: fades in over the first half of the tile's
+  /// own move, so the mark and the motion read as one act. A tile Tiler
+  /// leaves alone never gets one — that absence is part of the message.
+  /// Stays at 1 once shown so the mark persists into the final frame.
+  double _readjustFor(_TimelineCard card, ExplainerBeat beat, double t) {
+    if (card.isBlock || !card.moves || beat != ExplainerBeat.replan) {
+      return 0.0;
+    }
+    final double midMove = card.moveStart + (card.moveEnd - card.moveStart) / 2;
+    return _window(t, card.moveStart, midMove);
   }
 
   @override
@@ -266,18 +310,25 @@ class _TilesVsBlocksExplainerState extends State<TilesVsBlocksExplainer>
             const SizedBox(height: 12),
             _buildLegend(l10n, colorScheme),
             const SizedBox(height: 8),
-            // Caption: cross-fades between beats.
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: Text(
-                _captionFor(l10n, beat),
-                key: ValueKey<ExplainerBeat>(beat),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colorScheme.onPrimary,
-                  fontFamily: TileTextStyles.rubikFontName,
-                  fontSize: 16,
-                  height: 1.35,
+            // Caption: cross-fades between beats. Its height is fixed at
+            // two lines so a longer caption never steals height from the
+            // timeline above (which would shift every card mid-beat).
+            SizedBox(
+              height: _captionFontSize * _captionLineHeight * 2,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  _captionFor(context, l10n, beat),
+                  key: ValueKey<ExplainerBeat>(beat),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: colorScheme.onPrimary,
+                    fontFamily: TileTextStyles.rubikFontName,
+                    fontSize: _captionFontSize,
+                    height: _captionLineHeight,
+                  ),
                 ),
               ),
             ),
@@ -398,6 +449,8 @@ class _TilesVsBlocksExplainerState extends State<TilesVsBlocksExplainer>
           final double entry = _entryFor(card, beat, t);
           if (entry <= 0.0) continue; // not part of the story yet
           final double slot = _slotFor(card, beat, t);
+          final double announce = _announceFor(card, beat, t);
+          final double readjust = _readjustFor(card, beat, t);
           final double top = slot * rowHeight + cardGap;
           final double height = card.span * rowHeight - cardGap * 2;
 
@@ -418,6 +471,10 @@ class _TilesVsBlocksExplainerState extends State<TilesVsBlocksExplainer>
                 label: card.label(l10n),
                 isBlock: card.isBlock,
                 colorScheme: colorScheme,
+                announce: announce,
+                badgeLabel: l10n.welcomeExplainerMovedBadge,
+                readjust: readjust,
+                readjustLabel: l10n.welcomeExplainerReplannedBadge,
               ),
             ),
           ));
@@ -435,12 +492,61 @@ class _TimelineCardView extends StatelessWidget {
   final bool isBlock;
   final ColorScheme colorScheme;
 
+  /// 0..1: how strongly the card announces that it is changing (border
+  /// highlight + "Moved" badge). 0 for cards that are not changing.
+  final double announce;
+  final String badgeLabel;
+
+  /// 0..1: how strongly the card shows Tiler's mark ("Re-planned" + the AI
+  /// glyph) for a tile Tiler re-seated. 0 for everything else.
+  final double readjust;
+  final String readjustLabel;
+
   const _TimelineCardView({
     required this.cardKey,
     required this.label,
     required this.isBlock,
     required this.colorScheme,
+    this.announce = 0.0,
+    this.badgeLabel = '',
+    this.readjust = 0.0,
+    this.readjustLabel = '',
   });
+
+  /// Small pill used for both the block's "Moved" badge and the tile's
+  /// Tiler mark; [inverted] draws it in the surface colours so it stands
+  /// out on a brand-coloured tile.
+  Widget _pill(IconData icon, String text, double strength,
+      {required bool inverted}) {
+    final Color bg = inverted ? colorScheme.onPrimary : colorScheme.primary;
+    final Color fg = inverted ? colorScheme.primary : colorScheme.onPrimary;
+    return Opacity(
+      opacity: strength.clamp(0.0, 1.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 10, color: fg),
+            const SizedBox(width: 3),
+            Text(
+              text,
+              style: TextStyle(
+                color: fg,
+                fontFamily: TileTextStyles.rubikFontName,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -448,6 +554,10 @@ class _TimelineCardView extends StatelessWidget {
         ? colorScheme.onSurface.withValues(alpha: 0.10)
         : colorScheme.primary;
     final Color text = isBlock ? colorScheme.onSurface : colorScheme.onPrimary;
+    final Color restingBorder = colorScheme.onSurface.withValues(alpha: 0.35);
+    final Color? border = isBlock
+        ? Color.lerp(restingBorder, colorScheme.primary, announce)
+        : null;
 
     return Container(
       key: cardKey,
@@ -455,11 +565,9 @@ class _TimelineCardView extends StatelessWidget {
       decoration: BoxDecoration(
         color: fill,
         borderRadius: BorderRadius.circular(6),
-        border: isBlock
-            ? Border.all(
-                color: colorScheme.onSurface.withValues(alpha: 0.35),
-                width: 1.2)
-            : null,
+        border: border == null
+            ? null
+            : Border.all(color: border, width: 1.2 + announce * 0.8),
       ),
       child: Row(
         children: [
@@ -480,6 +588,15 @@ class _TimelineCardView extends StatelessWidget {
               ),
             ),
           ),
+          if (announce > 0.0) ...[
+            const SizedBox(width: 6),
+            _pill(Icons.swap_vert, badgeLabel, announce, inverted: false),
+          ],
+          if (readjust > 0.0) ...[
+            const SizedBox(width: 6),
+            // The app's own AI glyph (the home FAB): this is Tiler acting.
+            _pill(Icons.auto_awesome, readjustLabel, readjust, inverted: true),
+          ],
         ],
       ),
     );

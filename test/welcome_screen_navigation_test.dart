@@ -18,7 +18,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
-import 'package:tiler_app/components/welcome/tilesVsBlocksExplainer.dart';
 import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
 import 'package:tiler_app/services/onBoardingHelper.dart';
 
@@ -83,8 +82,6 @@ Future<void> _pushWelcome(
   // Mount WelcomeScreen without advancing the fake clock.
   await tester.pump();
 }
-
-final _l10n = lookupAppLocalizations(const Locale('en'));
 
 void main() {
   setUp(() {
@@ -159,20 +156,12 @@ void main() {
       expect(find.text('AuthorizedPage'), findsOneWidget);
     });
 
-    testWidgets(
-        "fresh device -> explainer, then essentials onboarding on Let's Go",
-        (tester) async {
+    testWidgets('fresh device -> essentials onboarding', (tester) async {
       final navigatorKey = GlobalKey<NavigatorState>();
       await _pushWelcome(tester, navigatorKey,
           welcomeType: WelcomeType.register);
 
-      // Stage 4.4: a new device is not auto-routed; it reads the explainer.
       await tester.pump(WelcomeScreen.displayDuration);
-      await tester.pumpAndSettle();
-      expect(find.text('OnboardingPage'), findsNothing);
-      expect(find.byType(TilesVsBlocksExplainer), findsOneWidget);
-
-      await tester.tap(find.text(_l10n.tutorialNavLetsGo));
       await tester.pumpAndSettle();
       expect(find.text('OnboardingPage'), findsOneWidget);
       expect(navigatorKey.currentState!.canPop(), isFalse);
@@ -244,10 +233,6 @@ void main() {
 
         await tester.pumpAndSettle();
         await tester.pump(WelcomeScreen.displayDuration);
-        await tester.pumpAndSettle();
-        // Stage 4.4: the explainer holds the screen until "Let's Go!".
-        expect(find.byType(TilesVsBlocksExplainer), findsOneWidget);
-        await tester.tap(find.text(_l10n.tutorialNavLetsGo));
         await tester.pumpAndSettle();
 
         expect(navigatorKey.currentState!.canPop(), isFalse,
