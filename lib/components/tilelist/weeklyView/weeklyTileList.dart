@@ -13,7 +13,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
-import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
+import 'package:tiler_app/routes/authenticatedUser/todayStatusScreen.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -104,7 +104,7 @@ class _WeeklyTileListState extends TileListState {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SummaryPage(
+                  builder: (context) => TodayStatusScreen(
                     timeline: timeline,
                   ),
                 ),

@@ -60,3 +60,5 @@ firebase.json
 
 androidRelease.sh
 iosRelease.sh
+
+spells/*

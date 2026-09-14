@@ -20,7 +20,6 @@ import 'package:tiler_app/data/travelDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
@@ -260,7 +259,8 @@ class TileWidgetState extends State<TileWidget>
             ? 'assets/lottie/whiteCars.json'
             : 'assets/lottie/blackCars.json';
 
-    Color? textColor = isTardy ? TileColors.late : colorScheme.onSurface;
+    Color? textColor =
+        isTardy ? tileThemeExtension.statusDanger : colorScheme.onSurface;
 
     List<LatitudeAndLongitude> latLongList = [];
     Widget transitUIWidget = Lottie.asset(
@@ -544,7 +544,8 @@ class TileWidgetState extends State<TileWidget>
     Widget timeFrameWidget = TimeFrameWidget(
       timeRange: widget.subEvent,
       fontSize: textFontSize,
-      textColor: isTardy ? TileColors.late : colorScheme.onSurface,
+      textColor:
+          isTardy ? tileThemeExtension.statusDanger : colorScheme.onSurface,
     );
 
     Widget tileTimeFrame = Container(
@@ -562,7 +563,9 @@ class TileWidgetState extends State<TileWidget>
               (this.widget.subEvent.isRigid ?? false)
                   ? Icons.lock_outline
                   : Icons.access_time_sharp,
-              color: isTardy ? TileColors.late : colorScheme.onSurface,
+              color: isTardy
+                  ? tileThemeExtension.statusDanger
+                  : colorScheme.onSurface,
               size: TileDimensions.tileIconSize,
             ),
           ),
@@ -583,7 +586,7 @@ class TileWidgetState extends State<TileWidget>
                             fontSize: textFontSize,
                             fontFamily: TileTextStyles.rubikFontName,
                             fontWeight: FontWeight.normal,
-                            color: TileColors.late),
+                            color: tileThemeExtension.statusDanger),
                       )
                     : SizedBox.shrink()
               ],

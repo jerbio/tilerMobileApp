@@ -11,6 +11,7 @@ import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/bloc/tile_preferences_bloc.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/scheduleFullnessSlider.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -362,6 +363,21 @@ class TilePreferencesScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildScheduleFullnessWidget(
+      BuildContext context,
+      PreferencesLoaded state,
+      ColorScheme colorScheme,
+      TileThemeExtension tileThemeExtension) {
+    return _buildSectionContainer(
+      colorScheme: colorScheme,
+      child: ScheduleFullnessSlider(
+        intensityRate: state.userSettings?.scheduleProfile?.intensityRate,
+        onIntensityChanged: (value) =>
+            context.read<TilePreferencesBloc>().add(UpdateIntensityRate(value)),
+      ),
+    );
+  }
+
   Future<bool> _saveTilePreferences(BuildContext context) async {
     final completer = Completer<bool>();
 
@@ -485,7 +501,18 @@ class TilePreferencesScreen extends StatelessWidget {
             ),
           ),
           _buildBlockOutHourWidget(
-              context, loadedState, colorScheme, tileThemeExtension)
+              context, loadedState, colorScheme, tileThemeExtension),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10.0),
+            child: Text(
+              AppLocalizations.of(context)!.schedulePreferences,
+              style: TextStyle(
+                  fontSize: 16,
+                  color: tileThemeExtension.onSurfaceVariantSecondary),
+            ),
+          ),
+          _buildScheduleFullnessWidget(
+              context, loadedState, colorScheme, tileThemeExtension),
         ],
       ),
     );
