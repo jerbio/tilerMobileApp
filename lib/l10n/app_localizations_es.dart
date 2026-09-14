@@ -2303,6 +2303,42 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tutorialNavLetsGo => '¡Vamos!';
 
   @override
+  String get welcomeExplainerHeadline => 'Tiles y Bloques';
+
+  @override
+  String get welcomeExplainerBlocksCaption =>
+      'Los bloques son fijos. Ocurren a una hora determinada.';
+
+  @override
+  String get welcomeExplainerTilesCaption =>
+      'Los tiles son flexibles. Tiler los acomoda alrededor de tus bloques.';
+
+  @override
+  String get welcomeExplainerReplanCaption =>
+      'Cambia un bloque y Tiler replanifica tus tiles.';
+
+  @override
+  String get welcomeExplainerBlockStandup => 'Reunión de equipo';
+
+  @override
+  String get welcomeExplainerBlockDentist => 'Dentista';
+
+  @override
+  String get welcomeExplainerTileWorkout => 'Ejercicio';
+
+  @override
+  String get welcomeExplainerTileReport => 'Escribir informe';
+
+  @override
+  String get welcomeExplainerTileGroceries => 'Compras';
+
+  @override
+  String get welcomeExplainerLegendBlock => 'Bloque';
+
+  @override
+  String get welcomeExplainerLegendTile => 'Tile';
+
+  @override
   String tutorialStepCounter(int current, int total) {
     return '$current/$total';
   }

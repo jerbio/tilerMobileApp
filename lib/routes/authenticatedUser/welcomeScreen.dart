@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:tiler_app/components/welcome/tilesVsBlocksExplainer.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import '../../util.dart';
 import '../authentication/AuthorizedRoute.dart';
@@ -44,6 +45,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   late ThemeData theme;
   late ColorScheme colorScheme;
 
+  /// Stage 4.4: a device that still needs the essentials onboarding gets
+  /// the animated "Tiles vs Blocks" explainer and moves on when the user
+  /// taps "Let's Go!"; a device that is done keeps the short brand beat
+  /// and routes on its own.
+  bool _showExplainer = false;
+
   @override
   void initState() {
     super.initState();
@@ -60,26 +67,124 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Future<void> checkOnboarding() async {
     final checker =
         widget.onboardingStatusChecker ?? Utility.checkOnboardingStatus;
-    // The gate check runs alongside the beat, never after it: the wait is
+    final Future<void> beat = Future.delayed(WelcomeScreen.displayDuration);
+    final bool onboardingDone = await checker();
+    if (!mounted) return;
+    if (!onboardingDone) {
+      // New device: explain Tiler first; the user decides when to go on.
+      setState(() => _showExplainer = true);
+      return;
+    }
+    // The gate check ran alongside the beat, never after it: the wait is
     // max(beat, check), not beat + check.
-    final results = await Future.wait<Object?>([
-      Future.delayed(WelcomeScreen.displayDuration),
-      checker(),
-    ]);
-    final bool nextPage = results[1] as bool;
-    if (mounted) {
-      final authorizedBuilder =
-          widget.authorizedRouteBuilder ?? (_) => AuthorizedRoute();
-      final onboardingBuilder =
-          widget.onboardingRouteBuilder ?? (_) => OnboardingView();
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: nextPage ? authorizedBuilder : onboardingBuilder,
+    await beat;
+    if (mounted)
+      _routeTo(widget.authorizedRouteBuilder ?? (_) => AuthorizedRoute());
+  }
+
+  void _continueToOnboarding() {
+    _routeTo(widget.onboardingRouteBuilder ?? (_) => OnboardingView());
+  }
+
+  void _routeTo(WidgetBuilder builder) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: builder),
+      (route) => false,
+    );
+  }
+
+  Widget _buildExplainerLayout(
+      BuildContext context, double height, double width) {
+    final l10n = AppLocalizations.of(context)!;
+    final bool landscape = width > height;
+    final Widget greeting = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          widget.welcomeType == WelcomeType.register ? l10n.welcome : l10n.hi,
+          style: TextStyle(
+            color: colorScheme.onPrimary,
+            fontFamily: TileTextStyles.rubikFontName,
+            fontSize: _calculateAdaptiveSize(height, 22),
+          ),
         ),
-        (route) => false,
+        Text(
+          widget.firstName,
+          style: TextStyle(
+            color: colorScheme.onPrimary,
+            fontFamily: TileTextStyles.rubikFontName,
+            fontSize: _calculateAdaptiveSize(height, 28),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l10n.welcomeExplainerHeadline,
+          style: TextStyle(
+            color: colorScheme.onPrimary.withValues(alpha: 0.9),
+            fontFamily: TileTextStyles.rubikFontName,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.4,
+          ),
+        ),
+      ],
+    );
+    final Widget cta = SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _continueToOnboarding,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colorScheme.onPrimary,
+          foregroundColor: colorScheme.primary,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+        child: Text(
+          l10n.tutorialNavLetsGo,
+          style: TextStyle(
+            fontFamily: TileTextStyles.rubikFontName,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+    final Widget explainer = const TilesVsBlocksExplainer();
+
+    if (landscape) {
+      return Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [greeting, const SizedBox(height: 20), cta],
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(child: explainer),
+          ],
+        ),
       );
     }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      child: Column(
+        children: [
+          greeting,
+          const SizedBox(height: 16),
+          Expanded(child: explainer),
+          const SizedBox(height: 20),
+          cta,
+        ],
+      ),
+    );
   }
 
   Widget _buildPortraitLayout(
@@ -187,9 +292,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     return Scaffold(
       backgroundColor: colorScheme.primary,
       body: SafeArea(
-        child: orientation == Orientation.portrait
-            ? _buildPortraitLayout(context, height, width)
-            : _buildLandscapeLayout(context, height, width),
+        child: _showExplainer
+            ? _buildExplainerLayout(context, height, width)
+            : orientation == Orientation.portrait
+                ? _buildPortraitLayout(context, height, width)
+                : _buildLandscapeLayout(context, height, width),
       ),
     );
   }

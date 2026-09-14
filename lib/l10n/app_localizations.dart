@@ -4079,6 +4079,72 @@ abstract class AppLocalizations {
   /// **'Let\'s Go!'**
   String get tutorialNavLetsGo;
 
+  /// No description provided for @welcomeExplainerHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiles vs Blocks'**
+  String get welcomeExplainerHeadline;
+
+  /// No description provided for @welcomeExplainerBlocksCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocks are fixed. They happen at a set time.'**
+  String get welcomeExplainerBlocksCaption;
+
+  /// No description provided for @welcomeExplainerTilesCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiles are flexible. Tiler fits them around your blocks.'**
+  String get welcomeExplainerTilesCaption;
+
+  /// No description provided for @welcomeExplainerReplanCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Change a block and Tiler re-plans your tiles.'**
+  String get welcomeExplainerReplanCaption;
+
+  /// No description provided for @welcomeExplainerBlockStandup.
+  ///
+  /// In en, this message translates to:
+  /// **'Team standup'**
+  String get welcomeExplainerBlockStandup;
+
+  /// No description provided for @welcomeExplainerBlockDentist.
+  ///
+  /// In en, this message translates to:
+  /// **'Dentist'**
+  String get welcomeExplainerBlockDentist;
+
+  /// No description provided for @welcomeExplainerTileWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout'**
+  String get welcomeExplainerTileWorkout;
+
+  /// No description provided for @welcomeExplainerTileReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Write report'**
+  String get welcomeExplainerTileReport;
+
+  /// No description provided for @welcomeExplainerTileGroceries.
+  ///
+  /// In en, this message translates to:
+  /// **'Groceries'**
+  String get welcomeExplainerTileGroceries;
+
+  /// No description provided for @welcomeExplainerLegendBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get welcomeExplainerLegendBlock;
+
+  /// No description provided for @welcomeExplainerLegendTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Tile'**
+  String get welcomeExplainerLegendTile;
+
   /// Step counter like 3/7
   ///
   /// In en, this message translates to:
