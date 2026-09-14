@@ -659,6 +659,141 @@ class AppLocalizationsDe extends AppLocalizations {
   String get onTime => 'Pünktlich';
 
   @override
+  String get todayStatusPlacedTitle => 'Placed successfully';
+
+  @override
+  String get todayStatusAttentionTitle => 'Need attention';
+
+  @override
+  String get todayStatusLateTitle => 'Running late';
+
+  @override
+  String get todayStatusAttentionHelper =>
+      'These could not fit into today\'s available time.';
+
+  @override
+  String get todayStatusLateHelper =>
+      'Travel time between these and your surrounding tiles means you can\'t get there on schedule.';
+
+  @override
+  String todayStatusTileCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tiles',
+      one: '1 tile',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todayStatusTilesPlaced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tiles completed',
+      one: 'Tile completed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todayStatusTilesNeedAttention => 'Need attention';
+
+  @override
+  String get todayStatusTilesRunningLate => 'Running late';
+
+  @override
+  String get todayStatusEverythingOnTrack => 'Everything is on track';
+
+  @override
+  String get todayStatusEverythingElseOnTrack => 'Everything else is on track';
+
+  @override
+  String get todayStatusOnTrackSubcopy =>
+      'No scheduled tiles are running late.';
+
+  @override
+  String get todayStatusClearDay => 'Your day is clear.';
+
+  @override
+  String get todayStatusPreviewCta => 'Preview a better plan';
+
+  @override
+  String get todayStatusPreviewLoading => 'Preparing preview…';
+
+  @override
+  String get todayStatusPreviewUnavailable =>
+      'Preview couldn\'t be generated. Your plan is unchanged.';
+
+  @override
+  String get todayStatusUntitledTile => 'Untitled tile';
+
+  @override
+  String get todayStatusShowAll => 'Show all';
+
+  @override
+  String todayStatusExpandSection(String section) {
+    return 'Expand $section';
+  }
+
+  @override
+  String todayStatusCollapseSection(String section) {
+    return 'Collapse $section';
+  }
+
+  @override
+  String get todayStatusReasonDueToday => 'Due today';
+
+  @override
+  String get todayStatusReasonNoOpenSlot => 'No open slot';
+
+  @override
+  String get todayStatusReasonTravelInfeasible =>
+      'Travel makes this infeasible';
+
+  @override
+  String get todayStatusReasonOutsideHours => 'Outside available hours';
+
+  @override
+  String get todayStatusReasonDependencyBlocked => 'Waiting on another tile';
+
+  @override
+  String todayStatusReasonNeedsTime(String duration) {
+    return 'Needs $duration';
+  }
+
+  @override
+  String get todayStatusReasonManualHold => 'Needs your decision';
+
+  @override
+  String get todayStatusReasonUnknown => 'Couldn\'t fit';
+
+  @override
+  String todayStatusSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions',
+      one: '1 session',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todayStatusSelectTiles => 'Select tiles';
+
+  @override
+  String todayStatusExpandGroup(String title) {
+    return 'Expand $title sessions';
+  }
+
+  @override
+  String todayStatusCollapseGroup(String title) {
+    return 'Collapse $title sessions';
+  }
+
+  @override
   String get analysis => 'Analyse';
 
   @override
@@ -774,6 +909,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get deleteYourTilerAccountQ => 'Konto löschen?';
 
   @override
+  String get yes => 'Yes';
+
+  @override
   String get no => 'Nein';
 
   @override
@@ -858,11 +996,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get enterAddress => 'Gib deine Adresse ein';
 
   @override
-  String get primaryLocationQuestion =>
-      'Was ist dein Hauptstandort für Arbeit oder Studium?';
+  String get wakeUpTimeQuestion =>
+      'What time do you usually wake up in the morning?';
 
   @override
-  String get useDeviceLocation => 'Standort meines Geräts verwenden';
+  String get workdayStartQuestion =>
+      'What time do you typically start your workday?';
+
+  @override
+  String get primaryLocationQuestion =>
+      'Was ist dein Hauptstandort für Arbeit oder Studium?';
 
   @override
   String get energyLevelDescriptionQuestion =>
@@ -1195,9 +1338,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get aboutTiler => 'Über Tiler';
 
   @override
-  String get howToUseTiler => 'So verwendest du Tiler';
-
-  @override
   String get darkMode => 'Dunkelmodus';
 
   @override
@@ -1226,6 +1366,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get slack => 'Slack';
+
+  @override
+  String get addCalendar => 'Add calendar';
+
+  @override
+  String get calendarConnected => 'Calendar connected';
+
+  @override
+  String get calendarConnectionDeclined => 'Calendar connection was cancelled';
+
+  @override
+  String get calendarConnectionError => 'Could not connect your calendar';
 
   @override
   String get sleepDuration => 'Schafdauer';
@@ -1383,11 +1535,33 @@ class AppLocalizationsDe extends AppLocalizations {
   String get integrationAdd => 'Hinzufügen';
 
   @override
+  String get timeAndLocationTitle => 'Time & Location';
+
+  @override
+  String get timeAndLocationSubTitle =>
+      'Where are you right now?\nWhat is the time over there?';
+
+  @override
   String get timeAndLocationSecondarySubTitle =>
       'Darf Tiler auf deinen Standort zugreifen, um standortbasierte Empfehlungen und Benachrichtigungen bereitzustellen?';
 
   @override
+  String get workProfileQuestion =>
+      'What is your typical daily routine like, set your work hours';
+
+  @override
+  String get personalProfileQuestion =>
+      'Tell us about your ‘me time’ during the week';
+
+  @override
+  String get grabACoffee => 'Grab a coffee';
+
+  @override
   String get recurringTasks => 'Wiederkehrende Aufgaben';
+
+  @override
+  String get recurringTasksQuestion =>
+      'Are there any specific recurring tasks or activities you want to schedule in Tiler?';
 
   @override
   String get yourProfession => 'Dein Beruf?';
@@ -1429,10 +1603,73 @@ class AppLocalizationsDe extends AppLocalizations {
   String get tileSuggestions => 'Kachelvorschläge';
 
   @override
+  String get tileSuggestionsQuestion =>
+      'Select tiles that match your routine and let Tiler optimize your schedule';
+
+  @override
+  String get tileProfiling =>
+      'Tiler is profiling you based on your preferences..';
+
+  @override
+  String get addPlus => 'Add +';
+
+  @override
+  String get personalScheduling => 'Personal scheduling';
+
+  @override
+  String get workPlanning => 'Work planning';
+
+  @override
+  String get teamCoordination => 'Team coordination';
+
+  @override
+  String get fieldBaseCoordination => 'Field-base coordination';
+
+  @override
+  String get academicScheduling => 'Academic scheduling';
+
+  @override
+  String get clientManagement => 'Client management';
+
+  @override
+  String get personalOrWork => 'Personal or Work??';
+
+  @override
   String get personalOrWorkQuestion => 'Wofür wirst du Tiler verwenden?';
 
   @override
   String get enter3chars => 'Gib mindestens 3 Zeichen ein.';
+
+  @override
+  String get tilesVsBlocks => 'Tiles vs Blocks';
+
+  @override
+  String get vsTilesDescription =>
+      'Get auto-generated Tiles for your, workouts,\ndeadlines and block out times events that aren\'t\nflexible.';
+
+  @override
+  String get vsBlocksDescription =>
+      'Blocks are fixed time periods reserved for important tiles that must happen at a specific time and date.';
+
+  @override
+  String get swipeRight => 'Swipe Right>>';
+
+  @override
+  String get swipeRightDescription =>
+      'No more planning from scratch—just swipe\nright, and Tiler fits everything into your\nschedule seamlessly.';
+
+  @override
+  String get googleCalendarAndMore => 'Google Calendar +\nmore calendars';
+
+  @override
+  String get googleCalendarAndMoreDescription =>
+      'Sync your calendars, and let Tiler pull\neverything into one smart timeline.\nNo double booking, no stress';
+
+  @override
+  String get selectSuggestions => 'Select suggestions';
+
+  @override
+  String get typeSomething => 'Type something here';
 
   @override
   String leaveInDurationToArriveOnTime(String duration) {
@@ -2223,85 +2460,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get tutorialNavLetsGo => 'Los geht\'s!';
 
   @override
-  String get welcomeExplainerHeadline => 'Kacheln vs. Blocks';
-
-  @override
-  String get welcomeExplainerSubtitle =>
-      'Ein kurzer Blick darauf, wie Tiler deinen Tag plant.';
-
-  @override
-  String get welcomeExplainerBlocksCaption =>
-      'Blocks sind fest. Sie finden zu einer festen Zeit statt.';
-
-  @override
-  String get welcomeExplainerTilesCaption =>
-      'Kacheln sind flexibel. Tiler passt sie an deine Blocks an.';
-
-  @override
-  String welcomeExplainerReplanCaption(String time) {
-    return 'Zahnarzttermin verschoben auf $time – Tiler plant deine Kacheln darum neu.';
-  }
-
-  @override
-  String get welcomeExplainerMovedBadge => 'Verschoben';
-
-  @override
-  String get welcomeExplainerReplannedBadge => 'Neu geplant';
-
-  @override
-  String get welcomeExplainerBlockStandup => 'Team-Standup';
-
-  @override
-  String get welcomeExplainerBlockDentist => 'Zahnarzt';
-
-  @override
-  String get welcomeExplainerTileWorkout => 'Training';
-
-  @override
-  String get welcomeExplainerTileReport => 'Bericht schreiben';
-
-  @override
-  String get welcomeExplainerTileGroceries => 'Einkaufen';
-
-  @override
-  String get welcomeExplainerLegendBlock => 'Block';
-
-  @override
-  String get welcomeExplainerLegendTile => 'Kachel';
-
-  @override
   String tutorialStepCounter(int current, int total) {
     return '$current/$total';
   }
-
-  @override
-  String get tutorialStepSettingsTilesTitle => 'Kachel-Einstellungen';
-
-  @override
-  String get tutorialStepSettingsTilesBody =>
-      'Deine KI-Einstellungen findest du hier – wie du reist, deine Arbeits- und persönlichen Zeiten und Ausschlusszeiten.';
-
-  @override
-  String get tutorialStepTilePrefsTransportTitle => 'Wie du unterwegs bist';
-
-  @override
-  String get tutorialStepTilePrefsTransportBody =>
-      'Tiler berücksichtigt die Reisezeit zwischen Kacheln anhand deiner bevorzugten Fortbewegungsart.';
-
-  @override
-  String get tutorialStepTilePrefsHoursTitle =>
-      'Arbeits- und persönliche Zeiten';
-
-  @override
-  String get tutorialStepTilePrefsHoursBody =>
-      'Wann Tiler Arbeits- oder persönliche Kacheln planen darf. Tippe auf eines, um ein Profil einzurichten.';
-
-  @override
-  String get tutorialStepTilePrefsBlockOutTitle => 'Ausschlusszeiten';
-
-  @override
-  String get tutorialStepTilePrefsBlockOutBody =>
-      'Bettzeit und Schafdauer – Zeiten, in die Tiler nichts plant.';
 
   @override
   String get chat => 'Chat';
