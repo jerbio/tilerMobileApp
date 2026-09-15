@@ -20,7 +20,6 @@ import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/services/onBoardingHelper.dart';
 import 'package:tuple/tuple.dart';
@@ -667,7 +666,8 @@ class Utility {
           : false;
       List<String> descriptions = autoTileParam['descriptions'];
       List<Duration> durations = autoTileParam['durations'];
-      List<String> imageAsset = List<String>.from(autoTileParam['assets'] ?? []);
+      List<String> imageAsset =
+          List<String>.from(autoTileParam['assets'] ?? []);
 
       for (int descriptionIndex = 0;
           descriptionIndex < descriptions.length;
@@ -825,23 +825,27 @@ class Utility {
     }
   }
 
-  // static Future<bool> checkOnboardingStatus(LocalizationService localizationService) async {
-  //     await Future.delayed(const Duration(milliseconds: Constants.onTextChangeDelayInMs));
-  //     bool shouldSkipOnboarding = await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
-  //     bool isOnboardingValid = await OnBoardingApi(localizationService).areRequiredFieldsValid();
-  //     return shouldSkipOnboarding || isOnboardingValid;
-  // }
-
+  /// Launch gate: true when this device has already finished (or skipped)
+  /// onboarding, so the app goes straight to the schedule; false sends the
+  /// user through the essentials flow.
+  ///
+  /// Local preference read only (product-tour-onboarding-redesign.md,
+  /// section 3.5 / stage 4.1): the legacy `skipOnboarding` flag (old
+  /// installs that skipped the 10-page flow) or the essentials
+  /// `essentialsOnboardingDone` flag (set by Submit and Skip). The previous
+  /// implementation also slept 700ms and asked the server whether the
+  /// onboarding record was complete — a blocking round-trip on every
+  /// launch and sign-in, which this removes. Fails open: if the preference
+  /// store itself cannot be read the user is never trapped in onboarding.
   static Future<bool> checkOnboardingStatus() async {
     try {
-      await Future.delayed(
-          const Duration(milliseconds: Constants.onTextChangeDelayInMs));
-      bool shouldSkipOnboarding =
+      final bool skippedLegacyFlow =
           await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
-      bool isOnboardingvalid = await OnBoardingApi().areRequiredFieldsValid();
-      return shouldSkipOnboarding || isOnboardingvalid;
+      if (skippedLegacyFlow) return true;
+      return await OnBoardingSharedPreferencesHelper
+          .getEssentialsOnboardingDone();
     } catch (e) {
-      print("Error checking onboarding status: $e");
+      debugPrint("Error checking onboarding status: $e");
       return true;
     }
   }

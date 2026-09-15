@@ -56,6 +56,7 @@ import 'package:tiler_app/bloc/tutorial/tutorial_bloc.dart';
 import 'package:tiler_app/bloc/tutorial/tutorial_event.dart';
 import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/components/tutorial/tutorialOverlay.dart';
+import 'package:tiler_app/components/tutorial/tourHost.dart';
 import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 
@@ -579,10 +580,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => TutorialBloc(stepCount: kTutorialStepCount),
-      child: MultiBlocListener(
-          listeners: [
+    return MultiBlocListener(
+        listeners: [
             BlocListener<VibeChatBloc, VibeChatState>(
               listener: (context, state) {
                 setState(() {});
@@ -635,7 +634,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               },
             )
           ],
-          child: _TutorialWrapper(
+          child: TourHost(
+            tourId: TourPreferencesHelper.homeTourId,
+            stepCount: kTutorialStepCount,
             onShowAddTileSheet: (tutorialBloc) => displayDialog(
               MediaQuery.of(context).size,
               isTutorial: true,
@@ -646,57 +647,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 builder: (context, state) {
               return renderAuthorizedUserPageView();
             }),
-          )),
-    );
-  }
-}
-
-/// Auto-triggers the tutorial on first visit when the user
-/// hasn't completed it yet. Also re-triggers after a reset
-/// from Settings → "How to use Tiler".
-class _TutorialWrapper extends StatefulWidget {
-  final Widget child;
-  final Future<void> Function(TutorialBloc bloc)? onShowAddTileSheet;
-  final VoidCallback? onDismissAddTileSheet;
-  const _TutorialWrapper({
-    required this.child,
-    this.onShowAddTileSheet,
-    this.onDismissAddTileSheet,
-  });
-
-  @override
-  State<_TutorialWrapper> createState() => _TutorialWrapperState();
-}
-
-class _TutorialWrapperState extends State<_TutorialWrapper> {
-  bool _tutorialChecked = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAndStartTutorial();
-  }
-
-  void _checkAndStartTutorial() {
-    TutorialPreferencesHelper.hasCompletedTutorial().then((completed) {
-      if (!completed && mounted && !_tutorialChecked) {
-        _tutorialChecked = true;
-        // Delay to let the schedule render first
-        Future.delayed(Duration(milliseconds: 1200), () {
-          if (mounted) {
-            context.read<TutorialBloc>().add(StartTutorialEvent());
-          }
-        });
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TutorialOverlay(
-      onShowAddTileSheet: widget.onShowAddTileSheet,
-      onDismissAddTileSheet: widget.onDismissAddTileSheet,
-      child: widget.child,
+          ),
     );
   }
 }

@@ -220,7 +220,7 @@ class TutorialTooltipWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                SizedBox(width: 8),
+                SizedBox(width: 4),
                 ElevatedButton(
                   onPressed: onNext,
                   style: ElevatedButton.styleFrom(
@@ -229,7 +229,10 @@ class TutorialTooltipWidget extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                    // Tight padding so Skip + Back + the primary label
+                    // (longest on the last step: "Let's Go!") always fit
+                    // the 360-wide tooltip card.
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   ),
                   child: Text(
                     isLastStep ? l10n.tutorialNavLetsGo : l10n.tutorialNavNext,

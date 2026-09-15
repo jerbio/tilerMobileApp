@@ -7,6 +7,7 @@ import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/components/tutorial/tours/settingsTour.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -19,6 +20,7 @@ import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.d
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/themerHelper.dart';
+import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
@@ -94,6 +96,7 @@ class Settings extends StatelessWidget {
               icon: 'assets/icons/settings/TilePreferences.svg',
               title: AppLocalizations.of(context)!.tilePreferences,
               color: textColor,
+              key: SettingsTourKeys.tilePreferencesTileKey,
               onTap: () => Navigator.pushNamed(context, '/tilePreferences'),
             ),
             _buildListTile(
@@ -128,6 +131,12 @@ class Settings extends StatelessWidget {
               title: AppLocalizations.of(context)!.feedback,
               color: textColor,
               onTap: () => Navigator.pushNamed(context, '/Feedback'),
+            ),
+            _buildListTile(
+              icon: 'assets/icons/settings/HowToUseTiler.svg',
+              title: AppLocalizations.of(context)!.howToUseTiler,
+              color: textColor,
+              onTap: _onHowToUseTiler,
             ),
             // _buildListTile(
             //   icon: 'assets/icons/settings/AboutTiler.svg',
@@ -178,12 +187,27 @@ class Settings extends StatelessWidget {
     );
   }
 
+  /// "How to use Tiler" (product-tour-onboarding-redesign.md, section 1
+  /// "Manual replay" + Phase 2 item 4): replay-all. Clears the completion
+  /// flag of every registered tour on this device so each tour replays the
+  /// next time its own surface is visited — the home tour on the next home
+  /// visit, the settings tour on the next settings visit. Completion state
+  /// is per-tour in [TourPreferencesHelper]; the in-memory TourCoordinator
+  /// only gates concurrent tours, so a tour that was blocked while another
+  /// was active also gets its chance.
+  void _onHowToUseTiler() {
+    AnalysticsSignal.send('SETTINGS_REPLAY_TOURS');
+    TourPreferencesHelper.resetTours();
+  }
+
   Widget _buildListTile(
       {required String icon,
       required String title,
       required Color color,
-      Function()? onTap}) {
+      Function()? onTap,
+      Key? key}) {
     return ListTile(
+        key: key,
         leading: SvgPicture.asset(
           icon,
           colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
