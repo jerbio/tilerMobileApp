@@ -658,29 +658,29 @@ class AppLocalizationsNl extends AppLocalizations {
   String get onTime => 'Op tijd';
 
   @override
-  String get todayStatusPlacedTitle => 'Placed successfully';
+  String get todayStatusPlacedTitle => 'Met succes geplaatst';
 
   @override
-  String get todayStatusAttentionTitle => 'Need attention';
+  String get todayStatusAttentionTitle => 'Vereist aandacht';
 
   @override
-  String get todayStatusLateTitle => 'Running late';
+  String get todayStatusLateTitle => 'Te laat';
 
   @override
   String get todayStatusAttentionHelper =>
-      'These could not fit into today\'s available time.';
+      'Deze pasten niet in de beschikbare tijd van vandaag.';
 
   @override
   String get todayStatusLateHelper =>
-      'Travel time between these and your surrounding tiles means you can\'t get there on schedule.';
+      'De reistijd tussen deze en uw andere tegeltjes betekent dat u niet op tijd kunt komen.';
 
   @override
   String todayStatusTileCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tiles',
-      one: '1 tile',
+      other: '$count tegeltjes',
+      one: '1 tegeltje',
     );
     return '$_temp0';
   }
@@ -690,106 +690,107 @@ class AppLocalizationsNl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Tiles completed',
-      one: 'Tile completed',
+      other: 'Tegeltjes voltooid',
+      one: 'Tegeltje voltooid',
     );
     return '$_temp0';
   }
 
   @override
-  String get todayStatusTilesNeedAttention => 'Need attention';
+  String get todayStatusTilesNeedAttention => 'Vereist aandacht';
 
   @override
-  String get todayStatusTilesRunningLate => 'Running late';
+  String get todayStatusTilesRunningLate => 'Te laat';
 
   @override
-  String get todayStatusEverythingOnTrack => 'Everything is on track';
+  String get todayStatusEverythingOnTrack => 'Alles loopt op schema';
 
   @override
-  String get todayStatusEverythingElseOnTrack => 'Everything else is on track';
+  String get todayStatusEverythingElseOnTrack => 'De rest loopt op schema';
 
   @override
   String get todayStatusOnTrackSubcopy =>
-      'No scheduled tiles are running late.';
+      'Geen geplande tegeltjes lopen achter.';
 
   @override
-  String get todayStatusClearDay => 'Your day is clear.';
+  String get todayStatusClearDay => 'Uw dag is vrij.';
 
   @override
-  String get todayStatusPreviewCta => 'Preview a better plan';
+  String get todayStatusPreviewCta => 'Bekijk een beter plan';
 
   @override
-  String get todayStatusPreviewLoading => 'Preparing preview…';
+  String get todayStatusPreviewLoading => 'Voorvertoning voorbereiden…';
 
   @override
   String get todayStatusPreviewUnavailable =>
-      'Preview couldn\'t be generated. Your plan is unchanged.';
+      'De voorvertoning kon niet worden gegenereerd. Uw plan blijft ongewijzigd.';
 
   @override
-  String get todayStatusUntitledTile => 'Untitled tile';
+  String get todayStatusUntitledTile => 'Tegeltje zonder titel';
 
   @override
-  String get todayStatusShowAll => 'Show all';
+  String get todayStatusShowAll => 'Alles tonen';
 
   @override
   String todayStatusExpandSection(String section) {
-    return 'Expand $section';
+    return '$section uitvouwen';
   }
 
   @override
   String todayStatusCollapseSection(String section) {
-    return 'Collapse $section';
+    return '$section inklappen';
   }
 
   @override
-  String get todayStatusReasonDueToday => 'Due today';
+  String get todayStatusReasonDueToday => 'Vervalt vandaag';
 
   @override
-  String get todayStatusReasonNoOpenSlot => 'No open slot';
+  String get todayStatusReasonNoOpenSlot => 'Geen vrij slot';
 
   @override
   String get todayStatusReasonTravelInfeasible =>
-      'Travel makes this infeasible';
+      'Reistijd maakt dit onmogelijk';
 
   @override
-  String get todayStatusReasonOutsideHours => 'Outside available hours';
+  String get todayStatusReasonOutsideHours => 'Buiten de beschikbare uren';
 
   @override
-  String get todayStatusReasonDependencyBlocked => 'Waiting on another tile';
+  String get todayStatusReasonDependencyBlocked =>
+      'Wacht op een ander tegeltje';
 
   @override
   String todayStatusReasonNeedsTime(String duration) {
-    return 'Needs $duration';
+    return 'Vereist $duration';
   }
 
   @override
-  String get todayStatusReasonManualHold => 'Needs your decision';
+  String get todayStatusReasonManualHold => 'Vereist uw beslissing';
 
   @override
-  String get todayStatusReasonUnknown => 'Couldn\'t fit';
+  String get todayStatusReasonUnknown => 'Kon niet worden ingepast';
 
   @override
   String todayStatusSessionCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions',
-      one: '1 session',
+      other: '$count sessies',
+      one: '1 sessie',
     );
     return '$_temp0';
   }
 
   @override
-  String get todayStatusSelectTiles => 'Select tiles';
+  String get todayStatusSelectTiles => 'Tegeltjes selecteren';
 
   @override
   String todayStatusExpandGroup(String title) {
-    return 'Expand $title sessions';
+    return 'Sessies van $title uitvouwen';
   }
 
   @override
   String todayStatusCollapseGroup(String title) {
-    return 'Collapse $title sessions';
+    return 'Sessies van $title inklappen';
   }
 
   @override
@@ -908,7 +909,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get deleteYourTilerAccountQ => 'Account verwijderen?';
 
   @override
-  String get yes => 'Yes';
+  String get yes => 'Ja';
 
   @override
   String get no => 'Nee';
@@ -996,11 +997,10 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get wakeUpTimeQuestion =>
-      'What time do you usually wake up in the morning?';
+      'Om welk uur staat u \'s ochtends meestal op?';
 
   @override
-  String get workdayStartQuestion =>
-      'What time do you typically start your workday?';
+  String get workdayStartQuestion => 'Om welk uur begint uw werkdag doorgaans?';
 
   @override
   String get primaryLocationQuestion =>
@@ -1367,16 +1367,17 @@ class AppLocalizationsNl extends AppLocalizations {
   String get slack => 'Slack';
 
   @override
-  String get addCalendar => 'Add calendar';
+  String get addCalendar => 'Agenda toevoegen';
 
   @override
-  String get calendarConnected => 'Calendar connected';
+  String get calendarConnected => 'Agenda verbonden';
 
   @override
-  String get calendarConnectionDeclined => 'Calendar connection was cancelled';
+  String get calendarConnectionDeclined =>
+      'Verbinding met de agenda werd geannuleerd';
 
   @override
-  String get calendarConnectionError => 'Could not connect your calendar';
+  String get calendarConnectionError => 'Uw agenda kon niet worden verbonden';
 
   @override
   String get sleepDuration => 'Slaaptijd';
@@ -1530,11 +1531,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get integrationAdd => 'Toevoegen';
 
   @override
-  String get timeAndLocationTitle => 'Time & Location';
+  String get timeAndLocationTitle => 'Tijd & Locatie';
 
   @override
   String get timeAndLocationSubTitle =>
-      'Where are you right now?\nWhat is the time over there?';
+      'Waar bent u nu?\nHoe laat is het daar?';
 
   @override
   String get timeAndLocationSecondarySubTitle =>
@@ -1542,21 +1543,21 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get workProfileQuestion =>
-      'What is your typical daily routine like, set your work hours';
+      'Wat is uw dagelijkse routine? Stel uw werktijden in';
 
   @override
   String get personalProfileQuestion =>
-      'Tell us about your ‘me time’ during the week';
+      'Vertel ons over uw me-time tijdens de week';
 
   @override
-  String get grabACoffee => 'Grab a coffee';
+  String get grabACoffee => 'Een koffie pakken';
 
   @override
   String get recurringTasks => 'Herhalende taken';
 
   @override
   String get recurringTasksQuestion =>
-      'Are there any specific recurring tasks or activities you want to schedule in Tiler?';
+      'Heeft u specifieke terugkerende taken of activiteiten die u in Tiler wilt plannen?';
 
   @override
   String get yourProfession => 'Uw beroep?';
@@ -1599,35 +1600,35 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get tileSuggestionsQuestion =>
-      'Select tiles that match your routine and let Tiler optimize your schedule';
+      'Selecteer tegeltjes die bij uw routine passen en laat Tiler uw rooster optimaliseren';
 
   @override
   String get tileProfiling =>
-      'Tiler is profiling you based on your preferences..';
+      'Tiler bouwt uw profiel op basis van uw voorkeuren…';
 
   @override
-  String get addPlus => 'Add +';
+  String get addPlus => 'Toevoegen +';
 
   @override
-  String get personalScheduling => 'Personal scheduling';
+  String get personalScheduling => 'Persoonlijke planning';
 
   @override
-  String get workPlanning => 'Work planning';
+  String get workPlanning => 'Werkplanning';
 
   @override
-  String get teamCoordination => 'Team coordination';
+  String get teamCoordination => 'Teamcoördinatie';
 
   @override
-  String get fieldBaseCoordination => 'Field-base coordination';
+  String get fieldBaseCoordination => 'Coördinatie op locatie';
 
   @override
-  String get academicScheduling => 'Academic scheduling';
+  String get academicScheduling => 'Academische planning';
 
   @override
-  String get clientManagement => 'Client management';
+  String get clientManagement => 'Klantbeheer';
 
   @override
-  String get personalOrWork => 'Personal or Work??';
+  String get personalOrWork => 'Persoonlijk of werk??';
 
   @override
   String get personalOrWorkQuestion => 'Waar gaat u Tiler voor gebruiken?';
@@ -1636,35 +1637,35 @@ class AppLocalizationsNl extends AppLocalizations {
   String get enter3chars => 'Voer minstens 3 tekens in.';
 
   @override
-  String get tilesVsBlocks => 'Tiles vs Blocks';
+  String get tilesVsBlocks => 'Tegeltjes vs. Blokken';
 
   @override
   String get vsTilesDescription =>
-      'Get auto-generated Tiles for your, workouts,\ndeadlines and block out times events that aren\'t\nflexible.';
+      'Ontvang automatisch gegenereerde tegeltjes voor uw\nworkouts en deadlines, en blokkeer tijd in voor\nevenementen die niet flexibel zijn.';
 
   @override
   String get vsBlocksDescription =>
-      'Blocks are fixed time periods reserved for important tiles that must happen at a specific time and date.';
+      'Blokken zijn vaste tijdperiodes die zijn gereserveerd voor belangrijke tegeltjes die op een specifiek moment en een specifieke datum moeten plaatsvinden.';
 
   @override
-  String get swipeRight => 'Swipe Right>>';
+  String get swipeRight => 'Veeg naar rechts>>';
 
   @override
   String get swipeRightDescription =>
-      'No more planning from scratch—just swipe\nright, and Tiler fits everything into your\nschedule seamlessly.';
+      'Geen planning vanaf nul meer — veeg gewoon\nnaar rechts, en Tiler past alles\nnaadloos in uw rooster in.';
 
   @override
-  String get googleCalendarAndMore => 'Google Calendar +\nmore calendars';
+  String get googleCalendarAndMore => 'Google Agenda +\nmeer agenda\'s';
 
   @override
   String get googleCalendarAndMoreDescription =>
-      'Sync your calendars, and let Tiler pull\neverything into one smart timeline.\nNo double booking, no stress';
+      'Synchroniseer uw agenda\'s en laat Tiler\nalles in één slimme tijdslijn bundelen.\nGeen dubbele boekingen, geen stress';
 
   @override
-  String get selectSuggestions => 'Select suggestions';
+  String get selectSuggestions => 'Suggesties selecteren';
 
   @override
-  String get typeSomething => 'Type something here';
+  String get typeSomething => 'Typ hier iets';
 
   @override
   String leaveInDurationToArriveOnTime(String duration) {
