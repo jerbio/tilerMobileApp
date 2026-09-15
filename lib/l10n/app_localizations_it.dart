@@ -659,29 +659,29 @@ class AppLocalizationsIt extends AppLocalizations {
   String get onTime => 'In orario';
 
   @override
-  String get todayStatusPlacedTitle => 'Placed successfully';
+  String get todayStatusPlacedTitle => 'Inseriti con successo';
 
   @override
-  String get todayStatusAttentionTitle => 'Need attention';
+  String get todayStatusAttentionTitle => 'Richiede attenzione';
 
   @override
-  String get todayStatusLateTitle => 'Running late';
+  String get todayStatusLateTitle => 'In ritardo';
 
   @override
   String get todayStatusAttentionHelper =>
-      'These could not fit into today\'s available time.';
+      'Non è stato possibile inserirli nel tempo disponibile di oggi.';
 
   @override
   String get todayStatusLateHelper =>
-      'Travel time between these and your surrounding tiles means you can\'t get there on schedule.';
+      'Il tempo di spostamento tra questi e i blocchi circostanti fa sì che non potrai arrivare in orario.';
 
   @override
   String todayStatusTileCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tiles',
-      one: '1 tile',
+      other: '$count blocchi',
+      one: '1 blocco',
     );
     return '$_temp0';
   }
@@ -691,106 +691,108 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Tiles completed',
-      one: 'Tile completed',
+      other: 'Blocchi completati',
+      one: 'Blocco completato',
     );
     return '$_temp0';
   }
 
   @override
-  String get todayStatusTilesNeedAttention => 'Need attention';
+  String get todayStatusTilesNeedAttention => 'Richiedono attenzione';
 
   @override
-  String get todayStatusTilesRunningLate => 'Running late';
+  String get todayStatusTilesRunningLate => 'In ritardo';
 
   @override
-  String get todayStatusEverythingOnTrack => 'Everything is on track';
+  String get todayStatusEverythingOnTrack => 'Tutto è in carreggiata';
 
   @override
-  String get todayStatusEverythingElseOnTrack => 'Everything else is on track';
+  String get todayStatusEverythingElseOnTrack =>
+      'Tutto il resto è in carreggiata';
 
   @override
   String get todayStatusOnTrackSubcopy =>
-      'No scheduled tiles are running late.';
+      'Nessun blocco pianificato è in ritardo.';
 
   @override
-  String get todayStatusClearDay => 'Your day is clear.';
+  String get todayStatusClearDay => 'La tua giornata è libera.';
 
   @override
-  String get todayStatusPreviewCta => 'Preview a better plan';
+  String get todayStatusPreviewCta => 'Visualizza un piano migliore';
 
   @override
-  String get todayStatusPreviewLoading => 'Preparing preview…';
+  String get todayStatusPreviewLoading => 'Preparazione dell\'anteprima…';
 
   @override
   String get todayStatusPreviewUnavailable =>
-      'Preview couldn\'t be generated. Your plan is unchanged.';
+      'L\'anteprima non può essere generata. Il tuo piano non è stato modificato.';
 
   @override
-  String get todayStatusUntitledTile => 'Untitled tile';
+  String get todayStatusUntitledTile => 'Blocco senza titolo';
 
   @override
-  String get todayStatusShowAll => 'Show all';
+  String get todayStatusShowAll => 'Mostra tutto';
 
   @override
   String todayStatusExpandSection(String section) {
-    return 'Expand $section';
+    return 'Espandi $section';
   }
 
   @override
   String todayStatusCollapseSection(String section) {
-    return 'Collapse $section';
+    return 'Comprimi $section';
   }
 
   @override
-  String get todayStatusReasonDueToday => 'Due today';
+  String get todayStatusReasonDueToday => 'Scadenza oggi';
 
   @override
-  String get todayStatusReasonNoOpenSlot => 'No open slot';
+  String get todayStatusReasonNoOpenSlot => 'Nessuno slot libero';
 
   @override
   String get todayStatusReasonTravelInfeasible =>
-      'Travel makes this infeasible';
+      'Lo spostamento lo rende impossibile';
 
   @override
-  String get todayStatusReasonOutsideHours => 'Outside available hours';
+  String get todayStatusReasonOutsideHours => 'Fuori dalle ore disponibili';
 
   @override
-  String get todayStatusReasonDependencyBlocked => 'Waiting on another tile';
+  String get todayStatusReasonDependencyBlocked =>
+      'In attesa di un altro blocco';
 
   @override
   String todayStatusReasonNeedsTime(String duration) {
-    return 'Needs $duration';
+    return 'Richiede $duration';
   }
 
   @override
-  String get todayStatusReasonManualHold => 'Needs your decision';
+  String get todayStatusReasonManualHold => 'Richiede la tua decisione';
 
   @override
-  String get todayStatusReasonUnknown => 'Couldn\'t fit';
+  String get todayStatusReasonUnknown => 'Non ha trovato spazio';
 
   @override
   String todayStatusSessionCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions',
-      one: '1 session',
+      other: '$count sessioni',
+      one: '1 sessione',
     );
     return '$_temp0';
   }
 
   @override
-  String get todayStatusSelectTiles => 'Select tiles';
+  String get todayStatusSelectTiles => 'Seleziona blocchi';
 
   @override
   String todayStatusExpandGroup(String title) {
-    return 'Expand $title sessions';
+    return 'Espandi le sessioni di $title';
   }
 
   @override
   String todayStatusCollapseGroup(String title) {
-    return 'Collapse $title sessions';
+    return 'Comprimi le sessioni di $title';
   }
 
   @override
@@ -908,7 +910,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get deleteYourTilerAccountQ => 'Eliminare l\'account?';
 
   @override
-  String get yes => 'Yes';
+  String get yes => 'Sì';
 
   @override
   String get no => 'No';
@@ -995,12 +997,11 @@ class AppLocalizationsIt extends AppLocalizations {
   String get enterAddress => 'Inserisci il tuo indirizzo';
 
   @override
-  String get wakeUpTimeQuestion =>
-      'What time do you usually wake up in the morning?';
+  String get wakeUpTimeQuestion => 'A che ora ti svegli di solito la mattina?';
 
   @override
   String get workdayStartQuestion =>
-      'What time do you typically start your workday?';
+      'A che ora inizi di solito la tua giornata lavorativa?';
 
   @override
   String get primaryLocationQuestion =>
@@ -1366,16 +1367,18 @@ class AppLocalizationsIt extends AppLocalizations {
   String get slack => 'Slack';
 
   @override
-  String get addCalendar => 'Add calendar';
+  String get addCalendar => 'Aggiungi calendario';
 
   @override
-  String get calendarConnected => 'Calendar connected';
+  String get calendarConnected => 'Calendario connesso';
 
   @override
-  String get calendarConnectionDeclined => 'Calendar connection was cancelled';
+  String get calendarConnectionDeclined =>
+      'La connessione al calendario è stata annullata';
 
   @override
-  String get calendarConnectionError => 'Could not connect your calendar';
+  String get calendarConnectionError =>
+      'Impossibile connettere il tuo calendario';
 
   @override
   String get sleepDuration => 'Durata del sonno';
@@ -1532,11 +1535,11 @@ class AppLocalizationsIt extends AppLocalizations {
   String get integrationAdd => 'Aggiungi';
 
   @override
-  String get timeAndLocationTitle => 'Time & Location';
+  String get timeAndLocationTitle => 'Orario e posizione';
 
   @override
   String get timeAndLocationSubTitle =>
-      'Where are you right now?\nWhat is the time over there?';
+      'Dove ti trovi adesso?\nChe ore sono là?';
 
   @override
   String get timeAndLocationSecondarySubTitle =>
@@ -1544,21 +1547,21 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get workProfileQuestion =>
-      'What is your typical daily routine like, set your work hours';
+      'Com\'è la tua routine quotidiana? Imposta le tue ore lavorative';
 
   @override
   String get personalProfileQuestion =>
-      'Tell us about your ‘me time’ during the week';
+      'Raccontaci del tuo tempo per te durante la settimana';
 
   @override
-  String get grabACoffee => 'Grab a coffee';
+  String get grabACoffee => 'Prenditi un caffè';
 
   @override
   String get recurringTasks => 'Compiti ricorrenti';
 
   @override
   String get recurringTasksQuestion =>
-      'Are there any specific recurring tasks or activities you want to schedule in Tiler?';
+      'Ci sono attività ricorrenti specifiche che vuoi pianificare in Tiler?';
 
   @override
   String get yourProfession => 'La tua professione?';
@@ -1601,35 +1604,35 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get tileSuggestionsQuestion =>
-      'Select tiles that match your routine and let Tiler optimize your schedule';
+      'Seleziona i blocchi in linea con la tua routine e lascia che Tiler ottimizzi la pianificazione';
 
   @override
   String get tileProfiling =>
-      'Tiler is profiling you based on your preferences..';
+      'Tiler sta creando il tuo profilo in base alle tue preferenze…';
 
   @override
-  String get addPlus => 'Add +';
+  String get addPlus => 'Aggiungi +';
 
   @override
-  String get personalScheduling => 'Personal scheduling';
+  String get personalScheduling => 'Pianificazione personale';
 
   @override
-  String get workPlanning => 'Work planning';
+  String get workPlanning => 'Pianificazione del lavoro';
 
   @override
-  String get teamCoordination => 'Team coordination';
+  String get teamCoordination => 'Coordinazione di squadra';
 
   @override
-  String get fieldBaseCoordination => 'Field-base coordination';
+  String get fieldBaseCoordination => 'Coordinazione sul campo';
 
   @override
-  String get academicScheduling => 'Academic scheduling';
+  String get academicScheduling => 'Pianificazione degli studi';
 
   @override
-  String get clientManagement => 'Client management';
+  String get clientManagement => 'Gestione dei clienti';
 
   @override
-  String get personalOrWork => 'Personal or Work??';
+  String get personalOrWork => 'Personale o lavoro??';
 
   @override
   String get personalOrWorkQuestion => 'A cosa userai Tiler?';
@@ -1638,35 +1641,35 @@ class AppLocalizationsIt extends AppLocalizations {
   String get enter3chars => 'Inserisci almeno 3 caratteri.';
 
   @override
-  String get tilesVsBlocks => 'Tiles vs Blocks';
+  String get tilesVsBlocks => 'Blocchi vs Appuntamenti';
 
   @override
   String get vsTilesDescription =>
-      'Get auto-generated Tiles for your, workouts,\ndeadlines and block out times events that aren\'t\nflexible.';
+      'Ottieni blocchi generati automaticamente per i tuoi\nallenamenti e le scadenze, e blocca le fasce orarie per\ngli eventi che non sono flessibili.';
 
   @override
   String get vsBlocksDescription =>
-      'Blocks are fixed time periods reserved for important tiles that must happen at a specific time and date.';
+      'Gli appuntamenti sono fasce orarie fisse riservate a blocchi importanti che devono avvenire in una data e un\'ora specifiche.';
 
   @override
-  String get swipeRight => 'Swipe Right>>';
+  String get swipeRight => 'Scorri a destra>>';
 
   @override
   String get swipeRightDescription =>
-      'No more planning from scratch—just swipe\nright, and Tiler fits everything into your\nschedule seamlessly.';
+      'Niente più pianificazione da zero: scorri\nsemplicemente a destra e Tiler inserisce tutto\nnella tua pianificazione, senza sforzo.';
 
   @override
-  String get googleCalendarAndMore => 'Google Calendar +\nmore calendars';
+  String get googleCalendarAndMore => 'Google Calendar +\npiù calendari';
 
   @override
   String get googleCalendarAndMoreDescription =>
-      'Sync your calendars, and let Tiler pull\neverything into one smart timeline.\nNo double booking, no stress';
+      'Sincronizza i tuoi calendari e lascia che Tiler\nraccolga tutto in una sola linea temporale intelligente.\nNiente doppie prenotazioni, zero stress';
 
   @override
-  String get selectSuggestions => 'Select suggestions';
+  String get selectSuggestions => 'Seleziona suggerimenti';
 
   @override
-  String get typeSomething => 'Type something here';
+  String get typeSomething => 'Scrivi qualcosa qui';
 
   @override
   String leaveInDurationToArriveOnTime(String duration) {
