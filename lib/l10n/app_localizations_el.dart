@@ -658,29 +658,29 @@ class AppLocalizationsEl extends AppLocalizations {
   String get onTime => 'Στις καθορισμένες ώρες';
 
   @override
-  String get todayStatusPlacedTitle => 'Placed successfully';
+  String get todayStatusPlacedTitle => 'Τοποθετήθηκε επιτυχώς';
 
   @override
-  String get todayStatusAttentionTitle => 'Need attention';
+  String get todayStatusAttentionTitle => 'Χρειάζεται προσοχή';
 
   @override
-  String get todayStatusLateTitle => 'Running late';
+  String get todayStatusLateTitle => 'Καθυστέρηση';
 
   @override
   String get todayStatusAttentionHelper =>
-      'These could not fit into today\'s available time.';
+      'Δεν μπόρεσαν να χωρέσουν στον διαθέσιμο χρόνο σήμερα.';
 
   @override
   String get todayStatusLateHelper =>
-      'Travel time between these and your surrounding tiles means you can\'t get there on schedule.';
+      'Ο χρόνος μετακίνησης ανάμεσα σε αυτά και στα γύρω πλακίδια σημαίνει ότι δεν μπορείτε να φτάσετε εγκαίρως.';
 
   @override
   String todayStatusTileCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tiles',
-      one: '1 tile',
+      other: '$count πλακίδια',
+      one: '1 πλακίδιο',
     );
     return '$_temp0';
   }
@@ -690,106 +690,107 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Tiles completed',
-      one: 'Tile completed',
+      other: 'Πλακίδια ολοκληρωμένα',
+      one: 'Πλακίδιο ολοκληρωμένο',
     );
     return '$_temp0';
   }
 
   @override
-  String get todayStatusTilesNeedAttention => 'Need attention';
+  String get todayStatusTilesNeedAttention => 'Χρειάζεται προσοχή';
 
   @override
-  String get todayStatusTilesRunningLate => 'Running late';
+  String get todayStatusTilesRunningLate => 'Καθυστέρηση';
 
   @override
-  String get todayStatusEverythingOnTrack => 'Everything is on track';
+  String get todayStatusEverythingOnTrack => 'Όλα σύμφωνα με το πρόγραμμα';
 
   @override
-  String get todayStatusEverythingElseOnTrack => 'Everything else is on track';
+  String get todayStatusEverythingElseOnTrack =>
+      'Τα υπόλοιπα σύμφωνα με το πρόγραμμα';
 
   @override
   String get todayStatusOnTrackSubcopy =>
-      'No scheduled tiles are running late.';
+      'Κανένα προγραμματισμένο πλακίδιο δεν καθυστερεί.';
 
   @override
-  String get todayStatusClearDay => 'Your day is clear.';
+  String get todayStatusClearDay => 'Η μέρα σας είναι ελεύθερη.';
 
   @override
-  String get todayStatusPreviewCta => 'Preview a better plan';
+  String get todayStatusPreviewCta => 'Προεπισκόπηση βελτιωμένου προγράμματος';
 
   @override
-  String get todayStatusPreviewLoading => 'Preparing preview…';
+  String get todayStatusPreviewLoading => 'Προετοιμασία προεπισκόπησης…';
 
   @override
   String get todayStatusPreviewUnavailable =>
-      'Preview couldn\'t be generated. Your plan is unchanged.';
+      'Δεν ήταν δυνατή η δημιουργία της προεπισκόπησης. Το πρόγραμμα σας παραμένει χωρίς αλλαγές.';
 
   @override
-  String get todayStatusUntitledTile => 'Untitled tile';
+  String get todayStatusUntitledTile => 'Πλακίδιο χωρίς τίτλο';
 
   @override
-  String get todayStatusShowAll => 'Show all';
+  String get todayStatusShowAll => 'Εμφάνιση όλων';
 
   @override
   String todayStatusExpandSection(String section) {
-    return 'Expand $section';
+    return 'Ανάπτυξη $section';
   }
 
   @override
   String todayStatusCollapseSection(String section) {
-    return 'Collapse $section';
+    return 'Σύμπτυξη $section';
   }
 
   @override
-  String get todayStatusReasonDueToday => 'Due today';
+  String get todayStatusReasonDueToday => 'Πρόθεσμο σήμερα';
 
   @override
-  String get todayStatusReasonNoOpenSlot => 'No open slot';
+  String get todayStatusReasonNoOpenSlot => 'Δεν υπάρχει ελεύθερη ώρα';
 
   @override
   String get todayStatusReasonTravelInfeasible =>
-      'Travel makes this infeasible';
+      'Η μετακίνηση το καθιστά αδύνατο';
 
   @override
-  String get todayStatusReasonOutsideHours => 'Outside available hours';
+  String get todayStatusReasonOutsideHours => 'Εκτός των διαθεσίμων ωρών';
 
   @override
-  String get todayStatusReasonDependencyBlocked => 'Waiting on another tile';
+  String get todayStatusReasonDependencyBlocked => 'Αναμονή για άλλο πλακίδιο';
 
   @override
   String todayStatusReasonNeedsTime(String duration) {
-    return 'Needs $duration';
+    return 'Χρειάζεται $duration';
   }
 
   @override
-  String get todayStatusReasonManualHold => 'Needs your decision';
+  String get todayStatusReasonManualHold => 'Χρειάζεται την απόφασή σας';
 
   @override
-  String get todayStatusReasonUnknown => 'Couldn\'t fit';
+  String get todayStatusReasonUnknown => 'Δεν χωρέσει';
 
   @override
   String todayStatusSessionCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count sessions',
-      one: '1 session',
+      other: '$count σεάνς',
+      one: '1 σεάνς',
     );
     return '$_temp0';
   }
 
   @override
-  String get todayStatusSelectTiles => 'Select tiles';
+  String get todayStatusSelectTiles => 'Επιλογή πλακιδίων';
 
   @override
   String todayStatusExpandGroup(String title) {
-    return 'Expand $title sessions';
+    return 'Ανάπτυξη των σεάνς του $title';
   }
 
   @override
   String todayStatusCollapseGroup(String title) {
-    return 'Collapse $title sessions';
+    return 'Σύμπτυξη των σεάνς του $title';
   }
 
   @override
@@ -907,7 +908,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get deleteYourTilerAccountQ => 'Διαγραφή Λογαριασμού;';
 
   @override
-  String get yes => 'Yes';
+  String get yes => 'Ναι';
 
   @override
   String get no => 'Όχι';
@@ -994,12 +995,11 @@ class AppLocalizationsEl extends AppLocalizations {
   String get enterAddress => 'Εισάγετε τη διεύθυνσή σας';
 
   @override
-  String get wakeUpTimeQuestion =>
-      'What time do you usually wake up in the morning?';
+  String get wakeUpTimeQuestion => 'Σε ποια ώρα ξυπνάτε συνήθως το πρωί;';
 
   @override
   String get workdayStartQuestion =>
-      'What time do you typically start your workday?';
+      'Σε ποια ώρα ξεκινάτε συνήθως τη μέρα εργασίας σας;';
 
   @override
   String get primaryLocationQuestion =>
@@ -1364,16 +1364,17 @@ class AppLocalizationsEl extends AppLocalizations {
   String get slack => 'Slack';
 
   @override
-  String get addCalendar => 'Add calendar';
+  String get addCalendar => 'Προσθήκη ατζέντας';
 
   @override
-  String get calendarConnected => 'Calendar connected';
+  String get calendarConnected => 'Η ατζέντα συνδέθηκε';
 
   @override
-  String get calendarConnectionDeclined => 'Calendar connection was cancelled';
+  String get calendarConnectionDeclined => 'Η σύνδεση με την ατζέντα ακυρώθηκε';
 
   @override
-  String get calendarConnectionError => 'Could not connect your calendar';
+  String get calendarConnectionError =>
+      'Δεν ήταν δυνατή η σύνδεση με την ατζέντα σας';
 
   @override
   String get sleepDuration => 'Διάρκεια ύπνου';
@@ -1529,11 +1530,11 @@ class AppLocalizationsEl extends AppLocalizations {
   String get integrationAdd => 'Προσθήκη';
 
   @override
-  String get timeAndLocationTitle => 'Time & Location';
+  String get timeAndLocationTitle => 'Ώρα & Τοποθεσία';
 
   @override
   String get timeAndLocationSubTitle =>
-      'Where are you right now?\nWhat is the time over there?';
+      'Πού βρίσκεστε αυτή τη στιγμή;\nΠοια ώρα είναι εκεί;';
 
   @override
   String get timeAndLocationSecondarySubTitle =>
@@ -1541,21 +1542,21 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get workProfileQuestion =>
-      'What is your typical daily routine like, set your work hours';
+      'Ποια είναι η τυπική σας καθημερινή ρουτίνα; Ορίστε τις ώρες εργασίας σας';
 
   @override
   String get personalProfileQuestion =>
-      'Tell us about your ‘me time’ during the week';
+      'Πείτε μας για τον χρόνο που αφιερώνετε στον εαυτό σας την εβδομάδα';
 
   @override
-  String get grabACoffee => 'Grab a coffee';
+  String get grabACoffee => 'Να πάρετε έναν καφέ';
 
   @override
   String get recurringTasks => 'Επαναλαμβανόμενες εργασίες';
 
   @override
   String get recurringTasksQuestion =>
-      'Are there any specific recurring tasks or activities you want to schedule in Tiler?';
+      'Υπάρχουν κάποια συγκεκριμένα επαναλαμβανόμενα καθήκοντα ή δραστηριότητες που θέλετε να προγραμματίσετε στο Tiler;';
 
   @override
   String get yourProfession => 'Ο επάγγελμα σας;';
@@ -1598,35 +1599,35 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get tileSuggestionsQuestion =>
-      'Select tiles that match your routine and let Tiler optimize your schedule';
+      'Επιλέξτε πλακίδια που ταιριάζουν με τη ρουτίνα σας και αφήστε το Tiler να βελτιστοποιήσει το πρόγραμμα σας';
 
   @override
   String get tileProfiling =>
-      'Tiler is profiling you based on your preferences..';
+      'Το Tiler δημιουργεί το προφίλ σας με βάση τις προτιμήσεις σας…';
 
   @override
-  String get addPlus => 'Add +';
+  String get addPlus => 'Προσθήκη +';
 
   @override
-  String get personalScheduling => 'Personal scheduling';
+  String get personalScheduling => 'Προσωπικός προγραμματισμός';
 
   @override
-  String get workPlanning => 'Work planning';
+  String get workPlanning => 'Προγραμματισμός εργασίας';
 
   @override
-  String get teamCoordination => 'Team coordination';
+  String get teamCoordination => 'Συντονισμός ομάδας';
 
   @override
-  String get fieldBaseCoordination => 'Field-base coordination';
+  String get fieldBaseCoordination => 'Συντονισμός στο πεδίο';
 
   @override
-  String get academicScheduling => 'Academic scheduling';
+  String get academicScheduling => 'Ακαδημαϊκός προγραμματισμός';
 
   @override
-  String get clientManagement => 'Client management';
+  String get clientManagement => 'Διαχείριση πελατών';
 
   @override
-  String get personalOrWork => 'Personal or Work??';
+  String get personalOrWork => 'Προσωπικά ή Εργασία??';
 
   @override
   String get personalOrWorkQuestion => 'Για τι θα χρησιμοποιείτε το Tiler;';
@@ -1635,35 +1636,36 @@ class AppLocalizationsEl extends AppLocalizations {
   String get enter3chars => 'Εισάγετε τουλάχιστον 3 χαρακτήρες.';
 
   @override
-  String get tilesVsBlocks => 'Tiles vs Blocks';
+  String get tilesVsBlocks => 'Πλακίδια vs Μπλοκ';
 
   @override
   String get vsTilesDescription =>
-      'Get auto-generated Tiles for your, workouts,\ndeadlines and block out times events that aren\'t\nflexible.';
+      'Αποκτήστε αυτοματοποιημένα πλακίδια για τις\nασκήσεις και τις προθεσμίες σας και αποκλειστεύστε\nχρόνους για εκδηλώσεις που δεν είναι ευκίνητες.';
 
   @override
   String get vsBlocksDescription =>
-      'Blocks are fixed time periods reserved for important tiles that must happen at a specific time and date.';
+      'Τα μπλοκ είναι σταθερά χρονικά διαστήματα που προορίζονται για σημαντικά πλακίδια που πρέπει να πραγματοποιηθούν σε συγκεκριμένη ημερομηνία και ώρα.';
 
   @override
-  String get swipeRight => 'Swipe Right>>';
+  String get swipeRight => 'Όλκιση δεξιά>>';
 
   @override
   String get swipeRightDescription =>
-      'No more planning from scratch—just swipe\nright, and Tiler fits everything into your\nschedule seamlessly.';
+      'Καμία ανάγκα για σχεδιασμό από το μηδέν — απλώς\nόλκιστε δεξιά και το Tiler τοποθετεί όλα\nστο πρόγραμμα σας χωρίς κόπο.';
 
   @override
-  String get googleCalendarAndMore => 'Google Calendar +\nmore calendars';
+  String get googleCalendarAndMore =>
+      'Google Calendar +\nπερισσότερες ατζέντες';
 
   @override
   String get googleCalendarAndMoreDescription =>
-      'Sync your calendars, and let Tiler pull\neverything into one smart timeline.\nNo double booking, no stress';
+      'Συνχρονίστε τις ατζέντες σας και αφήστε το Tiler\nνα συγκεντρώσει όλα σε ένα έξυπνο χρονολόγιο.\nΧωρίς διπλές κρατήσεις, χωρίς στρες';
 
   @override
-  String get selectSuggestions => 'Select suggestions';
+  String get selectSuggestions => 'Επιλογή προτάσεων';
 
   @override
-  String get typeSomething => 'Type something here';
+  String get typeSomething => 'Πληκτρολογήστε κάτι εδώ';
 
   @override
   String leaveInDurationToArriveOnTime(String duration) {
