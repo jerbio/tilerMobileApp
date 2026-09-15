@@ -5796,6 +5796,540 @@ abstract class AppLocalizations {
   /// **'Ends at {end}, from a start of {start}. Change the end time'**
   String addTileDurationEndsSemantics(String end, String start);
 
+  /// No description provided for @editTileTitleTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Tile'**
+  String get editTileTitleTile;
+
+  /// No description provided for @editTileTitleBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Block'**
+  String get editTileTitleBlock;
+
+  /// No description provided for @editTileSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get editTileSave;
+
+  /// No description provided for @editTileSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get editTileSaving;
+
+  /// No description provided for @editTileSectionTiming.
+  ///
+  /// In en, this message translates to:
+  /// **'TIMING'**
+  String get editTileSectionTiming;
+
+  /// No description provided for @editTileFieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'TITLE'**
+  String get editTileFieldTitle;
+
+  /// No description provided for @editTileFieldType.
+  ///
+  /// In en, this message translates to:
+  /// **'TYPE'**
+  String get editTileFieldType;
+
+  /// No description provided for @editTileFieldStart.
+  ///
+  /// In en, this message translates to:
+  /// **'START'**
+  String get editTileFieldStart;
+
+  /// No description provided for @editTileReasonNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Give this tile a title to save it'**
+  String get editTileReasonNameRequired;
+
+  /// No description provided for @editTileReasonSplitRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions must be at least 1'**
+  String get editTileReasonSplitRequired;
+
+  /// No description provided for @editTileReasonEndNotAfterStart.
+  ///
+  /// In en, this message translates to:
+  /// **'The end must be after the start'**
+  String get editTileReasonEndNotAfterStart;
+
+  /// No description provided for @editTileReasonRepeatAndTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the repeat rule and this tile\'s time in separate saves'**
+  String get editTileReasonRepeatAndTime;
+
+  /// No description provided for @editTileDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get editTileDiscardTitle;
+
+  /// No description provided for @editTileDiscardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your edits to this tile will be lost.'**
+  String get editTileDiscardBody;
+
+  /// No description provided for @editTileDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get editTileDiscard;
+
+  /// No description provided for @editTileKeepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get editTileKeepEditing;
+
+  /// No description provided for @editTileLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this tile.'**
+  String get editTileLoadFailed;
+
+  /// No description provided for @editTileSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save right now. Your changes are kept.'**
+  String get editTileSaveFailed;
+
+  /// No description provided for @editTileSectionActions.
+  ///
+  /// In en, this message translates to:
+  /// **'ACTIONS'**
+  String get editTileSectionActions;
+
+  /// No description provided for @editTileSectionSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'SESSIONS'**
+  String get editTileSectionSessions;
+
+  /// No description provided for @editTileFieldSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Split into sessions'**
+  String get editTileFieldSessions;
+
+  /// No description provided for @editTileFieldDeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'DEADLINE'**
+  String get editTileFieldDeadline;
+
+  /// No description provided for @editTileSectionAdditional.
+  ///
+  /// In en, this message translates to:
+  /// **'ADDITIONAL DETAILS'**
+  String get editTileSectionAdditional;
+
+  /// No description provided for @editTileFieldNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'NOTES'**
+  String get editTileFieldNotes;
+
+  /// No description provided for @editTileSectionSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'SUGGESTIONS'**
+  String get editTileSectionSuggestions;
+
+  /// No description provided for @editTileCreateAsNewTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Create as new tile'**
+  String get editTileCreateAsNewTile;
+
+  /// No description provided for @editTileSectionProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'PROGRESS'**
+  String get editTileSectionProgress;
+
+  /// No description provided for @editTileProgressComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} complete'**
+  String editTileProgressComplete(int done, int total);
+
+  /// No description provided for @editTileProgressRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining} remaining · {deleted} deleted'**
+  String editTileProgressRemaining(int remaining, int deleted);
+
+  /// No description provided for @editTileActionComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get editTileActionComplete;
+
+  /// No description provided for @editTileActionCompleteCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as done'**
+  String get editTileActionCompleteCaption;
+
+  /// No description provided for @editTileActionStartNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Start now'**
+  String get editTileActionStartNow;
+
+  /// No description provided for @editTileActionStartNowCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to now'**
+  String get editTileActionStartNowCaption;
+
+  /// No description provided for @editTileActionDefer.
+  ///
+  /// In en, this message translates to:
+  /// **'Defer'**
+  String get editTileActionDefer;
+
+  /// No description provided for @editTileActionDeferCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a new time'**
+  String get editTileActionDeferCaption;
+
+  /// No description provided for @editTileActionDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get editTileActionDelete;
+
+  /// No description provided for @editTileActionDeleteCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get editTileActionDeleteCaption;
+
+  /// No description provided for @editTileActionConfirmComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark \"{title}\" as done?'**
+  String editTileActionConfirmComplete(String title);
+
+  /// No description provided for @editTileActionConfirmStartNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Move \"{title}\" to now?'**
+  String editTileActionConfirmStartNow(String title);
+
+  /// No description provided for @editTileActionConfirmDefer.
+  ///
+  /// In en, this message translates to:
+  /// **'Defer \"{title}\"?'**
+  String editTileActionConfirmDefer(String title);
+
+  /// No description provided for @editTileActionConfirmDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{title}\"?'**
+  String editTileActionConfirmDelete(String title);
+
+  /// No description provided for @editTileActionDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the tile from your schedule.'**
+  String get editTileActionDeleteBody;
+
+  /// No description provided for @editTileActionDiscardsEdits.
+  ///
+  /// In en, this message translates to:
+  /// **'Your unsaved changes will be discarded.'**
+  String get editTileActionDiscardsEdits;
+
+  /// No description provided for @editTileActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not do that right now.'**
+  String get editTileActionFailed;
+
+  /// No description provided for @editTileActionSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}, {caption}'**
+  String editTileActionSemantics(String label, String caption);
+
+  /// No description provided for @editTileSectionRepetition.
+  ///
+  /// In en, this message translates to:
+  /// **'REPETITION'**
+  String get editTileSectionRepetition;
+
+  /// No description provided for @editTileSectionPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'PRIORITY'**
+  String get editTileSectionPriority;
+
+  /// No description provided for @editTileSectionLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'LOCATION'**
+  String get editTileSectionLocation;
+
+  /// No description provided for @editTileLocationRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove location'**
+  String get editTileLocationRemove;
+
+  /// No description provided for @editTileScopeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply to'**
+  String get editTileScopeLabel;
+
+  /// No description provided for @editTileScopeSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'This tile'**
+  String get editTileScopeSingle;
+
+  /// No description provided for @editTileScopeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All occurrences'**
+  String get editTileScopeAll;
+
+  /// No description provided for @editTileScopeCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority, location, colour and title can apply to every occurrence of this tile.'**
+  String get editTileScopeCaption;
+
+  /// No description provided for @editTileScopeLockedByTime.
+  ///
+  /// In en, this message translates to:
+  /// **'A time change applies to this tile only, so the scope is locked while one is pending.'**
+  String get editTileScopeLockedByTime;
+
+  /// No description provided for @editTileScopeAllConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply to all occurrences?'**
+  String get editTileScopeAllConfirmTitle;
+
+  /// No description provided for @editTileScopeAllConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This changes every occurrence of \"{title}\", not just this one.'**
+  String editTileScopeAllConfirmBody(String title);
+
+  /// No description provided for @editTileScopeAllConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply to all'**
+  String get editTileScopeAllConfirm;
+
+  /// No description provided for @editTileMenuTileDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Tile details'**
+  String get editTileMenuTileDetails;
+
+  /// No description provided for @editTileMoreMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get editTileMoreMenu;
+
+  /// No description provided for @editTileRepeatEveryDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get editTileRepeatEveryDay;
+
+  /// No description provided for @editTileRepeatEveryWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Every week'**
+  String get editTileRepeatEveryWeek;
+
+  /// No description provided for @editTileRepeatEveryWeekOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Every week on {days}'**
+  String editTileRepeatEveryWeekOn(String days);
+
+  /// No description provided for @editTileRepeatEveryMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Every month'**
+  String get editTileRepeatEveryMonth;
+
+  /// No description provided for @editTileRepeatEveryYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Every year'**
+  String get editTileRepeatEveryYear;
+
+  /// No description provided for @editTileRepeatUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'{cadence} · until {date}'**
+  String editTileRepeatUntil(String cadence, String date);
+
+  /// No description provided for @editTileRepeatUntilDate.
+  ///
+  /// In en, this message translates to:
+  /// **'{date}'**
+  String editTileRepeatUntilDate(DateTime date);
+
+  /// No description provided for @editTileRepeatNeverEnds.
+  ///
+  /// In en, this message translates to:
+  /// **'{cadence} · never ends'**
+  String editTileRepeatNeverEnds(String cadence);
+
+  /// No description provided for @editTileRepeatCalloutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This will create multiple instances'**
+  String get editTileRepeatCalloutTitle;
+
+  /// No description provided for @editTileRepeatCalloutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler will schedule each occurrence based on your preferences and availability.'**
+  String get editTileRepeatCalloutBody;
+
+  /// No description provided for @editTileNotesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get editTileNotesTitle;
+
+  /// No description provided for @editTileModeReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'This tile is finished, so it can\'t be edited. You can still delete it.'**
+  String get editTileModeReadOnly;
+
+  /// No description provided for @editTileModeProcrastinate.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked-out time. Move it, mark it done, or delete it.'**
+  String get editTileModeProcrastinate;
+
+  /// No description provided for @editTileModeThirdParty.
+  ///
+  /// In en, this message translates to:
+  /// **'Managed by {provider}. Respond to the invitation or delete it here; edit the event in {provider}.'**
+  String editTileModeThirdParty(String provider);
+
+  /// No description provided for @editTileProviderGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Calendar'**
+  String get editTileProviderGoogle;
+
+  /// No description provided for @editTileProviderOutlook.
+  ///
+  /// In en, this message translates to:
+  /// **'Outlook'**
+  String get editTileProviderOutlook;
+
+  /// No description provided for @editTileRsvpFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send your response right now.'**
+  String get editTileRsvpFailed;
+
+  /// No description provided for @editTileWhatIfChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking what this change affects…'**
+  String get editTileWhatIfChecking;
+
+  /// No description provided for @editTileWhatIfSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Affects other tiles: {late} late, {overflow} overflow'**
+  String editTileWhatIfSummary(int late, int overflow);
+
+  /// No description provided for @editTileWhatIfSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What this change affects'**
+  String get editTileWhatIfSheetTitle;
+
+  /// No description provided for @editTileWhatIfLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Late'**
+  String get editTileWhatIfLate;
+
+  /// No description provided for @editTileWhatIfOverflow.
+  ///
+  /// In en, this message translates to:
+  /// **'Overflow'**
+  String get editTileWhatIfOverflow;
+
+  /// No description provided for @editTileWhatIfClean.
+  ///
+  /// In en, this message translates to:
+  /// **'No other tiles are affected.'**
+  String get editTileWhatIfClean;
+
+  /// No description provided for @editTileWhatIfFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check the effect on your schedule.'**
+  String get editTileWhatIfFailed;
+
+  /// No description provided for @editTileWhatIfRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get editTileWhatIfRetry;
+
+  /// No description provided for @editTileEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit title'**
+  String get editTileEditTitle;
+
+  /// No description provided for @editTileTimeChipSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} time, {value}'**
+  String editTileTimeChipSemantics(String field, String value);
+
+  /// No description provided for @editTileDateChipSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} date, {value}'**
+  String editTileDateChipSemantics(String field, String value);
+
+  /// No description provided for @editTileTitleSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Title, {title}'**
+  String editTileTitleSemantics(String title);
+
+  /// Two-line value of the Start row: the day, then the clock time.
+  ///
+  /// In en, this message translates to:
+  /// **'{date}\n{time}'**
+  String editTileStartValue(String date, String time);
+
   /// No description provided for @addTileSubmitFailed.
   ///
   /// In en, this message translates to:

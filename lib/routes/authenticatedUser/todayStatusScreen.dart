@@ -12,7 +12,7 @@ import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/todayStatus/dayPlanViewModel.dart';
 import 'package:tiler_app/data/todayStatus/planItemViewModel.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 import 'package:tiler_app/util.dart';
@@ -275,7 +275,7 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditTile(
+        builder: (context) => EditTileRoute(
           tileId: (source.isFromTiler ? source.id : source.thirdpartyId) ?? "",
           tileSource: source.thirdpartyType,
           thirdPartyUserId: source.thirdPartyUserId,

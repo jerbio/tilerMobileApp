@@ -6,7 +6,7 @@ import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -359,7 +359,7 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditTile(
+                    builder: (context) => EditTileRoute(
                       tileId: (widget.subEvent.isFromTiler
                               ? widget.subEvent.id
                               : widget.subEvent.thirdpartyId) ??
@@ -1084,7 +1084,7 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EditTile(
+                      builder: (context) => EditTileRoute(
                         tileId: widget.subEvent.id ?? "",
                         tileSource: widget.subEvent.thirdpartyType,
                         thirdPartyUserId: widget.subEvent.thirdPartyUserId,

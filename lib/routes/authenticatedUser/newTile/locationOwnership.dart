@@ -76,3 +76,14 @@ bool locationHasContent(Location? location) {
   final String address = (location.address ?? '').trim();
   return description.isNotEmpty || address.isNotEmpty;
 }
+
+/// The name of a location for a summary row: the description when there
+/// is one, else the address, else null. Shared by the Add Tile forms and
+/// the Edit Tile redesign.
+String? locationSummary(Location? location) {
+  if (location == null || !locationHasContent(location)) return null;
+  final String description = (location.description ?? '').trim();
+  if (description.isNotEmpty) return description;
+  final String address = (location.address ?? '').trim();
+  return address.isEmpty ? null : address;
+}

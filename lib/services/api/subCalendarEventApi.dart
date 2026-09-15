@@ -184,11 +184,16 @@ class SubCalendarEventApi extends AppApi {
     });
   }
 
-  Future<SubCalendarEvent> updateSubEvent(EditTilerEvent subEvent) async {
-    TilerError error = new TilerError();
-    error.Message =
-        LocalizationService.instance.translations.failedToUpdateTile;
-    var queryParameters = {
+  /// The query map `updateSubEvent` sends, built without sending it.
+  ///
+  /// Static and side-effect free so it can be pinned by
+  /// `test/editTile/edit_tile_payload_baseline_test.dart` (Edit Tile
+  /// redesign, Step 0.1) and reproduced by the redesign's mapper. The map
+  /// is exactly what it was when inline: absent third-party ids and notes
+  /// go out as the string "null" via `toString()`, and `Notes` is always
+  /// present. Those are pinned deliberately, not endorsed.
+  static Map<String, dynamic> updateSubEventParams(EditTilerEvent subEvent) {
+    var queryParameters = <String, dynamic>{
       'EventID': subEvent.id,
       'EventName': subEvent.name,
       'Start': subEvent.startTime!.toUtc().millisecondsSinceEpoch.toString(),
@@ -207,6 +212,20 @@ class SubCalendarEventApi extends AppApi {
     if (rsvpUpdateValue != null) {
       queryParameters['RsvpStatusUpdate'] = rsvpUpdateValue;
     }
+    return queryParameters;
+  }
+
+  Future<SubCalendarEvent> updateSubEvent(EditTilerEvent subEvent) =>
+      updateSubEventRequest(updateSubEventParams(subEvent));
+
+  /// Sends an already-built update map. The legacy screen builds it from an
+  /// `EditTilerEvent` above; the redesigned one builds a wider map (priority,
+  /// location, colour, repetition, `ApplicableOccurence`) and sends it here.
+  Future<SubCalendarEvent> updateSubEventRequest(
+      Map<String, dynamic> queryParameters) async {
+    TilerError error = new TilerError();
+    error.Message =
+        LocalizationService.instance.translations.failedToUpdateTile;
 
     return sendPostRequest('api/SubCalendarEvent/Update', queryParameters)
         .then((response) {

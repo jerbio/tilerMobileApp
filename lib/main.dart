@@ -28,10 +28,13 @@ import 'package:tiler_app/routes/authenticatedUser/forecast/procrastinateAll.dar
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePredictionSource.dart';
+import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileSubmission.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRedesignScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/repetitionRoute.dart';
@@ -226,7 +229,18 @@ class _TilerAppState extends State<TilerApp> {
                     // from /AddTile.
                     final newTileParams =
                         ModalRoute.of(context)?.settings.arguments;
+                    // A prefill from the Edit Tile suggestions (Edit Tile
+                    // redesign, Step 2.4) travels in the same map.
+                    // Either shape: `previewAddWidget` pushes the PreTile
+                    // itself as the argument; the Edit Tile suggestions push
+                    // it under a `preTile` key alongside the result slot.
+                    final Object? preTile = newTileParams is PreTile
+                        ? newTileParams
+                        : newTileParams is Map
+                            ? newTileParams['preTile']
+                            : null;
                     return AddTileRedesignScreen(
+                      preTile: preTile is PreTile ? preTile : null,
                       locationSource: ApiAddTileLocationSource(
                         locationApi:
                             LocationApi(getContextCallBack: () => context),
@@ -240,6 +254,18 @@ class _TilerAppState extends State<TilerApp> {
                           ? newTileParams
                           : null,
                     );
+                  },
+                  // Edit Tile redesign shell (Phase 1, Step 1.4). Its own
+                  // route so it can be reviewed independently of the legacy
+                  // EditTile screen, which every production entry point still
+                  // pushes directly. Arguments: EditTileRedesignRouteArgs or a
+                  // {tileId, source?, thirdPartyUserId?} map.
+                  '/EditTileRedesign': (BuildContext context) {
+                    final EditTileRedesignRouteArgs? args =
+                        EditTileRedesignRouteArgs.from(
+                            ModalRoute.of(context)?.settings.arguments);
+                    return buildEditTileRedesign(context,
+                        args ?? const EditTileRedesignRouteArgs(tileId: ''));
                   },
                   '/SearchTile': (BuildContext context) =>
                       new EventNameSearchWidget(context: context),

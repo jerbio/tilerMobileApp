@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/util.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -316,7 +316,7 @@ class PendingRsvpModal extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditTile(
+        builder: (context) => EditTileRoute(
           tileId: (tile.isFromTiler ? tile.id : tile.thirdpartyId) ?? "",
           tileSource: tile.thirdpartyType,
           thirdPartyUserId: tile.thirdPartyUserId,

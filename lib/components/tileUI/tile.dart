@@ -17,7 +17,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/travelDetail.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
@@ -486,7 +486,7 @@ class TileWidgetState extends State<TileWidget>
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => EditTile(
+                          builder: (context) => EditTileRoute(
                                 tileId: (this.widget.subEvent.isFromTiler
                                         ? this.widget.subEvent.id
                                         : this.widget.subEvent.thirdpartyId) ??

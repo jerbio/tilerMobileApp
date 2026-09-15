@@ -22,7 +22,8 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/locationOwnership.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/repeatOptions.dart';
 
 /// Date row summary. The current day reads as `Today, Sep 5`; any other date
 /// uses the plain localized form. [today] is injected so the "is it today?"

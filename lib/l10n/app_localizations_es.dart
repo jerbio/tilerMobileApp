@@ -3283,6 +3283,325 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get editTileTitleTile => 'Editar tile';
+
+  @override
+  String get editTileTitleBlock => 'Editar bloque';
+
+  @override
+  String get editTileSave => 'Guardar cambios';
+
+  @override
+  String get editTileSaving => 'Guardando…';
+
+  @override
+  String get editTileSectionTiming => 'HORARIO';
+
+  @override
+  String get editTileFieldTitle => 'TÍTULO';
+
+  @override
+  String get editTileFieldType => 'TIPO';
+
+  @override
+  String get editTileFieldStart => 'INICIO';
+
+  @override
+  String get editTileReasonNameRequired =>
+      'Ponle un título a este tile para guardarlo';
+
+  @override
+  String get editTileReasonSplitRequired => 'Las sesiones deben ser al menos 1';
+
+  @override
+  String get editTileReasonEndNotAfterStart =>
+      'El fin debe ser después del inicio';
+
+  @override
+  String get editTileReasonRepeatAndTime =>
+      'Cambia la regla de repetición y la hora de este tile en guardados separados';
+
+  @override
+  String get editTileDiscardTitle => '¿Descartar cambios?';
+
+  @override
+  String get editTileDiscardBody => 'Se perderán tus cambios a este tile.';
+
+  @override
+  String get editTileDiscard => 'Descartar';
+
+  @override
+  String get editTileKeepEditing => 'Seguir editando';
+
+  @override
+  String get editTileLoadFailed => 'No se pudo cargar este tile.';
+
+  @override
+  String get editTileSaveFailed =>
+      'No se pudo guardar en este momento. Tus cambios se conservan.';
+
+  @override
+  String get editTileSectionActions => 'ACCIONES';
+
+  @override
+  String get editTileSectionSessions => 'SESIONES';
+
+  @override
+  String get editTileFieldSessions => 'Dividir en sesiones';
+
+  @override
+  String get editTileFieldDeadline => 'FECHA LÍMITE';
+
+  @override
+  String get editTileSectionAdditional => 'DETALLES ADICIONALES';
+
+  @override
+  String get editTileFieldNotes => 'NOTAS';
+
+  @override
+  String get editTileSectionSuggestions => 'SUGERENCIAS';
+
+  @override
+  String get editTileCreateAsNewTile => 'Crear como tile nuevo';
+
+  @override
+  String get editTileSectionProgress => 'PROGRESO';
+
+  @override
+  String editTileProgressComplete(int done, int total) {
+    return '$done de $total completados';
+  }
+
+  @override
+  String editTileProgressRemaining(int remaining, int deleted) {
+    return '$remaining restantes · $deleted eliminados';
+  }
+
+  @override
+  String get editTileActionComplete => 'Completar';
+
+  @override
+  String get editTileActionCompleteCaption => 'Marcar como hecho';
+
+  @override
+  String get editTileActionStartNow => 'Empezar ahora';
+
+  @override
+  String get editTileActionStartNowCaption => 'Mover a ahora';
+
+  @override
+  String get editTileActionDefer => 'Posponer';
+
+  @override
+  String get editTileActionDeferCaption => 'Elegir otra hora';
+
+  @override
+  String get editTileActionDelete => 'Eliminar';
+
+  @override
+  String get editTileActionDeleteCaption => 'Quitar';
+
+  @override
+  String editTileActionConfirmComplete(String title) {
+    return '¿Marcar \"$title\" como hecho?';
+  }
+
+  @override
+  String editTileActionConfirmStartNow(String title) {
+    return '¿Mover \"$title\" a ahora?';
+  }
+
+  @override
+  String editTileActionConfirmDefer(String title) {
+    return '¿Posponer \"$title\"?';
+  }
+
+  @override
+  String editTileActionConfirmDelete(String title) {
+    return '¿Eliminar \"$title\"?';
+  }
+
+  @override
+  String get editTileActionDeleteBody => 'Esto quita el tile de tu agenda.';
+
+  @override
+  String get editTileActionDiscardsEdits =>
+      'Se descartarán tus cambios sin guardar.';
+
+  @override
+  String get editTileActionFailed => 'No se pudo hacer eso en este momento.';
+
+  @override
+  String editTileActionSemantics(String label, String caption) {
+    return '$label, $caption';
+  }
+
+  @override
+  String get editTileSectionRepetition => 'REPETICIÓN';
+
+  @override
+  String get editTileSectionPriority => 'PRIORIDAD';
+
+  @override
+  String get editTileSectionLocation => 'UBICACIÓN';
+
+  @override
+  String get editTileLocationRemove => 'Quitar ubicación';
+
+  @override
+  String get editTileScopeLabel => 'Aplicar a';
+
+  @override
+  String get editTileScopeSingle => 'Este tile';
+
+  @override
+  String get editTileScopeAll => 'Todas las repeticiones';
+
+  @override
+  String get editTileScopeCaption =>
+      'La prioridad, la ubicación, el color y el título pueden aplicarse a todas las repeticiones de este tile.';
+
+  @override
+  String get editTileScopeLockedByTime =>
+      'Un cambio de hora aplica solo a este tile, así que el alcance queda bloqueado mientras haya uno pendiente.';
+
+  @override
+  String get editTileScopeAllConfirmTitle =>
+      '¿Aplicar a todas las repeticiones?';
+
+  @override
+  String editTileScopeAllConfirmBody(String title) {
+    return 'Esto cambia todas las repeticiones de \"$title\", no solo esta.';
+  }
+
+  @override
+  String get editTileScopeAllConfirm => 'Aplicar a todas';
+
+  @override
+  String get editTileMenuTileDetails => 'Detalles del tile';
+
+  @override
+  String get editTileMoreMenu => 'Más';
+
+  @override
+  String get editTileRepeatEveryDay => 'Cada día';
+
+  @override
+  String get editTileRepeatEveryWeek => 'Cada semana';
+
+  @override
+  String editTileRepeatEveryWeekOn(String days) {
+    return 'Cada semana los $days';
+  }
+
+  @override
+  String get editTileRepeatEveryMonth => 'Cada mes';
+
+  @override
+  String get editTileRepeatEveryYear => 'Cada año';
+
+  @override
+  String editTileRepeatUntil(String cadence, String date) {
+    return '$cadence · hasta el $date';
+  }
+
+  @override
+  String editTileRepeatUntilDate(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.MMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
+
+  @override
+  String editTileRepeatNeverEnds(String cadence) {
+    return '$cadence · sin fin';
+  }
+
+  @override
+  String get editTileRepeatCalloutTitle => 'Esto creará varias repeticiones';
+
+  @override
+  String get editTileRepeatCalloutBody =>
+      'Tiler programará cada repetición según tus preferencias y disponibilidad.';
+
+  @override
+  String get editTileNotesTitle => 'Notas';
+
+  @override
+  String get editTileModeReadOnly =>
+      'Este tile ya terminó, así que no se puede editar. Aún puedes eliminarlo.';
+
+  @override
+  String get editTileModeProcrastinate =>
+      'Tiempo bloqueado. Muévelo, márcalo como hecho o elimínalo.';
+
+  @override
+  String editTileModeThirdParty(String provider) {
+    return 'Gestionado por $provider. Responde a la invitación o elimínalo aquí; edita el evento en $provider.';
+  }
+
+  @override
+  String get editTileProviderGoogle => 'Google Calendar';
+
+  @override
+  String get editTileProviderOutlook => 'Outlook';
+
+  @override
+  String get editTileRsvpFailed =>
+      'No se pudo enviar tu respuesta en este momento.';
+
+  @override
+  String get editTileWhatIfChecking => 'Revisando qué afecta este cambio…';
+
+  @override
+  String editTileWhatIfSummary(int late, int overflow) {
+    return 'Afecta a otros tiles: $late tarde, $overflow desbordados';
+  }
+
+  @override
+  String get editTileWhatIfSheetTitle => 'Qué afecta este cambio';
+
+  @override
+  String get editTileWhatIfLate => 'Tarde';
+
+  @override
+  String get editTileWhatIfOverflow => 'Desbordados';
+
+  @override
+  String get editTileWhatIfClean => 'No afecta a ningún otro tile.';
+
+  @override
+  String get editTileWhatIfFailed =>
+      'No se pudo revisar el efecto en tu agenda.';
+
+  @override
+  String get editTileWhatIfRetry => 'Reintentar';
+
+  @override
+  String get editTileEditTitle => 'Editar título';
+
+  @override
+  String editTileTimeChipSemantics(String field, String value) {
+    return 'Hora de $field, $value';
+  }
+
+  @override
+  String editTileDateChipSemantics(String field, String value) {
+    return 'Fecha de $field, $value';
+  }
+
+  @override
+  String editTileTitleSemantics(String title) {
+    return 'Título, $title';
+  }
+
+  @override
+  String editTileStartValue(String date, String time) {
+    return '$date\n$time';
+  }
+
+  @override
   String get addTileSubmitFailed =>
       'No se pudo agregar en este momento. Tus datos se guardaron.';
 

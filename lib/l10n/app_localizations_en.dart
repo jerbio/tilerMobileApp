@@ -3274,6 +3274,324 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get editTileTitleTile => 'Edit Tile';
+
+  @override
+  String get editTileTitleBlock => 'Edit Block';
+
+  @override
+  String get editTileSave => 'Save Changes';
+
+  @override
+  String get editTileSaving => 'Saving…';
+
+  @override
+  String get editTileSectionTiming => 'TIMING';
+
+  @override
+  String get editTileFieldTitle => 'TITLE';
+
+  @override
+  String get editTileFieldType => 'TYPE';
+
+  @override
+  String get editTileFieldStart => 'START';
+
+  @override
+  String get editTileReasonNameRequired => 'Give this tile a title to save it';
+
+  @override
+  String get editTileReasonSplitRequired => 'Sessions must be at least 1';
+
+  @override
+  String get editTileReasonEndNotAfterStart =>
+      'The end must be after the start';
+
+  @override
+  String get editTileReasonRepeatAndTime =>
+      'Change the repeat rule and this tile\'s time in separate saves';
+
+  @override
+  String get editTileDiscardTitle => 'Discard changes?';
+
+  @override
+  String get editTileDiscardBody => 'Your edits to this tile will be lost.';
+
+  @override
+  String get editTileDiscard => 'Discard';
+
+  @override
+  String get editTileKeepEditing => 'Keep editing';
+
+  @override
+  String get editTileLoadFailed => 'Couldn\'t load this tile.';
+
+  @override
+  String get editTileSaveFailed =>
+      'Could not save right now. Your changes are kept.';
+
+  @override
+  String get editTileSectionActions => 'ACTIONS';
+
+  @override
+  String get editTileSectionSessions => 'SESSIONS';
+
+  @override
+  String get editTileFieldSessions => 'Split into sessions';
+
+  @override
+  String get editTileFieldDeadline => 'DEADLINE';
+
+  @override
+  String get editTileSectionAdditional => 'ADDITIONAL DETAILS';
+
+  @override
+  String get editTileFieldNotes => 'NOTES';
+
+  @override
+  String get editTileSectionSuggestions => 'SUGGESTIONS';
+
+  @override
+  String get editTileCreateAsNewTile => 'Create as new tile';
+
+  @override
+  String get editTileSectionProgress => 'PROGRESS';
+
+  @override
+  String editTileProgressComplete(int done, int total) {
+    return '$done of $total complete';
+  }
+
+  @override
+  String editTileProgressRemaining(int remaining, int deleted) {
+    return '$remaining remaining · $deleted deleted';
+  }
+
+  @override
+  String get editTileActionComplete => 'Complete';
+
+  @override
+  String get editTileActionCompleteCaption => 'Mark as done';
+
+  @override
+  String get editTileActionStartNow => 'Start now';
+
+  @override
+  String get editTileActionStartNowCaption => 'Move to now';
+
+  @override
+  String get editTileActionDefer => 'Defer';
+
+  @override
+  String get editTileActionDeferCaption => 'Pick a new time';
+
+  @override
+  String get editTileActionDelete => 'Delete';
+
+  @override
+  String get editTileActionDeleteCaption => 'Remove';
+
+  @override
+  String editTileActionConfirmComplete(String title) {
+    return 'Mark \"$title\" as done?';
+  }
+
+  @override
+  String editTileActionConfirmStartNow(String title) {
+    return 'Move \"$title\" to now?';
+  }
+
+  @override
+  String editTileActionConfirmDefer(String title) {
+    return 'Defer \"$title\"?';
+  }
+
+  @override
+  String editTileActionConfirmDelete(String title) {
+    return 'Delete \"$title\"?';
+  }
+
+  @override
+  String get editTileActionDeleteBody =>
+      'This removes the tile from your schedule.';
+
+  @override
+  String get editTileActionDiscardsEdits =>
+      'Your unsaved changes will be discarded.';
+
+  @override
+  String get editTileActionFailed => 'Could not do that right now.';
+
+  @override
+  String editTileActionSemantics(String label, String caption) {
+    return '$label, $caption';
+  }
+
+  @override
+  String get editTileSectionRepetition => 'REPETITION';
+
+  @override
+  String get editTileSectionPriority => 'PRIORITY';
+
+  @override
+  String get editTileSectionLocation => 'LOCATION';
+
+  @override
+  String get editTileLocationRemove => 'Remove location';
+
+  @override
+  String get editTileScopeLabel => 'Apply to';
+
+  @override
+  String get editTileScopeSingle => 'This tile';
+
+  @override
+  String get editTileScopeAll => 'All occurrences';
+
+  @override
+  String get editTileScopeCaption =>
+      'Priority, location, colour and title can apply to every occurrence of this tile.';
+
+  @override
+  String get editTileScopeLockedByTime =>
+      'A time change applies to this tile only, so the scope is locked while one is pending.';
+
+  @override
+  String get editTileScopeAllConfirmTitle => 'Apply to all occurrences?';
+
+  @override
+  String editTileScopeAllConfirmBody(String title) {
+    return 'This changes every occurrence of \"$title\", not just this one.';
+  }
+
+  @override
+  String get editTileScopeAllConfirm => 'Apply to all';
+
+  @override
+  String get editTileMenuTileDetails => 'Tile details';
+
+  @override
+  String get editTileMoreMenu => 'More';
+
+  @override
+  String get editTileRepeatEveryDay => 'Every day';
+
+  @override
+  String get editTileRepeatEveryWeek => 'Every week';
+
+  @override
+  String editTileRepeatEveryWeekOn(String days) {
+    return 'Every week on $days';
+  }
+
+  @override
+  String get editTileRepeatEveryMonth => 'Every month';
+
+  @override
+  String get editTileRepeatEveryYear => 'Every year';
+
+  @override
+  String editTileRepeatUntil(String cadence, String date) {
+    return '$cadence · until $date';
+  }
+
+  @override
+  String editTileRepeatUntilDate(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.MMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
+
+  @override
+  String editTileRepeatNeverEnds(String cadence) {
+    return '$cadence · never ends';
+  }
+
+  @override
+  String get editTileRepeatCalloutTitle =>
+      'This will create multiple instances';
+
+  @override
+  String get editTileRepeatCalloutBody =>
+      'Tiler will schedule each occurrence based on your preferences and availability.';
+
+  @override
+  String get editTileNotesTitle => 'Notes';
+
+  @override
+  String get editTileModeReadOnly =>
+      'This tile is finished, so it can\'t be edited. You can still delete it.';
+
+  @override
+  String get editTileModeProcrastinate =>
+      'Blocked-out time. Move it, mark it done, or delete it.';
+
+  @override
+  String editTileModeThirdParty(String provider) {
+    return 'Managed by $provider. Respond to the invitation or delete it here; edit the event in $provider.';
+  }
+
+  @override
+  String get editTileProviderGoogle => 'Google Calendar';
+
+  @override
+  String get editTileProviderOutlook => 'Outlook';
+
+  @override
+  String get editTileRsvpFailed => 'Could not send your response right now.';
+
+  @override
+  String get editTileWhatIfChecking => 'Checking what this change affects…';
+
+  @override
+  String editTileWhatIfSummary(int late, int overflow) {
+    return 'Affects other tiles: $late late, $overflow overflow';
+  }
+
+  @override
+  String get editTileWhatIfSheetTitle => 'What this change affects';
+
+  @override
+  String get editTileWhatIfLate => 'Late';
+
+  @override
+  String get editTileWhatIfOverflow => 'Overflow';
+
+  @override
+  String get editTileWhatIfClean => 'No other tiles are affected.';
+
+  @override
+  String get editTileWhatIfFailed =>
+      'Couldn\'t check the effect on your schedule.';
+
+  @override
+  String get editTileWhatIfRetry => 'Retry';
+
+  @override
+  String get editTileEditTitle => 'Edit title';
+
+  @override
+  String editTileTimeChipSemantics(String field, String value) {
+    return '$field time, $value';
+  }
+
+  @override
+  String editTileDateChipSemantics(String field, String value) {
+    return '$field date, $value';
+  }
+
+  @override
+  String editTileTitleSemantics(String title) {
+    return 'Title, $title';
+  }
+
+  @override
+  String editTileStartValue(String date, String time) {
+    return '$date\n$time';
+  }
+
+  @override
   String get addTileSubmitFailed =>
       'Could not add this right now. Your details are saved.';
 

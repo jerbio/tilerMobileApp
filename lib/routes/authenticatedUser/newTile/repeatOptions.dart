@@ -18,6 +18,7 @@
 import 'package:characters/characters.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
+import 'package:intl/intl.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 
 /// The rows the Repeat picker offers, in display order.
@@ -163,4 +164,67 @@ RepetitionData? buildRepetition({
     repetitionEnd: end ?? defaultRepetitionEnd(frequency, now),
     isEnabled: true,
   );
+}
+
+/// Compact Repeat row summary. A disabled or absent rule reads "Does not
+/// repeat" — the user-facing wording for `RepetitionFrequency.none`. Shared
+/// by the Add Tile forms and the Edit Tile redesign.
+String repeatSummary(AppLocalizations l10n, RepetitionData? repetition) {
+  if (repetition == null || !repetition.isEnabled)
+    return l10n.addTileRepeatNever;
+  switch (repetition.frequency) {
+    case RepetitionFrequency.daily:
+      return l10n.daily;
+    case RepetitionFrequency.weekly:
+      return l10n.weekly;
+    case RepetitionFrequency.monthly:
+      return l10n.monthly;
+    case RepetitionFrequency.yearly:
+      return l10n.yearly;
+    case RepetitionFrequency.none:
+      return l10n.addTileRepeatNever;
+  }
+}
+
+/// One-line detail of a rule for the Edit Tile Repeat row (plan §4.4 G2):
+/// cadence, the days for a weekly rule, and how it ends. Null when there
+/// is no rule, so the caller can hide the line.
+///
+/// Weekday names come from the locale (`DateFormat.E`), anchored on a known
+/// Sunday so index 0 of `Utility.weekdays` maps to the right name.
+String? repeatDetail(AppLocalizations l10n, RepetitionData? rule) {
+  if (rule == null ||
+      !rule.isEnabled ||
+      rule.frequency == RepetitionFrequency.none) {
+    return null;
+  }
+  final String cadence;
+  switch (rule.frequency) {
+    case RepetitionFrequency.daily:
+      cadence = l10n.editTileRepeatEveryDay;
+    case RepetitionFrequency.weekly:
+      final List<int> days = (rule.weeklyRepetition ?? <int>{}).toList()
+        ..sort();
+      if (days.isEmpty) {
+        cadence = l10n.editTileRepeatEveryWeek;
+      } else {
+        final DateFormat day = DateFormat.E(l10n.localeName);
+        final DateTime sunday = DateTime(2023, 1, 1);
+        cadence = l10n.editTileRepeatEveryWeekOn(days
+            .map((int i) => day.format(sunday.add(Duration(days: i))))
+            .join(', '));
+      }
+    case RepetitionFrequency.monthly:
+      cadence = l10n.editTileRepeatEveryMonth;
+    case RepetitionFrequency.yearly:
+      cadence = l10n.editTileRepeatEveryYear;
+    case RepetitionFrequency.none:
+      return null;
+  }
+  final DateTime? end = rule.repetitionEnd;
+  if (rule.isForever || end == null) {
+    return l10n.editTileRepeatNeverEnds(cadence);
+  }
+  return l10n.editTileRepeatUntil(
+      cadence, l10n.editTileRepeatUntilDate(end.toLocal()));
 }

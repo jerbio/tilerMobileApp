@@ -22,15 +22,13 @@
 // sessions, flexible completion date, advanced preferred-time profile).
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:tiler_app/data/location.dart';
-import 'package:tiler_app/data/repetitionData.dart';
-import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationOwnership.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/repeatOptions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
@@ -41,32 +39,6 @@ import 'package:tiler_app/theme/today_status_tokens.dart';
 /// choice. [locationHasContent] is what distinguishes the two — see the note
 /// there for why the legacy `isNotNullAndNotDefault` predicate could not
 /// (D53).
-String? locationSummary(Location? location) {
-  if (location == null || !locationHasContent(location)) return null;
-  final String description = (location.description ?? '').trim();
-  if (description.isNotEmpty) return description;
-  final String address = (location.address ?? '').trim();
-  return address.isEmpty ? null : address;
-}
-
-/// Compact Repeat row summary. A disabled or absent rule reads "Does not
-/// repeat" — the user-facing wording for `RepetitionFrequency.none`.
-String repeatSummary(AppLocalizations l10n, RepetitionData? repetition) {
-  if (repetition == null || !repetition.isEnabled)
-    return l10n.addTileRepeatNever;
-  switch (repetition.frequency) {
-    case RepetitionFrequency.daily:
-      return l10n.daily;
-    case RepetitionFrequency.weekly:
-      return l10n.weekly;
-    case RepetitionFrequency.monthly:
-      return l10n.monthly;
-    case RepetitionFrequency.yearly:
-      return l10n.yearly;
-    case RepetitionFrequency.none:
-      return l10n.addTileRepeatNever;
-  }
-}
 
 /// Primary Flexible Tile form: name, duration, and Complete by.
 ///

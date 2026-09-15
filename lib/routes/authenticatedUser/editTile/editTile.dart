@@ -25,6 +25,8 @@ import 'package:tiler_app/routes/authenticatedUser/nextTileSuggestionCarousel.da
 import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRedesignScreen.dart';
+import '../../../constants.dart' as Constants;
 import 'package:tiler_app/data/notesPayload.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotePage.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/tileDetail.dart';
@@ -40,6 +42,37 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
+
+/// Whether the Edit Tile screen offers ✓ for [edit] against the loaded
+/// [original]. Extracted unchanged from `_EditTileState.updateProceed` so
+/// it can be pinned by `test/editTile/edit_tile_rules_baseline_test.dart`
+/// (Edit Tile redesign, Step 0.3).
+///
+/// A procrastinate (blocked-out) tile proceeds when its TIME moved and the
+/// frame is still positive; otherwise — and for every other tile — when the
+/// draft is valid and not equivalent to what was loaded.
+bool editTileCanProceed(EditTilerEvent edit, SubCalendarEvent original,
+    {required bool isProcrastinate}) {
+  if (isProcrastinate) {
+    bool timeIsTheSame = edit.startTime!.toLocal().millisecondsSinceEpoch ==
+            original.startTime.toLocal().millisecondsSinceEpoch &&
+        edit.endTime!.toLocal().millisecondsSinceEpoch ==
+            original.endTime.toLocal().millisecondsSinceEpoch;
+
+    bool isValidTimeFrame =
+        Utility.utcEpochMillisecondsFromDateTime(edit.startTime!) <
+            Utility.utcEpochMillisecondsFromDateTime(edit.endTime!);
+    if (!timeIsTheSame && isValidTimeFrame) {
+      return true;
+    }
+  }
+  if (edit.isValid) {
+    if (!Utility.isEditTileEventEquivalentToSubCalendarEvent(edit, original)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 class EditTile extends StatefulWidget {
   final String tileId;
@@ -675,36 +708,11 @@ class _EditTileState extends State<EditTile> {
   }
 
   void updateProceed() {
-    if (editTilerEvent != null) {
-      if (isProcrastinateTile) {
-        bool timeIsTheSame =
-            editTilerEvent!.startTime!.toLocal().millisecondsSinceEpoch ==
-                    subEvent!.startTime.toLocal().millisecondsSinceEpoch &&
-                editTilerEvent!.endTime!.toLocal().millisecondsSinceEpoch ==
-                    subEvent!.endTime.toLocal().millisecondsSinceEpoch;
-
-        bool isValidTimeFrame = Utility.utcEpochMillisecondsFromDateTime(
-                editTilerEvent!.startTime!) <
-            Utility.utcEpochMillisecondsFromDateTime(editTilerEvent!.endTime!);
-        if (!timeIsTheSame && isValidTimeFrame) {
-          setState(() {
-            onProceed = subEventUpdate;
-          });
-          return;
-        }
-      }
-      if (editTilerEvent!.isValid) {
-        if (!Utility.isEditTileEventEquivalentToSubCalendarEvent(
-            editTilerEvent!, this.subEvent!)) {
-          setState(() {
-            onProceed = subEventUpdate;
-          });
-          return;
-        }
-      }
-    }
+    final bool canProceed = editTilerEvent != null &&
+        editTileCanProceed(editTilerEvent!, subEvent!,
+            isProcrastinate: isProcrastinateTile);
     setState(() {
-      onProceed = null;
+      onProceed = canProceed ? subEventUpdate : null;
     });
   }
 
@@ -800,6 +808,24 @@ class _EditTileState extends State<EditTile> {
 
   List<Widget>? getAppBarActionButtons() {
     final appBarActionButtons = <Widget>[];
+    // Debug-only entry to the Edit Tile redesign (Phase 1-2), for the same
+    // tile. Production entry points keep pushing this legacy screen until
+    // the redesign's rollout (plan Step 5.2).
+    if (Constants.isDebug) {
+      appBarActionButtons.add(IconButton(
+        key: const ValueKey('editTileRedesignEntry'),
+        tooltip: 'Edit Tile redesign (debug)',
+        icon: const Icon(Icons.auto_awesome_outlined),
+        onPressed: () => Navigator.of(context).pushNamed(
+          '/EditTileRedesign',
+          arguments: EditTileRedesignRouteArgs(
+            tileId: this.widget.tileId,
+            source: this.widget.tileSource?.name,
+            thirdPartyUserId: this.widget.thirdPartyUserId,
+          ),
+        ),
+      ));
+    }
     if (this.subEvent != null &&
         this.subEvent?.calendarEvent?.id != null &&
         this.subEvent?.thirdpartyType == TileSource.tiler) {

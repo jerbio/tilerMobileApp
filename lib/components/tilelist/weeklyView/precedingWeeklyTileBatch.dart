@@ -6,7 +6,7 @@ import 'package:tiler_app/components/tileUI/weeklyTile.dart';
 import 'package:tiler_app/components/tilelist/DailyView/tileBatch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 
 class PrecedingWeeklyTileBatch extends TileBatch {
@@ -91,7 +91,7 @@ class _PrecedingWeeklyTileBatchState extends TileBatchState {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditTile(
+        builder: (context) => EditTileRoute(
           tileId: (tile.isFromTiler ? tile.id : tile.thirdpartyId) ?? "",
           tileSource: tile.thirdpartyType,
           thirdPartyUserId: tile.thirdPartyUserId,

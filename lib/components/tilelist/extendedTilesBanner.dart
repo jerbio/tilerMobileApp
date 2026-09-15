@@ -3,7 +3,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
@@ -139,7 +139,7 @@ class ExtendedTilesModal extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditTile(
+        builder: (context) => EditTileRoute(
           tileId: (tile.isFromTiler ? tile.id : tile.thirdpartyId) ?? "",
           tileSource: tile.thirdpartyType,
           thirdPartyUserId: tile.thirdPartyUserId,

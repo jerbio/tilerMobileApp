@@ -3,7 +3,7 @@ import 'package:tiler_app/components/tileUI/tileName.dart';
 import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
@@ -60,7 +60,7 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => EditTile(
+                    builder: (context) => EditTileRoute(
                           tileId: (this.widget.subEvent.isFromTiler
                                   ? this.widget.subEvent.id
                                   : this.widget.subEvent.thirdpartyId) ??

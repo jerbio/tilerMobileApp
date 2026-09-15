@@ -177,6 +177,9 @@ class AddTileFieldRow extends StatelessWidget {
     );
 
     return Semantics(
+      // Its own node, so a read-only row is not merged into a neighbouring
+      // field's node and inherits that field's tap.
+      container: true,
       button: onTap != null,
       // The tap has to live on THIS node: the InkWell below is excluded from
       // semantics, so without it a screen reader announced a button it could
@@ -214,6 +217,7 @@ class AddTileNavRow extends StatelessWidget {
     required this.icon,
     required this.title,
     this.subtitle,
+    this.subtitleMaxLines,
     this.onTap,
     this.trailing,
     this.mutedIcon = false,
@@ -222,6 +226,9 @@ class AddTileNavRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
+
+  /// Caps a long subtitle (a note preview) with an ellipsis; null = no cap.
+  final int? subtitleMaxLines;
   final VoidCallback? onTap;
   final Widget? trailing;
   final bool mutedIcon;
@@ -264,6 +271,10 @@ class AddTileNavRow extends StatelessWidget {
                           if (subtitle != null)
                             Text(
                               subtitle!,
+                              maxLines: subtitleMaxLines,
+                              overflow: subtitleMaxLines == null
+                                  ? null
+                                  : TextOverflow.ellipsis,
                               style: textTheme.bodySmall
                                   ?.copyWith(color: tokens.textSecondary),
                             ),
@@ -475,6 +486,219 @@ class AddTileTextFieldRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The pinned primary action for a form screen, with a label rather than a
+/// type: Add Tile's [AddTileBottomAction] derives its label from the tile
+/// type; the Edit Tile screen (and any later form) supplies one.
+///
+/// Stays tappable when disabled so a tap can surface WHY (the caller's
+/// business); [hint] renders that reason under the button when given. A
+/// pending tap is the caller's guarded no-op.
+class AddTilePrimaryButton extends StatelessWidget {
+  const AddTilePrimaryButton({
+    super.key,
+    required this.label,
+    required this.busyLabel,
+    required this.enabled,
+    required this.busy,
+    required this.onTap,
+    this.hint,
+  });
+
+  final String label;
+  final String busyLabel;
+  final bool enabled;
+  final bool busy;
+  final VoidCallback onTap;
+
+  /// Why the button is disabled, shown beneath it. Null hides the line.
+  final String? hint;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final bool live = enabled && !busy;
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (hint != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                hint!,
+                textAlign: TextAlign.center,
+                style: textTheme.bodySmall?.copyWith(color: scheme.error),
+              ),
+            ),
+          Semantics(
+            button: true,
+            enabled: enabled,
+            label: busy ? busyLabel : label,
+            container: true,
+            child: Material(
+              color: live || busy ? scheme.primary : scheme.primaryContainer,
+              borderRadius: BorderRadius.circular(8),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: onTap,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  child: Center(
+                    child: busy
+                        ? SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: scheme.onPrimary,
+                            ),
+                          )
+                        : Text(
+                            label,
+                            style: textTheme.titleMedium?.copyWith(
+                              color: live ? scheme.onPrimary : scheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A tinted note with a leading icon — the mockups' hint panels under
+/// Priority ("Priority helps Tiler…") and Repeat ("This will create multiple
+/// instances"). One node for assistive tech, so the icon is decoration.
+/// An inline text button at the foot of an [AddTileCallout] ("Retry").
+class AddTileCalloutAction {
+  const AddTileCalloutAction(
+      {this.key, required this.label, required this.onTap});
+
+  final Key? key;
+  final String label;
+  final VoidCallback onTap;
+}
+
+class AddTileCallout extends StatelessWidget {
+  const AddTileCallout({
+    super.key,
+    required this.icon,
+    required this.text,
+    this.title,
+    this.action,
+  });
+
+  final IconData icon;
+  final String? title;
+  final String text;
+
+  /// Optional. Rendered as its own button, outside the callout's merged
+  /// label, so it stays reachable by assistive tech.
+  final AddTileCalloutAction? action;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = TodayStatusTokens.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    // The icon and text read as ONE node; the action, when present, is a
+    // sibling button so it is not swallowed by the merged label.
+    final Widget body = Semantics(
+      container: true,
+      label: title == null ? text : '$title. $text',
+      child: ExcludeSemantics(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 20, color: tokens.brand),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (title != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: Text(
+                        title!,
+                        style: textTheme.labelLarge?.copyWith(
+                            color: tokens.textPrimary,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  Text(
+                    text,
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: tokens.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: tokens.brand.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: action == null
+          ? body
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(child: body),
+                const SizedBox(width: 8),
+                _CalloutActionButton(action: action!),
+              ],
+            ),
+    );
+  }
+}
+
+class _CalloutActionButton extends StatelessWidget {
+  const _CalloutActionButton({required this.action});
+
+  final AddTileCalloutAction action;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = TodayStatusTokens.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    return Semantics(
+      key: action.key,
+      container: true,
+      button: true,
+      label: action.label,
+      onTap: action.onTap,
+      child: ExcludeSemantics(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: action.onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            child: Text(
+              action.label,
+              style: textTheme.labelLarge
+                  ?.copyWith(color: tokens.brand, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
       ),
     );
   }
