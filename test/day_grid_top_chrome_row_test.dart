@@ -69,6 +69,20 @@ String _labelText(WidgetTester tester) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  group('DayGridTopChromeRow — day pill is left-aligned', () {
+    testWidgets('the pill sits right after the toggle slot, not centred',
+        (tester) async {
+      await tester.pumpWidget(_wrap(_chrome(currentDate: DateTime(2001, 1, 1))));
+      await tester.pump();
+      final Rect bar = tester.getRect(find.byType(DayGridTopChromeRow));
+      final Rect pill = tester.getRect(find.byKey(DayGridTopChromeRow.dayLabelKey));
+      // Bar padding 8 + the 48px toggle slot + pill padding: well inside
+      // the left third of the bar.
+      expect(pill.left - bar.left, lessThan(80));
+      expect(pill.center.dx, lessThan(bar.center.dx));
+    });
+  });
+
   group('DayGridTopChromeRow — day label (DateTimeHuman.humanDate)', () {
     testWidgets('renders "Today" when the shown day is today', (tester) async {
       final DateTime today = Utility.currentTime().dayDate;

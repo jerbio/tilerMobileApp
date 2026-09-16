@@ -22,7 +22,7 @@ typedef DayGridDatePicker = Future<DateTime?> Function(
 
 /// Grid-mode fixed top bar (P6, C19/C20):
 ///
-/// `[list/grid toggle]   [ day pill ▾ ] [summary]   [go-to-today?] [search] [settings]`
+/// `[list/grid toggle] [ day pill ▾ ] [summary]   …   [go-to-today?] [search] [settings]`
 ///
 /// - The bar has a **constant height** ([height]) and hosts BOTH Daily
 ///   layouts (list and grid) so the chrome is identical in each.
@@ -214,10 +214,11 @@ class DayGridTopChromeRow extends StatelessWidget {
                     )
                   : null,
             ),
-            // Centre: day pill + summary button.
+            // Left of centre: day pill + summary button, packed against the
+            // toggle (left-aligned, not centred).
             Expanded(
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Flexible(child: _dayPill(context)),
                   IconButton(
