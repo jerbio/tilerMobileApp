@@ -1,3 +1,4 @@
+import 'package:tiler_app/services/analyticsSignal.dart';
 // essentials_onboarding_skip_test.dart
 //
 // TDD stage 3.3 for the product-tour onboarding redesign
@@ -211,6 +212,14 @@ Future<void> _tapThroughExplainer(WidgetTester tester) async {
 }
 
 void main() {
+  final analytics = <String>[];
+  setUp(() {
+    analytics.clear();
+    AnalysticsSignal.testSink = (name, parameters) async {
+      analytics.add('$name:${parameters['pageId'] ?? ''}');
+    };
+  });
+  tearDown(() => AnalysticsSignal.testSink = null);
   TestWidgetsFlutterBinding.ensureInitialized();
 
   final l10n = lookupAppLocalizations(const Locale('en'));
@@ -282,6 +291,13 @@ void main() {
       expect(skipObserver.destinationBuilt, isFalse,
           reason: "The app is not entered until the user taps Let's Go.");
       await _tapThroughExplainer(tester);
+      expect(analytics, [
+        'ESSENTIALS_ONBOARDING_STARTED:',
+        'ESSENTIALS_ONBOARDING_PAGE:profession',
+        'ESSENTIALS_ONBOARDING_SKIPPED:profession',
+        'EXPLAINER_SHOWN:',
+        'EXPLAINER_CONTINUED:',
+      ]);
       expect(skipObserver.destinationBuilt, isTrue,
           reason: 'Skip must navigate to the exit destination route.');
       expect(find.byType(_SkipDestinationMarker), findsOneWidget);
@@ -379,6 +395,7 @@ void main() {
       await _tapThroughExplainer(tester);
       expect(skipObserver.destinationBuilt, isTrue,
           reason: 'Skipping from page 2 must navigate to the exit route.');
+      expect(analytics, contains('ESSENTIALS_ONBOARDING_SKIPPED:location'));
       expect(
           await OnBoardingSharedPreferencesHelper.getSkipOnboarding(), isTrue,
           reason: 'Skipping from page 2 must persist the same '

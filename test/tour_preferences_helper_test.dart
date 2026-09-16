@@ -171,6 +171,7 @@ void main() {
           TourPreferencesHelper.homeTourId,
           TourPreferencesHelper.settingsTourId,
           TourPreferencesHelper.tilePreferencesTourId,
+          TourPreferencesHelper.addTileTourId,
         ]),
       );
       expect(TourPreferencesHelper.tilePreferencesTourId, 'tile_preferences',

@@ -1,3 +1,5 @@
+import 'package:tiler_app/services/analyticsSignal.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/tutorial/tutorial_bloc.dart';
@@ -14,10 +16,9 @@ import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
 /// The number of steps in the onboarding tour.
 ///
 /// This MUST stay in sync with the list returned by [buildTutorialSteps].
-/// It is the single source of truth used by `TutorialBloc(stepCount:)` and the
-/// step-counter fallbacks in `AuthorizedRoute`. The onboarding sync tests assert
+/// It is the single source of truth used by the Home TourHost. Sync tests assert
 /// `buildTutorialSteps(context).length == kTutorialStepCount`.
-const int kTutorialStepCount = 8;
+const int kTutorialStepCount = 6;
 
 /// Builds the ordered list of onboarding tour steps.
 ///
@@ -51,65 +52,7 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       spotlightPadding: 6,
     ),
 
-    // Step 3: Quick Add explanation — opens the real add-tile sheet
-    TutorialStep(
-      id: 'quick_add',
-      targetKey: null, // full-screen overlay (sheet is shown via modal)
-      title: l10n.tutorialStepQuickCreateTitle,
-      body: l10n.tutorialStepQuickCreateBody,
-      headerIcon: Icons.bolt,
-      tooltipPosition: TooltipPosition.center,
-      callouts: [
-        TutorialCallout(
-          icon: Icons.edit,
-          label: l10n.tutorialCalloutNameYourTile,
-          description: l10n.tutorialCalloutNameYourTileDesc,
-        ),
-        TutorialCallout(
-          icon: Icons.timer,
-          label: l10n.tutorialCalloutSetDuration,
-          description: l10n.tutorialCalloutSetDurationDesc,
-        ),
-        TutorialCallout(
-          icon: Icons.tune,
-          label: l10n.tutorialCalloutMoreOptions,
-          description: l10n.tutorialCalloutMoreOptionsDesc,
-        ),
-      ],
-    ),
-
-    // Step 4: Smart Scheduling — Tiler Works for You
-    // Callouts mirror the real add-tile sheet action row:
-    // Shuffle · Defer All · Options (see PreviewAddWidget.renderModal).
-    TutorialStep(
-      id: 'smart_scheduling',
-      targetKey: TutorialKeys.bottomNavKey,
-      title: l10n.tutorialStepTilerWorksTitle,
-      body: l10n.tutorialStepTilerWorksBody,
-      headerIcon: Icons.auto_awesome,
-      tooltipPosition: TooltipPosition.above,
-      spotlightShape: SpotlightShape.roundedRect,
-      spotlightPadding: 4,
-      callouts: [
-        TutorialCallout(
-          icon: Icons.shuffle,
-          label: l10n.tutorialCalloutShuffle,
-          description: l10n.tutorialCalloutShuffleDesc,
-        ),
-        TutorialCallout(
-          icon: Icons.fast_forward,
-          label: l10n.tutorialCalloutDeferAll,
-          description: l10n.tutorialCalloutDeferAllDesc,
-        ),
-        TutorialCallout(
-          icon: Icons.more_time,
-          label: l10n.tutorialCalloutMoreOptions,
-          description: l10n.tutorialCalloutMoreOptionsSheetDesc,
-        ),
-      ],
-    ),
-
-    // Step 5: Tile Interactions
+    // Step 3: Tile Interactions
     TutorialStep(
       id: 'tile_interactions',
       targetKey: TutorialKeys.currentTileKey,
@@ -138,7 +81,7 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       ],
     ),
 
-    // Step 6: Switch Views — Calendar Toggle
+    // Step 4: Switch Views — Calendar Toggle
     TutorialStep(
       id: 'switch_views',
       targetKey: TutorialKeys.bottomNavKey,
@@ -167,7 +110,7 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       ],
     ),
 
-    // Step 7: Top-right tools — Search & Settings
+    // Step 5: Top-right tools — Search & Settings
     TutorialStep(
       id: 'quick_tools',
       targetKey: TutorialKeys.topRightActionsKey,
@@ -191,7 +134,7 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       ],
     ),
 
-    // Step 8: The Chat FAB — talk to Tiler
+    // Step 6: The Chat FAB — talk to Tiler
     TutorialStep(
       id: 'chat_fab',
       targetKey: TutorialKeys.fabKey,
@@ -203,6 +146,71 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       tooltipPosition: TooltipPosition.above,
       spotlightShape: SpotlightShape.circle,
       spotlightPadding: 6,
+    ),
+  ];
+}
+
+/// Contextual tour shown only after opening the add-tile sheet.
+const int kAddTileTourStepCount = 2;
+List<TutorialStep> buildAddTileTourSteps(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+  return [
+    // Step 1: Quick Add on the sheet the user opened
+    TutorialStep(
+      id: 'quick_add',
+      targetKey: null, // full-screen overlay (sheet is shown via modal)
+      title: l10n.tutorialStepQuickCreateTitle,
+      body: l10n.tutorialStepQuickCreateBody,
+      headerIcon: Icons.bolt,
+      tooltipPosition: TooltipPosition.center,
+      callouts: [
+        TutorialCallout(
+          icon: Icons.edit,
+          label: l10n.tutorialCalloutNameYourTile,
+          description: l10n.tutorialCalloutNameYourTileDesc,
+        ),
+        TutorialCallout(
+          icon: Icons.timer,
+          label: l10n.tutorialCalloutSetDuration,
+          description: l10n.tutorialCalloutSetDurationDesc,
+        ),
+        TutorialCallout(
+          icon: Icons.tune,
+          label: l10n.tutorialCalloutMoreOptions,
+          description: l10n.tutorialCalloutMoreOptionsDesc,
+        ),
+      ],
+    ),
+
+    // Step 2: Smart Scheduling — Tiler Works for You
+    // Callouts mirror the real add-tile sheet action row:
+    // Shuffle · Defer All · Options (see PreviewAddWidget.renderModal).
+    TutorialStep(
+      id: 'smart_scheduling',
+      targetKey: null,
+      title: l10n.tutorialStepTilerWorksTitle,
+      body: l10n.tutorialStepTilerWorksBody,
+      headerIcon: Icons.auto_awesome,
+      tooltipPosition: TooltipPosition.center,
+      spotlightShape: SpotlightShape.roundedRect,
+      spotlightPadding: 4,
+      callouts: [
+        TutorialCallout(
+          icon: Icons.shuffle,
+          label: l10n.tutorialCalloutShuffle,
+          description: l10n.tutorialCalloutShuffleDesc,
+        ),
+        TutorialCallout(
+          icon: Icons.fast_forward,
+          label: l10n.tutorialCalloutDeferAll,
+          description: l10n.tutorialCalloutDeferAllDesc,
+        ),
+        TutorialCallout(
+          icon: Icons.more_time,
+          label: l10n.tutorialCalloutMoreOptions,
+          description: l10n.tutorialCalloutMoreOptionsSheetDesc,
+        ),
+      ],
     ),
   ];
 }
@@ -225,20 +233,9 @@ class TutorialOverlay extends StatefulWidget {
   /// tour steps.
   final List<TutorialStep> Function(BuildContext context) stepsBuilder;
 
-  /// Callback that opens the real add-tile bottom sheet during the tutorial.
-  /// Receives the [TutorialBloc] so the dialog shown on top of the sheet
-  /// can advance / go back without needing a BlocProvider lookup.
-  /// Returns a Future that completes when the sheet is dismissed.
-  final Future<void> Function(TutorialBloc bloc)? onShowAddTileSheet;
-
-  /// Callback to dismiss the add-tile sheet if it's currently showing.
-  final VoidCallback? onDismissAddTileSheet;
-
   const TutorialOverlay({
     Key? key,
     required this.child,
-    this.onShowAddTileSheet,
-    this.onDismissAddTileSheet,
     this.tourId = TourPreferencesHelper.homeTourId,
     this.stepsBuilder = buildTutorialSteps,
   }) : super(key: key);
@@ -255,9 +252,8 @@ class _TutorialOverlayState extends State<TutorialOverlay>
 
   /// Tracks the previous step index so we can fire onExit / onEnter.
   int _previousStepIndex = 0;
-
-  /// Whether the real add-tile sheet is currently showing.
-  bool _addTileSheetShowing = false;
+  TutorialStatus? _reportedStatus;
+  int? _reportedStep;
 
   /// Whether dummy tutorial tiles have been injected into the schedule.
   bool _dummyTilesInjected = false;
@@ -302,67 +298,35 @@ class _TutorialOverlayState extends State<TutorialOverlay>
     return null;
   }
 
-  /// Opens the real add-tile sheet via the callback.
-  void _showAddTileSheet() {
-    if (widget.onShowAddTileSheet == null || _addTileSheetShowing) return;
-    _addTileSheetShowing = true;
-    final tutorialBloc = context.read<TutorialBloc>();
-    widget.onShowAddTileSheet!(tutorialBloc).whenComplete(() {
-      _addTileSheetShowing = false;
-      // If tutorial is still on the quick_add step when the sheet is dismissed
-      // (e.g. the user tapped the barrier), auto-advance to the next step.
-      if (mounted) {
-        final tutorialState = context.read<TutorialBloc>().state;
-        if (tutorialState.isActive &&
-            tutorialState.currentStepIndex < _steps.length &&
-            _steps[tutorialState.currentStepIndex].id == 'quick_add') {
-          context.read<TutorialBloc>().add(NextTutorialStepEvent());
-        }
-      }
-    });
-  }
-
-  /// Dismisses the real add-tile sheet if it's showing.
-  void _dismissAddTileSheet() {
-    if (_addTileSheetShowing) {
-      widget.onDismissAddTileSheet?.call();
-      _addTileSheetShowing = false;
-    }
-  }
-
-  /// Fires onExit for the old step, onEnter for the new step.
-  /// Also handles showing / dismissing the add-tile sheet for the quick_add step.
-  /// Steps that should keep the add-tile sheet visible.
-  static const _sheetSteps = {'quick_add', 'smart_scheduling'};
-
   void _handleStepTransition(int oldIndex, int newIndex) {
-    final oldId = oldIndex < _steps.length ? _steps[oldIndex].id : '';
-    final newId = newIndex < _steps.length ? _steps[newIndex].id : '';
-
-    // Exit old step
-    if (oldIndex < _steps.length) {
-      _steps[oldIndex].onExit?.call(context);
-      // Dismiss sheet only when leaving a sheet-step for a non-sheet-step
-      if (_sheetSteps.contains(oldId) && !_sheetSteps.contains(newId)) {
-        _dismissAddTileSheet();
-      }
-    }
-    // Enter new step
-    if (newIndex < _steps.length) {
-      _steps[newIndex].onEnter?.call(context);
-      // Open the sheet when entering a sheet-step from a non-sheet-step
-      if (_sheetSteps.contains(newId) && !_sheetSteps.contains(oldId)) {
-        Future.delayed(Duration(milliseconds: 300), () {
-          if (mounted) _showAddTileSheet();
-        });
-      }
-    }
+    if (oldIndex < _steps.length) _steps[oldIndex].onExit?.call(context);
+    if (newIndex < _steps.length) _steps[newIndex].onEnter?.call(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<TutorialBloc, TutorialState>(
       listener: (context, state) {
+        final stepId = _steps[state.currentStepIndex].id;
+        if (state.isActive) {
+          if (_reportedStatus != TutorialStatus.active) {
+            AnalysticsSignal.send('TOUR_STARTED',
+                parameters: {'tourId': widget.tourId, 'stepId': stepId});
+          }
+          if (_reportedStatus != TutorialStatus.active ||
+              _reportedStep != state.currentStepIndex) {
+            AnalysticsSignal.send('TOUR_STEP',
+                parameters: {'tourId': widget.tourId, 'stepId': stepId});
+          }
+        } else if (_reportedStatus == TutorialStatus.active) {
+          if (state.isCompleted || state.status == TutorialStatus.skipped) {
+            AnalysticsSignal.send(
+                state.isCompleted ? 'TOUR_COMPLETED' : 'TOUR_SKIPPED',
+                parameters: {'tourId': widget.tourId, 'stepId': stepId});
+          }
+        }
+        _reportedStatus = state.status;
+        _reportedStep = state.currentStepIndex;
         if (state.isActive) {
           _animationController.forward();
 
@@ -385,10 +349,6 @@ class _TutorialOverlayState extends State<TutorialOverlay>
           // Fire onExit for whatever step was active when tutorial ended
           if (_previousStepIndex < _steps.length) {
             _steps[_previousStepIndex].onExit?.call(context);
-            // Dismiss the sheet if it's showing (could be on any sheet step)
-            if (_sheetSteps.contains(_steps[_previousStepIndex].id)) {
-              _dismissAddTileSheet();
-            }
           }
 
           // Restore the real schedule now that the tutorial is done.
@@ -408,11 +368,7 @@ class _TutorialOverlayState extends State<TutorialOverlay>
         final TutorialStep? currentStep =
             state.isActive ? _steps[state.currentStepIndex] : null;
 
-        // Don't render the tutorial overlay on step 3 (quick_add)
-        // because the real modal bottom sheet is shown above everything.
-        // The tooltip is embedded in the modal itself.
-        final bool showOverlay =
-            currentStep != null && currentStep.id != 'quick_add';
+        final bool showOverlay = currentStep != null;
 
         // The surface always lives at the same spot in the tree — under
         // this Stack — whether or not the overlay is showing. Returning
@@ -477,23 +433,53 @@ class _TutorialOverlayLayerState extends State<_TutorialOverlayLayer> {
     }
   }
 
+  Timer? _retry;
+  int _resolution = 0;
+
+  @override
+  void dispose() {
+    _retry?.cancel();
+    _resolution++;
+    super.dispose();
+  }
+
   void _resolveTargetRect() {
-    // Schedule after the frame so GlobalKeys have valid RenderObjects
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final key = widget.currentStep.targetKey;
+    _retry?.cancel();
+    final generation = ++_resolution;
+    _targetRect = null;
+    final step = widget.currentStep;
+    final key = step.targetKey;
+    // Full-surface steps deliberately have no spotlight.
+    if (key == null) return;
+    void attempt(int count) {
+      if (!mounted || generation != _resolution) return;
+      final bloc = context.read<TutorialBloc>();
+      if (!bloc.state.isActive ||
+          bloc.state.currentStepIndex != widget.state.currentStepIndex) return;
       if (_scrollTargetIntoView(key)) {
-        // The enclosing scrollable jumped, which scheduled a layout frame;
-        // the anchor's global rect is only correct after it.
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            setState(() => _targetRect = widget.getTargetRect(key));
-          }
-        });
+        WidgetsBinding.instance.addPostFrameCallback((_) => attempt(count));
         return;
       }
-      setState(() => _targetRect = widget.getTargetRect(key));
-    });
+      final rect = widget.getTargetRect(key);
+      if (rect != null &&
+          !rect.isEmpty &&
+          rect.left.isFinite &&
+          rect.top.isFinite) {
+        setState(() => _targetRect = rect);
+        return;
+      }
+      if (count < 5) {
+        _retry =
+            Timer(const Duration(milliseconds: 100), () => attempt(count + 1));
+        return;
+      }
+      AnalysticsSignal.send('TOUR_TARGET_MISSING',
+          parameters: {'tourId': bloc.tourId, 'stepId': step.id});
+      debugPrint('Tour target missing: ${bloc.tourId}/${step.id}');
+      bloc.add(NextTutorialStepEvent());
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => attempt(0));
   }
 
   /// Scrolls the step's anchor into its enclosing scrollable, moving the
@@ -531,25 +517,17 @@ class _TutorialOverlayLayerState extends State<_TutorialOverlayLayer> {
     return AnimatedBuilder(
       animation: widget.fadeAnimation,
       builder: (context, child) {
-        // Steps handled by dialog-on-dialog (shown over the sheet)
-        // don't need the overlay tooltip — it would be hidden behind the sheet.
-        final isSheetStep =
-            _TutorialOverlayState._sheetSteps.contains(widget.currentStep.id);
-
         return Stack(
           children: [
             // Spotlight overlay — absorbs taps
             Positioned.fill(
               child: GestureDetector(
                 onTap: () {
-                  // Don't advance via tap during sheet steps — dialogs handle it
-                  if (!isSheetStep) {
-                    context.read<TutorialBloc>().add(NextTutorialStepEvent());
-                  }
+                  context.read<TutorialBloc>().add(NextTutorialStepEvent());
                 },
                 child: CustomPaint(
                   painter: TutorialSpotlightPainter(
-                    targetRect: isSheetStep ? null : _targetRect,
+                    targetRect: _targetRect,
                     padding: widget.currentStep.spotlightPadding,
                     shape: widget.currentStep.spotlightShape,
                     animationValue: widget.fadeAnimation.value,
@@ -558,33 +536,32 @@ class _TutorialOverlayLayerState extends State<_TutorialOverlayLayer> {
               ),
             ),
 
-            // Tooltip card — hidden for sheet steps (dialog-on-dialog handles those)
-            if (!isSheetStep)
-              Positioned(
-                left: 0,
-                right: 0,
-                top: slot.top,
-                bottom: slot.bottom,
-                child: Align(
-                  alignment: slot.alignment,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: TutorialTooltipWidget(
-                      step: widget.currentStep,
-                      currentStepIndex: widget.state.currentStepIndex,
-                      totalSteps: widget.state.totalSteps,
-                      onNext: () => context
-                          .read<TutorialBloc>()
-                          .add(NextTutorialStepEvent()),
-                      onPrevious: () => context
-                          .read<TutorialBloc>()
-                          .add(PreviousTutorialStepEvent()),
-                      onSkip: () =>
-                          context.read<TutorialBloc>().add(SkipTutorialEvent()),
-                    ),
+            // Tooltip card
+            Positioned(
+              left: 0,
+              right: 0,
+              top: slot.top,
+              bottom: slot.bottom,
+              child: Align(
+                alignment: slot.alignment,
+                child: Material(
+                  color: Colors.transparent,
+                  child: TutorialTooltipWidget(
+                    step: widget.currentStep,
+                    currentStepIndex: widget.state.currentStepIndex,
+                    totalSteps: widget.state.totalSteps,
+                    onNext: () => context
+                        .read<TutorialBloc>()
+                        .add(NextTutorialStepEvent()),
+                    onPrevious: () => context
+                        .read<TutorialBloc>()
+                        .add(PreviousTutorialStepEvent()),
+                    onSkip: () =>
+                        context.read<TutorialBloc>().add(SkipTutorialEvent()),
                   ),
                 ),
               ),
+            ),
           ],
         );
       },

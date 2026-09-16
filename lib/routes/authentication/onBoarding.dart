@@ -1,3 +1,4 @@
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
@@ -68,6 +69,8 @@ class _OnboardingViewState extends State<OnboardingView> {
     PrimaryLocationWidget(),
   ];
   late ScheduleApi scheduleApi;
+  int _analyticsPage = 0;
+  String get _pageId => _analyticsPage == 0 ? 'profession' : 'location';
 
   /// The schedule bloc the post-submit refresh targets, resolved while the
   /// onboarding context is still mounted (the route is replaced right
@@ -118,6 +121,12 @@ class _OnboardingViewState extends State<OnboardingView> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      AnalysticsSignal.send('ESSENTIALS_ONBOARDING_STARTED');
+      AnalysticsSignal.send('ESSENTIALS_ONBOARDING_PAGE',
+          parameters: {'pageId': _pageId});
+    });
     // Stage 3.4: an injected schedule API (tests) takes precedence; the
     // production view creates its own with the build context.
     scheduleApi = widget.scheduleApi ??
@@ -133,7 +142,14 @@ class _OnboardingViewState extends State<OnboardingView> {
         NotificationOverlayMessage();
     final onboarding = BlocConsumer<OnboardingBloc, OnboardingState>(
       listener: (context, state) {
+        if (state.pageNumber != null && state.pageNumber != _analyticsPage) {
+          _analyticsPage = state.pageNumber!;
+          AnalysticsSignal.send('ESSENTIALS_ONBOARDING_PAGE',
+              parameters: {'pageId': _pageId});
+        }
         if (state.step == OnboardingStep.skipped) {
+          AnalysticsSignal.send('ESSENTIALS_ONBOARDING_SKIPPED',
+              parameters: {'pageId': _pageId});
           // Stage 3.3: skip navigation is terminal; the optional seam
           // lets tests substitute the destination builder.
           final Widget Function(BuildContext) skipBuilder =
@@ -141,12 +157,13 @@ class _OnboardingViewState extends State<OnboardingView> {
           _exitThroughExplainer(context, skipBuilder);
         }
         if (state.step == OnboardingStep.submitted) {
+          AnalysticsSignal.send('ESSENTIALS_ONBOARDING_SUBMITTED');
           // Stage 3.4: atomic submit exit -- buzz the schedule, then
           // navigate directly to the authorized app (the intro slider is
           // cut from the essentials flow). The optional seam lets tests
           // substitute the destination builder. Navigation never waits on
           // the buzz; the schedule refreshes once it completes (3.5).
-          _buzzThenRefreshSchedule();
+          // _buzzThenRefreshSchedule();
           final Widget Function(BuildContext) submitBuilder =
               widget.submitDestinationBuilder ??
                   ((context) => AuthorizedRoute());
