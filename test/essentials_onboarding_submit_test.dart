@@ -1,3 +1,4 @@
+import 'package:tiler_app/services/analyticsSignal.dart';
 // essentials_onboarding_submit_test.dart
 //
 // TDD stage 3.4 for the product-tour onboarding redesign
@@ -272,6 +273,14 @@ Future<void> _tapThroughExplainer(WidgetTester tester) async {
 }
 
 void main() {
+  final analytics = <String>[];
+  setUp(() {
+    analytics.clear();
+    AnalysticsSignal.testSink = (name, parameters) async {
+      analytics.add('$name:${parameters['pageId'] ?? ''}');
+    };
+  });
+  tearDown(() => AnalysticsSignal.testSink = null);
   setUp(() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     _submitDestination = null;
@@ -432,6 +441,14 @@ void main() {
           reason: "The app is not entered until the user taps Let's Go.");
       await _tapThroughExplainer(tester);
 
+      expect(analytics, [
+        'ESSENTIALS_ONBOARDING_STARTED:',
+        'ESSENTIALS_ONBOARDING_PAGE:profession',
+        'ESSENTIALS_ONBOARDING_PAGE:location',
+        'ESSENTIALS_ONBOARDING_SUBMITTED:',
+        'EXPLAINER_SHOWN:',
+        'EXPLAINER_CONTINUED:',
+      ]);
       expect(submitObserver.destinationBuilt, isTrue,
           reason: 'A successful submit must navigate to the exit '
               'destination (AuthorizedRoute in production).');
@@ -496,6 +513,12 @@ void main() {
 
       expect(api.sendCalls, 1, reason: 'A failed submit must not retry.');
       expect(bloc.state.step, OnboardingStep.error);
+      expect(
+          analytics
+              .where((e) => e == 'ESSENTIALS_ONBOARDING_SUBMIT_FAILED:')
+              .length,
+          1);
+      expect(analytics, isNot(contains('ESSENTIALS_ONBOARDING_SUBMITTED:')));
       expect(bloc.state.error, contains('Onboarding submit failed'),
           reason: 'The error toast path must surface the API error message.');
       expect(bloc.state.pageNumber, 1,

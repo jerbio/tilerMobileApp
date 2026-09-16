@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:tiler_app/util.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import '../../constants.dart' as Constants;
@@ -58,20 +59,32 @@ class AnalysticsSignal {
     return retValue;
   }
 
-  static Future send(String tag, {Map? additionalInfo}) async {
-    return "no-tag-set";
-    if (tag.isEmpty) {
+  /// Test transport; production uses Firebase and retains the debug guard.
+  @visibleForTesting
+  static Future<void> Function(String, Map<String, Object>)? testSink;
+
+  /// [parameters] exposes structured event fields alongside session metadata.
+  /// Existing callers may continue using [additionalInfo]. Delivery failures
+  /// must not interrupt the user flow that emitted the event.
+  static Future send(String tag,
+      {Map? additionalInfo, Map<String, Object>? parameters}) async {
+    if (tag.isEmpty || (Constants.isDebug && testSink == null)) {
       return "no-tag-set";
     }
-    if (Constants.isDebug) {
-      return;
+    try {
+      final signal = AnalysticsSignal.nextSignal(
+          signalTag: tag, additionalInfo: additionalInfo);
+      final payload = <String, Object>{
+        ...?parameters,
+        ...?signal.toJson(),
+      };
+      if (testSink != null) {
+        await testSink!(tag, payload);
+      } else {
+        await fireBaseAnalytics.logEvent(name: tag, parameters: payload);
+      }
+    } catch (_) {
+      debugPrint('Analytics delivery failed: $tag');
     }
-    AnalysticsSignal nextSignal = AnalysticsSignal.nextSignal(
-        signalTag: tag, additionalInfo: additionalInfo);
-    await fireBaseAnalytics
-        .logEvent(name: nextSignal.tag, parameters: nextSignal.toJson())
-        .then((value) {
-      print("---- custom event analystics user logged in verified-----");
-    });
   }
 }

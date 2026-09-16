@@ -7,7 +7,7 @@ minutes earlier; learning happens in context.
 Development follows TDD: write failing test -> implement -> pass ->
 analyze -> refactor. Update the tracker after every red-green-refactor cycle.
 
-Last updated: 2026-09-12
+Last updated: 2026-09-16
 
 **Resume point (pause/error recovery):** Phases 1–3 complete (commits
 `711af31` phase 1, `a10302e` phase 2, `aec0f74` stage 2.4, `70d643c` phase 3).
@@ -16,10 +16,10 @@ to the **Tile Preferences** page (section 3.4); stage 2.5 landed it, and
 stage 3.5 (schedule prefetch during onboarding) followed (`ecf5ab9`). Stage
 4.1 + 5.2 + the overlay remount fix landed in `59f771e`; the day-carousel
 remount fix (3.5 cycle 2) in `a4bd471`; 4.2 in `07686ef`. Stage 4.4
-(explainer) landed in `ee758ab`; its cycle 2 (demo moved to after the
-essentials pages) and 4.3 (decommission instead of a kill switch) are
-**Green, awaiting review — uncommitted in the working tree**. After they
-commit, next: **5.1 — analytics signals**, then 5.3 manual QA.
+(explainer) landed in `ee758ab`; demo relocation, badges and decommission
+landed in `04b808a8`, with documentation in `a369cf22`. Stage 5.1 is
+implemented and tested in the working tree, awaiting review (uncommitted).
+Next: 5.3 Android/iOS manual QA and production analytics delivery verification.
 Resume protocol: (1) read this block, (2) the section 9 tracker row for
 the next stage, (3) the newest section 10 cycle entry. The tracker and
 cycle log are updated in the same commit as the code, so a mid-stage
@@ -296,6 +296,8 @@ New `AnalysticsSignal` events (naming matches existing `SETTING_PRESSED` style):
 | `ESSENTIALS_ONBOARDING_PAGE` (+page id) | Page transition |
 | `ESSENTIALS_ONBOARDING_SKIPPED` (+page id) | Global Skip tapped |
 | `ESSENTIALS_ONBOARDING_SUBMITTED` | Successful submit |
+| `ESSENTIALS_ONBOARDING_SUBMIT_FAILED` | Submit request or completion persistence failed; no error body |
+| `EXPLAINER_SHOWN` / `EXPLAINER_CONTINUED` | Post-essentials demo shown / user continues |
 | `TOUR_STARTED` / `TOUR_STEP` / `TOUR_COMPLETED` / `TOUR_SKIPPED` (+tourId, +stepId) | Tour lifecycle |
 | `TOUR_TARGET_MISSING` (+tourId, +stepId) | Spotlight anchor failed to resolve |
 
@@ -338,24 +340,21 @@ User-validated feedback log (newest first):
 
 ## 8. Manual QA checklist
 
-- [ ] Fresh install: sign in → profession page appears first
-- [ ] Global Skip on page 1 and page 2 both land on schedule; flow never
-      re-triggers on relaunch
-- [ ] Fill profession, skip on location page → no API submit; nothing saved
-- [ ] Full submit → schedule directly (no intro slider); data visible
-      server-side
-- [ ] Swiping pages never triggers a location permission prompt; only the
-      in-page button does
-- [ ] Home tour auto-starts once on fresh device; not after completion
-- [ ] First visit to Settings starts settings tour; anchors align with tiles
-      in light + dark themes, small + large screens
-- [ ] Settings tour never re-shows after complete/skip; survives logout;
-      replays after reinstall
-- [ ] "How to use Tiler" replays tours
-- [ ] Legacy user (old `hasCompletedAppTutorial` / `skipOnboarding` flags):
-      no home tour replay, no essentials flow, settings tour shows once
-- [ ] en + es strings render; no overflow on smallest supported device
-- [ ] Offline sign-in: gate resolves locally, no hang
+Run on Android and iOS; these checks are not implied by passing widget tests.
+
+- [ ] Fresh install: sign in -> profession -> location. Swiping never requests location permission; only the consent button does.
+- [ ] Submit -> Tiles vs Blocks demo -> Let's Go -> schedule; no questions remain on the navigation stack.
+- [ ] Skip on either page -> demo -> schedule without submitting answers. Relaunch does not repeat essentials.
+- [ ] Failed submit stays on Location with Skip available; retry succeeds. Verify scheduling defaults when no onboarding record exists.
+- [ ] Slow schedule/settings loads do not leave a stuck loader. Tile Preferences waits for the loaded page before its tour starts.
+- [ ] Dentist change is announced before it moves; re-planned marks appear on affected tiles. Reduced motion shows the final frame.
+- [ ] Demo back/exit and relaunch behave acceptably with completion flags already saved.
+- [ ] Home, Settings pointer and Tile Preferences tours run once, survive logout and replay through How to use Tiler.
+- [ ] Missing anchors retry briefly, log identifiers and advance. Intentional full-screen/sheet steps remain intact.
+- [ ] Check English/Spanish, dark/light themes, 360dp and large screens, landscape and large text.
+- [ ] Verify legacy completion/skip flags and local gate behavior when the network is unavailable.
+- [ ] In a production-configured build, verify Firebase receives onboarding, tour and demo events with only pageId/tourId/stepId parameters. No profession, address, coordinates or error bodies.
+- [ ] Confirm each page/step visit emits once across rebuilds, revisits emit another view, and analytics delivery failure never blocks the UI.
 
 ## 9. Implementation tracker
 
@@ -379,9 +378,9 @@ Status legend: `Not started` | `Red (test failing)` | `Green (test passing)` | `
 | 3.5 | Schedule prefetch during essentials onboarding | `test/essentials_onboarding_schedule_prefetch_test.dart`, `test/daily_carousel_remount_test.dart` | `services/schedulePrimer.dart`, `main.dart`, `onBoarding.dart`, `dailyTileList.dart` | Done | 5 tests. Cold start (`main.dart`) previously only reset the bloc (`LogInScheduleEvent`) and never fetched until the home list mounted; it now calls `primeScheduleAfterLogin` (parity with the sign-in path, which still inlines the same three dispatches — 4.1 should switch it over). `OnboardingView` gained an optional `scheduleBloc` seam; without it the view reads the ancestor bloc and, if none, skips the refresh (best-effort). Buzz errors were previously unhandled fire-and-forget; now logged |
 | 4.1 | Local-only gate + call sites | `test/onboarding_gate_test.dart` | `util.dart`, `signInComponent.dart`, `on_boarding_bloc.dart` | Done | `59f771e`. 5 tests: gate resolves from microtasks alone (fake-async, zero pending timers), legacy `skipOnboarding` honoured, `essentialsOnboardingDone` honoured, fresh device → essentials, Skip writes the canonical flag. The 6 `signInComponent` sites discarded the gate result and then `WelcomeScreen` ran it again — all 6 replaced by `primeScheduleAfterLogin(context)` (3.5), which also removed their inline schedule dispatches; `main.dart` keeps its `FutureBuilder` (now resolves in one microtask). 5.2 folded in |
 | 4.2 | WelcomeScreen delay + routing | `test/welcome_screen_navigation_test.dart` | `welcomeScreen.dart` | Done | 8 tests (2 pre-existing stack-clearing tests kept). The 3s sleep is a named `WelcomeScreen.displayDuration` = 800ms brand beat; the gate check runs concurrently with the beat (`Future.wait`), so the wait is `max(beat, check)`, never `beat + check`. Routing by the real local gate is pinned without a checker override (done flag / legacy skip → authorized; neither → essentials) |
-| 4.4 | Tiles vs Blocks demo | `test/welcome_explainer_test.dart` (+ skip/submit/prefetch suites tap through) | `components/welcome/tilesVsBlocksExplainer.dart`, `routes/authentication/onboardingExplainerRoute.dart`, `onBoarding.dart`, l10n | Done (cycle 2 awaiting review) | Cycle 1 (`ee758ab`) put the demo on the welcome screen; cycle 2 moves it to after the essentials pages (Submit and Skip) via `OnboardingExplainerScreen`, and `WelcomeScreen` reverts to the 4.2 beat. 12 EN + 12 ES strings; CTA reuses `tutorialNavLetsGo`. Not replayable from "How to use Tiler" (could add later) |
-| 4.3 | Decommission legacy flow (was: kill-switch flag) | (analyze + full suite) | 12 files deleted under `components/onBoarding/`, `main.dart`, `app_en.arb` | Green (awaiting review) | Kill switch dropped (Phase 4 item 3 note). Deleted: 9 legacy sub-widgets + `onBoardingPillTag`, `onBoardingSlider` (+ `IntroSlideData`), `videoPlayer`; the dead `/onBoardingWorkProfile` route; 28 orphaned EN strings (keys referenced only from the deleted files). Kept: `onBoardingSubWidget` (used by the two live pages), the bloc's tile-suggestion / recurring-task handlers (event/state surgery — follow-up), and the now-unused `video_player` dependency (dropping a plugin is a deliberate step) |
-| 5.1 | Analytics signals | (unit-light; verify names) | tour engine + onboarding files | Not started | |
+| 4.4 | Tiles vs Blocks demo | `test/welcome_explainer_test.dart` (+ skip/submit/prefetch suites tap through) | `components/welcome/tilesVsBlocksExplainer.dart`, `routes/authentication/onboardingExplainerRoute.dart`, `onBoarding.dart`, l10n | Done (`04b808a8`) | Cycle 1 (`ee758ab`) put the demo on the welcome screen; cycle 2 moves it to after the essentials pages (Submit and Skip) via `OnboardingExplainerScreen`, and `WelcomeScreen` reverts to the 4.2 beat. 12 EN + 12 ES strings; CTA reuses `tutorialNavLetsGo`. Not replayable from "How to use Tiler" (could add later) |
+| 4.3 | Decommission legacy flow (was: kill-switch flag) | (analyze + full suite) | 12 files deleted under `components/onBoarding/`, `main.dart`, `app_en.arb` | Done (`04b808a8`) | Kill switch dropped (Phase 4 item 3 note). Deleted: 9 legacy sub-widgets + `onBoardingPillTag`, `onBoardingSlider` (+ `IntroSlideData`), `videoPlayer`; the dead `/onBoardingWorkProfile` route; 28 orphaned EN strings (keys referenced only from the deleted files). Kept: `onBoardingSubWidget` (used by the two live pages), the bloc's tile-suggestion / recurring-task handlers (event/state surgery — follow-up), and the now-unused `video_player` dependency (dropping a plugin is a deliberate step) |
+| 5.1 | Analytics + missing-target recovery | `product_tour_analytics_test.dart`, submit/skip suites | analytics sender, tour overlay, onboarding/demo | Green (awaiting review) | Transition events; identifiers only; bounded anchor retries; uncommitted |
 | 5.2 | Logging hardening (remove header/body prints) | (analyze pass) | `onBoardingApi.dart` | Done | Folded into 4.1 (`59f771e`): the `Request headers:` print (auth token) removed outright; response-body prints → `Utility.debugPrint` with the HTTP status only; exception prints → `Utility.debugPrint` |
 | 5.3 | Manual QA (section 8) | — | — | Not started | Android + iOS |
 
@@ -412,3 +411,32 @@ Record each meaningful cycle. Newest first.
 | 2026-08-26 | 1.3 | 1 | Green | Implemented `TourCoordinator` (in-memory singleton; one active tour at a time; re-entry replay; owner-only release) and `TourHost` (owns the per-tour `TutorialBloc`, applies the per-tour completion check via `TourPreferencesHelper`, waits a settle delay, starts only when the coordinator allows, releases on complete/skip). Generalized `TutorialOverlay` with `tourId` + `stepsBuilder`, scoped dummy-tile injection to the home tour, and rewired `AuthorizedRoute` to host the home tour via `TourHost` (removed `_TutorialWrapper` + the root `TutorialBloc` provider). Red: `TourHost` undefined. Green: 7 tests in `tour_host_test.dart`. Bug found + fixed during the cycle: the skip test hung to the 10-minute timeout — a bare `Future.delayed` never completes under `testWidgets`' fake-async clock; replaced with `tester.pump()` to flush the skip state. Also fixed an import regression (accidentally dropped `tutorialOverlay.dart`, which defines `kTutorialStepCount` used by the legacy sheet dialogs). Final verification: full suite 439 pass / 6 pre-existing fails (same 6: home_layout chat icon, onboarding_tour_sync chat_fab icon, enhanced_tile_batch ×2, preview_sentence load, widget_test smoke); `flutter analyze` 542 (baseline; no new issues). |
 | 2026-08-26 | 1.2 | 1 | Green | `TutorialBloc` is now parameterized by `tourId` (defaults to `home` so the existing `AuthorizedRoute` wiring keeps working during the 1.2/1.3 transition). `_onSkip`/`_onComplete` persist `hasCompletedTour_<tourId>` and `_onReset` writes `false` for that key only — the legacy `hasCompletedAppTutorial` flag is never written by the multi-tour path. 8 tests green in `tutorial_bloc_multi_tour_test.dart` (per-tour persistence isolation, reset never pollutes the legacy key, step navigation start/next/previous/reset unchanged). Full suite: no new failures (same 6 pre-existing). |
 | 2026-08-26 | 1.1 | 1 | Green | Baseline first: upgraded local Flutter 3.38.5 → 3.47.1 (lockfile needs Dart ≥3.12). Baseline: 412 pass / 6 pre-existing fails; analyze 542 (1E/294W/247I). Red: `TourPreferencesHelper` undefined. Green: 12 tests — per-tour key independence, `hasCompletedTour_<tourId>` key format, legacy `hasCompletedAppTutorial` → `home` one-time persisted migration, reset beats legacy, per-tour reset isolation. Full suite 424 pass / same 6 pre-existing fails; analyze 542 (no new issues). No refactor changes needed. |
+
+### Stage 5.1 implementation notes (2026-09-16, uncommitted)
+
+All events reuse `AnalysticsSignal.send()` in `analyticsSignal.dart`.
+The shared sender accepts structured `parameters` alongside existing
+`additionalInfo`, retains session metadata and the debug guard, and contains
+transport failures. Tests inject its `testSink`; no separate onboarding sender
+remains. Production Firebase delivery still requires device verification.
+
+Essentials events: ESSENTIALS_ONBOARDING_STARTED/PAGE/SKIPPED/SUBMITTED/
+SUBMIT_FAILED. Submit failures originate in the submit handler, not generic
+permission/load errors. Demo: EXPLAINER_SHOWN and EXPLAINER_CONTINUED.
+Tours: TOUR_STARTED/STEP/COMPLETED/SKIPPED, with stable tour/step IDs.
+
+Anchored steps get five 100ms retries after layout. Missing targets emit
+TOUR_TARGET_MISSING and advance; a missing final target completes the tour.
+Step changes and disposal cancel old retries. Null targets and sheet-owned
+steps are intentional exceptions. The existing pre-start host timeout still
+leaves completion unset for retry on the next visit.
+
+Validation: six new regression tests plus analytics assertions in the existing
+submit/skip suites; focused run 20/20. Full suite 530 passed, with the same five
+pre-existing failures. Analyzer: 493 existing issues, no new diagnostics in touched files. Device QA and Firebase delivery remain pending.
+
+Shared analytics consolidation (2026-09-16): removed the separate onboarding
+sender and migrated all stage-5.1 calls/tests to `AnalysticsSignal.send`.
+Preserved the working-tree production/debug behavior, session metadata and
+legacy `additionalInfo`; added structured parameters and failure containment.
+Focused regression run: 29/29, including legacy payload compatibility.

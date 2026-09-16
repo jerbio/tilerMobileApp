@@ -1,3 +1,4 @@
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/welcome/tilesVsBlocksExplainer.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -10,7 +11,7 @@ import 'package:tiler_app/theme/tile_text_styles.dart';
 ///
 /// The user reads at their own pace; "Let's Go!" replaces the whole stack
 /// with [destinationBuilder] (the authorized app in production).
-class OnboardingExplainerScreen extends StatelessWidget {
+class OnboardingExplainerScreen extends StatefulWidget {
   static const String routeName = '/OnboardingExplainer';
 
   /// Builds where "Let's Go!" leads. Production passes `AuthorizedRoute`;
@@ -20,10 +21,29 @@ class OnboardingExplainerScreen extends StatelessWidget {
   const OnboardingExplainerScreen({Key? key, required this.destinationBuilder})
       : super(key: key);
 
+  @override
+  State<OnboardingExplainerScreen> createState() =>
+      _OnboardingExplainerScreenState();
+}
+
+class _OnboardingExplainerScreenState extends State<OnboardingExplainerScreen> {
+  bool _continued = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AnalysticsSignal.send('EXPLAINER_SHOWN');
+    });
+  }
+
   void _continue(BuildContext context) {
+    if (_continued) return;
+    _continued = true;
+    AnalysticsSignal.send('EXPLAINER_CONTINUED');
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: destinationBuilder),
+      MaterialPageRoute(builder: widget.destinationBuilder),
       (route) => false,
     );
   }

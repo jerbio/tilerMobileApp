@@ -1,3 +1,5 @@
+import 'package:tiler_app/services/analyticsSignal.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/tutorial/tutorial_bloc.dart';
@@ -255,6 +257,8 @@ class _TutorialOverlayState extends State<TutorialOverlay>
 
   /// Tracks the previous step index so we can fire onExit / onEnter.
   int _previousStepIndex = 0;
+  TutorialStatus? _reportedStatus;
+  int? _reportedStep;
 
   /// Whether the real add-tile sheet is currently showing.
   bool _addTileSheetShowing = false;
@@ -363,6 +367,26 @@ class _TutorialOverlayState extends State<TutorialOverlay>
   Widget build(BuildContext context) {
     return BlocConsumer<TutorialBloc, TutorialState>(
       listener: (context, state) {
+        final stepId = _steps[state.currentStepIndex].id;
+        if (state.isActive) {
+          if (_reportedStatus != TutorialStatus.active) {
+            AnalysticsSignal.send('TOUR_STARTED',
+                parameters: {'tourId': widget.tourId, 'stepId': stepId});
+          }
+          if (_reportedStatus != TutorialStatus.active ||
+              _reportedStep != state.currentStepIndex) {
+            AnalysticsSignal.send('TOUR_STEP',
+                parameters: {'tourId': widget.tourId, 'stepId': stepId});
+          }
+        } else if (_reportedStatus == TutorialStatus.active) {
+          if (state.isCompleted || state.status == TutorialStatus.skipped) {
+            AnalysticsSignal.send(
+                state.isCompleted ? 'TOUR_COMPLETED' : 'TOUR_SKIPPED',
+                parameters: {'tourId': widget.tourId, 'stepId': stepId});
+          }
+        }
+        _reportedStatus = state.status;
+        _reportedStep = state.currentStepIndex;
         if (state.isActive) {
           _animationController.forward();
 
@@ -477,23 +501,54 @@ class _TutorialOverlayLayerState extends State<_TutorialOverlayLayer> {
     }
   }
 
+  Timer? _retry;
+  int _resolution = 0;
+
+  @override
+  void dispose() {
+    _retry?.cancel();
+    _resolution++;
+    super.dispose();
+  }
+
   void _resolveTargetRect() {
-    // Schedule after the frame so GlobalKeys have valid RenderObjects
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final key = widget.currentStep.targetKey;
+    _retry?.cancel();
+    final generation = ++_resolution;
+    _targetRect = null;
+    final step = widget.currentStep;
+    final key = step.targetKey;
+    // Null targets and sheet-owned steps deliberately have no spotlight.
+    if (key == null || _TutorialOverlayState._sheetSteps.contains(step.id))
+      return;
+    void attempt(int count) {
+      if (!mounted || generation != _resolution) return;
+      final bloc = context.read<TutorialBloc>();
+      if (!bloc.state.isActive ||
+          bloc.state.currentStepIndex != widget.state.currentStepIndex) return;
       if (_scrollTargetIntoView(key)) {
-        // The enclosing scrollable jumped, which scheduled a layout frame;
-        // the anchor's global rect is only correct after it.
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            setState(() => _targetRect = widget.getTargetRect(key));
-          }
-        });
+        WidgetsBinding.instance.addPostFrameCallback((_) => attempt(count));
         return;
       }
-      setState(() => _targetRect = widget.getTargetRect(key));
-    });
+      final rect = widget.getTargetRect(key);
+      if (rect != null &&
+          !rect.isEmpty &&
+          rect.left.isFinite &&
+          rect.top.isFinite) {
+        setState(() => _targetRect = rect);
+        return;
+      }
+      if (count < 5) {
+        _retry =
+            Timer(const Duration(milliseconds: 100), () => attempt(count + 1));
+        return;
+      }
+      AnalysticsSignal.send('TOUR_TARGET_MISSING',
+          parameters: {'tourId': bloc.tourId, 'stepId': step.id});
+      debugPrint('Tour target missing: ${bloc.tourId}/${step.id}');
+      bloc.add(NextTutorialStepEvent());
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => attempt(0));
   }
 
   /// Scrolls the step's anchor into its enclosing scrollable, moving the
