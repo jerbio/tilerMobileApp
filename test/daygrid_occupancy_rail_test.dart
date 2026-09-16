@@ -88,7 +88,10 @@ void main() {
 
     test('third-party events are blocks too (C30)', () {
       final segs = OccupancyRail.segments(
-        [_tile('google', _at(11), _at(12), rigid: true, source: TileSource.google)],
+        [
+          _tile('google', _at(11), _at(12),
+              rigid: true, source: TileSource.google)
+        ],
         dayStart: _day,
       );
       expect(_ms(segs), [(_at(0), _at(11)), (_at(12), _at(24))]);
@@ -112,9 +115,13 @@ void main() {
         [
           _tile('unscheduled', _at(9), _at(10), rigid: true, viable: false),
           _tile('pending', _at(11), _at(12),
-              rigid: true, rsvp: RsvpStatus.needsAction, source: TileSource.google),
+              rigid: true,
+              rsvp: RsvpStatus.needsAction,
+              source: TileSource.google),
           _tile('declined', _at(12), _at(13),
-              rigid: true, rsvp: RsvpStatus.declined, source: TileSource.google),
+              rigid: true,
+              rsvp: RsvpStatus.declined,
+              source: TileSource.google),
           _tile('ok', _at(15), _at(16), rigid: true),
         ],
         dayStart: _day,
@@ -124,7 +131,8 @@ void main() {
 
     test('an all-day block blanks the rail', () {
       expect(
-          OccupancyRail.segments([_tile('allday', _at(0), _at(24), rigid: true)],
+          OccupancyRail.segments(
+              [_tile('allday', _at(0), _at(24), rigid: true)],
               dayStart: _day),
           isEmpty);
     });
@@ -254,8 +262,8 @@ void main() {
               (DayGridWidget.railLaneWidth - DayGridWidget.railSegmentWidth) /
                   2);
       expect(first.height, closeTo(9 * 80, 0.5));
-      final Rect block =
-          tester.getRect(find.byKey(const ValueKey<String>('daygrid_tile_block')));
+      final Rect block = tester
+          .getRect(find.byKey(const ValueKey<String>('daygrid_tile_block')));
       expect(first.bottom, closeTo(block.top, 0.5));
       final Rect second = railRect(tester, '${_at(10)}_future');
       expect(second.top, closeTo(block.bottom, 0.5));
@@ -280,8 +288,10 @@ void main() {
         _tile('b', _at(13, 30), _at(15), rigid: true),
       ]);
       expect(rail(), findsNWidgets(2));
-      expect(railRect(tester, '${_at(0)}_future').height, closeTo(13 * 80, 0.5));
-      expect(railRect(tester, '${_at(15)}_future').height, closeTo(9 * 80, 0.5));
+      expect(
+          railRect(tester, '${_at(0)}_future').height, closeTo(13 * 80, 0.5));
+      expect(
+          railRect(tester, '${_at(15)}_future').height, closeTo(9 * 80, 0.5));
     });
 
     testWidgets('the rail reflects railTiles, not the (filtered) tiles',
@@ -299,8 +309,10 @@ void main() {
       expect(find.byKey(const ValueKey<String>('daygrid_tile_hidden')),
           findsNothing);
       expect(rail(), findsNWidgets(2));
-      expect(railRect(tester, '${_at(0)}_future').height, closeTo(13 * 80, 0.5));
-      expect(railRect(tester, '${_at(14)}_future').height, closeTo(10 * 80, 0.5));
+      expect(
+          railRect(tester, '${_at(0)}_future').height, closeTo(13 * 80, 0.5));
+      expect(
+          railRect(tester, '${_at(14)}_future').height, closeTo(10 * 80, 0.5));
     });
 
     testWidgets('today: the past half is dimmer than the future half',
@@ -342,12 +354,10 @@ void main() {
       expect(railPart('_past'), findsNothing);
     });
 
-    testWidgets('segments are non-interactive (IgnorePointer)',
-        (tester) async {
+    testWidgets('segments are non-interactive (IgnorePointer)', (tester) async {
       await pumpGrid(tester,
           tiles: [_tile('block', _at(9), _at(10), rigid: true)]);
-      expect(
-          find.descendant(of: rail(), matching: find.byType(IgnorePointer)),
+      expect(find.descendant(of: rail(), matching: find.byType(IgnorePointer)),
           findsNWidgets(2));
       // A hit test at the bar's centre never reaches the bar itself.
       final Rect first = railRect(tester, '${_at(0)}_future');
@@ -395,8 +405,8 @@ void main() {
           reason: 'must animate, not jump, at t=0');
       await tester.pump(const Duration(milliseconds: 500));
       expect(rail(), findsNWidgets(2));
-      expect(railRect(tester, '${_at(10)}_future').height,
-          closeTo(14 * 80, 0.5));
+      expect(
+          railRect(tester, '${_at(10)}_future').height, closeTo(14 * 80, 0.5));
       expect(tester.takeException(), isNull);
     });
   });

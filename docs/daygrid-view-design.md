@@ -438,8 +438,8 @@ P4 last (of P1–P4) is deliberate: depends on coordinate inversion proven in P2
 | P7 | Filter applied to day content (both layouts), chrome unfiltered | _TBD_ | Not started | Step 17.3; C34–C36 |
 | P7 | Active-filter strip, empty state, auto-clear on added tile | _TBD_ | Not started | Step 17.4 |
 | P8 | Block vs tile: lock glyph after the time range (grid + compact list card), `Blocks` segment as legend | (uncommitted) | Done | A only — dashed accent bar (B) tried and rejected (scalloped stacked cards) |
-| P9 | Occupancy rail: pure segment math | _TBD_ (uncommitted) | Done | Step 18.1; C37–C39, C41 — `occupancyRail.dart` (day minus blocks) + 14 unit tests |
-| P9 | Occupancy rail: gutter lane + paint (past dimmed, no-snap) | _TBD_ (uncommitted) | Done (on-device check pending) | Step 18.2; C40–C43 — lane at the far right past the travel rail |
+| P9 | Occupancy rail: pure segment math | `3b324da4` | Done | Step 18.1; C37–C39, C41 — `occupancyRail.dart` (day minus blocks) + 14 unit tests |
+| P9 | Occupancy rail: gutter lane + paint (past dimmed, no-snap) | `3b324da4` | Done (on-device checked) | Step 18.2; C40–C43 — lane at the far right past the travel rail |
 
 ---
 
@@ -699,7 +699,7 @@ gate reviewer's name goes in the tracker Notes column.
 
 | Date | Author | Change |
 |---|---|---|
-| 2026-09-16 | _TBD_ | P9 occupancy rail implemented (Steps 18.1–18.2): `occupancyRail.dart` pure segment math + grid lane/paint. Two corrections from the first on-device look: (a) the rail is the **day minus its blocks** (free + tile time), not the tiles' own footprint — C37–C39 reworded; (b) C42 geometry — the lane sits at the far RIGHT past the travel rail (the travel rail is right of the tiles), the tile column narrows by 6 px. Second look: rail recoloured to the Tiler accent at 90 % and widened to 3 px (C40). |
+| 2026-09-16 | _TBD_ | P9 occupancy rail implemented (Steps 18.1–18.2): `occupancyRail.dart` pure segment math + grid lane/paint. Two corrections from the first on-device look: (a) the rail is the **day minus its blocks** (free + tile time), not the tiles' own footprint — C37–C39 reworded; (b) C42 geometry — the lane sits at the far RIGHT past the travel rail (the travel rail is right of the tiles), the tile column narrows by 6 px. Second look: widened to 3 px at 90 %; colour settled on `TileColors.tertiaryContainer` (C40). Committed `3b324da4`. |
 | 2026-09-16 | _TBD_ | P8 block/tile distinction shipped as lock-after-time-range (A); dashed accent bar (B) rejected. P9 occupancy rail designed: C37–C43 (§18.1), 2-step plan (§18.2) — tiles only, travel excluded, no block rail, low constant emphasis, past dimmed. |
 | 2026-09-16 | _TBD_ | P7 day content filter (All · Blocks · Tiles) designed: decisions C29–C36 (§17.1), experience (§17.2), 4-step TDD plan (§17.3). UI-only, session-only, segmented control on the quick-actions row; summary stays unfiltered. |
 | 2026-09-11 | _TBD_ | P5 status corrected (15.1–15.4 done, 15.5 in progress). P6 visual redesign designed from the 2026-09-11 three-state mock: decisions C18–C27 locked (§16.1), no-snap contract (§16.2), 8-step TDD plan (§16.3). Free-time blocks explicitly rejected (C22). |
@@ -1285,7 +1285,7 @@ Same loop, logging conventions and per-step approval gate as §15/§16.
 
 ---
 
-## 18. P9 — Tile occupancy rail in the grid gutter (decided 2026-09-16, implemented 2026-09-16, uncommitted)
+## 18. P9 — Occupancy rail in the grid gutter (decided + shipped 2026-09-16, `3b324da4`)
 
 > A thin vertical **occupancy rail** at the far right of the grid — right of
 > the travel rail, which itself sits right of the tile column — showing, as
@@ -1304,7 +1304,7 @@ Same loop, logging conventions and per-step approval gate as §15/§16.
 | **C37** | **Rail = the day minus its blocks, unfiltered.** Blocks = the day's renderable rigid tiles (`DayGridPage.gridTiles` parity: viable, id'd, not pending/declined RSVP; `isRigid == true`, third-party included per C30). Tiles never subtract. An all-day block blanks the rail. The P7 filter never changes the rail. | The rail is chrome-like: like the alert rows and counts it reflects the whole day. |
 | **C38** | **Travel does not count.** A block claims only its own `[start, end]`; its travel stays “free” on the rail. | Decided 2026-09-16. |
 | **C39** | **No rail for blocks.** The rail is the complement of the blocks — a block's own span is the gap. | Blocks are visible as cards under `All`/`Blocks`; under `Tiles` their gaps are the only trace left. |
-| **C40** | **The Tiler accent, constant.** `TileColors.primary` at 90 % alpha (past half 40 %, C41), 3 px wide, the same under every filter. Never the tiles' own colours. | Revised on device 2026-09-16: the first cut (`primary` at 35 %) read as a muted grey on the dark surface; the ask was the accent, a bit thicker. |
+| **C40** | **One fixed colour, constant.** `TileColors.tertiaryContainer` (lavender, #B3C2F2) at 90 % alpha (past half 40 %, C41), 3 px wide, the same under every filter. Never the tiles' own colours. | Revised on device 2026-09-16 twice: `primary` at 35 % read as a muted grey on the dark surface; the Tiler red at 90 % competed with the now-line and the selected-day pill, so the author switched it to the tertiary container. |
 | **C41** | **Past segments dim** (today only): the part of a segment before the now-line renders at roughly half the emphasis of the future part, split at the now-line like the tiles' own past treatment. | Decided 2026-09-16. |
 | **C42** | **Geometry:** a dedicated 6 px lane at the far right, past the 20 px travel rail (`DayGridWidget.railLaneWidth`; the tile column gives up the 6 px, `tileLeft` unchanged); segments 3 px wide centred in the lane, rounded caps, min height 3 px; overlapping/touching tiles **merge** into one segment; clamped to the day like tiles. Non-interactive (`IgnorePointer`) — tap-to-add, drag and pinch unaffected. | Merging is pure interval math (`OccupancyRail.segments`), unit-tested. The travel rail is on the RIGHT of the tiles (P6/B), so “right of the transportation widget” = the outermost lane. |
 | **C43** | **No-snap:** segments are positioned like tiles (`AnimatedPositioned`, same `mode == idle` gate) so a refresh / filter change never jumps them; keyed by segment start so merges animate. | §16.2 applies. |
@@ -1323,7 +1323,7 @@ Same loop, logging conventions and per-step approval gate as §15/§16.
 
 | | |
 |---|---|
-| Touched | `dayGridWidget.dart` — `railLaneWidth = 6` reserved at the far right, past the travel rail (`tileWidth -= railLaneWidth`; `tileLeft` and the travel rail's `railLeft` relation unchanged); a `railWidgets` layer between the gutter lines and the travel bands: per segment (or per past/future half on today, C41, split at the grid's `_liveNow`) an `AnimatedPositioned` 3 px `IgnorePointer` bar keyed `daygrid_rail_<dayKey>_<segmentStartMs>_past|future`, `TileColors.primary` at `railAlpha` 0.9 / `railPastAlpha` 0.4 (C40), rounded caps (the two halves meet flat at the now-line), same 300 ms / idle gate as the tiles (C43). New `railTiles:` param; `DayGridPage` passes the UNFILTERED day (`tiles`) for it alongside the filtered `tiles`. |
+| Touched | `dayGridWidget.dart` — `railLaneWidth = 6` reserved at the far right, past the travel rail (`tileWidth -= railLaneWidth`; `tileLeft` and the travel rail's `railLeft` relation unchanged); a `railWidgets` layer between the gutter lines and the travel bands: per segment (or per past/future half on today, C41, split at the grid's `_liveNow`) an `AnimatedPositioned` 3 px `IgnorePointer` bar keyed `daygrid_rail_<dayKey>_<segmentStartMs>_past|future`, `TileColors.tertiaryContainer` at `railAlpha` 0.9 / `railPastAlpha` 0.4 (C40), rounded caps (the two halves meet flat at the now-line), same 300 ms / idle gate as the tiles (C43). New `railTiles:` param; `DayGridPage` passes the UNFILTERED day (`tiles`) for it alongside the filtered `tiles`. |
 | Tests first | `daygrid_occupancy_rail_test.dart` (widget group, 7) — segments at `top(start)`/`height(end-start)` in the lane, abutting the block card's top/bottom, and the tile column 6 px narrower (`daygrid_layout_math_test`, `daygrid_travel_band_test`, `daygrid_overlap_columns_test` updated); tiles cut no gap, overlapping blocks cut one; rail follows `railTiles` not the filtered `tiles`; today's past half dimmer; not-today has no past half; `IgnorePointer` + hit-test never reaches the bar; a refresh that removes a block animates the gap closed, never jumps. `daygrid_no_snap_test` case (11): under the production composition the filter switch to `Blocks` leaves every rail segment exactly in place (moves only with the scroll host as the filter strip opens). |
 | Logging | none (pure paint). |
 | Exit | suites green; on-device under `Blocks` the rail shows where tiles were; zoomed out the day's density reads at a glance. |
