@@ -1888,18 +1888,18 @@ class AppLocalizationsEl extends AppLocalizations {
   String get extendedEventsTitle => 'Επεκταμένα γεγονότα';
 
   @override
-  String get dayGridAllDay => 'All day';
+  String get dayGridAllDay => '??? ? ????';
 
   @override
-  String get dayGridHeaderAllClear => 'All clear';
+  String get dayGridHeaderAllClear => '??? ?? ????';
 
   @override
   String dayGridHeaderConflictCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count conflicts',
-      one: '1 conflict',
+      other: '$count ???????????',
+      one: '1 ?????????',
     );
     return '$_temp0';
   }
@@ -1909,26 +1909,26 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$summary need attention',
-      one: '$summary needs attention',
+      other: '$summary ??????????? ???????',
+      one: '$summary ?????????? ???????',
     );
     return '$_temp0';
   }
 
   @override
-  String get dayGridHeaderReview => 'Review';
+  String get dayGridHeaderReview => '???????';
 
   @override
-  String get dayGridDaySummary => 'Day summary';
+  String get dayGridDaySummary => '?????? ??????';
 
   @override
-  String get bottomNavToday => 'Today';
+  String get bottomNavToday => '??????';
 
   @override
   String get bottomNavTiler => 'Tiler';
 
   @override
-  String get dayGridHeaderRespond => 'Respond';
+  String get dayGridHeaderRespond => '????????';
 
   @override
   String extendedEventsSubtitle(int count) {
@@ -2881,10 +2881,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String get switchCalendarView => 'Εναλλαγή προβολής ατζέντας';
 
   @override
-  String get switchDayGridLayout => 'Switch day layout';
+  String get switchDayGridLayout => '???????? ???????? ??????';
 
   @override
-  String get openDayRibbon => 'View days';
+  String get openDayRibbon => '???????? ??????';
 
   @override
   String get previewSundialGreeting => 'Γεια.';

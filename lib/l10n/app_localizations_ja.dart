@@ -1846,18 +1846,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get extendedEventsTitle => '長時間イベント';
 
   @override
-  String get dayGridAllDay => 'All day';
+  String get dayGridAllDay => '??';
 
   @override
-  String get dayGridHeaderAllClear => 'All clear';
+  String get dayGridHeaderAllClear => '???????';
 
   @override
   String dayGridHeaderConflictCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count conflicts',
-      one: '1 conflict',
+      other: '??$count?',
+      one: '??1?',
     );
     return '$_temp0';
   }
@@ -1867,26 +1867,26 @@ class AppLocalizationsJa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$summary need attention',
-      one: '$summary needs attention',
+      other: '$summary????????',
+      one: '$summary????????',
     );
     return '$_temp0';
   }
 
   @override
-  String get dayGridHeaderReview => 'Review';
+  String get dayGridHeaderReview => '??';
 
   @override
-  String get dayGridDaySummary => 'Day summary';
+  String get dayGridDaySummary => '1????';
 
   @override
-  String get bottomNavToday => 'Today';
+  String get bottomNavToday => '??';
 
   @override
   String get bottomNavTiler => 'Tiler';
 
   @override
-  String get dayGridHeaderRespond => 'Respond';
+  String get dayGridHeaderRespond => '??';
 
   @override
   String extendedEventsSubtitle(int count) {
@@ -2803,10 +2803,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get switchCalendarView => 'カレンダーのビューを切り替え';
 
   @override
-  String get switchDayGridLayout => 'Switch day layout';
+  String get switchDayGridLayout => '1????????????';
 
   @override
-  String get openDayRibbon => 'View days';
+  String get openDayRibbon => '1????';
 
   @override
   String get previewSundialGreeting => 'こんにちは。';

@@ -884,5 +884,16 @@
   "scheduleFullnessValue": "Doelvolledigheid {percentage} %",
   "balanced": "Gebalanceerd",
   "fuller": "Voller",
-  "lighter": "Lichter"
+  "lighter": "Lichter",
+  "bottomNavTiler": "Tiler",
+  "bottomNavToday": "Vandaag",
+  "dayGridAllDay": "De hele dag",
+  "dayGridDaySummary": "Overzicht van de dag",
+  "dayGridHeaderAllClear": "Alles in orde",
+  "dayGridHeaderConflictCount": "{count, plural, =1{1 conflict} other{{count} conflicten}}",
+  "dayGridHeaderNeedAttention": "{count, plural, =1{{summary} vraagt aandacht} other{{summary} vragen aandacht}}",
+  "dayGridHeaderRespond": "Reageren",
+  "dayGridHeaderReview": "Controleren",
+  "openDayRibbon": "Dagen bekijken",
+  "switchDayGridLayout": "Daglayout wisselen"
 }

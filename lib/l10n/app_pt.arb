@@ -884,5 +884,16 @@
   "scheduleFullnessValue": "Preenchimento alvo de {percentage}%",
   "balanced": "Equilibrado",
   "fuller": "Mais cheio",
-  "lighter": "Mais leve"
+  "lighter": "Mais leve",
+  "bottomNavTiler": "Tiler",
+  "bottomNavToday": "Hoje",
+  "dayGridAllDay": "Dia inteiro",
+  "dayGridDaySummary": "Resumo do dia",
+  "dayGridHeaderAllClear": "Tudo em ordem",
+  "dayGridHeaderConflictCount": "{count, plural, =1{1 conflito} other{{count} conflitos}}",
+  "dayGridHeaderNeedAttention": "{count, plural, =1{{summary} precisa de aten??o} other{{summary} precisam de aten??o}}",
+  "dayGridHeaderRespond": "Responder",
+  "dayGridHeaderReview": "Rever",
+  "openDayRibbon": "Ver dias",
+  "switchDayGridLayout": "Alterar layout do dia"
 }

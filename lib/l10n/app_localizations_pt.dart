@@ -1891,18 +1891,18 @@ class AppLocalizationsPt extends AppLocalizations {
   String get extendedEventsTitle => 'Eventos prolongados';
 
   @override
-  String get dayGridAllDay => 'All day';
+  String get dayGridAllDay => 'Dia inteiro';
 
   @override
-  String get dayGridHeaderAllClear => 'All clear';
+  String get dayGridHeaderAllClear => 'Tudo em ordem';
 
   @override
   String dayGridHeaderConflictCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count conflicts',
-      one: '1 conflict',
+      other: '$count conflitos',
+      one: '1 conflito',
     );
     return '$_temp0';
   }
@@ -1912,26 +1912,26 @@ class AppLocalizationsPt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$summary need attention',
-      one: '$summary needs attention',
+      other: '$summary precisam de aten??o',
+      one: '$summary precisa de aten??o',
     );
     return '$_temp0';
   }
 
   @override
-  String get dayGridHeaderReview => 'Review';
+  String get dayGridHeaderReview => 'Rever';
 
   @override
-  String get dayGridDaySummary => 'Day summary';
+  String get dayGridDaySummary => 'Resumo do dia';
 
   @override
-  String get bottomNavToday => 'Today';
+  String get bottomNavToday => 'Hoje';
 
   @override
   String get bottomNavTiler => 'Tiler';
 
   @override
-  String get dayGridHeaderRespond => 'Respond';
+  String get dayGridHeaderRespond => 'Responder';
 
   @override
   String extendedEventsSubtitle(int count) {
@@ -2879,10 +2879,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get switchCalendarView => 'Alternar vista do calendário';
 
   @override
-  String get switchDayGridLayout => 'Switch day layout';
+  String get switchDayGridLayout => 'Alterar layout do dia';
 
   @override
-  String get openDayRibbon => 'View days';
+  String get openDayRibbon => 'Ver dias';
 
   @override
   String get previewSundialGreeting => 'Olá.';

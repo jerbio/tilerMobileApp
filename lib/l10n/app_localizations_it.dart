@@ -1892,18 +1892,18 @@ class AppLocalizationsIt extends AppLocalizations {
   String get extendedEventsTitle => 'Eventi estesi';
 
   @override
-  String get dayGridAllDay => 'All day';
+  String get dayGridAllDay => 'Tutto il giorno';
 
   @override
-  String get dayGridHeaderAllClear => 'All clear';
+  String get dayGridHeaderAllClear => 'Tutto in ordine';
 
   @override
   String dayGridHeaderConflictCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count conflicts',
-      one: '1 conflict',
+      other: '$count conflitti',
+      one: '1 conflitto',
     );
     return '$_temp0';
   }
@@ -1913,26 +1913,26 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$summary need attention',
-      one: '$summary needs attention',
+      other: '$summary richiedono attenzione',
+      one: '$summary richiede attenzione',
     );
     return '$_temp0';
   }
 
   @override
-  String get dayGridHeaderReview => 'Review';
+  String get dayGridHeaderReview => 'Esamina';
 
   @override
-  String get dayGridDaySummary => 'Day summary';
+  String get dayGridDaySummary => 'Riepilogo della giornata';
 
   @override
-  String get bottomNavToday => 'Today';
+  String get bottomNavToday => 'Oggi';
 
   @override
   String get bottomNavTiler => 'Tiler';
 
   @override
-  String get dayGridHeaderRespond => 'Respond';
+  String get dayGridHeaderRespond => 'Rispondi';
 
   @override
   String extendedEventsSubtitle(int count) {
@@ -2884,10 +2884,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get switchCalendarView => 'Cambia visualizzazione calendario';
 
   @override
-  String get switchDayGridLayout => 'Switch day layout';
+  String get switchDayGridLayout => 'Cambia layout della giornata';
 
   @override
-  String get openDayRibbon => 'View days';
+  String get openDayRibbon => 'Visualizza giorni';
 
   @override
   String get previewSundialGreeting => 'Ciao.';

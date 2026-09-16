@@ -1901,18 +1901,18 @@ class AppLocalizationsFr extends AppLocalizations {
   String get extendedEventsTitle => 'Événements prolongés';
 
   @override
-  String get dayGridAllDay => 'All day';
+  String get dayGridAllDay => 'Toute la journ?e';
 
   @override
-  String get dayGridHeaderAllClear => 'All clear';
+  String get dayGridHeaderAllClear => 'Tout est en ordre';
 
   @override
   String dayGridHeaderConflictCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count conflicts',
-      one: '1 conflict',
+      other: '$count conflits',
+      one: '1 conflit',
     );
     return '$_temp0';
   }
@@ -1922,26 +1922,26 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$summary need attention',
-      one: '$summary needs attention',
+      other: '$summary n?cessitent une attention',
+      one: '$summary n?cessite une attention',
     );
     return '$_temp0';
   }
 
   @override
-  String get dayGridHeaderReview => 'Review';
+  String get dayGridHeaderReview => 'Examiner';
 
   @override
-  String get dayGridDaySummary => 'Day summary';
+  String get dayGridDaySummary => 'R?sum? de la journ?e';
 
   @override
-  String get bottomNavToday => 'Today';
+  String get bottomNavToday => 'Aujourd\'hui';
 
   @override
   String get bottomNavTiler => 'Tiler';
 
   @override
-  String get dayGridHeaderRespond => 'Respond';
+  String get dayGridHeaderRespond => 'R?pondre';
 
   @override
   String extendedEventsSubtitle(int count) {
@@ -2898,10 +2898,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get switchCalendarView => 'Changer de vue de calendrier';
 
   @override
-  String get switchDayGridLayout => 'Switch day layout';
+  String get switchDayGridLayout => 'Changer la mise en page de la journ?e';
 
   @override
-  String get openDayRibbon => 'View days';
+  String get openDayRibbon => 'Voir les journ?es';
 
   @override
   String get previewSundialGreeting => 'Bonjour.';
