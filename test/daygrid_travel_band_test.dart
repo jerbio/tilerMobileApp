@@ -386,7 +386,13 @@ void main() {
       // The band's box is the tile column itself: the marker sits at its
       // RIGHT edge (clear of the hour labels), the cards fill it.
       expect(ap.left, gutter + 4);
-      expect(ap.width, 400 - gutter - 8 - DayGridWidget.travelRailWidth);
+      expect(
+          ap.width,
+          400 -
+              gutter -
+              8 -
+              DayGridWidget.travelRailWidth -
+              DayGridWidget.railLaneWidth);
     });
 
     testWidgets('a dayKey prefixes the band key (tile keys do the same)',

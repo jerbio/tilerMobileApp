@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' show max;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +16,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/overlapColumns.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/occupancyRail.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileTimeCell.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
@@ -23,6 +25,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
@@ -162,6 +165,11 @@ class DayGridWidget extends StatefulWidget {
   /// and travel to/from a hidden tile would be misleading.
   final bool showTravel;
 
+  /// The tiles feeding the occupancy rail (P9, C37) — the day's UNFILTERED
+  /// set, so the rail still shows the gaps the blocks claim while the P7
+  /// filter hides them from the grid. When omitted the rail reads [tiles].
+  final List<TilerEvent>? railTiles;
+
   const DayGridWidget({
     super.key,
     this.tiles = const <SubCalendarEvent>[],
@@ -175,12 +183,26 @@ class DayGridWidget extends StatefulWidget {
     this.subCalendarEventApi,
     this.edgeScrollBottomClearance,
     this.showTravel = true,
+    this.railTiles,
   });
 
   /// Width (px) of the right-hand travel rail reserved beside the tile
   /// region: compact travel markers render there so they never overlap a
   /// tile column or the hour labels.
   static const double travelRailWidth = TravelBandWidget.gutterSpan;
+
+  /// Width (px) of the occupancy-rail lane at the far right, right of the
+  /// travel rail (P9, C42). The tile column gives up this width.
+  static const double railLaneWidth = 6;
+
+  /// Width (px) of one occupancy segment, centred in the lane (C42).
+  static const double railSegmentWidth = 3;
+
+  /// The rail's emphasis (alpha over `TileColors.tertiaryContainer`, C40),
+  /// constant under every filter; the past half of a segment on today is
+  /// dimmer (C41).
+  static const double railAlpha = 0.9;
+  static const double railPastAlpha = 0.4;
 
   /// The top/bottom edge zones (px inside the scroll viewport) that
   /// trigger the drag edge auto-scroll.
@@ -369,7 +391,6 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// sliding into view) PAINTS its first frame already at the first tile
   /// hour instead of at 12 AM and then jumping post-frame.
   late final ScrollController _scrollController;
-
 
   /// The zoom source. Either the caller's controller or a grid-owned
   /// default (disposed with the grid).
@@ -1725,11 +1746,17 @@ class DayGridWidgetState extends State<DayGridWidget> {
             final gutter = TileDimensions.timeOfDayCellWidth;
             final tileLeft = gutter + 4;
             // Tiles stop short of the right-hand travel rail (B): compact
-            // travel markers live there, outside every tile column.
+            // travel markers live there, outside every tile column — and of
+            // the occupancy-rail lane past it (P9, C42).
             final tileWidth = maxWidth != null
-                ? maxWidth - gutter - 8 - DayGridWidget.travelRailWidth
+                ? maxWidth -
+                    gutter -
+                    8 -
+                    DayGridWidget.travelRailWidth -
+                    DayGridWidget.railLaneWidth
                 : 270.0;
             final railLeft = tileLeft + tileWidth + 4;
+            final occupancyLaneLeft = railLeft + DayGridWidget.travelRailWidth;
             final dayStart = _gridDayStart();
 
             // Live now-line + gutter time bubble, today
@@ -2029,109 +2056,179 @@ class DayGridWidgetState extends State<DayGridWidget> {
             // the live grid; the TileCast preview renders the bare scroll
             // view (the preview schedule belongs to VibeChatBloc, and
             // TileCast's own header sheet is the chrome there).
+            // Occupancy rail (P9): one low-emphasis 2 px bar per stretch of
+            // the day NOT claimed by a BLOCK (free time and tile time alike;
+            // a block's travel never counts), in its own lane right of the
+            // travel rail. Fed by the UNFILTERED day (C37) so the P7 `Tiles`
+            // view still shows the gaps the hidden blocks claim. On today the
+            // part before the now-line is dimmer (C41).
+            // Non-interactive and positioned like the tiles (same idle gate)
+            // so a refresh / filter change never jumps it (C43).
+            final railWidgets = <Widget>[];
+            if (dayStart != null && pxPerHour.isFinite && pxPerHour > 0) {
+              const Color railColor = TileColors.tertiaryContainer;
+              final int dayStartMs = dayStart.millisecondsSinceEpoch;
+              final int? nowMs = isToday ? now.millisecondsSinceEpoch : null;
+              final segments = OccupancyRail.segments(
+                widget.railTiles ?? widget.tiles,
+                dayStart: dayStart,
+              );
+              for (final segment in segments) {
+                final (past, future) = OccupancyRail.split(segment, nowMs);
+                final bool isSplit = past != null && future != null;
+                for (final (half, suffix) in [
+                  (past, 'past'),
+                  (future, 'future')
+                ]) {
+                  if (half == null) continue;
+                  final bool isPast = suffix == 'past';
+                  final double top = (half.startMs - dayStartMs) /
+                      Duration.millisecondsPerHour *
+                      pxPerHour;
+                  final double height = max(
+                      DayGridWidget.railSegmentWidth,
+                      half.durationMs /
+                          Duration.millisecondsPerHour *
+                          pxPerHour);
+                  const radius = Radius.circular(1);
+                  railWidgets.add(AnimatedPositioned(
+                    key: ValueKey<String>(
+                        'daygrid_rail_${keyPrefix}${segment.startMs}_$suffix'),
+                    duration: animate
+                        ? const Duration(milliseconds: 300)
+                        : Duration.zero,
+                    curve: Curves.easeInOutCubic,
+                    top: top,
+                    left: occupancyLaneLeft +
+                        (DayGridWidget.railLaneWidth -
+                                DayGridWidget.railSegmentWidth) /
+                            2,
+                    width: DayGridWidget.railSegmentWidth,
+                    height: height,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: railColor.withValues(
+                              alpha: isPast
+                                  ? DayGridWidget.railPastAlpha
+                                  : DayGridWidget.railAlpha),
+                          // Rounded caps; the two halves of a split segment
+                          // meet flat at the now-line.
+                          borderRadius: BorderRadius.vertical(
+                            top: isSplit && !isPast ? Radius.zero : radius,
+                            bottom: isSplit && isPast ? Radius.zero : radius,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ));
+                }
+              }
+            }
+
             // The px of the scroll viewport's bottom that sit behind a bottom
             // navigation bar + home-indicator (0 when the body does not extend
             // behind a bottom bar). Reused so the scrollable content and the
             // bottom auto-scroll zone stop at the same visible edge.
             final bottomClearance = _edgeScrollBottomClearance();
             final Widget gridStack = Stack(
-                children: <Widget>[
-                  // Tap-to-add. A background tap target
-                  // behind the tiles (first child => lowest z, so the
-                  // positioned tiles on top win the hit test and keep their
-                  // onTileTap behaviour). The handler no-ops unless a
-                  // [day] is supplied, so the forecast peek (DayCast) stays
-                  // read-only.
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTapUp: _onEmptyGridTap,
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: timeCellCount * pxPerHour,
-                    ),
+              children: <Widget>[
+                // Tap-to-add. A background tap target
+                // behind the tiles (first child => lowest z, so the
+                // positioned tiles on top win the hit test and keep their
+                // onTileTap behaviour). The handler no-ops unless a
+                // [day] is supplied, so the forecast peek (DayCast) stays
+                // read-only.
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapUp: _onEmptyGridTap,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: timeCellCount * pxPerHour,
                   ),
-                  ...gutterWidgets,
-                  ...travelBandWidgets,
-                  ...tileWidgets,
-                  if (_dragTile != null && _dragTargetStart != null)
-                    _dragGhost(),
-                  ...ghostWidgets,
-                  if (isToday) ...<Widget>[
-                    // 1-2px now-line across the day at the clock's y.
-                    Positioned(
-                      key: const Key('daygrid_now_line'),
-                      top: nowLineTop.clamp(0.0, nowLineMax),
-                      left: 0,
-                      right: 0,
-                      height: 2,
-                      child: ColoredBox(color: nowLineColor),
-                    ),
-                    // Gutter time bubble.
-                    Positioned(
-                      key: const Key('daygrid_now_bubble'),
-                      top: (nowLineTop - 10).clamp(0.0, nowLineMax - 20),
-                      left: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: nowLineColor,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          nowLabel,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            height: 1.0,
-                            fontWeight: FontWeight.w600,
-                          ),
+                ),
+                ...gutterWidgets,
+                ...railWidgets,
+                ...travelBandWidgets,
+                ...tileWidgets,
+                if (_dragTile != null && _dragTargetStart != null) _dragGhost(),
+                ...ghostWidgets,
+                if (isToday) ...<Widget>[
+                  // 1-2px now-line across the day at the clock's y.
+                  Positioned(
+                    key: const Key('daygrid_now_line'),
+                    top: nowLineTop.clamp(0.0, nowLineMax),
+                    left: 0,
+                    right: 0,
+                    height: 2,
+                    child: ColoredBox(color: nowLineColor),
+                  ),
+                  // Gutter time bubble.
+                  Positioned(
+                    key: const Key('daygrid_now_bubble'),
+                    top: (nowLineTop - 10).clamp(0.0, nowLineMax - 20),
+                    left: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: nowLineColor,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        nowLabel,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          height: 1.0,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                  ],
-                  // Pinch-to-zoom overlay: the TOPMOST, translucent full-area
-                  // layer. Translucent hit-testing means EVERY pointer inside
-                  // the day area reaches the scale recognizer — even fingers
-                  // resting on event tiles (which sit below this overlay and
-                  // would otherwise route their pointers away). A single
-                  // finger never satisfies the scale recognizer, so tile
-                  // taps, empty-area tap-to-add, vertical scroll and the
-                  // horizontal day carousel are left untouched; when a
-                  // two-finger pinch does win the arena the tiles' taps are
-                  // cancelled, so no accidental tile selection mid-pinch.
-                  //
-                  // The recognizer resolves as soon as the second pointer
-                  // lands (a plain `ScaleGestureRecognizer` only resolves
-                  // once its span clears `computeScaleSlop`, by which time
-                  // the vertical scroll and/or the day carousel's pan slop
-                  // has already won the arena and the pinch scrolls instead
-                  // of zooms).
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: timeCellCount * pxPerHour,
-                    child: RawGestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      gestures: <Type, GestureRecognizerFactory>{
-                        _ArenaWinningScaleGestureRecognizer:
-                            GestureRecognizerFactoryWithHandlers<
-                                _ArenaWinningScaleGestureRecognizer>(
-                          () => _ArenaWinningScaleGestureRecognizer(),
-                          (_ArenaWinningScaleGestureRecognizer instance) {
-                            instance
-                              ..onStart = _onScaleStart
-                              ..onUpdate = _onScaleUpdate
-                              ..onEnd = _onScaleEnd;
-                          },
-                        ),
-                      },
-                      child: const SizedBox.expand(),
-                    ),
                   ),
                 ],
-              );
+                // Pinch-to-zoom overlay: the TOPMOST, translucent full-area
+                // layer. Translucent hit-testing means EVERY pointer inside
+                // the day area reaches the scale recognizer — even fingers
+                // resting on event tiles (which sit below this overlay and
+                // would otherwise route their pointers away). A single
+                // finger never satisfies the scale recognizer, so tile
+                // taps, empty-area tap-to-add, vertical scroll and the
+                // horizontal day carousel are left untouched; when a
+                // two-finger pinch does win the arena the tiles' taps are
+                // cancelled, so no accidental tile selection mid-pinch.
+                //
+                // The recognizer resolves as soon as the second pointer
+                // lands (a plain `ScaleGestureRecognizer` only resolves
+                // once its span clears `computeScaleSlop`, by which time
+                // the vertical scroll and/or the day carousel's pan slop
+                // has already won the arena and the pinch scrolls instead
+                // of zooms).
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: timeCellCount * pxPerHour,
+                  child: RawGestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    gestures: <Type, GestureRecognizerFactory>{
+                      _ArenaWinningScaleGestureRecognizer:
+                          GestureRecognizerFactoryWithHandlers<
+                              _ArenaWinningScaleGestureRecognizer>(
+                        () => _ArenaWinningScaleGestureRecognizer(),
+                        (_ArenaWinningScaleGestureRecognizer instance) {
+                          instance
+                            ..onStart = _onScaleStart
+                            ..onUpdate = _onScaleUpdate
+                            ..onEnd = _onScaleEnd;
+                        },
+                      ),
+                    },
+                    child: const SizedBox.expand(),
+                  ),
+                ),
+              ],
+            );
             final Widget gridBody = CustomScrollView(
               controller: _scrollController,
               slivers: <Widget>[

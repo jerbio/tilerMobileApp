@@ -3,7 +3,7 @@
 > Status: **Design locked (§10 decisions settled — C16 + C17 decided 2026-09-09) / P1 complete (Steps 1.1–1.8); P2 complete (Steps 2.1–2.4); P3 Step 3.1 complete (travel bands, `a269b88` + `c95123f`); P4 Steps 4.1–4.2 complete (drag-and-drop, `7c3db43` + `fcf514e` + `993424a`; 36 DnD tests green; **P4 GA gate skipped/deferred 2026-09-09 — resume after the P5 addendum**); P5 (§14 chrome addendum: top-chrome layout + date-picker (C16) + day-summary entry point (C17)) Steps 15.1–15.4 implemented (`b4f1d0a`, `d93d1f6`, `6786fd1`, `0830cad`, `dc6b853`), Step 15.5 on-device QA in progress); **P6 (§16 visual redesign per the 2026-09-11 mock: scroll-collapsing header, restyled grid/tiles, in-column travel band, any-day summary entry, no-snap contract) — decisions C18–C27 locked 2026-09-11, implemented 2026-09-11 except on-device QA (16.8)**
 > Last updated: 2026-09-11 (P6 16.1–16.7 done, 16.8 harness done / QA pending)
 > Owner: _TBD_
-> Execution plan: §12 (P1–P4 step-by-step TDD plan) · §15 (P5 chrome-layout addendum step-by-step TDD plan, 5 steps) · §16 (P6 visual-redesign step-by-step TDD plan, 8 steps)
+> Execution plan: §12 (P1–P4 step-by-step TDD plan) · §15 (P5 chrome-layout addendum step-by-step TDD plan, 5 steps) · §16 (P6 visual-redesign step-by-step TDD plan, 8 steps) · §17 (P7 day content filter, 4 steps) · §18 (P9 occupancy rail, 2 steps)
 
 Living document for surfacing the calendar **DayGrid** view in the main UI and
 layering on future UI enhancements (pinch-to-zoom, drag-and-drop, travel-time
@@ -433,6 +433,13 @@ P4 last (of P1–P4) is deliberate: depends on coordinate inversion proven in P2
 | P6 | Travel in-column band tier | 922cf6a | Done | Step 16.6; the >=56px tier is a full-column pastel card (glyph · `Travel • N min` · travel window · directions chevron) replacing the gutter pill; gutter hairline/icon tiers unchanged below it; drawn in the travel layer beneath tiles, not an overlap participant; `daygrid_travel_band_test` (+3) |
 | P6 | Bottom-nav labels | bb908c7 | Done | Step 16.7; C25; `_LabeledNavItem` (Today / view name · Tiler · Share) within the existing bar height; stale `HomeFab` test fixed |
 | P6 | No-snap regression harness + on-device QA | 5242801 | In progress | Step 16.8; C27; `test/daygrid_no_snap_test.dart` (9 perturbations against the production `GridDailyPageBody → DayGridPage` composition, scrolled to mid-day; `pixels` + every visible tile `Rect` asserted at t=0) — green. **On-device QA checklist (§16.3 Step 16.8) pending user run** — record findings here |
+| P7 | `DayContentFilter` + cubit (pure) | _TBD_ | Not started | Step 17.1; C29–C32 |
+| P7 | Segmented `All · Blocks · Tiles` on the quick-actions row | _TBD_ | Not started | Step 17.2; C33 |
+| P7 | Filter applied to day content (both layouts), chrome unfiltered | _TBD_ | Not started | Step 17.3; C34–C36 |
+| P7 | Active-filter strip, empty state, auto-clear on added tile | _TBD_ | Not started | Step 17.4 |
+| P8 | Block vs tile: lock glyph after the time range (grid + compact list card), `Blocks` segment as legend | (uncommitted) | Done | A only — dashed accent bar (B) tried and rejected (scalloped stacked cards) |
+| P9 | Occupancy rail: pure segment math | _TBD_ (uncommitted) | Done | Step 18.1; C37–C39, C41 — `occupancyRail.dart` (day minus blocks) + 14 unit tests |
+| P9 | Occupancy rail: gutter lane + paint (past dimmed, no-snap) | _TBD_ (uncommitted) | Done (on-device check pending) | Step 18.2; C40–C43 — lane at the far right past the travel rail |
 
 ---
 
@@ -692,6 +699,9 @@ gate reviewer's name goes in the tracker Notes column.
 
 | Date | Author | Change |
 |---|---|---|
+| 2026-09-16 | _TBD_ | P9 occupancy rail implemented (Steps 18.1–18.2): `occupancyRail.dart` pure segment math + grid lane/paint. Two corrections from the first on-device look: (a) the rail is the **day minus its blocks** (free + tile time), not the tiles' own footprint — C37–C39 reworded; (b) C42 geometry — the lane sits at the far RIGHT past the travel rail (the travel rail is right of the tiles), the tile column narrows by 6 px. Second look: rail recoloured to the Tiler accent at 90 % and widened to 3 px (C40). |
+| 2026-09-16 | _TBD_ | P8 block/tile distinction shipped as lock-after-time-range (A); dashed accent bar (B) rejected. P9 occupancy rail designed: C37–C43 (§18.1), 2-step plan (§18.2) — tiles only, travel excluded, no block rail, low constant emphasis, past dimmed. |
+| 2026-09-16 | _TBD_ | P7 day content filter (All · Blocks · Tiles) designed: decisions C29–C36 (§17.1), experience (§17.2), 4-step TDD plan (§17.3). UI-only, session-only, segmented control on the quick-actions row; summary stays unfiltered. |
 | 2026-09-11 | _TBD_ | P5 status corrected (15.1–15.4 done, 15.5 in progress). P6 visual redesign designed from the 2026-09-11 three-state mock: decisions C18–C27 locked (§16.1), no-snap contract (§16.2), 8-step TDD plan (§16.3). Free-time blocks explicitly rejected (C22). |
 | 2026-07-19 | _TBD_ | Initial design captured (options analysis, parametric core, zoom/drag/travel designs, phasing, concerns). |
 | 2026-09-03 | _TBD_ | Code-review findings folded in: P1 hardening list (rebuild safety, `didUpdateWidget`, responsive width, filtering parity, refresh, cross-midnight, overlap), pinch gesture-arena risk, C7 escalated to P1 blocker, C10–C14 added. New §6.5 tap-to-add design; tap-to-add slotted into P2. |
@@ -1187,3 +1197,135 @@ enough travel windows; the existing gutter icon tier remains for short ones (moc
 
 **P6 gate:** each step reviewed + approved before commit; 16.7 is committed separately from
 the grid steps; §11 P6 rows flipped to Done only after 16.8's manual checklist is recorded.
+
+---
+
+## 17. P7 — Day content filter: All · Blocks · Tiles (decided 2026-09-16, NOT implemented)
+
+> A **UI-only** filter on the Daily view (list and grid alike) that shows the day's
+> rigid blocks only, its flexible tiles only, or everything. Nothing is fetched,
+> re-evaluated, or persisted server-side; the schedule underneath stays whole.
+> Same review-before-commit policy as §14.8 / §15 / §16.
+
+### 17.1 Decisions (C29–C36)
+
+| # | Decision | Notes |
+|---|---|---|
+| **C29** | **Definition.** Block = `SubCalendarEvent.isRigid == true`; tile = everything else. | The rule the app already uses (`TodayStats.fromTiles`, `previewWidget` block counts) — one predicate, `DayContentFilter.matches(tile)`. |
+| **C30** | **Third-party calendar events count as blocks.** | They are imported rigid; "my meetings vs. my Tiler work" is the axis users will filter on. |
+| **C31** | **Three mutually-exclusive states:** `all` (default) · `blocks` · `tiles`. | Complementary halves — multi-select would only add a useless "neither". |
+| **C32** | **Session-only state**, shared by both layouts and every day page; resets to `all` on relaunch. Not persisted. | A sticky filter is how users end up believing tiles were lost. Revisit persistence only if analytics show daily re-application. |
+| **C33** | **Control = a `SegmentedButton`** (`All \| Blocks \| Tiles`), right-aligned on the quick-actions row; the two action chips stay left. | Chosen over a single cycling chip: filter state must be visible without interaction. The row already scrolls horizontally, so width is never fatal. |
+| **C34** | **Applies to day content only:** grid tiles, list cards, the pinned all-day card (same rule), and travel bands (follow their tile). **Chrome stays complete:** day strip, conflict/RSVP rows, route/re-optimize, and the loading bar always reflect the whole day. | The user never loses awareness of the full day while filtered. Conflict rows may therefore report a conflict whose partner is hidden — accepted (see 17.2). |
+| **C35** | **`TodayStatusScreen` (summary button) stays unfiltered.** | It is the day's truth. |
+| **C36** | **Hidden surfaces:** the control is not shown, and the filter is forced to `all`, on the TileCast preview and the forecast peek. | Read-only snapshots. |
+
+### 17.2 Experience
+
+- **Visible when active — twice.** The selected segment is filled, *and* the content
+  region shows a slim strip at its top: *"Showing blocks only · 4 of 11"* with a
+  `Show all` action. Same slot in list and grid; `AnimatedSize`-wrapped, so the
+  no-snap contract (§16.2) holds when it appears/disappears.
+- **Never a hard cut.** Filtering changes only the *input set* of the existing day
+  pipelines, so the grid's `didUpdateWidget` diff fades hidden tiles out and slides
+  shown ones in exactly as a data refresh would; the list uses its existing card
+  transitions. Overlap columns are computed on the visible set, so filtering to
+  `tiles` visually un-clusters a tile whose conflict partner is a hidden block — the
+  conflict row still reports it (C34). Watch this one on-device.
+- **Auto-clear on additions.** A tile created via tap-to-add (or landed by a
+  re-optimize) that does not match the active filter would vanish on arrival. On
+  any *added* tile that the filter would hide, the filter resets to `all` with a
+  short toast *"Showing all — filter cleared"*.
+- **Empty result** (e.g. `blocks` on a block-free day): the content region shows
+  *"No blocks on Tuesday"* + `Show all`, never a bare grid/list.
+- **Drag-and-drop, tap-to-add, pinch** all keep working on the visible set.
+- **Analytics:** `daygrid_filter_changed {to, dayIndex, layout}`,
+  `daygrid_filter_autocleared {reason: added_tile}`.
+
+### 17.3 Step-by-step implementation plan (TDD) — P7
+
+Same loop, logging conventions and per-step approval gate as §15/§16.
+
+#### Step 17.1 — `DayContentFilter` + cubit (pure, no UI)
+
+| | |
+|---|---|
+| New | `lib/bloc/dayContentFilter/day_content_filter_cubit.dart` — `enum DayContentFilter { all, blocks, tiles }`, `DayContentFilterCubit` (initial `all`, `set(filter)`, `clear()`), and pure `DayContentFilter.matches(TilerEvent)` / `apply(List<TilerEvent>)`. |
+| Tests first | `test/day_content_filter_test.dart` — `matches` per C29/C30 (rigid → blocks; third-party rigid → blocks; flexible → tiles; `isRigid == null` → tiles); `apply` preserves order; cubit transitions; initial state `all`. |
+| Exit | pure tests green; no widget touched. Provided from `AuthorizedRoute` next to `DailyViewLayoutCubit`. |
+
+#### Step 17.2 — Segmented control on the quick-actions row
+
+| | |
+|---|---|
+| Touched | `dayQuickActionsRow.dart` — trailing `SegmentedButton<DayContentFilter>` (keys `dayQuickActions_filter_{all,blocks,tiles}`), `showSelectedIcon: false`, compact density; hidden when `preview`. l10n en/es: `dayFilterAll` / `dayFilterBlocks` / `dayFilterTiles`. Row height unchanged ([QuickActionChipsRow.height]). |
+| Tests first | extend `test/day_quick_actions_row_test.dart` — three segments rendered, `all` selected initially; tapping `blocks` emits `blocks` on the cubit; hidden in preview; the row's height is unchanged; chips remain left-aligned. |
+| Logging | `daygrid_filter_changed` |
+| Exit | row suite green; `daygrid_chrome_layout_test` unchanged and green (the row's height contract holds). |
+
+#### Step 17.3 — Apply the filter to the day content
+
+| | |
+|---|---|
+| Touched | `dayGridPage.dart` — `context.watch<DayContentFilterCubit>()`; `apply()` on the page's tiles **before** `gridTiles(...)` / the pinned card / `EnhancedTileBatch` input, while `DayGridAlertRows` keeps the unfiltered tiles (C34). `dailyTileList.dart` — today's `EnhancedWithinNowBatch` receives the filtered set the same way. Travel bands need no change (they derive from the rendered tiles). |
+| Tests first | `test/day_content_filter_apply_test.dart` — grid page with 2 blocks + 3 tiles: `blocks` renders 2 `TileGridWidget`s, `tiles` 3, `all` 5; alert rows still computed from all 5; pinned all-day block hidden under `tiles`; list page equivalent via `EnhancedTileBatch` card count. Plus a no-snap case in `daygrid_no_snap_test.dart`: switching `all → tiles` never jumps a surviving tile at t=0 (hidden ones exit via the ghost path). |
+| Exit | suites green; both layouts filter identically. |
+
+#### Step 17.4 — Active-filter strip, empty state, auto-clear
+
+| | |
+|---|---|
+| New | `lib/components/dayContentFilterStrip.dart` — *"Showing blocks only · 4 of 11"* + `Show all`; `AnimatedSize`; mounted at the top of the day content in both layouts (grid: above `DayGridAlertRows`; list: first sliver). Empty-state line when the filtered set is empty. |
+| Touched | `dayGridWidget.dart` tap-to-add path and the grid's `_diffTiles` add-detection → `DayContentFilterCubit.clearIfHides(addedTiles)` + toast (l10n `dayFilterAutoCleared`). |
+| Tests first | strip text/counts per state; `Show all` clears; empty-state per layout; auto-clear fires on an added non-matching tile and NOT on a matching one; no-snap: strip appear/disappear does not move the scroll or surviving tiles at t=0. |
+| Logging | `daygrid_filter_autocleared` |
+| Exit | suites green; on-device: switch filters on a busy day in both layouts — transitions animate, chrome never moves, conflict row still shows while its partner is hidden (expected). |
+
+**P7 gate:** four steps individually approved before commit; on-device pass of 17.4's checklist recorded in §11.
+
+---
+
+## 18. P9 — Tile occupancy rail in the grid gutter (decided 2026-09-16, implemented 2026-09-16, uncommitted)
+
+> A thin vertical **occupancy rail** at the far right of the grid — right of
+> the travel rail, which itself sits right of the tile column — showing, as
+> one low-emphasis line, every stretch of the day **not claimed by a block**:
+> free time and tile time alike, i.e. the time Tiler is free to schedule
+> into. (Corrected 2026-09-16 after the first on-device look: the first cut
+> painted only where the *tiles* were; the ask was the non-block frames.)
+> Always reflecting the whole day (unfiltered), so under `Tiles` the gaps the
+> hidden blocks claim still read. Grid only (the list has no time axis).
+> Same review-before-commit policy as §14.8 / §15 / §16 / §17.
+
+### 18.1 Decisions (C37–C43)
+
+| # | Decision | Notes |
+|---|---|---|
+| **C37** | **Rail = the day minus its blocks, unfiltered.** Blocks = the day's renderable rigid tiles (`DayGridPage.gridTiles` parity: viable, id'd, not pending/declined RSVP; `isRigid == true`, third-party included per C30). Tiles never subtract. An all-day block blanks the rail. The P7 filter never changes the rail. | The rail is chrome-like: like the alert rows and counts it reflects the whole day. |
+| **C38** | **Travel does not count.** A block claims only its own `[start, end]`; its travel stays “free” on the rail. | Decided 2026-09-16. |
+| **C39** | **No rail for blocks.** The rail is the complement of the blocks — a block's own span is the gap. | Blocks are visible as cards under `All`/`Blocks`; under `Tiles` their gaps are the only trace left. |
+| **C40** | **The Tiler accent, constant.** `TileColors.primary` at 90 % alpha (past half 40 %, C41), 3 px wide, the same under every filter. Never the tiles' own colours. | Revised on device 2026-09-16: the first cut (`primary` at 35 %) read as a muted grey on the dark surface; the ask was the accent, a bit thicker. |
+| **C41** | **Past segments dim** (today only): the part of a segment before the now-line renders at roughly half the emphasis of the future part, split at the now-line like the tiles' own past treatment. | Decided 2026-09-16. |
+| **C42** | **Geometry:** a dedicated 6 px lane at the far right, past the 20 px travel rail (`DayGridWidget.railLaneWidth`; the tile column gives up the 6 px, `tileLeft` unchanged); segments 3 px wide centred in the lane, rounded caps, min height 3 px; overlapping/touching tiles **merge** into one segment; clamped to the day like tiles. Non-interactive (`IgnorePointer`) — tap-to-add, drag and pinch unaffected. | Merging is pure interval math (`OccupancyRail.segments`), unit-tested. The travel rail is on the RIGHT of the tiles (P6/B), so “right of the transportation widget” = the outermost lane. |
+| **C43** | **No-snap:** segments are positioned like tiles (`AnimatedPositioned`, same `mode == idle` gate) so a refresh / filter change never jumps them; keyed by segment start so merges animate. | §16.2 applies. |
+
+### 18.2 Step-by-step implementation plan (TDD) — P9
+
+#### Step 18.1 — Pure segment math
+
+| | |
+|---|---|
+| New | `lib/routes/authenticatedUser/calendarGrid/occupancyRail.dart` — `OccupancySegment(startMs, endMs)`; `OccupancyRail.segments(tiles, dayStart)` → the complement of the merged, day-clamped renderable blocks inside `[dayStart, +24h)`, sorted (C37/C38); `OccupancyRail.split(segment, nowMs)` → (past, future) halves for C41. |
+| Tests first | `test/daygrid_occupancy_rail_test.dart` (pure, 14) — no blocks → whole day, tiles never subtract; disjoint blocks → the gaps around them; overlapping/touching blocks merge; third-party blocks count; a block's travel ignored; non-renderable blocks don't subtract; all-day block blanks the rail; cross-midnight clamp; no zero-length edge segment; null bounds ignored; split at now (before / straddling / after / no now). |
+| Exit | pure tests green; nothing rendered yet. |
+
+#### Step 18.2 — The lane + paint
+
+| | |
+|---|---|
+| Touched | `dayGridWidget.dart` — `railLaneWidth = 6` reserved at the far right, past the travel rail (`tileWidth -= railLaneWidth`; `tileLeft` and the travel rail's `railLeft` relation unchanged); a `railWidgets` layer between the gutter lines and the travel bands: per segment (or per past/future half on today, C41, split at the grid's `_liveNow`) an `AnimatedPositioned` 3 px `IgnorePointer` bar keyed `daygrid_rail_<dayKey>_<segmentStartMs>_past|future`, `TileColors.primary` at `railAlpha` 0.9 / `railPastAlpha` 0.4 (C40), rounded caps (the two halves meet flat at the now-line), same 300 ms / idle gate as the tiles (C43). New `railTiles:` param; `DayGridPage` passes the UNFILTERED day (`tiles`) for it alongside the filtered `tiles`. |
+| Tests first | `daygrid_occupancy_rail_test.dart` (widget group, 7) — segments at `top(start)`/`height(end-start)` in the lane, abutting the block card's top/bottom, and the tile column 6 px narrower (`daygrid_layout_math_test`, `daygrid_travel_band_test`, `daygrid_overlap_columns_test` updated); tiles cut no gap, overlapping blocks cut one; rail follows `railTiles` not the filtered `tiles`; today's past half dimmer; not-today has no past half; `IgnorePointer` + hit-test never reaches the bar; a refresh that removes a block animates the gap closed, never jumps. `daygrid_no_snap_test` case (11): under the production composition the filter switch to `Blocks` leaves every rail segment exactly in place (moves only with the scroll host as the filter strip opens). |
+| Logging | none (pure paint). |
+| Exit | suites green; on-device under `Blocks` the rail shows where tiles were; zoomed out the day's density reads at a glance. |
+
+**P9 gate:** two steps individually approved before commit; on-device check recorded in §11.
