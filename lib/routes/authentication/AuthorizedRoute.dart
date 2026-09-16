@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
@@ -16,8 +15,6 @@ import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/components/datePickers/monthlyDatePicker/monthlyPickerPage.dart';
 import 'package:tiler_app/components/datePickers/weeklyDatePicker/weeklyPickerPage.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
-import 'package:tiler_app/components/ribbons/dayRibbon/dayRibbonCarousel.dart';
-import 'package:tiler_app/components/ribbons/dayRibbon/dayRibbonTab.dart';
 import 'package:tiler_app/components/ribbons/monthRibbon/monthRibbon.dart';
 import 'package:tiler_app/components/ribbons/weekRibbon/weekRibbonCarousel.dart';
 import 'package:tiler_app/components/status.dart';
@@ -42,7 +39,6 @@ import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/aiChatConsentGate.dart';
 import 'package:tiler_app/services/aiConsentPreferencesHelper.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/services/api/chatApi.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -207,26 +203,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   Widget _ribbonCarousel(AuthorizedRouteTileListPage selectedListPage) {
     switch (selectedListPage) {
       case AuthorizedRouteTileListPage.Daily:
-        // Wrap in BlocBuilder to respond to date changes
-        return BlocBuilder<UiDateManagerBloc, UiDateManagerState>(
-          builder: (context, uiDateState) {
-            DateTime dayRibbonDate = Utility.currentTime().dayDate;
-            if (uiDateState is UiDateManagerUpdated) {
-              dayRibbonDate = uiDateState.currentDate;
-            }
-            // Viewing today shows a collapsed tap-to-expand ribbon tab
-            // instead of the old hard hide — the day summary is still
-            // embedded in EnhancedWithinNowBatch (list mode) and covered by
-            // the now-line (grid mode).
-            if (dayRibbonDate.isToday) {
-              return DayRibbonTab(dayRibbonDate: dayRibbonDate);
-            }
-            return DayRibbonCarousel(
-              dayRibbonDate,
-              autoUpdateAnchorDate: false,
-            );
-          },
-        );
+        // Daily's day strip is part of GridDailyPageBody (in-flow); this
+        // overlay path is only reached for Weekly / Monthly.
+        return const SizedBox.shrink();
       case AuthorizedRouteTileListPage.Weekly:
         return Stack(children: [
           Align(
@@ -472,19 +451,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               if (uiDateState is UiDateManagerUpdated) {
                 currentViewDate = uiDateState.currentDate;
               }
-              final bool isViewingToday = currentViewDate.isToday;
 
-              // In Daily + grid mode the top chrome is
-              // a real in-flow Column (day label + actions, then the ribbon,
-              // then the grid) instead of the legacy Stack overlay — so the
-              // grid's scroll viewport genuinely starts BELOW the chrome and
-              // never runs behind/under the day selector. Every other
-              // combination (list mode, Weekly, Monthly) keeps the exact
-              // pre-existing Stack below.
+              // Daily (both layouts): one composition — the shared fixed
+              // top bar, the compact day strip (in-flow, always visible),
+              // and the day carousel. Weekly / Monthly keep the legacy
+              // Stack overlay below.
               if (scheduleState.currentView ==
-                      AuthorizedRouteTileListPage.Daily &&
-                  context.watch<DailyViewLayoutCubit>().state ==
-                      DailyViewLayout.grid) {
+                  AuthorizedRouteTileListPage.Daily) {
                 return GridDailyPageBody(
                   currentDate: currentViewDate,
                   onSearch: _onSearchTap,
@@ -502,22 +475,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 _buildTileList(scheduleState.currentView),
                 _ribbonCarousel(scheduleState.currentView),
                 HomeTopRightActions(
-                  isViewingToday: scheduleState.currentView !=
-                          AuthorizedRouteTileListPage.Daily ||
-                      isViewingToday,
-                  // List/grid toggle, Daily-view only.
-                  dayGridLayout: scheduleState.currentView ==
-                          AuthorizedRouteTileListPage.Daily
-                      ? context.watch<DailyViewLayoutCubit>().state
-                      : null,
-                  onDayGridLayoutToggle: scheduleState.currentView ==
-                          AuthorizedRouteTileListPage.Daily
-                      ? () {
-                          context.read<DailyViewLayoutCubit>().toggle(
-                                dayIndex: currentViewDate.universalDayIndex,
-                              );
-                        }
-                      : null,
+                  isViewingToday: true,
                   onSearch: _onSearchTap,
                   onSettings: _onSettingsTap,
                   onGoToToday: () {

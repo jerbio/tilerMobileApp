@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:tiler_app/components/homeTopRightActions.dart';
@@ -25,10 +24,8 @@ typedef DayGridDatePicker = Future<DateTime?> Function(
 ///
 /// `[list/grid toggle]   [ day pill ▾ ] [summary]   [go-to-today?] [search] [settings]`
 ///
-/// - The bar has a **constant height** ([height]); nothing in it changes
-///   layout when the scrolling header (`DayGridScrollHeader`) is revealed —
-///   the day pill only cross-fades (opacity) by [headerReveal] so the big
-///   date in the header is never duplicated on screen (no-snap rule 1).
+/// - The bar has a **constant height** ([height]) and hosts BOTH Daily
+///   layouts (list and grid) so the chrome is identical in each.
 /// - The day pill is tappable (C16): it opens a date picker; a confirmed
 ///   selection is reported via [onDateSelected]. Cancelling invokes nothing.
 /// - The summary button (C20) opens [TodayStatusScreen] for the **shown**
@@ -68,10 +65,6 @@ class DayGridTopChromeRow extends StatelessWidget {
   /// Seam for the date-picker dialog (tests inject a fake).
   final DayGridDatePicker? pickDate;
 
-  /// How much of the scrolling header is revealed (0 → 1). The day pill's
-  /// opacity is `1 - reveal`. Null = always fully visible.
-  final ValueListenable<double>? headerReveal;
-
   const DayGridTopChromeRow({
     super.key,
     required this.currentDate,
@@ -82,7 +75,6 @@ class DayGridTopChromeRow extends StatelessWidget {
     this.onDayGridLayoutToggle,
     this.onDateSelected,
     this.pickDate,
-    this.headerReveal,
   });
 
   /// Production-inert observable for the summary-open tag (see
@@ -190,21 +182,7 @@ class DayGridTopChromeRow extends StatelessWidget {
         ),
       ),
     );
-    final ValueListenable<double>? reveal = headerReveal;
-    if (reveal == null) return pill;
-    // Opacity-only cross-fade (no layout change) — and a hidden pill must
-    // not be tappable.
-    return ValueListenableBuilder<double>(
-      valueListenable: reveal,
-      builder: (context, progress, child) {
-        final double opacity = (1.0 - progress).clamp(0.0, 1.0);
-        return IgnorePointer(
-          ignoring: opacity < 0.5,
-          child: Opacity(opacity: opacity, child: child),
-        );
-      },
-      child: pill,
-    );
+    return pill;
   }
 
   @override

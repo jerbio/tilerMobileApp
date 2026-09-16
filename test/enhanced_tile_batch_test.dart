@@ -9,6 +9,9 @@ import 'package:tiler_app/components/tilelist/conflictAlert.dart';
 import 'package:tiler_app/components/tilelist/dailyView/components/hourMarker.dart';
 import 'package:tiler_app/components/tilelist/dailyView/components/todaySummaryRow.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
+import 'package:tiler_app/components/tilelist/dailyView/components/daySummaryHeader.dart';
+import 'package:tiler_app/components/tilelist/dailyView/components/quickActionChipsRow.dart';
+import 'package:tiler_app/routes/authenticatedUser/analysis/daySummary.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedWithinNowBatch.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
 import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
@@ -482,6 +485,69 @@ void main() {
       );
       expect(find.byType(ProactiveAlertBanner), findsNothing);
     });
+
+    testWidgets(
+        'fits a bounded (shorter-than-screen) host without overflowing',
+        (tester) async {
+      // Regression: the Daily top-bar layout hosts the day carousel in a
+      // region shorter than the screen, and the carousel viewport constrains
+      // each day page to that region. The batch's day content used to demand
+      // a fixed screen-derived height, overflowing the host's bottom.
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final day = DateTime(2026, 5, 15);
+      final tiles = <SubCalendarEvent>[
+        for (var h = 9; h < 18; h++)
+          _buildTile(
+            id: 't$h',
+            name: 'Task $h',
+            start: DateTime(2026, 5, 15, h),
+            end: DateTime(2026, 5, 15, h + 1),
+          ),
+      ];
+
+      await tester.pumpWidget(
+        _buildTestApp(
+          child: MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                  create: (_) => ScheduleBloc(getContextCallBack: () => null)),
+              BlocProvider(
+                  create: (_) =>
+                      ScheduleSummaryBloc(getContextCallBack: () => null)),
+            ],
+            child: Scaffold(
+              // A bounded day viewport (like the day-carousel region under
+              // the Daily top chrome): well shorter than the screen.
+              body: SizedBox(
+                height: 500,
+                child: EnhancedTileBatch(
+                  dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays,
+                  tiles: tiles,
+                  showProactiveAlerts: false,
+                  showTimelineMarkers: false,
+                  showEnhancedCards: true,
+                  showConflictAlerts: true,
+                  showTravelConnectors: false,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // No RenderFlex overflow: the day content fills the leftover height
+      // instead of demanding a screen-sized box.
+      expect(tester.takeException(), isNull);
+      expect(find.text('Task 9'), findsOneWidget);
+    });
   });
 
   group('EnhancedWithinNowBatch widget behavior', () {
@@ -537,26 +603,33 @@ void main() {
       expect(find.byType(SleepTileWidget), findsOneWidget);
     });
 
-    testWidgets('routes needsAction RSVP tile to PendingRsvpBanner',
+    testWidgets(
+        'routes needsAction RSVP tile to CombinedAlertsBanner instead of main list',
         (tester) async {
-      final today = DateTime.now();
+      // Use now-relative times so the RSVP tile is always still upcoming,
+      // regardless of the time of day the suite runs.
+      final now = DateTime.now();
       final tiles = [
         _buildTile(
           id: 'a',
           name: 'Regular Task',
-          start: DateTime(today.year, today.month, today.day, 9),
-          end: DateTime(today.year, today.month, today.day, 10),
+          start: now.add(const Duration(hours: 3)),
+          end: now.add(const Duration(hours: 4)),
         ),
         _buildRsvpTile(
           id: 'b',
           name: 'Invite Response Needed',
-          start: DateTime(today.year, today.month, today.day, 11),
-          end: DateTime(today.year, today.month, today.day, 12),
+          start: now.add(const Duration(hours: 1)),
+          end: now.add(const Duration(hours: 2)),
           rsvp: RsvpStatus.needsAction,
         ),
       ];
       await _pumpEWNB(tester, tiles);
-      expect(find.byType(PendingRsvpBanner), findsOneWidget);
+      // The within-now batch surfaces pending RSVPs through the combined
+      // alerts banner; the standalone PendingRsvpBanner widget is only used
+      // by the non-within-now EnhancedTileBatch.
+      expect(find.byType(PendingRsvpBanner), findsNothing);
+      expect(find.byType(CombinedAlertsBanner), findsOneWidget);
     });
 
     testWidgets('excludes declined tile from conflict detection',
@@ -584,7 +657,7 @@ void main() {
     });
 
     testWidgets(
-        'shows ProactiveAlertBanner alone for a future tile with travel time',
+        'shows CombinedAlertsBanner alone for a future tile with travel time',
         (tester) async {
       final futureStart = DateTime.now().add(const Duration(hours: 2));
       final futureEnd = futureStart.add(const Duration(hours: 1));
@@ -599,8 +672,11 @@ void main() {
         ),
       ];
       await _pumpEWNB(tester, tiles);
-      expect(find.byType(ProactiveAlertBanner), findsOneWidget);
-      expect(find.byType(CombinedAlertsBanner), findsNothing);
+      // Departure alerts are surfaced through the combined alerts banner;
+      // the standalone ProactiveAlertBanner widget is no longer used by the
+      // within-now batch.
+      expect(find.byType(ProactiveAlertBanner), findsNothing);
+      expect(find.byType(CombinedAlertsBanner), findsOneWidget);
     });
 
     testWidgets(
@@ -767,6 +843,89 @@ void main() {
       final connector =
           tester.widget<ReturnConnector>(find.byType(ReturnConnector));
       expect(connector.endOfDayTime, isNull);
+    });
+  });
+
+  group('EnhancedTileBatch (non-today) day-summary block hosting', () {
+    Widget host({required bool showHeader}) => _buildTestApp(
+          child: MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) => ScheduleBloc(getContextCallBack: () => null),
+              ),
+              BlocProvider(
+                create: (_) =>
+                    ScheduleSummaryBloc(getContextCallBack: () => null),
+              ),
+            ],
+            child: Scaffold(
+              body: SingleChildScrollView(
+                child: EnhancedTileBatch(
+                  dayIndex: 20000,
+                  tiles: const [],
+                  showDaySummaryHeader: showHeader,
+                ),
+              ),
+            ),
+          ),
+        );
+
+    testWidgets('renders the DaySummary block by default', (tester) async {
+      await tester.pumpWidget(host(showHeader: true));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(DaySummary), findsOneWidget);
+    });
+
+    testWidgets('omits the DaySummary block (and its 181px) under the top bar',
+        (tester) async {
+      await tester.pumpWidget(host(showHeader: false));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(DaySummary), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('EnhancedWithinNowBatch day-summary header hosting', () {
+    Widget host({required bool showHeader}) => _buildTestApp(
+          child: MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) => ScheduleBloc(getContextCallBack: () => null),
+              ),
+              BlocProvider(
+                create: (_) =>
+                    ScheduleSummaryBloc(getContextCallBack: () => null),
+              ),
+            ],
+            child: Scaffold(
+              body: EnhancedWithinNowBatch(
+                tiles: const [],
+                showDaySummaryHeader: showHeader,
+              ),
+            ),
+          ),
+        );
+
+    testWidgets('pins the DaySummaryHeader by default', (tester) async {
+      await tester.pumpWidget(host(showHeader: true));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(DaySummaryHeader), findsOneWidget);
+    });
+
+    testWidgets(
+        'omits the DaySummaryHeader when hosted under the Daily top bar',
+        (tester) async {
+      await tester.pumpWidget(host(showHeader: false));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(DaySummaryHeader), findsNothing,
+          reason: 'the bar already shows the day pill + summary button');
+      // The chips + loading bar moved to the shared DayQuickActionsRow.
+      expect(find.byType(QuickActionChipsRow), findsNothing);
+      expect(tester.takeException(), isNull);
     });
   });
 }

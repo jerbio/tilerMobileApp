@@ -312,6 +312,37 @@ void main() {
     });
   });
 
+  group('grid day anchoring', () {
+    testWidgets(
+        'a tile that started YESTERDAY does not shift the grid day: today tiles still render',
+        (tester) async {
+      _setSurface(tester);
+      final bloc = _RecordingScheduleBloc();
+      final controller = DayGridController();
+      addTearDown(controller.dispose);
+      final tiles = [
+        // Cross-midnight tile: starts on the previous day.
+        _tile('overnight', dayStart.subtract(const Duration(minutes: 7)),
+            dayStart.add(const Duration(hours: 1, minutes: 13))),
+        _tile('morning', dayStart.add(const Duration(hours: 9)),
+            dayStart.add(const Duration(hours: 10))),
+      ];
+      await tester.pumpWidget(_buildApp(
+          bloc: bloc, controller: controller, tiles: tiles, day: dayStart));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('morning'), findsOneWidget,
+          reason: 'the grid day is the page day, not the earliest tile day');
+      // The overnight tile is clamped into the day (visible from 12 AM).
+      expect(find.text('overnight'), findsOneWidget);
+      final Rect overnight = tester.getRect(_tileCard('overnight'));
+      final Rect morning = tester.getRect(_tileCard('morning'));
+      expect(overnight.top, lessThan(morning.top));
+      await _closeBloc(tester, bloc);
+    });
+  });
+
   group('tile detail sheet (tap-out)', () {
     Widget sheetApp(ScheduleBloc bloc, DayGridController controller,
         List<SubCalendarEvent> tiles,

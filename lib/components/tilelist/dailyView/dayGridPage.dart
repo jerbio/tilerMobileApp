@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
 import 'package:tiler_app/components/dayGridPageBody.dart';
-import 'package:tiler_app/components/dayGridScrollHeader.dart';
+import 'package:tiler_app/components/dayGridAlertRows.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -28,6 +28,11 @@ class DayGridPage extends StatelessWidget {
   /// omitted, list mode renders an [EnhancedTileBatch] built from [tiles].
   final Widget? listView;
 
+  /// List mode: whether the non-today list page renders its own day-summary
+  /// block. `false` under the Daily top bar (which already shows the day
+  /// pill + summary button).
+  final bool showDaySummaryHeader;
+
   const DayGridPage({
     super.key,
     required this.dayIndex,
@@ -35,6 +40,7 @@ class DayGridPage extends StatelessWidget {
     this.endOfDayTime,
     this.onEndOfDayUpdated,
     this.listView,
+    this.showDaySummaryHeader = true,
   });
 
   /// Parity filter — mirrors [EnhancedTileBatch]'s main-list rules:
@@ -96,6 +102,9 @@ class DayGridPage extends StatelessWidget {
       final DayGridScope? scope = DayGridScope.maybeOf(context);
       return Column(
         children: [
+          // Conflict / RSVP rows, in-flow (list mode has inline banners of
+          // its own). The unfiltered day tiles feed the alert detectors.
+          DayGridAlertRows(tiles: tiles),
           // Pinned >=16h / all-day tiles — excluded from
           // the grid timeline, kept visible here (outside the scroll, so it
           // stays put). AnimatedSize: the one chrome element that can
@@ -127,15 +136,6 @@ class DayGridPage extends StatelessWidget {
               // Scope the per-tile keys to this day so a tile
               // never re-animates (flies) across a day-page swap.
               dayKey: 'day_$dayIndex',
-              // The scrolling header (big date, alert subtitle, compact day
-              // strip, conflict / RSVP rows) lives in the grid's negative
-              // scroll extent — revealed by pulling down, never resizing
-              // the grid (C18). The unfiltered day tiles feed the alert
-              // detectors, exactly as the retired chip strip received them.
-              header: DayGridScrollHeader(currentDate: day, tiles: tiles),
-              onHeaderRevealChanged: scope == null
-                  ? null
-                  : (progress) => scope.report(dayIndex, progress),
             ),
           ),
         ],
@@ -150,6 +150,7 @@ class DayGridPage extends StatelessWidget {
       showEnhancedCards: true,
       showTravelConnectors: true,
       showTimelineMarkers: true,
+      showDaySummaryHeader: showDaySummaryHeader,
       endOfDayTime: endOfDayTime,
       onEndOfDayUpdated: onEndOfDayUpdated,
     );

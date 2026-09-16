@@ -286,7 +286,9 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   }
 
   Widget renderHorizontalLoader() {
-    if (!showLoader) {
+    // The compact strip lives in the shared Daily chrome, which carries the
+    // schedule loading bar itself (DayQuickActionsRow) — no second one here.
+    if (!showLoader || widget.compact) {
       return SizedBox.shrink();
     }
     return AnimatedPositioned(

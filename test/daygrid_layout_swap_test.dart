@@ -18,6 +18,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.dart';
 import 'package:tiler_app/theme/theme_data.dart';
+import 'package:tiler_app/util.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -135,9 +136,11 @@ void main() {
       // overflowing.
       bool scrollableParent = true}) {
     final dayPage = DayGridPage(
-      dayIndex: 20500,
+      // The page day must match the fixture tiles' day (2026-05-15): the grid
+      // anchors on the page day, not on the earliest tile.
+      dayIndex: DateTime(2026, 5, 15).universalDayIndex,
       tiles: tiles,
-      key: const Key('day_20500'),
+      key: Key('day_${DateTime(2026, 5, 15).universalDayIndex}'),
     );
     return MaterialApp(
       theme: TileThemeData.lightTheme,

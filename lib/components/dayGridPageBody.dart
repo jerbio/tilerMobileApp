@@ -5,37 +5,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/dayGridTopChromeRow.dart';
+import 'package:tiler_app/components/dayQuickActionsRow.dart';
+import 'package:tiler_app/components/ribbons/dayRibbon/dayRibbonCarousel.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
 import 'package:tiler_app/util.dart';
 
 /// Scope shared by every grid-mode day page (provided by
-/// [GridDailyPageBody]; looked up, dependency-free, by `DayGridPage`):
-///
-///  * [controller] — the ONE `DayGridController` (zoom) for all day pages.
-///    Owned + restored from prefs once by the body, so a page sliding into
-///    view mounts already at the stored zoom (no per-page async restore
-///    re-laying every tile out), and a pinch on one day is live on every
-///    other day.
-///  * [progress] / [report] — how much of the CURRENT day page's scrolling
-///    header is revealed; the fixed top bar reads it to cross-fade the day
-///    pill. Reports from non-current (off-screen carousel) pages are ignored.
+/// [GridDailyPageBody]; looked up, dependency-free, by `DayGridPage`): the
+/// ONE `DayGridController` (zoom) for all day pages. Owned + restored from
+/// prefs once by the body, so a page sliding into view mounts already at
+/// the stored zoom (no per-page async restore re-laying every tile out),
+/// and a pinch on one day is live on every other day.
 ///
 /// Absent outside grid mode / in isolated tests — null-check [maybeOf].
 class DayGridScope extends InheritedWidget {
   final DayGridController controller;
 
-  /// 0 (header off-screen above the grid) → 1 (fully revealed).
-  final ValueListenable<double> progress;
-
-  /// Called by a day-page grid with its `dayIndex` and reveal progress.
-  final void Function(int dayIndex, double progress) report;
-
   const DayGridScope({
     super.key,
     required this.controller,
-    required this.progress,
-    required this.report,
     required super.child,
   });
 
@@ -44,29 +33,34 @@ class DayGridScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(DayGridScope oldWidget) =>
-      progress != oldWidget.progress || controller != oldWidget.controller;
+      controller != oldWidget.controller;
 }
 
-/// Grid-mode Daily page body (P6): a fixed-height top bar
-/// ([DayGridTopChromeRow]) over the day grid ([DailyTileList]) filling the
-/// remaining `Expanded` space. The day selector, big date, and alert rows
-/// live INSIDE each day-page's grid scroll view as its negative-extent
-/// header (`DayGridScrollHeader` via `DayGridWidget.header`), so pulling
-/// down reveals them and nothing above the grid ever changes height.
+/// The Daily page body — ONE composition for both layouts (list and grid):
 ///
-/// Replaces the legacy `Stack` overlay when [DailyViewLayoutCubit] is grid.
+///  1. the fixed top bar ([DayGridTopChromeRow] —
+///     `toggle · day pill ▾ · summary · … · search · settings`),
+///  2. the compact, swipeable day strip ([DayRibbonCarousel] in `compact`
+///     mode), always visible, in-flow, a single instance for all days,
+///  3. the quick actions ([DayQuickActionsRow]: show route · re-optimize +
+///     the schedule loading bar), always present,
+///  4. the day carousel ([DailyTileList]) filling the remaining `Expanded`
+///     space — list pages or grid pages per [DailyViewLayoutCubit].
+///
+/// Nothing above the content ever changes height, and the day selector is
+/// never an overlay, so neither layout can be covered or pushed around.
 /// Extracted from `AuthorizedRoute.renderAuthorizedUserPageView` so the
 /// layout is testable in isolation.
 class GridDailyPageBody extends StatefulWidget {
-  /// The day the grid is currently showing. Drives the top-bar pill and the
-  /// list/grid toggle's analytics day index.
+  /// The day currently shown. Drives the top-bar pill, the strip anchor and
+  /// the list/grid toggle's analytics day index.
   final DateTime currentDate;
 
   final VoidCallback onSearch;
   final VoidCallback onSettings;
   final VoidCallback onGoToToday;
 
-  /// Builds the day-grid body for the bounded `Expanded` region. Defaults to
+  /// Builds the day content for the bounded `Expanded` region. Defaults to
   /// the real [DailyTileList] (sized to the region via `carouselHeight`).
   /// Overridable in tests with a lightweight stand-in.
   final Widget Function(double maxHeight)? gridBodyBuilder;
@@ -85,13 +79,14 @@ class GridDailyPageBody extends StatefulWidget {
     this.pickDate,
   });
 
+  /// The in-flow day strip's height (strip + 8px top inset).
+  static const double dayStripHeight = DayRibbonCarousel.compactHeight + 8;
+
   @override
   State<GridDailyPageBody> createState() => _GridDailyPageBodyState();
 }
 
 class _GridDailyPageBodyState extends State<GridDailyPageBody> {
-  final ValueNotifier<double> _headerReveal = ValueNotifier<double>(0.0);
-
   /// The shared zoom controller for every day page (see [DayGridScope]).
   final DayGridController _gridController = DayGridController();
 
@@ -104,22 +99,8 @@ class _GridDailyPageBodyState extends State<GridDailyPageBody> {
 
   @override
   void dispose() {
-    _headerReveal.dispose();
     _gridController.dispose();
     super.dispose();
-  }
-
-  int _currentDayIndex() {
-    final state = context.read<UiDateManagerBloc>().state;
-    if (state is UiDateManagerUpdated) {
-      return state.currentDate.universalDayIndex;
-    }
-    return widget.currentDate.universalDayIndex;
-  }
-
-  void _report(int dayIndex, double progress) {
-    if (dayIndex != _currentDayIndex()) return;
-    _headerReveal.value = progress;
   }
 
   void _onDateSelected(DateTime pickedDate) {
@@ -144,52 +125,63 @@ class _GridDailyPageBodyState extends State<GridDailyPageBody> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<UiDateManagerBloc, UiDateManagerState>(
-      // A day swap lands the new page's grid at/below its grid top (the
-      // header is never auto-revealed), so the pill must be back at full
-      // opacity — reset here because the new grid only reports CHANGES.
-      listenWhen: (previous, current) =>
-          previous is UiDateManagerUpdated &&
-          current is UiDateManagerUpdated &&
-          previous.currentDate.universalDayIndex !=
-              current.currentDate.universalDayIndex,
-      listener: (context, state) => _headerReveal.value = 0.0,
-      child: DayGridScope(
-        controller: _gridController,
-        progress: _headerReveal,
-        report: _report,
-        child: Column(children: [
-          DayGridTopChromeRow(
-            currentDate: widget.currentDate,
-            onSearch: widget.onSearch,
-            onSettings: widget.onSettings,
-            onGoToToday: widget.onGoToToday,
-            dayGridLayout: context.read<DailyViewLayoutCubit>().state,
-            onDayGridLayoutToggle: () => context
-                .read<DailyViewLayoutCubit>()
-                .toggle(dayIndex: widget.currentDate.universalDayIndex),
-            pickDate: widget.pickDate,
-            onDateSelected: _onDateSelected,
-            headerReveal: _headerReveal,
+    final colorScheme = Theme.of(context).colorScheme;
+    return DayGridScope(
+      controller: _gridController,
+      child: Column(children: [
+        DayGridTopChromeRow(
+          currentDate: widget.currentDate,
+          onSearch: widget.onSearch,
+          onSettings: widget.onSettings,
+          onGoToToday: widget.onGoToToday,
+          dayGridLayout: context.read<DailyViewLayoutCubit>().state,
+          onDayGridLayoutToggle: () => context
+              .read<DailyViewLayoutCubit>()
+              .toggle(dayIndex: widget.currentDate.universalDayIndex),
+          pickDate: widget.pickDate,
+          onDateSelected: _onDateSelected,
+        ),
+        // The day strip: one compact, swipeable instance for both layouts.
+        // It anchors on the bloc's current date and dispatches
+        // DateChangeEvent like the ribbon always has.
+        Container(
+          key: const Key('dailyDayStrip'),
+          height: GridDailyPageBody.dayStripHeight,
+          width: double.infinity,
+          padding: const EdgeInsets.only(top: 8),
+          color: colorScheme.surface,
+          child: DayRibbonCarousel(
+            widget.currentDate,
+            autoUpdateAnchorDate: false,
+            topMargin: 0,
+            compact: true,
           ),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final double maxHeight = constraints.maxHeight;
-                if (kDebugMode && maxHeight <= 0) {
-                  debugPrint(
-                      'GridDailyPageBody: grid region resolved to a non-positive '
-                      'height ($maxHeight) — the top bar is consuming the '
-                      'whole viewport.');
-                }
-                return widget.gridBodyBuilder != null
-                    ? widget.gridBodyBuilder!(maxHeight)
-                    : DailyTileList(carouselHeight: maxHeight);
-              },
-            ),
+        ),
+        // Show route · Re-optimize (+ loading bar): the same actions the
+        // list's sticky header used to carry, now shared by both layouts.
+        DayQuickActionsRow(currentDate: widget.currentDate),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double maxHeight = constraints.maxHeight;
+              if (kDebugMode && maxHeight <= 0) {
+                debugPrint(
+                    'GridDailyPageBody: day region resolved to a non-positive '
+                    'height ($maxHeight) — the bar + strip are consuming the '
+                    'whole viewport.');
+              }
+              return widget.gridBodyBuilder != null
+                  ? widget.gridBodyBuilder!(maxHeight)
+                  : DailyTileList(
+                      carouselHeight: maxHeight,
+                      // The bar carries the day + summary entry; list pages
+                      // skip their own day-summary block.
+                      showDaySummaryHeader: false,
+                    );
+            },
           ),
-        ]),
-      ),
+        ),
+      ]),
     );
   }
 }

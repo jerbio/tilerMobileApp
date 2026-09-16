@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:tiler_app/components/ribbons/dayRibbon/dayRibbonCarousel.dart';
 import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -10,35 +8,25 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridAlerts.da
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
-/// The grid-mode header that scrolls away with the day (C18): mounted as
-/// `DayGridWidget.header`, so it lives in the scroll view's negative extent
-/// and is revealed by pulling down. Top to bottom:
-///
-///  1. the full date (`Fri, Jan 15, 2027`);
-///  2. an alert subtitle (`2 conflicts · 1 RSVP need attention` / `All clear`);
-///  3. the compact, swipeable day strip (C23 — `DayRibbonCarousel` in
-///     `compact` mode, same `DateChangeEvent` dispatch as the ribbon);
-///  4. one banner row per alert kind (C21): conflicts → the stacked
-///     conflict-cards sheet, pending RSVP → the pending-RSVP sheet — the
-///     same modals the retired chip strip opened. Rows animate their size
-///     so a count going to zero does not pop while the header is on screen.
+/// Grid-mode alert rows, laid out IN-FLOW above the grid (below the shared
+/// top bar + day strip): one banner row per alert kind (C21) — conflicts →
+/// the stacked conflict-cards sheet, pending RSVP → the pending-RSVP sheet.
+/// Rows animate their size so a count going to zero never pops the grid.
+/// List mode has its own inline alert banners inside the list, so this is
+/// mounted by `DayGridPage`'s grid branch only.
 ///
 /// Extended (>=16h / all-day) tiles are NOT surfaced here — they stay in the
 /// pinned card above the grid (`DayGridPinnedHeader`).
-class DayGridScrollHeader extends StatelessWidget {
+class DayGridAlertRows extends StatelessWidget {
   static const Key conflictRowKey = ValueKey('daygrid_header_conflicts');
   static const Key rsvpRowKey = ValueKey('daygrid_header_rsvp');
-
-  /// The day the grid is showing.
-  final DateTime currentDate;
 
   /// The day's tiles (the unfiltered day-page input, as the chip strip
   /// received it) — the alert detectors apply their own parity rules.
   final List<TilerEvent> tiles;
 
-  const DayGridScrollHeader({
+  const DayGridAlertRows({
     super.key,
-    required this.currentDate,
     this.tiles = const <TilerEvent>[],
   });
 
@@ -47,24 +35,10 @@ class DayGridScrollHeader extends StatelessWidget {
   static int conflictCount(List<ConflictGroup> groups) =>
       groups.fold(0, (sum, group) => sum + group.tiles.length);
 
-  /// The subtitle line: `All clear`, or the joined non-zero alert counts
-  /// with a pluralized "need(s) attention".
-  static String subtitle(
-      AppLocalizations l10n, int conflicts, int pendingRsvps) {
-    final parts = <String>[];
-    if (conflicts > 0) parts.add(l10n.dayGridHeaderConflictCount(conflicts));
-    if (pendingRsvps > 0) parts.add(l10n.alertChipRsvp(pendingRsvps));
-    if (parts.isEmpty) return l10n.dayGridHeaderAllClear;
-    return l10n.dayGridHeaderNeedAttention(
-        conflicts + pendingRsvps, parts.join(' · '));
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
-    final locale = Localizations.localeOf(context).toString();
-
     final List<ConflictGroup> conflictGroups =
         DayGridAlerts.detectConflicts(tiles);
     final int conflicts = conflictCount(conflictGroups);
@@ -73,42 +47,9 @@ class DayGridScrollHeader extends StatelessWidget {
     final List<SubCalendarEvent> declinedTiles =
         DayGridAlerts.detectDeclinedTiles(tiles);
 
-    return Container(
-      color: colorScheme.surface,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            child: Text(
-              DateFormat('EEE, MMM d, y', locale).format(currentDate),
-              style: TextStyle(
-                fontFamily: TileTextStyles.rubikFontName,
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 2, 20, 6),
-            child: Text(
-              subtitle(l10n, conflicts, pendingRsvpTiles.length),
-              style: TextStyle(
-                fontFamily: TileTextStyles.rubikFontName,
-                fontSize: 13,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          DayRibbonCarousel(
-            currentDate,
-            autoUpdateAnchorDate: false,
-            topMargin: 0,
-            compact: true,
-          ),
-          const SizedBox(height: 4),
           AnimatedSize(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOut,
@@ -153,9 +94,7 @@ class DayGridScrollHeader extends StatelessWidget {
                     },
                   ),
           ),
-          const SizedBox(height: 4),
         ],
-      ),
     );
   }
 }

@@ -66,7 +66,14 @@ class DailyTileList extends TileList {
   /// and every other caller) it keeps the existing full-screen height, so
   /// existing call sites are byte-for-byte unchanged.
   final double? carouselHeight;
-  DailyTileList({Key? key, this.carouselHeight}) : super(key: key);
+
+  /// Whether today's list page pins its own day-summary header. `false`
+  /// when hosted under the Daily top bar (which carries the day pill +
+  /// summary button).
+  final bool showDaySummaryHeader;
+  DailyTileList(
+      {Key? key, this.carouselHeight, this.showDaySummaryHeader = true})
+      : super(key: key);
 
   @override
   _DailyTileListState createState() => _DailyTileListState();
@@ -375,6 +382,8 @@ class _DailyTileListState extends TileListState {
           // layout comes from DailyViewLayoutCubit.
           DayGridPage upcomingTileBatch = DayGridPage(
             dayIndex: dayIndex,
+            showDaySummaryHeader:
+                (this.widget as DailyTileList).showDaySummaryHeader,
             tiles: allTiles,
             key: key,
             endOfDayTime: _endOfDayFor(dayIndex),
@@ -393,6 +402,8 @@ class _DailyTileListState extends TileListState {
           // Day pages are switchable (list | grid).
           DayGridPage precedingDayTileBatch = DayGridPage(
             dayIndex: dayIndex,
+            showDaySummaryHeader:
+                (this.widget as DailyTileList).showDaySummaryHeader,
             key: key,
             tiles: allTiles,
             endOfDayTime: _endOfDayFor(dayIndex),
@@ -422,6 +433,7 @@ class _DailyTileListState extends TileListState {
       tiles: [...elapsedTiles, ...notElapsedTiles],
       endOfDayTime: _endOfDayFor(Utility.currentTime().universalDayIndex),
       onEndOfDayUpdated: _fetchUserEndOfDay,
+      showDaySummaryHeader: (widget as DailyTileList).showDaySummaryHeader,
     );
   }
 
@@ -485,6 +497,7 @@ class _DailyTileListState extends TileListState {
         tiles: [],
         endOfDayTime: _endOfDayFor(currentTime.universalDayIndex),
         onEndOfDayUpdated: _fetchUserEndOfDay,
+        showDaySummaryHeader: (this.widget as DailyTileList).showDaySummaryHeader,
       );
       DayGridPage todayPage = DayGridPage(
         dayIndex: currentTime.universalDayIndex,

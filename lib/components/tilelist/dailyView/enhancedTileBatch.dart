@@ -7,6 +7,7 @@ import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
+import 'package:tiler_app/components/tileUI/tileDetailBottomSheet.dart';
 import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
@@ -37,6 +38,11 @@ class EnhancedTileBatch extends StatefulWidget {
   final bool showTravelConnectors;
   final bool showProactiveAlerts;
   final bool showTimelineMarkers;
+
+  /// Whether to render the day-summary block ([DaySummary]: date + counts,
+  /// 120px + margin) at the top. `false` when hosted under the Daily top
+  /// bar, which already carries the day pill + summary button.
+  final bool showDaySummaryHeader;
   final bool showConflictAlerts;
   final bool preview;
   final String? selectedActionEntityId;
@@ -50,6 +56,7 @@ class EnhancedTileBatch extends StatefulWidget {
     this.dayData,
     this.showEnhancedCards = true,
     this.showTravelConnectors = true,
+    this.showDaySummaryHeader = true,
     this.showProactiveAlerts = true,
     this.showTimelineMarkers = false,
     this.showConflictAlerts = true,
@@ -143,10 +150,20 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       final isTutorialCurrent = tile.id != null &&
           tile.id!.startsWith('tutorial-tile-') &&
           tile.isCurrent;
+      // Compact, fixed-height list tile for the live daily list (not the
+      // TileCast preview and not the tour's current tile, which keeps the full
+      // expandable card). Tapping the compact tile opens the detail bottom
+      // sheet (playback + the time scrub when the tile is active).
+      final useCompact = !widget.preview && !isTutorialCurrent;
       final card = EnhancedTileCard(
         subEvent: tile,
         initiallyExpanded: isTutorialCurrent,
         preview: widget.preview,
+        compact: useCompact,
+        onTileTap: useCompact
+            ? () => showTileDetailBottomSheet(context, tile,
+                preview: widget.preview)
+            : null,
         hasDottedBorder: widget.selectedActionEntityId != null &&
             tile.id?.contains(widget.selectedActionEntityId!) == true,
       );
@@ -425,8 +442,9 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
     childrenColumnWidgets = [];
 
-    // Day summary header - match original TileBatch margins (bottom margin only)
-    if (dayData != null && widget.tiles != null) {
+    // Day summary header - match original TileBatch margins (bottom margin
+    // only). Omitted under the Daily top bar (which carries the same info).
+    if (widget.showDaySummaryHeader && dayData != null && widget.tiles != null) {
       // Only nonViable can be derived from widget.tiles. The completed/tardy
       // lists are never present in widget.tiles (it only carries the day's
       // schedulable tiles) — those come solely from the daySummarys web
@@ -635,22 +653,42 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         });
       }
 
-      dayContent = Container(
-        height: MediaQuery.sizeOf(context).height - daySummaryToHeightBuffer,
-        width: MediaQuery.sizeOf(context).width,
-        child: ScrollablePositionedList.builder(
-          itemScrollController: _itemScrollController,
-          itemPositionsListener: _itemPositionsListener,
-          itemCount: tilesWithConnectors.length + 1,
-          itemBuilder: (context, index) {
-            if (index == tilesWithConnectors!.length) {
-              return MediaQuery.of(context).orientation == Orientation.landscape
-                  ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
-                  : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles;
-            }
-            return tilesWithConnectors[index];
-          },
-        ),
+      // The day content sizes itself to the host's actual height. Under a
+      // bounded host (the Daily top-bar layout hosts the day carousel in a
+      // region shorter than the screen; the carousel viewport constrains the
+      // page tightly) it fills the space left after the banners/sleep rows,
+      // so the column can never overflow the host. Under an unbounded host
+      // the legacy full-screen-derived height is kept so existing callers
+      // are unchanged.
+      final List<Widget> scrollableTiles = tilesWithConnectors;
+      dayContent = LayoutBuilder(
+        builder: (dayContentContext, dayConstraints) {
+          final bool fillsBoundedHost =
+              dayConstraints.maxHeight.isFinite && dayConstraints.maxHeight > 0;
+          return Container(
+            width: MediaQuery.sizeOf(dayContentContext).width,
+            height: fillsBoundedHost
+                ? null
+                : MediaQuery.sizeOf(dayContentContext).height -
+                    daySummaryToHeightBuffer,
+            child: ScrollablePositionedList.builder(
+              itemScrollController: _itemScrollController,
+              itemPositionsListener: _itemPositionsListener,
+              itemCount: scrollableTiles.length + 1,
+              itemBuilder: (context, index) {
+                if (index == scrollableTiles.length) {
+                  return MediaQuery.of(context).orientation ==
+                          Orientation.landscape
+                      ? TileDimensions
+                          .bottomLandScapePaddingForTileBatchListOfTiles
+                      : TileDimensions
+                          .bottomPortraitPaddingForTileBatchListOfTiles;
+                }
+                return scrollableTiles[index];
+              },
+            ),
+          );
+        },
       );
     } else {
       // Empty day
@@ -743,8 +781,24 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       ),
     );
 
-    return Column(
-      children: childrenColumnWidgets,
+    // The day page is hosted in a bounded viewport (the Daily top-bar
+    // layout hosts the day carousel in a region shorter than the screen, and
+    // the carousel constrains each page to the viewport; the preview hosts it
+    // in a fixed-height page). When the incoming height is bounded, give the
+    // day content the height left over after the banners/sleep rows so the
+    // column can never overflow the host; unbounded hosts keep the legacy
+    // column exactly as before.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool boundedHeight =
+            constraints.maxHeight.isFinite && constraints.maxHeight > 0;
+        if (!boundedHeight || childrenColumnWidgets.isEmpty) {
+          return Column(children: childrenColumnWidgets);
+        }
+        final children = List<Widget>.of(childrenColumnWidgets);
+        children[children.length - 1] = Expanded(child: children.last);
+        return Column(children: children);
+      },
     );
   }
 

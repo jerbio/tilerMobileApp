@@ -68,6 +68,16 @@ void main() {
       ),
       findsOneWidget,
     );
+    // The live slot is only partially elapsed, so the fill is a partial,
+    // left-anchored span (neither empty nor full).
+    final FractionallySizedBox fill = tester.widget(
+      find.descendant(
+        of: footerFinder,
+        matching: find.byType(FractionallySizedBox),
+      ),
+    );
+    expect(fill.widthFactor, greaterThan(0.0));
+    expect(fill.widthFactor, lessThan(1.0));
 
     // Advance the periodic ticker; the row must survive a refresh tick.
     await tester.pump(const Duration(seconds: 1));

@@ -11,8 +11,8 @@
 //     change is EXPECTED to move it, that it has not yet jumped — it
 //     animates over the following frames).
 // Perturbations: same-tile refresh; add non-overlapping tile; add an
-// overlapping tile (widths animate); remove a tile; conflicts -> 0 (header
-// shrinks, grid does not); RSVP appears; all-day tile appears (pinned card
+// overlapping tile (widths animate); remove a tile; conflicts -> 0 (the in-flow
+// alert row collapses via AnimatedSize); RSVP appears; all-day tile appears (pinned card
 // AnimatedSize); pxPerHour change while zooming (immediate by design — the
 // gate is what is asserted); the clock ticks a minute.
 import 'package:flutter/material.dart';
@@ -24,6 +24,7 @@ import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/dayGridAlertRows.dart';
 import 'package:tiler_app/components/dayGridPageBody.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dayGridPage.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -270,12 +271,13 @@ void main() {
               h.tiles = h.tiles.where((t) => t.id != 'c2').toList());
     });
 
-    testWidgets('(5) conflicts → 0: the header shrinks, the grid does not',
+    testWidgets(
+        '(5) conflicts → 0: the in-flow alert row collapses (AnimatedSize), the grid does not jump',
         (tester) async {
       final h = _Harness(tester);
       await h.pump();
       await h.scrollToMidDay();
-      final minBefore = h.scroll.position.minScrollExtent;
+      expect(find.byKey(DayGridAlertRows.conflictRowKey), findsOneWidget);
       final before = _tileRects(tester);
 
       // Resolve the conflict by moving c2 away.
@@ -293,8 +295,8 @@ void main() {
       _expectNoJump(before, _tileRects(tester),
           allowedToMove: {'c1', 'c2'});
       await tester.pump(const Duration(milliseconds: 500));
-      // The header (negative extent) shrank; the grid stayed put.
-      expect(h.scroll.position.minScrollExtent, greaterThan(minBefore));
+      // The row is gone and the grid region grew — without moving the scroll.
+      expect(find.byKey(DayGridAlertRows.conflictRowKey), findsNothing);
       expect(h.scroll.position.pixels, 600.0);
       expect(tester.takeException(), isNull);
       await h.teardown();

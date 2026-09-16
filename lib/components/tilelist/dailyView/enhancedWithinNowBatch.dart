@@ -6,6 +6,7 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
 import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
+import 'package:tiler_app/components/tileUI/tileDetailBottomSheet.dart';
 import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
@@ -38,6 +39,11 @@ class EnhancedWithinNowBatch extends TileBatch {
   final bool preview;
   final DateTime? endOfDayTime;
   final VoidCallback? onEndOfDayUpdated;
+
+  /// Whether to pin the day-summary header (date + counts, action chips,
+  /// loading bar) at the top of the list. `false` when hosted under the
+  /// Daily top bar, whose shared chrome carries all of it for both layouts.
+  final bool showDaySummaryHeader;
   EnhancedWithinNowBatch({
     List<TilerEvent>? tiles,
     TimelineSummary? dayData,
@@ -46,6 +52,7 @@ class EnhancedWithinNowBatch extends TileBatch {
     this.selectedActionEntityId,
     this.endOfDayTime,
     this.onEndOfDayUpdated,
+    this.showDaySummaryHeader = true,
     Key? key,
   }) : super(
           key: key,
@@ -162,10 +169,21 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       final isTutorialCurrent = tile.id != null &&
           tile.id!.startsWith('tutorial-tile-') &&
           tile.isCurrent;
+      final preview = (widget as EnhancedWithinNowBatch).preview;
+      // Compact, fixed-height list tile for the live daily list (not the
+      // TileCast preview and not the tour's current tile, which keeps the full
+      // expandable card). Tapping the compact tile opens the detail bottom
+      // sheet (playback + the time scrub when the tile is active).
+      final useCompact = !preview && !isTutorialCurrent;
       final card = EnhancedTileCard(
         subEvent: tile,
         initiallyExpanded: isTutorialCurrent,
-        preview: (widget as EnhancedWithinNowBatch).preview,
+        preview: preview,
+        compact: useCompact,
+        onTileTap: useCompact
+            ? () => showTileDetailBottomSheet(context, tile,
+                preview: preview)
+            : null,
         hasDottedBorder:
             (widget as EnhancedWithinNowBatch).selectedActionEntityId != null &&
                 tile.id?.contains((widget as EnhancedWithinNowBatch)
@@ -498,7 +516,11 @@ class EnhancedWithinNowBatchState extends TileBatchState {
             ? const NeverScrollableScrollPhysics()
             : const AlwaysScrollableScrollPhysics(),
         slivers: [
-          // Sticky header with date, action chips, and loading indicator
+          // Sticky header with date, action chips, and loading indicator.
+          // Omitted under the Daily top bar: the bar carries the day +
+          // summary entry and the shared DayQuickActionsRow carries the
+          // chips + loading bar for both layouts.
+          if (withinNow.showDaySummaryHeader)
           BlocBuilder<ScheduleBloc, ScheduleState>(
             buildWhen: (previous, current) {
               final wasLoading = previous is ScheduleLoadingState ||
