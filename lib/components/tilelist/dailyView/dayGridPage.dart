@@ -162,6 +162,10 @@ class DayGridPage extends StatelessWidget {
               // never re-animates (flies) across a day-page swap.
               dayKey: 'day_$dayIndex',
               showTravel: showConnectors,
+              // The occupancy rail (P9) reads the whole day, not the
+              // filtered set (C37): under `Tiles` it still shows the gaps
+              // the hidden blocks claim.
+              railTiles: tiles,
             ),
           ),
         ],

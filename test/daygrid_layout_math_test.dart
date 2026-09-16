@@ -236,9 +236,14 @@ void main() {
             reason: 'tile starts just after the $gutter gutter');
         expect(
             size.width,
-            viewportWidth - gutter - 8 - DayGridWidget.travelRailWidth,
-            reason: 'tile fills the viewport minus the hour gutter and the '
-                'right-hand travel rail at $viewportWidth');
+            viewportWidth -
+                gutter -
+                8 -
+                DayGridWidget.travelRailWidth -
+                DayGridWidget.railLaneWidth,
+            reason: 'tile fills the viewport minus the hour gutter, the '
+                'right-hand travel rail and the occupancy-rail lane at '
+                '$viewportWidth');
         await tester.pumpWidget(
             buildTestApp(child: const SizedBox(width: 400, height: 600)));
         await tester.pump();

@@ -15,7 +15,7 @@
 // alert row collapses via AnimatedSize); RSVP appears; all-day tile appears (pinned card
 // AnimatedSize); pxPerHour change while zooming (immediate by design — the
 // gate is what is asserted); the clock ticks a minute; the content filter
-// switches (P7).
+// switches (P7); the occupancy rail (P9) stays put under the filter.
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -393,6 +393,67 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       expect(_tileRects(tester).keys, isNot(contains('c2')));
       expect(h.scroll.position.pixels, 600.0);
+      expect(tester.takeException(), isNull);
+      await h.teardown();
+    });
+
+    testWidgets(
+        '(11) content filter all -> blocks: the occupancy rail (unfiltered) never moves',
+        (tester) async {
+      final h = _Harness(tester);
+      await h.pump();
+      await h.scrollToMidDay();
+
+      Map<String, Rect> railRects() {
+        final rects = <String, Rect>{};
+        for (final element in find
+            .byWidgetPredicate((w) =>
+                w.key is ValueKey<String> &&
+                (w.key as ValueKey<String>).value.startsWith('daygrid_rail_'))
+            .evaluate()) {
+          rects[(element.widget.key as ValueKey<String>).value] =
+              tester.getRect(find.byWidget(element.widget));
+        }
+        return rects;
+      }
+
+      // Baseline has no blocks: the rail is the whole day, one segment.
+      final before = railRects();
+      expect(before.length, 2,
+          reason: 'no blocks: the whole day, split past/future at now');
+
+      final filter = tester
+          .element(find.byType(DayGridPage))
+          .read<DayContentFilterCubit>();
+      filter.set(DayContentFilter.blocks);
+      await tester.pump(); // microtask -> rebuild
+      await tester.pump(); // t = 0 after the filtered build
+      expect(h.scroll.position.pixels, 600.0);
+      expect(find.byType(TileGridWidget), findsNWidgets(3),
+          reason: 'hidden tiles are still on screen as exit ghosts at t=0');
+
+      // The rail reads the UNFILTERED day (C37): same segments, same rects.
+      final t0 = railRects();
+      expect(t0.keys, unorderedEquals(before.keys));
+      for (final entry in before.entries) {
+        expect(t0[entry.key], entry.value,
+            reason: 'rail ${entry.key} must not move under the filter');
+      }
+      // Settled: the filter strip has animated open above the grid (the
+      // whole scroll host shifts down with it, by design — see case 10);
+      // inside the grid the rail is where it was.
+      final double hostBefore =
+          tester.getRect(find.byType(CustomScrollView)).top;
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byType(TileGridWidget), findsNothing,
+          reason: 'no blocks in the baseline: every tile has exited');
+      final double hostShift =
+          tester.getRect(find.byType(CustomScrollView)).top - hostBefore;
+      final settled = railRects();
+      for (final entry in before.entries) {
+        expect(settled[entry.key], entry.value.shift(Offset(0, hostShift)),
+            reason: 'rail ${entry.key} moves only with the scroll host');
+      }
       expect(tester.takeException(), isNull);
       await h.teardown();
     });
