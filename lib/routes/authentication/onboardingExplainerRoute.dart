@@ -54,6 +54,7 @@ class _OnboardingExplainerScreenState extends State<OnboardingExplainerScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final Size size = MediaQuery.of(context).size;
     final bool landscape = size.width > size.height;
+    final double textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
 
     final Widget headline = Column(
       mainAxisSize: MainAxisSize.min,
@@ -109,34 +110,51 @@ class _OnboardingExplainerScreenState extends State<OnboardingExplainerScreen> {
     return Scaffold(
       backgroundColor: colorScheme.primary,
       body: SafeArea(
-        child: landscape
-            ? Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [headline, const SizedBox(height: 20), cta],
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    const Expanded(child: explainer),
-                  ],
-                ),
-              )
-            : Padding(
+        child: textScale > 1.3
+            ? SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
                 child: Column(
                   children: [
                     headline,
                     const SizedBox(height: 20),
-                    const Expanded(child: explainer),
+                    SizedBox(height: 400 * textScale, child: explainer),
                     const SizedBox(height: 20),
                     cta,
                   ],
                 ),
-              ),
+              )
+            : landscape
+                ? Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              headline,
+                              const SizedBox(height: 20),
+                              cta
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        const Expanded(child: explainer),
+                      ],
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                    child: Column(
+                      children: [
+                        headline,
+                        const SizedBox(height: 20),
+                        const Expanded(child: explainer),
+                        const SizedBox(height: 20),
+                        cta,
+                      ],
+                    ),
+                  ),
       ),
     );
   }

@@ -297,45 +297,57 @@ class _TilesVsBlocksExplainerState extends State<TilesVsBlocksExplainer>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        final (beat, t) = _beatAt(_controller.value);
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: _buildTimeline(context, l10n, colorScheme, beat, t),
-            ),
-            const SizedBox(height: 12),
-            _buildLegend(l10n, colorScheme),
-            const SizedBox(height: 8),
-            // Caption: cross-fades between beats. Its height is fixed at
-            // two lines so a longer caption never steals height from the
-            // timeline above (which would shift every card mid-beat).
-            SizedBox(
-              height: _captionFontSize * _captionLineHeight * 2,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Text(
-                  _captionFor(context, l10n, beat),
-                  key: ValueKey<ExplainerBeat>(beat),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: colorScheme.onPrimary,
-                    fontFamily: TileTextStyles.rubikFontName,
-                    fontSize: _captionFontSize,
-                    height: _captionLineHeight,
+    final captionStyle = TextStyle(
+      color: colorScheme.onPrimary,
+      fontFamily: TileTextStyles.rubikFontName,
+      fontSize: _captionFontSize,
+      height: _captionLineHeight,
+    );
+    return LayoutBuilder(builder: (context, constraints) {
+      // Reserve the tallest caption across all beats so translations and
+      // larger text stay readable without moving the timeline mid-animation.
+      double captionHeight = 0;
+      for (final beat in ExplainerBeat.values) {
+        final painter = TextPainter(
+          text: TextSpan(
+              text: _captionFor(context, l10n, beat), style: captionStyle),
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+          locale: Localizations.localeOf(context),
+        )..layout(maxWidth: constraints.maxWidth);
+        if (painter.height > captionHeight) captionHeight = painter.height;
+        painter.dispose();
+      }
+      return AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final (beat, t) = _beatAt(_controller.value);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _buildTimeline(context, l10n, colorScheme, beat, t),
+              ),
+              const SizedBox(height: 12),
+              _buildLegend(l10n, colorScheme),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: captionHeight.ceilToDouble(),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: Text(
+                    _captionFor(context, l10n, beat),
+                    key: ValueKey<ExplainerBeat>(beat),
+                    textAlign: TextAlign.center,
+                    style: captionStyle,
                   ),
                 ),
               ),
-            ),
-          ],
-        );
-      },
-    );
+            ],
+          );
+        },
+      );
+    });
   }
 
   Widget _buildLegend(AppLocalizations l10n, ColorScheme colorScheme) {

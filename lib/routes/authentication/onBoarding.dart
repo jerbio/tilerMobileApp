@@ -124,7 +124,8 @@ class _OnboardingViewState extends State<OnboardingView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       AnalysticsSignal.send('ESSENTIALS_ONBOARDING_STARTED');
-      AnalysticsSignal.send('ESSENTIALS_ONBOARDING_PAGE', parameters: {'pageId': _pageId});
+      AnalysticsSignal.send('ESSENTIALS_ONBOARDING_PAGE',
+          parameters: {'pageId': _pageId});
     });
     // Stage 3.4: an injected schedule API (tests) takes precedence; the
     // production view creates its own with the build context.
@@ -162,7 +163,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           // cut from the essentials flow). The optional seam lets tests
           // substitute the destination builder. Navigation never waits on
           // the buzz; the schedule refreshes once it completes (3.5).
-          _buzzThenRefreshSchedule();
+          // _buzzThenRefreshSchedule();
           final Widget Function(BuildContext) submitBuilder =
               widget.submitDestinationBuilder ??
                   ((context) => AuthorizedRoute());
