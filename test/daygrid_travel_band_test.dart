@@ -112,6 +112,7 @@ void main() {
     double top = 0,
     double left = 40,
     double width = 300,
+    double railLeft = 344,
     SubCalendarEvent? fromTile,
   }) {
     return TravelBandWidget(
@@ -120,6 +121,7 @@ void main() {
       kind: kind,
       top: top,
       height: height,
+      railLeft: railLeft,
       left: left,
       width: width,
       fromTile: fromTile,
@@ -381,10 +383,10 @@ void main() {
       const gutter = TileDimensions.timeOfDayCellWidth;
       expect(ap.top, 760);
       expect(ap.height, 40);
-      // The gutter segment sits left of the tile column (left - gutterSpan)
-      // and spans gutterSpan + column width.
-      expect(ap.left, (gutter + 4) - TravelBandWidget.gutterSpan);
-      expect(ap.width, (400 - gutter - 8) + TravelBandWidget.gutterSpan);
+      // The band's box is the tile column itself: the marker sits at its
+      // RIGHT edge (clear of the hour labels), the cards fill it.
+      expect(ap.left, gutter + 4);
+      expect(ap.width, 400 - gutter - 8 - DayGridWidget.travelRailWidth);
     });
 
     testWidgets('a dayKey prefixes the band key (tile keys do the same)',
@@ -499,6 +501,117 @@ void main() {
   // ---------------------------------------------------------------------------
   // Tap-to-directions gating
   // ---------------------------------------------------------------------------
+
+  group('Travel rail (B) + fit-the-gap (C)', () {
+    Future<void> pumpBand(WidgetTester tester, TravelBandWidget band) async {
+      await tester.pumpWidget(buildTestApp(
+        child: SizedBox(
+          width: 400,
+          height: 600,
+          child: Stack(children: [band]),
+        ),
+      ));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+
+    SubCalendarEvent bandTile() => makeTile(
+          id: 't1',
+          start: DateTime(2026, 5, 15, 10, 0),
+          end: DateTime(2026, 5, 15, 11, 0),
+          travelTimeBefore: 30 * 60 * 1000,
+        );
+
+    testWidgets(
+        'a too-short gap renders the marker IN THE RAIL, centred on the gap, never in the column',
+        (tester) async {
+      // 6px real gap at top 100: below the compact-card threshold.
+      await pumpBand(
+          tester,
+          bandWidget(
+            tile: bandTile(),
+            kind: TravelBandKind.post,
+            top: 100,
+            height: 6,
+            left: 40,
+            width: 300,
+            railLeft: 344,
+          ));
+      final Rect box = tester.getRect(find.byType(AnimatedPositioned).first);
+      expect(box.left, 344, reason: 'the marker lives in the right rail');
+      expect(box.width, TravelBandWidget.gutterSpan);
+      // Centred on the 6px gap (100..106) with the 18px marker box.
+      expect(box.center.dy, closeTo(103, 0.5));
+      expect(find.byKey(TravelBandWidget.cardKey), findsNothing);
+      expect(find.byType(Icon), findsOneWidget);
+    });
+
+    testWidgets('a card is only rendered when the REAL gap fits it (no inflation)',
+        (tester) async {
+      // 17px: not enough for the 18px compact card -> rail marker.
+      await pumpBand(
+          tester,
+          bandWidget(
+            tile: bandTile(),
+            kind: TravelBandKind.pre,
+            top: 100,
+            height: 17,
+            railLeft: 344,
+          ));
+      expect(find.byKey(TravelBandWidget.cardKey), findsNothing);
+
+      // 18px: the compact card fits exactly -> rendered at the REAL height,
+      // inside the column.
+      await pumpBand(
+          tester,
+          bandWidget(
+            tile: bandTile(),
+            kind: TravelBandKind.pre,
+            top: 100,
+            height: 18,
+            left: 40,
+            width: 300,
+            railLeft: 344,
+          ));
+      final Rect card = tester.getRect(find.byKey(TravelBandWidget.cardKey));
+      expect(card.top, closeTo(100, 0.5));
+      expect(card.height, closeTo(18, 0.5));
+      expect(card.left, closeTo(40, 0.5));
+      expect(card.width, closeTo(300, 0.5));
+    });
+
+    testWidgets(
+        'in the grid, a marker for a tiny gap never intersects the next tile',
+        (tester) async {
+      final controller = DayGridController()..setPxPerHour(40);
+      addTearDown(controller.dispose);
+      // 8:00-9:50 with 9 min after-travel, next tile at 9:59: at 40px/h the
+      // gap is 6px — the old min-height inflation pushed the marker under
+      // the 9:59 tile.
+      final a = makeTile(
+        id: 'a',
+        start: DateTime(2026, 5, 15, 8, 0),
+        end: DateTime(2026, 5, 15, 9, 50),
+        travelTimeAfter: 9 * 60 * 1000,
+      );
+      final b = makeTile(
+        id: 'b',
+        start: DateTime(2026, 5, 15, 9, 59),
+        end: DateTime(2026, 5, 15, 10, 59),
+      );
+      await pumpGrid(tester, tiles: [a, b], controller: controller);
+
+      final Rect marker = tester.getRect(bandFinder('a', TravelBandKind.post));
+      final Rect nextTile =
+          tester.getRect(find.byKey(const ValueKey<String>('daygrid_tile_b')));
+      final Rect thisTile =
+          tester.getRect(find.byKey(const ValueKey<String>('daygrid_tile_a')));
+      expect(marker.overlaps(nextTile), isFalse,
+          reason: 'the rail is outside every tile column');
+      expect(marker.overlaps(thisTile), isFalse);
+      // Tiles stop short of the rail.
+      expect(nextTile.right, lessThanOrEqualTo(marker.left));
+    });
+  });
 
   group('TravelBand tap gating', () {
     testWidgets('onTap is present when the destination is valid',
@@ -761,15 +874,15 @@ void main() {
     });
 
     testWidgets(
-        'a compact single-line card from 12px real height; gutter icon below it',
+        'a compact card only from 18px REAL height; a rail marker below it',
         (tester) async {
-      // 12px real (rendered at the 18px minimum): compact card in the column.
+      // 18px real: the compact card fits the gap, in the column.
       await pumpBand(
           tester,
           bandWidget(
             tile: bandTile(),
             kind: TravelBandKind.pre,
-            height: 12,
+            height: 18,
             left: 40,
             width: 300,
           ));
@@ -779,35 +892,24 @@ void main() {
       expect(tester.getRect(card).height, closeTo(18, 0.5));
       expect(find.text('Travel • 30 min'), findsOneWidget);
 
-      // Below it: no card, the gutter icon only.
+      // 17px real: no card — the marker in the rail, clear of the column.
       await pumpBand(
           tester,
           bandWidget(
             tile: bandTile(),
             kind: TravelBandKind.pre,
-            height: 11,
+            height: 17,
+            left: 40,
+            width: 300,
+            railLeft: 344,
           ));
       expect(find.byKey(TravelBandWidget.cardKey), findsNothing);
       final icon = tester.getRect(find.descendant(
-        of: find.byKey(const ValueKey<String>('band_pre_11')),
+        of: find.byKey(const ValueKey<String>('band_pre_17')),
         matching: find.byType(Icon),
       ));
-      expect(icon.left, lessThan(40), reason: 'gutter icon sits left of the column');
-    });
-
-    testWidgets('a post band card shows the window after the tile',
-        (tester) async {
-      final tile = makeTile(
-        id: 'p',
-        start: DateTime(2026, 5, 15, 10, 0),
-        end: DateTime(2026, 5, 15, 11, 0),
-        travelTimeAfter: 24 * 60 * 1000,
-      );
-      await pumpBand(
-          tester,
-          bandWidget(tile: tile, kind: TravelBandKind.post, height: 60));
-      expect(find.text('Travel • 24 min'), findsOneWidget);
-      expect(find.text('11:00 – 11:24 AM'), findsOneWidget);
+      expect(icon.left, greaterThanOrEqualTo(344),
+          reason: 'the marker icon sits in the rail, right of the column');
     });
 
     testWidgets('the band color follows the tardy rule', (tester) async {

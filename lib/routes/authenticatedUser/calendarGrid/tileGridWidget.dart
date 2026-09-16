@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
 import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
+import 'package:tiler_app/components/tileUI/tileAccentBar.dart';
 
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -722,7 +723,11 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
       );
     }
 
-    // The card shell: decoration + clip + the 3px accent bar down the left
+    // Block (rigid) vs tile (flexible): a block's caption carries a lock
+    // glyph (P8/A), the full list card's existing treatment.
+    final bool isBlock = tilerEvent.isRigid == true;
+
+    // The card shell: decoration + clip + the accent bar down the left
     // edge. [content] is null for the collapsed (too-short) bar.
     Widget shell(Widget? content) {
       return Container(
@@ -732,9 +737,8 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (showAccent)
-              Container(
+              TileAccentBar(
                 key: const Key('daygrid_tile_accent'),
-                width: 3,
                 color: style.accent,
               ),
             // The caption/time-range decision is made on the TARGET height
@@ -813,32 +817,67 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
               compact ? MainAxisAlignment.center : MainAxisAlignment.start,
           mainAxisSize: compact ? MainAxisSize.max : MainAxisSize.min,
           children: [
-            Text(
-              name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: TileGridWidgetState.captionFontSize(tileHeight),
-                height: 1.2,
-                fontFamily: TileTextStyles.rubikFontName,
-                color: style.title,
-                fontWeight: FontWeight.w600,
-              ),
+            // Name; at the compact tier (no time line) a block's lock sits
+            // inline right after it (left-packed, not pushed to the edge).
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: TileGridWidgetState.captionFontSize(tileHeight),
+                      height: 1.2,
+                      fontFamily: TileTextStyles.rubikFontName,
+                      color: style.title,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (isBlock && timeRange == null) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.lock_outline,
+                    size: 11,
+                    color: style.title.withValues(alpha: 0.6),
+                  ),
+                ],
+              ],
             ),
+            // Time range; a block's lock follows it on the left.
             if (timeRange != null)
               Padding(
                 padding: const EdgeInsets.only(top: 1),
-                child: Text(
-                  timeRange,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11.0,
-                    height: 1.2,
-                    fontFamily: TileTextStyles.rubikFontName,
-                    color: style.subtitle,
-                    fontWeight: FontWeight.w400,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        timeRange,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.0,
+                          height: 1.2,
+                          fontFamily: TileTextStyles.rubikFontName,
+                          color: style.subtitle,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                    if (isBlock) ...[
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.lock_outline,
+                        size: 12,
+                        color: style.subtitle,
+                      ),
+                    ],
+                  ],
                 ),
               ),
           ],

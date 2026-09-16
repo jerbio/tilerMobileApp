@@ -14,13 +14,15 @@
 // overlapping tile (widths animate); remove a tile; conflicts -> 0 (the in-flow
 // alert row collapses via AnimatedSize); RSVP appears; all-day tile appears (pinned card
 // AnimatedSize); pxPerHour change while zooming (immediate by design — the
-// gate is what is asserted); the clock ticks a minute.
+// gate is what is asserted); the clock ticks a minute; the content filter
+// switches (P7).
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
+import 'package:tiler_app/bloc/dayContentFilter/day_content_filter_cubit.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
@@ -149,6 +151,7 @@ class _Harness {
           BlocProvider.value(value: cubit),
           BlocProvider.value(value: dateBloc),
           BlocProvider<ScheduleBloc>.value(value: bloc),
+          BlocProvider(create: (_) => DayContentFilterCubit()),
           // The list branch renders for the first frame (before the cubit
           // restores grid) and reads this.
           BlocProvider(
@@ -356,6 +359,40 @@ void main() {
           greaterThan(_snapTolerancePx));
       h.gridController.mode = DayGridMode.idle;
       await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull);
+      await h.teardown();
+    });
+
+    testWidgets(
+        '(10) content filter all -> tiles: surviving tiles never jump; hidden ones exit as ghosts',
+        (tester) async {
+      final h = _Harness(tester);
+      await h.pump();
+      await h.scrollToMidDay();
+      // Make c2 a block so the filter has something to hide.
+      final before = _tileRects(tester);
+
+      h.tiles = [
+        for (final t in h.tiles)
+          if (t.id == 'c2') (t..isRigid = true) else t,
+      ];
+      h.rebuild();
+      await tester.pump();
+      final filter = tester
+          .element(find.byType(DayGridPage))
+          .read<DayContentFilterCubit>();
+      filter.set(DayContentFilter.tiles);
+      await tester.pump(); // microtask -> rebuild
+      await tester.pump(); // t = 0 after the filtered build
+
+      expect(h.scroll.position.pixels, 600.0);
+      // Survivors did not move; c2 is still on screen as an exit ghost. The
+      // filter strip appearing above the content (AnimatedSize) starts at
+      // zero height, so it does not push the grid on this frame either.
+      _expectNoJump(before, _tileRects(tester));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(_tileRects(tester).keys, isNot(contains('c2')));
+      expect(h.scroll.position.pixels, 600.0);
       expect(tester.takeException(), isNull);
       await h.teardown();
     });

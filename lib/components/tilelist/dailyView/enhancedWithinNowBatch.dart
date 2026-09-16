@@ -44,6 +44,14 @@ class EnhancedWithinNowBatch extends TileBatch {
   /// loading bar) at the top of the list. `false` when hosted under the
   /// Daily top bar, whose shared chrome carries all of it for both layouts.
   final bool showDaySummaryHeader;
+
+  /// Whether travel connectors (incl. the return-home connector) render.
+  /// `false` while the Daily content filter (P7) is active.
+  final bool showTravelConnectors;
+
+  /// Whether free-time gaps render between tiles. `false` while the Daily
+  /// content filter (P7) is active (gaps from a filtered set mislead).
+  final bool showFreeSlots;
   EnhancedWithinNowBatch({
     List<TilerEvent>? tiles,
     TimelineSummary? dayData,
@@ -53,6 +61,8 @@ class EnhancedWithinNowBatch extends TileBatch {
     this.endOfDayTime,
     this.onEndOfDayUpdated,
     this.showDaySummaryHeader = true,
+    this.showTravelConnectors = true,
+    this.showFreeSlots = true,
     Key? key,
   }) : super(
           key: key,
@@ -208,7 +218,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     final withinNow = widget as EnhancedWithinNowBatch;
     final result = buildTileListWithConnectors(
       orderedTiles: orderedTiles,
-      showTravelConnectors: true,
+      showTravelConnectors: withinNow.showTravelConnectors,
       showConflictAlerts: true,
       excludeDeclinedFromConflicts: true,
       now: DateTime.now(),
@@ -245,10 +255,13 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         connector: connector,
         hourMarkerWidth: _hourMarkerWidth,
       ),
-      buildFreeSlot: (slot) => ConnectorRowWithHourMarker(
-        connector: FreeSlotRow(slot: slot, preview: withinNow.preview),
-        hourMarkerWidth: _hourMarkerWidth,
-      ),
+      buildFreeSlot: !withinNow.showFreeSlots
+          ? null
+          : (slot) => ConnectorRowWithHourMarker(
+                connector:
+                    FreeSlotRow(slot: slot, preview: withinNow.preview),
+                hourMarkerWidth: _hourMarkerWidth,
+              ),
     );
 
     _detectedConflicts = result.conflictGroups;

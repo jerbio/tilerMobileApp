@@ -1724,6 +1724,44 @@ class AppLocalizationsJa extends AppLocalizations {
   String get reOptimizeChip => '再最適化';
 
   @override
+  String get dayFilterAll => 'All';
+
+  @override
+  String get dayFilterBlocks => 'Blocks';
+
+  @override
+  String get dayFilterTiles => 'Tiles';
+
+  @override
+  String get dayFilterTooltip => 'Show all, blocks only, or tiles only';
+
+  @override
+  String dayFilterShowingBlocks(int shown, int total) {
+    return 'Showing blocks only · $shown of $total';
+  }
+
+  @override
+  String dayFilterShowingTiles(int shown, int total) {
+    return 'Showing tiles only · $shown of $total';
+  }
+
+  @override
+  String dayFilterEmptyBlocks(String day) {
+    return 'No blocks on $day';
+  }
+
+  @override
+  String dayFilterEmptyTiles(String day) {
+    return 'No tiles on $day';
+  }
+
+  @override
+  String get dayFilterShowAll => 'Show all';
+
+  @override
+  String get dayFilterAutoCleared => 'Showing all — filter cleared';
+
+  @override
   String get todayColon => '今日:';
 
   @override

@@ -1769,6 +1769,44 @@ class AppLocalizationsEs extends AppLocalizations {
   String get reOptimizeChip => 'Re-optimizar';
 
   @override
+  String get dayFilterAll => 'Todo';
+
+  @override
+  String get dayFilterBlocks => 'Bloques';
+
+  @override
+  String get dayFilterTiles => 'Tiles';
+
+  @override
+  String get dayFilterTooltip => 'Mostrar todo, solo bloques o solo tiles';
+
+  @override
+  String dayFilterShowingBlocks(int shown, int total) {
+    return 'Mostrando solo bloques · $shown de $total';
+  }
+
+  @override
+  String dayFilterShowingTiles(int shown, int total) {
+    return 'Mostrando solo tiles · $shown de $total';
+  }
+
+  @override
+  String dayFilterEmptyBlocks(String day) {
+    return 'Sin bloques el $day';
+  }
+
+  @override
+  String dayFilterEmptyTiles(String day) {
+    return 'Sin tiles el $day';
+  }
+
+  @override
+  String get dayFilterShowAll => 'Mostrar todo';
+
+  @override
+  String get dayFilterAutoCleared => 'Mostrando todo — filtro borrado';
+
+  @override
   String get todayColon => 'Hoy:';
 
   @override

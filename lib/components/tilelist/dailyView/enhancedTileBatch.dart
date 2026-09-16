@@ -36,6 +36,11 @@ class EnhancedTileBatch extends StatefulWidget {
   final ConnectionState? connectionState;
   final bool showEnhancedCards;
   final bool showTravelConnectors;
+
+  /// Whether free-time gaps are detected and rendered between tiles.
+  /// `false` while the Daily content filter (P7) is active: gaps computed
+  /// from a filtered set would advertise time that hidden tiles occupy.
+  final bool showFreeSlots;
   final bool showProactiveAlerts;
   final bool showTimelineMarkers;
 
@@ -56,6 +61,7 @@ class EnhancedTileBatch extends StatefulWidget {
     this.dayData,
     this.showEnhancedCards = true,
     this.showTravelConnectors = true,
+    this.showFreeSlots = true,
     this.showDaySummaryHeader = true,
     this.showProactiveAlerts = true,
     this.showTimelineMarkers = false,
@@ -329,7 +335,9 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         }
         return connector;
       },
-      buildFreeSlot: (slot) {
+      buildFreeSlot: !widget.showFreeSlots
+          ? null
+          : (slot) {
         final row = FreeSlotRow(slot: slot, preview: widget.preview);
         if (widget.showTimelineMarkers) {
           return _buildConnectorRowWithHourMarker(row);

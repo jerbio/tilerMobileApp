@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
+import 'package:tiler_app/components/tileUI/tileAccentBar.dart';
 import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -419,11 +420,8 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                     left: 0,
                     top: 0,
                     bottom: 0,
-                    child: Container(
-                      width: 4,
-                      decoration: BoxDecoration(
-                        color: isTardy ? TileColors.late : tileColor,
-                      ),
+                    child: TileAccentBar(
+                      color: isTardy ? TileColors.late : tileColor,
                     ),
                   ),
                   Padding(
@@ -433,16 +431,33 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          _formatTimeRange(context),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: TileTextStyles.rubikFontName,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: secondaryTextColor,
-                          ),
+                        // Time range; a block's lock (P8/A) follows it.
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                _formatTimeRange(context),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: TileTextStyles.rubikFontName,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: secondaryTextColor,
+                                ),
+                              ),
+                            ),
+                            if (subEvent.isRigid == true) ...[
+                              const SizedBox(width: 5),
+                              Icon(
+                                Icons.lock_outline,
+                                size: 12,
+                                color: secondaryTextColor,
+                              ),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 2),
                         Row(
@@ -464,6 +479,7 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                                 ),
                               ),
                             ),
+
                             // Tappable location / video-link badge to the right
                             // of the name (same labeled style as the detail
                             // bottom sheet). Opens maps for a physical address

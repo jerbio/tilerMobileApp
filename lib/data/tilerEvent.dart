@@ -49,6 +49,10 @@ class TilerEvent extends TilerObj with TimeRange {
     return _isRigid;
   }
 
+  set isRigid(bool? value) {
+    _isRigid = value ?? false;
+  }
+
   bool get isComplete {
     return _isComplete;
   }

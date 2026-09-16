@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/dayContentFilterStrip.dart';
 import 'package:tiler_app/components/dayGridTopChromeRow.dart';
 import 'package:tiler_app/components/dayQuickActionsRow.dart';
 import 'package:tiler_app/components/ribbons/dayRibbon/dayRibbonCarousel.dart';
@@ -128,7 +129,10 @@ class _GridDailyPageBodyState extends State<GridDailyPageBody> {
     final colorScheme = Theme.of(context).colorScheme;
     return DayGridScope(
       controller: _gridController,
-      child: Column(children: [
+      // P7: an added tile the filter would hide clears the filter (+toast).
+      child: DayContentFilterAutoClear(
+        currentDate: widget.currentDate,
+        child: Column(children: [
         DayGridTopChromeRow(
           currentDate: widget.currentDate,
           onSearch: widget.onSearch,
@@ -157,9 +161,12 @@ class _GridDailyPageBodyState extends State<GridDailyPageBody> {
             compact: true,
           ),
         ),
-        // Show route · Re-optimize (+ loading bar): the same actions the
-        // list's sticky header used to carry, now shared by both layouts.
+        // Show route · Re-optimize · content filter (+ loading bar): the
+        // same actions the list's sticky header used to carry, now shared
+        // by both layouts.
         DayQuickActionsRow(currentDate: widget.currentDate),
+        // P7: "Showing blocks only · 4 of 11 · Show all" while filtered.
+        DayContentFilterStrip(currentDate: widget.currentDate),
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -181,7 +188,8 @@ class _GridDailyPageBodyState extends State<GridDailyPageBody> {
             },
           ),
         ),
-      ]),
+        ]),
+      ),
     );
   }
 }

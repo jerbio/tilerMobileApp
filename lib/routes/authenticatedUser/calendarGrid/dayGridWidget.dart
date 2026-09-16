@@ -157,6 +157,11 @@ class DayGridWidget extends StatefulWidget {
   /// non-null value pins the clearance (used by tests).
   final double? edgeScrollBottomClearance;
 
+  /// Whether travel bands are rendered. `false` while the Daily content
+  /// filter (P7) is active: a filtered view is about the tiles themselves,
+  /// and travel to/from a hidden tile would be misleading.
+  final bool showTravel;
+
   const DayGridWidget({
     super.key,
     this.tiles = const <SubCalendarEvent>[],
@@ -169,7 +174,13 @@ class DayGridWidget extends StatefulWidget {
     this.selectedActionEntityId,
     this.subCalendarEventApi,
     this.edgeScrollBottomClearance,
+    this.showTravel = true,
   });
+
+  /// Width (px) of the right-hand travel rail reserved beside the tile
+  /// region: compact travel markers render there so they never overlap a
+  /// tile column or the hour labels.
+  static const double travelRailWidth = TravelBandWidget.gutterSpan;
 
   /// The top/bottom edge zones (px inside the scroll viewport) that
   /// trigger the drag edge auto-scroll.
@@ -1713,7 +1724,12 @@ class DayGridWidgetState extends State<DayGridWidget> {
                 constraints.maxWidth.isFinite ? constraints.maxWidth : null;
             final gutter = TileDimensions.timeOfDayCellWidth;
             final tileLeft = gutter + 4;
-            final tileWidth = maxWidth != null ? maxWidth - gutter - 8 : 270.0;
+            // Tiles stop short of the right-hand travel rail (B): compact
+            // travel markers live there, outside every tile column.
+            final tileWidth = maxWidth != null
+                ? maxWidth - gutter - 8 - DayGridWidget.travelRailWidth
+                : 270.0;
+            final railLeft = tileLeft + tileWidth + 4;
             final dayStart = _gridDayStart();
 
             // Live now-line + gutter time bubble, today
@@ -1909,7 +1925,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
             // neighbors and only the server knows post-EvaluateSchedule.
             final bandDimming = _dragging || _settlingMove != null;
             final travelBandWidgets = <Widget>[];
-            if (dayStart != null && pxPerHour.isFinite && pxPerHour > 0) {
+            if (widget.showTravel &&
+                dayStart != null &&
+                pxPerHour.isFinite &&
+                pxPerHour > 0) {
               // Previous tile in time = the pre-band "from" fallback (the same
               // role as `TravelConnector.fromTile`). `renderable` is sorted by
               // start via [_sortedTiles].
@@ -1949,6 +1968,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
                     height: band.height,
                     left: colLeft,
                     width: colWidth,
+                    railLeft: railLeft,
                     fromTile: band.kind == TravelBandKind.pre
                         ? previousTileById[tile.uniqueId]
                         : null,

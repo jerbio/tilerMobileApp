@@ -20,7 +20,8 @@ void main() {
 
   // Region matching a 400px viewport: gutter 35, +4 left / -8 total margins.
   const regionLeft = 39.0; // gutter(35) + 4
-  const regionWidth = 357.0; // 400 - gutter(35) - 8
+  // 400 - gutter(35) - 8 - the 20px right-hand travel rail.
+  const regionWidth = 337.0;
   const gap = OverlapColumns.defaultGap;
 
   DateTime at(int hour, [int minute = 0]) =>

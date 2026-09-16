@@ -55,10 +55,8 @@ class TileDetailBottomSheet extends StatelessWidget {
   /// (`EnhancedTileCard`). Closes the sheet first so the edit screen comes
   /// back to the list, not to a stale sheet.
   void _openEditFlow(BuildContext sheetContext) {
-    debugPrint('TDS: _openEditFlow called');
     final navigator = Navigator.of(sheetContext);
     navigator.pop();
-    debugPrint('TDS: after pop, canPop=${navigator.canPop()}');
     navigator.push(
       MaterialPageRoute(
         builder: (context) => EditTile(
@@ -257,7 +255,13 @@ class TileDetailBottomSheet extends StatelessWidget {
               const SizedBox(height: 8),
             ],
             // Playback controls (play/pause, defer, complete, delete).
-            PlayBack(subEvent, preview: preview),
+            //
+            // `isWeeklyView: !preview` makes the (already-present) handlers in
+            // [PlayBack] pop the sheet after a playback action — matching the
+            // grid's weekly detail tile. Preview (TileCast) sheets stay
+            // read-only: their buttons are disabled (`onTap: preview ? null
+            // : ...`) and `isWeeklyView` is false, so nothing can dismiss.
+            PlayBack(subEvent, preview: preview, isWeeklyView: !preview),
           ],
         ),
       ),

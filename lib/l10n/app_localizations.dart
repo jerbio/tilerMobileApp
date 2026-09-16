@@ -3199,6 +3199,66 @@ abstract class AppLocalizations {
   /// **'Re-optimize'**
   String get reOptimizeChip;
 
+  /// No description provided for @dayFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get dayFilterAll;
+
+  /// No description provided for @dayFilterBlocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocks'**
+  String get dayFilterBlocks;
+
+  /// No description provided for @dayFilterTiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiles'**
+  String get dayFilterTiles;
+
+  /// No description provided for @dayFilterTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all, blocks only, or tiles only'**
+  String get dayFilterTooltip;
+
+  /// No description provided for @dayFilterShowingBlocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing blocks only · {shown} of {total}'**
+  String dayFilterShowingBlocks(int shown, int total);
+
+  /// No description provided for @dayFilterShowingTiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing tiles only · {shown} of {total}'**
+  String dayFilterShowingTiles(int shown, int total);
+
+  /// No description provided for @dayFilterEmptyBlocks.
+  ///
+  /// In en, this message translates to:
+  /// **'No blocks on {day}'**
+  String dayFilterEmptyBlocks(String day);
+
+  /// No description provided for @dayFilterEmptyTiles.
+  ///
+  /// In en, this message translates to:
+  /// **'No tiles on {day}'**
+  String dayFilterEmptyTiles(String day);
+
+  /// No description provided for @dayFilterShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get dayFilterShowAll;
+
+  /// No description provided for @dayFilterAutoCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing all — filter cleared'**
+  String get dayFilterAutoCleared;
+
   /// No description provided for @todayColon.
   ///
   /// In en, this message translates to:

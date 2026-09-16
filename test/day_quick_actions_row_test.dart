@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tiler_app/bloc/dayContentFilter/day_content_filter_cubit.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/dayQuickActionsRow.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
@@ -52,8 +53,14 @@ ScheduleLoadedState _loaded(List<SubCalendarEvent> subEvents, DateTime day) {
   );
 }
 
-Widget _app(ScheduleBloc bloc, DateTime day) => BlocProvider<ScheduleBloc>.value(
-      value: bloc,
+Widget _app(ScheduleBloc bloc, DateTime day,
+        {DayContentFilterCubit? filter, bool preview = false}) =>
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<ScheduleBloc>.value(value: bloc),
+        BlocProvider<DayContentFilterCubit>.value(
+            value: filter ?? DayContentFilterCubit()),
+      ],
       child: MaterialApp(
         theme: TileThemeData.lightTheme,
         localizationsDelegates: const [
@@ -64,10 +71,28 @@ Widget _app(ScheduleBloc bloc, DateTime day) => BlocProvider<ScheduleBloc>.value
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          body: Column(children: [DayQuickActionsRow(currentDate: day)]),
+          body: Column(children: [
+            DayQuickActionsRow(currentDate: day, preview: preview),
+          ]),
         ),
       ),
     );
+
+/// The selected segment: the one whose text is rendered in `onPrimary`
+/// (its background is the filled `primary` pill).
+DayContentFilter _selectedSegment(WidgetTester tester) {
+  final onPrimary = TileThemeData.lightTheme.colorScheme.onPrimary;
+  for (final (filter, key) in [
+    (DayContentFilter.all, DayQuickActionsRow.filterAllKey),
+    (DayContentFilter.blocks, DayQuickActionsRow.filterBlocksKey),
+    (DayContentFilter.tiles, DayQuickActionsRow.filterTilesKey),
+  ]) {
+    final Text text = tester.widget<Text>(find.descendant(
+        of: find.byKey(key), matching: find.byType(Text)));
+    if (text.style?.color == onPrimary) return filter;
+  }
+  throw StateError('no selected segment');
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -140,5 +165,81 @@ void main() {
     expect(find.byType(TodaysRoutePage), findsOneWidget);
     final page = tester.widget<TodaysRoutePage>(find.byType(TodaysRoutePage));
     expect(page.tiles.map((t) => t.id), ['a']);
+  });
+
+  group('content filter segmented control (P7 Step 17.2)', () {
+    testWidgets('renders All · Blocks · Tiles, right of the chips, All selected',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final filter = DayContentFilterCubit();
+      addTearDown(bloc.close);
+      addTearDown(filter.close);
+      await tester.pumpWidget(_app(bloc, day, filter: filter));
+      await tester.pump();
+
+      expect(find.byKey(DayQuickActionsRow.filterAllKey), findsOneWidget);
+      expect(find.byKey(DayQuickActionsRow.filterBlocksKey), findsOneWidget);
+      expect(find.byKey(DayQuickActionsRow.filterTilesKey), findsOneWidget);
+      expect(_selectedSegment(tester), DayContentFilter.all);
+      // The Blocks segment carries the lock glyph — the control is the
+      // legend for the lock on block cards.
+      expect(
+          find.descendant(
+              of: find.byKey(DayQuickActionsRow.filterBlocksKey),
+              matching: find.byIcon(Icons.lock_outline)),
+          findsOneWidget);
+      // Right of the action chips; the row keeps its fixed height.
+      expect(
+          tester.getTopLeft(find.byKey(DayQuickActionsRow.filterKey)).dx,
+          greaterThan(tester
+              .getBottomRight(find.byKey(DayQuickActionsRow.reOptimizeKey))
+              .dx));
+      expect(tester.getSize(find.byType(DayQuickActionsRow)).height,
+          DayQuickActionsRow.height);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('tapping Blocks / Tiles / All drives the cubit',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final filter = DayContentFilterCubit();
+      addTearDown(bloc.close);
+      addTearDown(filter.close);
+      await tester.pumpWidget(_app(bloc, day, filter: filter));
+      await tester.pump();
+
+      await tester.tap(find.byKey(DayQuickActionsRow.filterBlocksKey));
+      await tester.pump();
+      expect(filter.state, DayContentFilter.blocks);
+      await tester.tap(find.byKey(DayQuickActionsRow.filterTilesKey));
+      await tester.pump();
+      expect(filter.state, DayContentFilter.tiles);
+      await tester.tap(find.byKey(DayQuickActionsRow.filterAllKey));
+      await tester.pump();
+      expect(filter.state, DayContentFilter.all);
+    });
+
+    testWidgets('the control follows the cubit (external changes)',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final filter = DayContentFilterCubit();
+      addTearDown(bloc.close);
+      addTearDown(filter.close);
+      await tester.pumpWidget(_app(bloc, day, filter: filter));
+      await tester.pump();
+      filter.set(DayContentFilter.tiles);
+      await tester.pump();
+      await tester.pump();
+      expect(_selectedSegment(tester), DayContentFilter.tiles);
+    });
+
+    testWidgets('hidden in preview (read-only surfaces)', (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      addTearDown(bloc.close);
+      await tester.pumpWidget(_app(bloc, day, preview: true));
+      await tester.pump();
+      expect(find.byKey(DayQuickActionsRow.filterKey), findsNothing);
+      expect(find.byKey(DayQuickActionsRow.showRouteKey), findsOneWidget);
+    });
   });
 }

@@ -148,23 +148,18 @@ class TravelBand {
 /// gutter (gradient hairline + travel-medium icon) with the same
 /// tap-to-directions behaviour as the list connectors.
 ///
-/// Zoom-aware tiers by the band's REAL height (the render height is
-/// clamped to >= 18px so the icon stays legible):
-///   * `< 12px`  — gutter hairline + the 14px travel-medium icon (the
-///     window is too short to label in the column);
-///   * `>= 12px` — a compact single-line card inside the tile column
-///     (`Travel • 24 min`), so travel stays readable when zoomed out;
+/// Zoom-aware tiers by the band's REAL height — a band NEVER inflates into
+/// a neighbouring tile's box (fit-the-gap):
 ///   * `>= 56px` — a full-column pastel card inside the tile column
-///     (`Travel • 24 min` + the travel window, e.g. `2:00 – 2:24 PM`),
-///     replacing the gutter tier. The card is drawn in the grid's travel
-///     layer BENEATH the tiles and never enters the overlap layout (no-snap
-///     rule 6): the band region between time-disjoint tiles is empty, so
-///     the card does not cover tile content.
-///
-/// The parent ([DayGridWidget]) passes the geometry computed by
-/// [TravelBand.bandsForTile] and places this widget in the grid's
-/// `Stack` (its `build` returns an [AnimatedPositioned], mirroring
-/// `TileGridWidget`).
+///     (`Travel • 24 min` + the travel window, e.g. `2:00 – 2:24 PM`);
+///   * `>= 18px` — a compact single-line card inside the tile column
+///     (`Travel • 24 min`), at the gap's real height;
+///   * otherwise — a compact MARKER (travel-medium icon + hairline) in the
+///     grid's dedicated right-hand travel rail, centred on the gap. The rail
+///     sits outside every tile column (and away from the hour labels), so
+///     the marker can never be covered by, or cover, a tile.
+/// Cards are drawn in the grid's travel layer BENEATH the tiles and never
+/// enter the overlap layout (no-snap rule 6).
 class TravelBandWidget extends StatelessWidget {
   final SubCalendarEvent tile;
   final TravelBandKind kind;
@@ -178,8 +173,13 @@ class TravelBandWidget extends StatelessWidget {
   /// left of it.
   final double left;
 
-  /// The tile's column width (px) -- the expanded pill stays inside it.
+  /// The tile's column width (px) -- the card tiers stay inside it.
   final double width;
+
+  /// Left edge (px) of the grid's right-hand travel rail — where the
+  /// compact marker renders when the gap is too short for a card. Defaults
+  /// to just right of the column.
+  final double? railLeft;
 
   /// The previously scheduled tile (for the pre band only) -- the
   /// "from" location fallback, the same role as `TravelConnector`'s
@@ -206,15 +206,15 @@ class TravelBandWidget extends StatelessWidget {
   static const Key cardKey = ValueKey('daygrid_travel_band_card');
 
   /// The band's REAL height (px) from which the compact single-line card
-  /// replaces the gutter icon tier (rendered at the 18px minimum).
-  static const double compactCardHeightThreshold = 12;
+  /// fits inside the gap (rendered at the gap's real height).
+  static const double compactCardHeightThreshold = 18;
 
-  /// The minimum band height (px) at which the travel-medium icon stays
-  /// legible.
+  /// The rail marker's box height (px): the 14px icon with breathing room.
+  /// A marker for a shorter gap is centred on the gap inside this box.
   static const double iconHeightThreshold = 18;
 
-  /// Horizontal span of the gutter segment (2px line + 2px gap + 14px
-  /// icon) rendered to the left of [left].
+  /// Width of the right-hand travel rail / the compact marker (14px icon +
+  /// 2px gap + 2px hairline).
   static const double gutterSpan = 20;
 
   const TravelBandWidget({
@@ -225,6 +225,7 @@ class TravelBandWidget extends StatelessWidget {
     required this.height,
     required this.left,
     required this.width,
+    this.railLeft,
     this.fromTile,
     this.animate = true,
     this.dimmed = false,
@@ -398,27 +399,24 @@ class TravelBandWidget extends StatelessWidget {
     final reduce = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final anim = animate && !reduce;
 
-    // Ensure the band is tall enough for the travel-medium icon to be
-    // legible. At the default zoom (80 px/hr) a 3-minute travel time is
-    // only ~4 px — a 2-px hairline with no icon is essentially invisible.
-    // The band sits in the gutter (left of tiles), so extra height extends
-    // into the empty gutter space above (pre) or below (post) the tile
-    // without overlapping tile content.
-    final effectiveHeight =
-        height >= iconHeightThreshold ? height : iconHeightThreshold;
-    final effectiveTop =
-        kind == TravelBandKind.pre && height < iconHeightThreshold
-            ? (top - (iconHeightThreshold - height)).clamp(0.0, double.infinity)
-            : top;
+    // Fit-the-gap: a card renders only when the REAL gap has room for it;
+    // anything shorter becomes a rail marker centred on the gap. Nothing
+    // ever inflates into a neighbouring tile's box.
+    final expanded = height >= expandedHeightThreshold;
+    final compactCard = !expanded && height >= compactCardHeightThreshold;
+    final showCard = expanded || compactCard;
+    final double effectiveHeight = showCard
+        ? height
+        : (height >= iconHeightThreshold ? height : iconHeightThreshold);
+    final double effectiveTop = showCard
+        ? top
+        : (top + height / 2 - effectiveHeight / 2).clamp(0.0, double.infinity);
+    final double boxLeft = showCard ? left : (railLeft ?? left + width);
+    final double boxWidth = showCard ? width : gutterSpan;
 
     // Same colour rule as the design: `TileColors.travel`,
     // `TileColors.late` when the tile is tardy.
     final color = _isTardy ? TileColors.late : TileColors.travel;
-    final expanded = effectiveHeight >= expandedHeightThreshold;
-    // Compact in-column card: the real window is tall enough to label.
-    final compactCard = !expanded && height >= compactCardHeightThreshold;
-    final showCard = expanded || compactCard;
-    final showIcon = effectiveHeight >= iconHeightThreshold;
     // ReturnConnector shows the home icon instead of the medium icon
     // when the return destination is home.
     final icon = _isHome ? Icons.home : _travelMedium.icon;
@@ -429,7 +427,6 @@ class TravelBandWidget extends StatelessWidget {
     // connectors.
     final line = Container(
       width: 2,
-      height: effectiveHeight,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -518,10 +515,12 @@ class TravelBandWidget extends StatelessWidget {
       );
     }
 
+    // Card tiers: the box IS the tile column. Marker tier: the box is the
+    // rail slot (outside every column).
     return AnimatedPositioned(
       top: effectiveTop,
-      left: left - gutterSpan,
-      width: gutterSpan + width,
+      left: boxLeft,
+      width: boxWidth,
       height: effectiveHeight,
       duration: anim ? const Duration(milliseconds: 300) : Duration.zero,
       curve: Curves.easeInOutCubic,
@@ -537,18 +536,19 @@ class TravelBandWidget extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           child: Stack(
           children: [
-            // Gutter tier (hairline + icon) — only below the card tiers.
+            // Marker tier (icon + hairline) in the rail — below the card
+            // tiers. The hairline spans the REAL gap (min 2px), centred.
             if (!showCard)
               Positioned(
-                left: 0,
-                top: 0,
+                right: 0,
+                top: ((effectiveHeight - height) / 2).clamp(0.0, effectiveHeight),
                 width: 2,
-                height: effectiveHeight,
+                height: height < 2 ? 2 : height,
                 child: line,
               ),
-            if (!showCard && showIcon)
+            if (!showCard)
               Positioned(
-                left: 4,
+                right: 4,
                 top: (effectiveHeight - 14) / 2,
                 width: 14,
                 height: 14,
@@ -556,7 +556,7 @@ class TravelBandWidget extends StatelessWidget {
               ),
             if (card != null)
               Positioned(
-                left: gutterSpan,
+                left: 0,
                 top: 0,
                 width: width,
                 height: effectiveHeight,

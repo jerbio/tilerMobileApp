@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
+import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -135,6 +136,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.byType(PreviewDetailsTileWidget), findsOneWidget);
+      // The detail sheet provides playback controls. The fixture tile is
+      // non-rigid and not Tiler-owned, so Defer is the button PlayBack
+      // renders (complete/now are Tiler-only, delete is rigid-forced).
+      expect(find.byType(PlayBack), findsOneWidget);
+      expect(find.text('Defer'), findsOneWidget);
       // The tap must NOT add a second 'Alpha' tile to the grid.
       // (Scope to the grid: the bottom sheet shows the tile name too.)
       final inGrid = find.descendant(

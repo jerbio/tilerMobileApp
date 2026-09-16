@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
+import 'package:tiler_app/bloc/dayContentFilter/day_content_filter_cubit.dart';
 import 'package:tiler_app/components/dayGridPageBody.dart';
 import 'package:tiler_app/components/dayGridAlertRows.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
@@ -24,9 +25,13 @@ class DayGridPage extends StatelessWidget {
   final DateTime? endOfDayTime;
   final VoidCallback? onEndOfDayUpdated;
 
-  /// Optional list-mode body (today's [EnhancedWithinNowBatch]). When
-  /// omitted, list mode renders an [EnhancedTileBatch] built from [tiles].
-  final Widget? listView;
+  /// Optional list-mode body builder (today's [EnhancedWithinNowBatch]),
+  /// called with the day's tiles AFTER the content filter (P7) is applied
+  /// and whether the between-tiles widgets (travel connectors, free-time
+  /// gaps) should render — `false` while filtered. When omitted, list mode
+  /// renders an [EnhancedTileBatch] built from the (filtered) [tiles].
+  final Widget Function(List<TilerEvent> tiles, bool showConnectors)?
+      listViewBuilder;
 
   /// List mode: whether the non-today list page renders its own day-summary
   /// block. `false` under the Daily top bar (which already shows the day
@@ -39,7 +44,7 @@ class DayGridPage extends StatelessWidget {
     required this.tiles,
     this.endOfDayTime,
     this.onEndOfDayUpdated,
-    this.listView,
+    this.listViewBuilder,
     this.showDaySummaryHeader = true,
   });
 
@@ -93,11 +98,31 @@ class DayGridPage extends StatelessWidget {
     return renderable;
   }
 
+  /// The active content filter (P7). `all` when no [DayContentFilterCubit]
+  /// is provided (isolated hosts), so the page degrades to unfiltered.
+  static DayContentFilter activeFilter(BuildContext context) {
+    try {
+      return context.watch<DayContentFilterCubit>().state;
+    } catch (_) {
+      return DayContentFilter.all;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final layout = context.watch<DailyViewLayoutCubit>().state;
+    // P7 (C34): the filter shapes the DAY CONTENT only. The alert rows keep
+    // the unfiltered set so the chrome always reflects the whole day; the
+    // filtered set feeds the grid, the pinned card and the list.
+    final DayContentFilter filter = activeFilter(context);
+    final List<TilerEvent> visibleTiles = filter.apply(tiles);
+    // No between-tiles widgets while filtered — travel bands/connectors and
+    // free-time gaps are computed against the rendered set, so with tiles
+    // hidden they would mislead (travel to a hidden tile, "free" time a
+    // hidden tile occupies). A filtered view is about the tiles themselves.
+    final bool showConnectors = filter == DayContentFilter.all;
     if (layout == DailyViewLayout.grid) {
-      final parityTiles = gridTiles(tiles);
+      final parityTiles = gridTiles(visibleTiles);
       final DateTime day = Utility.getTimeFromIndex(dayIndex);
       final DayGridScope? scope = DayGridScope.maybeOf(context);
       return Column(
@@ -136,19 +161,21 @@ class DayGridPage extends StatelessWidget {
               // Scope the per-tile keys to this day so a tile
               // never re-animates (flies) across a day-page swap.
               dayKey: 'day_$dayIndex',
+              showTravel: showConnectors,
             ),
           ),
         ],
       );
     }
-    if (listView != null) {
-      return listView!;
+    if (listViewBuilder != null) {
+      return listViewBuilder!(visibleTiles, showConnectors);
     }
     return EnhancedTileBatch(
       dayIndex: dayIndex,
-      tiles: tiles,
+      tiles: visibleTiles,
       showEnhancedCards: true,
-      showTravelConnectors: true,
+      showTravelConnectors: showConnectors,
+      showFreeSlots: showConnectors,
       showTimelineMarkers: true,
       showDaySummaryHeader: showDaySummaryHeader,
       endOfDayTime: endOfDayTime,

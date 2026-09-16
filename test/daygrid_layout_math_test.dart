@@ -213,7 +213,7 @@ void main() {
     });
 
     testWidgets(
-        'tile width fills the viewport minus the gutter (narrow and wide)',
+        'tile width fills the viewport minus the gutter and travel rail (narrow and wide)',
         (tester) async {
       final tile = buildTile(
           id: 'a',
@@ -234,8 +234,11 @@ void main() {
         final size = tileSize(tester, 'a');
         expect(position.left, gutter + 4,
             reason: 'tile starts just after the $gutter gutter');
-        expect(size.width, viewportWidth - gutter - 8,
-            reason: 'tile fills the viewport minus gutter at $viewportWidth');
+        expect(
+            size.width,
+            viewportWidth - gutter - 8 - DayGridWidget.travelRailWidth,
+            reason: 'tile fills the viewport minus the hour gutter and the '
+                'right-hand travel rail at $viewportWidth');
         await tester.pumpWidget(
             buildTestApp(child: const SizedBox(width: 400, height: 600)));
         await tester.pump();

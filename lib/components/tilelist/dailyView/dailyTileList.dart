@@ -415,7 +415,8 @@ class _DailyTileListState extends TileListState {
     }
   }
 
-  EnhancedWithinNowBatch processTodayTiles(List<TilerEvent> todayTiles) {
+  EnhancedWithinNowBatch processTodayTiles(List<TilerEvent> todayTiles,
+      {bool showConnectors = true}) {
     DateTime currentTime = Utility.currentTime();
     List<TilerEvent> elapsedTiles = [];
     List<TilerEvent> notElapsedTiles = [];
@@ -434,6 +435,8 @@ class _DailyTileListState extends TileListState {
       endOfDayTime: _endOfDayFor(Utility.currentTime().universalDayIndex),
       onEndOfDayUpdated: _fetchUserEndOfDay,
       showDaySummaryHeader: (widget as DailyTileList).showDaySummaryHeader,
+      showTravelConnectors: showConnectors,
+      showFreeSlots: showConnectors,
     );
   }
 
@@ -475,13 +478,14 @@ class _DailyTileListState extends TileListState {
 
     DateTime currentTime = Utility.currentTime();
     if (todayTiles.length > 0) {
-      EnhancedWithinNowBatch todayBatch = processTodayTiles(todayTiles);
       // Today's page is switchable too; list mode keeps the
-      // within-now batch, grid mode renders the day grid.
+      // within-now batch (built from the page's FILTERED tiles, P7), grid
+      // mode renders the day grid.
       DayGridPage todayPage = DayGridPage(
         dayIndex: currentTime.universalDayIndex,
         tiles: todayTiles,
-        listView: todayBatch,
+        listViewBuilder: (visible, showConnectors) =>
+            processTodayTiles(visible, showConnectors: showConnectors),
         endOfDayTime: _endOfDayFor(currentTime.universalDayIndex),
         onEndOfDayUpdated: _fetchUserEndOfDay,
       );
@@ -502,7 +506,7 @@ class _DailyTileListState extends TileListState {
       DayGridPage todayPage = DayGridPage(
         dayIndex: currentTime.universalDayIndex,
         tiles: const <TilerEvent>[],
-        listView: emptyTodayBatch,
+        listViewBuilder: (_, __) => emptyTodayBatch,
         endOfDayTime: _endOfDayFor(currentTime.universalDayIndex),
         onEndOfDayUpdated: _fetchUserEndOfDay,
       );
