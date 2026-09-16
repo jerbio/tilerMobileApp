@@ -64,15 +64,6 @@ class TourHost extends StatefulWidget {
 
   final Widget child;
 
-  /// Home-tour only: opens the real add-tile bottom sheet during the tour.
-  /// Receives the [TutorialBloc] so the dialog shown on top of the sheet can
-  /// advance / go back. Returns a Future that completes when the sheet is
-  /// dismissed.
-  final Future<void> Function(TutorialBloc bloc)? onShowAddTileSheet;
-
-  /// Home-tour only: dismisses the add-tile sheet if it is currently showing.
-  final VoidCallback? onDismissAddTileSheet;
-
   /// Builds the ordered list of steps for [tourId]. Defaults to the home
   /// tour steps and is passed through to [TutorialOverlay] unchanged, so
   /// any tour (e.g. the settings tour) can supply its own steps while the
@@ -88,8 +79,6 @@ class TourHost extends StatefulWidget {
     this.anchorReadyTimeout,
     this.anchorPollInterval = const Duration(milliseconds: 100),
     this.anchorSettleDelay = const Duration(milliseconds: 800),
-    this.onShowAddTileSheet,
-    this.onDismissAddTileSheet,
     this.stepsBuilder = buildTutorialSteps,
   }) : super(key: key);
 
@@ -110,6 +99,7 @@ class _TourHostState extends State<TourHost> {
 
   @override
   void dispose() {
+    TourCoordinator.instance.release(widget.tourId);
     _tourBloc.close();
     super.dispose();
   }
@@ -196,8 +186,6 @@ class _TourHostState extends State<TourHost> {
         child: TutorialOverlay(
           tourId: widget.tourId,
           stepsBuilder: widget.stepsBuilder,
-          onShowAddTileSheet: widget.onShowAddTileSheet,
-          onDismissAddTileSheet: widget.onDismissAddTileSheet,
           child: widget.child,
         ),
       ),

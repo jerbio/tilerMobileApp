@@ -16,8 +16,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// `false` (it never removes the key), so the migration cannot re-apply
 /// after a user explicitly replays a tour.
 class TourPreferencesHelper {
-  /// Tour id for the existing 8-step home tour.
+  /// Tour id for the 6-step home tour.
   static const String homeTourId = 'home';
+
+  static const String addTileTourId = 'add_tile';
 
   /// Tour id for the 1-step Settings-list pointer that points users at the
   /// Tile Preferences row (Phase 2 / stage 2.5, section 3.4).
@@ -80,6 +82,7 @@ class TourPreferencesHelper {
     homeTourId,
     settingsTourId,
     tilePreferencesTourId,
+    addTileTourId,
   ];
 
   /// Clears completion for [tourIds] (default: every registered tour) so the
