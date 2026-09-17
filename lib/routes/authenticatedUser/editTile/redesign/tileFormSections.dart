@@ -336,22 +336,24 @@ class TileLoadSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = TodayStatusTokens.of(context);
+    // Each card silhouette shimmers on its own surface (2026-09-17: a
+    // sweep BEHIND blank cards read as the background loading, not the
+    // content). Clipped to the card's corners; the border stays crisp.
     Widget block(double height) => Container(
           height: height,
           margin: const EdgeInsets.only(bottom: 14),
           decoration: BoxDecoration(
-            color: tokens.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: tokens.cardBorder),
           ),
+          clipBehavior: Clip.antiAlias,
+          child: AddTilePendingSweep(baseColor: tokens.surface),
         );
-    return Stack(children: [
-      Positioned.fill(child: AddTilePendingSweep(key: sweepKey)),
-      ListView(
-        padding: const EdgeInsets.all(16),
-        children: [block(120), block(140), block(220)],
-      ),
-    ]);
+    return ListView(
+      key: sweepKey,
+      padding: const EdgeInsets.all(16),
+      children: [block(120), block(140), block(220)],
+    );
   }
 }
 

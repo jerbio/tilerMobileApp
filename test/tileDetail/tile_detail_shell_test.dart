@@ -270,6 +270,14 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(key('detailLoadingSweep'), findsOneWidget);
+      final Size screen = tester.getSize(find.byType(Scaffold).last);
+      final Iterable<Element> sweeps =
+          find.byType(AddTilePendingSweep).evaluate();
+      expect(sweeps.length, 3, reason: 'one shimmering card each');
+      for (final Element e in sweeps) {
+        expect(
+            (e.renderObject as RenderBox).size.width, lessThan(screen.width));
+      }
       expect(titleField, findsNothing);
 
       loader.gate!.complete(TileDetailLoadResult.success(fx.loaded(), null));

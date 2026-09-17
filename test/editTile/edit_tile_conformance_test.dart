@@ -50,45 +50,42 @@ void main() {
       expect(find.text(testL10n.editTileDiscardTitle), findsOneWidget);
     });
 
-    testWidgets('⋯ offers Delete and Tile details', (tester) async {
-      await open(tester);
-      await tester.tap(key('editTileMenu'));
-      await tester.pumpAndSettle();
-      expect(key('editTileMenuDelete'), findsOneWidget);
-      expect(key('editTileMenuDetails'), findsOneWidget);
-    });
-
-    testWidgets('Delete from the menu confirms and calls the endpoint',
+    testWidgets(
+        'the top-right button IS Tile details: one tap, no menu (2026-09-16)',
         (tester) async {
       await open(tester);
-      await tester.tap(key('editTileMenu'));
-      await tester.pumpAndSettle();
-      await tester.tap(key('editTileMenuDelete'));
-      await tester.pumpAndSettle();
-      expect(find.byType(AlertDialog), findsOneWidget);
-      await tester.tap(key('editActionConfirm'));
-      await tester.pumpAndSettle();
-      expect(shell.submission.actions, <String>['delete:sub-1']);
+      expect(key('editTileMenu'), findsNothing);
+      expect(find.byType(PopupMenuButton<String>), findsNothing);
+      expect(key('editTileDetails'), findsOneWidget);
+      final SemanticsHandle h = tester.ensureSemantics();
+      expect(
+          tester.getSemantics(key('editTileDetails')),
+          matchesSemantics(
+              isButton: true,
+              hasTapAction: true,
+              hasFocusAction: true,
+              hasEnabledState: true,
+              isEnabled: true,
+              isFocusable: true,
+              // A native IconButton names itself through its tooltip.
+              tooltip: testL10n.editTileMenuTileDetails),
+          reason: 'a glyph needs its name for assistive tech');
+      h.dispose();
     });
 
     testWidgets('Tile details opens the series and reloads on return',
         (tester) async {
       await open(tester);
-      await tester.tap(key('editTileMenu'));
-      await tester.pumpAndSettle();
-      await tester.tap(key('editTileMenuDetails'));
+      await tester.tap(key('editTileDetails'));
       await tester.pumpAndSettle();
       expect(openedSeriesId, 'cal-1');
       expect(shell.loader.calls, 2,
           reason: 'the series screen may have changed what this tile shows');
     });
 
-    testWidgets('no series → no Tile details item', (tester) async {
+    testWidgets('no series → no Tile details button', (tester) async {
       await open(tester, withSeries: false);
-      await tester.tap(key('editTileMenu'));
-      await tester.pumpAndSettle();
-      expect(key('editTileMenuDetails'), findsNothing);
-      expect(key('editTileMenuDelete'), findsOneWidget);
+      expect(key('editTileDetails'), findsNothing);
     });
   });
 
@@ -149,15 +146,8 @@ void main() {
       final SemanticsHandle h = tester.ensureSemantics();
       // The ⋯ is a PopupMenuButton: its tap lives on the inner IconButton
       // node, so it is checked through its descendant below.
-      expect(
-          tester
-              .getSemantics(find.descendant(
-                  of: key('editTileMenu'), matching: find.byType(IconButton)))
-              .getSemanticsData()
-              .hasAction(SemanticsAction.tap),
-          isTrue,
-          reason: 'editTileMenu');
       for (final String k in <String>[
+        'editTileDetails',
         'editTileClose',
         'editNotesRow',
       ]) {

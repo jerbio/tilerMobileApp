@@ -375,7 +375,12 @@ class AddTileLockedPill extends StatelessWidget {
 /// so between sweeps the page is indistinguishable from idle. It neither
 /// takes taps nor speaks.
 class AddTilePendingSweep extends StatelessWidget {
-  const AddTilePendingSweep({super.key});
+  const AddTilePendingSweep({super.key, this.baseColor});
+
+  /// The resting colour the highlight sweeps across. Defaults to the page
+  /// background (a sweep BEHIND cards); a skeleton card passes its own
+  /// surface so the card itself shimmers.
+  final Color? baseColor;
 
   @override
   Widget build(BuildContext context) {
@@ -383,7 +388,7 @@ class AddTilePendingSweep extends StatelessWidget {
     return IgnorePointer(
       child: ExcludeSemantics(
         child: Shimmer.fromColors(
-          baseColor: tokens.background,
+          baseColor: baseColor ?? tokens.background,
           highlightColor: tokens.brand.withValues(alpha: 0.18),
           child: const ColoredBox(
             // Any opaque colour: the shader mask replaces it.

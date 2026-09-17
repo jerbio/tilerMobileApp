@@ -267,8 +267,19 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.byType(AddTilePendingSweep), findsOneWidget,
+      // The CARDS shimmer (2026-09-17): one sweep per card silhouette, each
+      // the size of its card, and none the size of the screen.
+      final Iterable<Element> sweeps =
+          find.byType(AddTilePendingSweep).evaluate();
+      expect(sweeps.length, 3,
           reason: 'the skeleton sweeps (D63) rather than spinning');
+      final Size screen = tester.getSize(find.byType(Scaffold).last);
+      for (final Element e in sweeps) {
+        final Size size = (e.renderObject as RenderBox).size;
+        expect(size.width, lessThan(screen.width),
+            reason: 'inset by the card padding, not full-bleed');
+        expect(size.height, lessThan(screen.height / 2));
+      }
       expect(titleField, findsNothing);
 
       loader.gate!.complete(

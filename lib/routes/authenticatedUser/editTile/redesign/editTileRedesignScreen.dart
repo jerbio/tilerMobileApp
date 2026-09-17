@@ -546,6 +546,9 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
     final String title = (d?.isRigid ?? false)
         ? l10n.editTileTitleBlock
         : l10n.editTileTitleTile;
+    final bool hasSeries = d != null &&
+        d.original.isFromTiler &&
+        (d.original.calendarEvent?.id ?? '').isNotEmpty;
 
     return PopScope(
       canPop: d == null || !d.isDirty,
@@ -564,33 +567,16 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
             onPressed: _onBack,
           ),
           actions: [
-            if (d != null)
-              PopupMenuButton<String>(
-                key: const ValueKey('editTileMenu'),
-                tooltip: l10n.editTileMoreMenu,
-                icon: const Icon(Icons.more_horiz),
-                onSelected: (String item) {
-                  switch (item) {
-                    case 'delete':
-                      _runAction(EditTileAction.delete);
-                    case 'details':
-                      _openSeries();
-                  }
-                },
-                itemBuilder: (_) => <PopupMenuEntry<String>>[
-                  if (d.original.isFromTiler &&
-                      (d.original.calendarEvent?.id ?? '').isNotEmpty)
-                    PopupMenuItem<String>(
-                      key: const ValueKey('editTileMenuDetails'),
-                      value: 'details',
-                      child: Text(l10n.editTileMenuTileDetails),
-                    ),
-                  PopupMenuItem<String>(
-                    key: const ValueKey('editTileMenuDelete'),
-                    value: 'delete',
-                    child: Text(l10n.editTileActionDelete),
-                  ),
-                ],
+            // The top-right button IS the hand-off to the series — one tap,
+            // no menu (2026-09-16; the ⋯ once also duplicated Delete). The
+            // stacked-layers glyph reads as "the whole series behind this
+            // occurrence" without implying repetition; the tooltip names it.
+            if (d != null && hasSeries)
+              IconButton(
+                key: const ValueKey('editTileDetails'),
+                icon: const Icon(Icons.layers_outlined),
+                tooltip: l10n.editTileMenuTileDetails,
+                onPressed: _openSeries,
               ),
           ],
         ),
@@ -832,8 +818,15 @@ class _Frame extends StatelessWidget {
             children: [
               if (submitting)
                 const Positioned.fill(
-                    child: AddTilePendingSweep(
-                        key: ValueKey('editTileSaveSweep'))),
+                    child:
+                        AddTilePendingSweep(key: ValueKey('editTileSaveSweep')))
+              // While the what-if check runs the whole form sweeps behind
+              // the fields, as Add Tile's prediction does (D63) — the form
+              // stays live; the sweep ignores pointers.
+              else if (false)
+                const Positioned.fill(
+                    child:
+                        AddTilePendingSweep(key: ValueKey('editWhatIfSweep'))),
               ExcludeFocus(
                 excluding: submitting,
                 child: AbsorbPointer(

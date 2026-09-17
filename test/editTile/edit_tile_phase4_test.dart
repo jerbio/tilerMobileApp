@@ -225,7 +225,7 @@ void main() {
         Completer<WhatIfResult?>()
       ];
       shell.pickedDurationAnswer = const Duration(hours: 4);
-      await reveal(tester, shell.durationRow);
+      // Still in view; no settle while a gated check sweeps.
       await tester.tap(shell.durationRow);
       await tester.pump(editTileWhatIfDebounce);
       await tester.pump();
@@ -306,7 +306,7 @@ void main() {
       await tester.pump(editTileWhatIfDebounce);
       await tester.pump();
       shell.pickedDurationAnswer = const Duration(hours: 4);
-      await reveal(tester, shell.durationRow);
+      // Still in view; no settle while a gated check sweeps.
       await tester.tap(shell.durationRow);
       await tester.pump(editTileWhatIfDebounce);
       await tester.pump();
@@ -360,10 +360,44 @@ void main() {
       await tester.tap(shell.durationRow);
       await tester.pump(editTileWhatIfDebounce);
       await tester.pump();
-      await reveal(tester, shell.save);
+      // The pending sweep never settles: scroll without pumpAndSettle.
+      await tester.scrollUntilVisible(shell.save, 120,
+          scrollable: find.byType(Scrollable).first);
+      await tester.pump();
       await tester.tap(shell.save);
       await tester.pump();
       expect(shell.submission.saved, hasLength(1));
+    });
+
+    testWidgets(
+        'while the check runs, the whole form sweeps behind the fields '
+        '(D63); it stops with the answer', (tester) async {
+      // 2026-09-17: the "Checking…" line alone read as nothing happening;
+      // Add Tile shows the prediction sweep behind every field.
+      await shell.pumpEdit(tester, tile: p2.tile());
+      expect(key('editWhatIfSweep'), findsNothing);
+      final Completer<WhatIfResult?> gate = Completer<WhatIfResult?>();
+      shell.submission.previewGates = <Completer<WhatIfResult?>>[gate];
+      shell.pickedDurationAnswer = const Duration(hours: 3);
+      await reveal(tester, shell.durationRow);
+      await tester.tap(shell.durationRow);
+      await tester.pump(editTileWhatIfDebounce);
+      await tester.pump();
+      expect(key('editWhatIfSweep'), findsOneWidget);
+      final Size screen = tester.getSize(find.byType(Scaffold).last);
+      expect(tester.getSize(key('editWhatIfSweep')).width, screen.width,
+          reason: 'behind the whole form, not one field');
+      expect(key('editWhatIfPending'), findsOneWidget);
+      // Still interactive: the sweep is not a lock (unlike a save).
+      expect(
+          tester
+              .widgetList<AbsorbPointer>(find.byType(AbsorbPointer))
+              .any((AbsorbPointer a) => a.absorbing),
+          isFalse);
+      gate.complete(const WhatIfResult(
+          tardy: <SubCalendarEvent>[], overflow: <SubCalendarEvent>[]));
+      await tester.pumpAndSettle();
+      expect(key('editWhatIfSweep'), findsNothing);
     });
   });
 
