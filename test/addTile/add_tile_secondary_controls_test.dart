@@ -23,7 +23,6 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/tileRouteAdapters.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
 import 'add_tile_widget_harness.dart';
@@ -427,62 +426,6 @@ void main() {
     });
   });
 
-  group('Repeat route adapter — legacy result semantics', () {
-    RepetitionData enabled() =>
-        RepetitionData(frequency: RepetitionFrequency.daily, isEnabled: true);
-    RepetitionData disabled() =>
-        RepetitionData(frequency: RepetitionFrequency.none, isEnabled: false);
-
-    test('proceed + enabled + valid end => apply the updated repetition', () {
-      final r = enabled();
-      final result = resolveRepeatRouteResult(
-          updatedRepetition: r, isRepetitionEndValid: true);
-      expect(result.action, RepeatRouteAction.apply);
-      expect(result.repetition, same(r));
-    });
-
-    test('proceed + enabled + invalid end => clear (legacy behavior)', () {
-      final result = resolveRepeatRouteResult(
-          updatedRepetition: enabled(), isRepetitionEndValid: false);
-      expect(result.action, RepeatRouteAction.clear);
-    });
-
-    test('proceed + disabled selection + valid end => unchanged', () {
-      final result = resolveRepeatRouteResult(
-          updatedRepetition: disabled(), isRepetitionEndValid: true);
-      expect(result.action, RepeatRouteAction.unchanged);
-    });
-
-    test('cancel (no updatedRepetition) + valid end => unchanged', () {
-      final result = resolveRepeatRouteResult(
-          updatedRepetition: null, isRepetitionEndValid: true);
-      expect(result.action, RepeatRouteAction.unchanged);
-    });
-
-    test('cancel + invalid end => clear (legacy cleared here too)', () {
-      final result = resolveRepeatRouteResult(
-          updatedRepetition: null, isRepetitionEndValid: false);
-      expect(result.action, RepeatRouteAction.clear);
-    });
-
-    test('applying a result mutates the draft per the action', () {
-      final draft = AddTileDraft.flexible(now: now);
-      final r = enabled();
-
-      applyRepeatRouteResult(
-          draft, const RepeatRouteResult(RepeatRouteAction.unchanged));
-      expect(draft.repetitionData, isNull, reason: 'unchanged is a no-op');
-
-      applyRepeatRouteResult(
-          draft, RepeatRouteResult(RepeatRouteAction.apply, r));
-      expect(draft.repetitionData, same(r));
-
-      applyRepeatRouteResult(
-          draft, const RepeatRouteResult(RepeatRouteAction.clear));
-      expect(draft.repetitionData, isNull);
-    });
-  });
-
   group('Secondary rows — summaries and route cancellation', () {
     testWidgets('Location and Repeat rows show their unset summaries',
         (tester) async {
@@ -566,8 +509,8 @@ void main() {
       await pumpScreen(tester, AddTileRedesignScreen(draft: draft, now: now));
       await tester.pump();
 
-      // No '/LocationRoute' or '/RepetitionRoute' is registered in the test
-      // harness: the adapters must resolve to a no-op, not a crash.
+      // No location source is wired and the Repeat picker is backed out
+      // of: neither may touch the draft.
       await tester.tap(find.byKey(const ValueKey('locationRow')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('repeatRow')));

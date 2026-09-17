@@ -44,7 +44,6 @@ const List<String> _addTileOnlyModules = <String>[
   'addTileAnalytics.dart',
   'flexibleTileForm.dart',
   'fixedBlockForm.dart',
-  'addTile.dart',
   'addTileEntry.dart',
 ];
 
@@ -101,7 +100,6 @@ void main() {
       // screen appears in the directory without a decision about which side
       // of the boundary it sits on.
       const Set<String> knownAddTileFlowFiles = <String>{
-        'addTile.dart',
         'addTileEntry.dart',
         'addTileDraft.dart',
         'addTileRedesignShell.dart',
@@ -115,8 +113,6 @@ void main() {
         'tileRouteAdapters.dart',
         'autoAddTile.dart',
         'customTimeRestrictions.dart',
-        'locationRoute.dart',
-        'repetitionRoute.dart',
         'timeRestrictionRoute.dart',
       };
 
