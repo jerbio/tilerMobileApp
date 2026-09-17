@@ -317,7 +317,9 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           Navigator.pop(context);
         }
         this.context.read<ForecastBloc>().add(ResetEvent());
-        Navigator.pushNamed(context, '/AddTileRedesign', arguments: preTile);
+        // Through the flagged entry, not the direct redesign route, so More
+        // options obeys the same rollout as every other way in (D65).
+        Navigator.pushNamed(context, '/AddTile', arguments: preTile);
       },
     );
   }

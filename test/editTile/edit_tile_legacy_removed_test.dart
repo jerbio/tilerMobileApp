@@ -32,9 +32,17 @@ void main() {
   });
 
   test('there is no flag left: the redesign is the app', () {
+    // Scoped to Edit Tile and the app entry. Add Tile keeps its own flag
+    // and a `legacyBuilder` seam of its own through its rollout (Step 5.2
+    // of that plan); this guard is about EDIT Tile having none.
     final List<String> offenders = <String>[];
-    for (final FileSystemEntity e
-        in Directory('lib').listSync(recursive: true)) {
+    for (final FileSystemEntity e in <FileSystemEntity>[
+      ...Directory('lib/routes/authenticatedUser/editTile')
+          .listSync(recursive: true),
+      ...Directory('lib/routes/authenticatedUser/tileDetails')
+          .listSync(recursive: true),
+      File('lib/main.dart'),
+    ]) {
       if (e is! File || !e.path.endsWith('.dart')) continue;
       final String code = _code(e);
       if (code.contains('EditTileFeatureFlags') ||

@@ -2,7 +2,7 @@
 // when they choose More options (D64).
 //
 // `previewAddWidget` already builds a `SimpleAdditionTile` from its
-// `newTile` and pushes it as the `/AddTileRedesign` argument, and the shell
+// `newTile` and pushes it as the `/AddTile` argument, and the shell
 // seeds its draft from it. The break was one step earlier: the sheet only
 // reported `onTileUpdate` when a PREDICTION landed (a location or duration
 // came back), never on the name change itself. So the parent's `newTile`
@@ -27,7 +27,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
-/// The argument `/AddTileRedesign` was pushed with, or null if never pushed.
+/// The argument `/AddTile` was pushed with, or null if never pushed.
 Object? pushedArguments;
 
 Widget _wrap(Widget child) {
@@ -61,7 +61,7 @@ Widget _wrap(Widget child) {
       supportedLocales: const [Locale('en', '')],
       home: Scaffold(body: child),
       onGenerateRoute: (RouteSettings settings) {
-        if (settings.name == '/AddTileRedesign') {
+        if (settings.name == '/AddTile') {
           pushedArguments = settings.arguments;
           return MaterialPageRoute<void>(
             builder: (_) => const Scaffold(body: Text('redesign')),

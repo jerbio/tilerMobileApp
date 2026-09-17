@@ -5,7 +5,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/connetions.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
@@ -337,7 +337,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => AddTile(
+                                        builder: (context) => AddTileEntry(
                                             preTile: autoTile,
                                             autoDeadline:
                                                 this.widget.deadline)));

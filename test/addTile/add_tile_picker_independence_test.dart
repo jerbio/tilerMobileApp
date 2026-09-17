@@ -45,6 +45,7 @@ const List<String> _addTileOnlyModules = <String>[
   'flexibleTileForm.dart',
   'fixedBlockForm.dart',
   'addTile.dart',
+  'addTileEntry.dart',
 ];
 
 const String _dir = 'lib/routes/authenticatedUser/newTile';
@@ -101,6 +102,7 @@ void main() {
       // of the boundary it sits on.
       const Set<String> knownAddTileFlowFiles = <String>{
         'addTile.dart',
+        'addTileEntry.dart',
         'addTileDraft.dart',
         'addTileRedesignShell.dart',
         'addTileMoreOptions.dart',

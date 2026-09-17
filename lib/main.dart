@@ -25,14 +25,7 @@ import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/procrastinateAll.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePredictionSource.dart';
-import 'package:tiler_app/data/adHoc/preTile.dart';
-import 'package:tiler_app/services/api/scheduleApi.dart';
-import 'package:tiler_app/services/api/locationApi.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTileSubmission.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRedesignScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
@@ -215,46 +208,18 @@ class _TilerAppState extends State<TilerApp> {
                   '/AuthorizedUser': (BuildContext context) =>
                       new AuthorizedRoute(),
                   '/LoggedOut': (BuildContext context) => new SignInRoute(),
-                  '/AddTile': (BuildContext context) => new AddTile(),
-                  // Add Tile redesign shell (Phase 1). Kept as its own route so
-                  // the new UI can be reviewed/feature-flagged independently of
-                  // the legacy /AddTile screen. Reachable in debug builds via
-                  // the long-press on the home "add" button; production entry
-                  // points continue to use /AddTile until rollout.
-                  '/AddTileRedesign': (BuildContext context) {
-                    final scheduleApi =
-                        ScheduleApi(getContextCallBack: () => context);
-                    // The legacy result slot, so a caller that pushed this
-                    // route reads back the created tile the same way it does
-                    // from /AddTile.
-                    final newTileParams =
-                        ModalRoute.of(context)?.settings.arguments;
-                    // A prefill from the Edit Tile suggestions (Edit Tile
-                    // redesign, Step 2.4) travels in the same map.
-                    // Either shape: `previewAddWidget` pushes the PreTile
-                    // itself as the argument; the Edit Tile suggestions push
-                    // it under a `preTile` key alongside the result slot.
-                    final Object? preTile = newTileParams is PreTile
-                        ? newTileParams
-                        : newTileParams is Map
-                            ? newTileParams['preTile']
-                            : null;
-                    return AddTileRedesignScreen(
-                      preTile: preTile is PreTile ? preTile : null,
-                      locationSource: ApiAddTileLocationSource(
-                        locationApi:
-                            LocationApi(getContextCallBack: () => context),
+                  // Add Tile: ONE entry for every push site, rendering the
+                  // redesign or the legacy screen by `AddTileFeatureFlags`
+                  // (Step 5.2, D65).
+                  '/AddTile': (BuildContext context) => const AddTileEntry(),
+                  // The redesign unconditionally — the debug long-press on the
+                  // home "add" button. Same wiring as the flagged path.
+                  '/AddTileRedesign': (BuildContext context) =>
+                      buildAddTileRedesign(
+                        context,
+                        AddTileRouteArgs.from(
+                            ModalRoute.of(context)?.settings.arguments),
                       ),
-                      predictionSource: ApiAddTilePredictionSource(
-                        scheduleApi: scheduleApi,
-                      ),
-                      submission:
-                          ApiAddTileSubmission(scheduleApi: scheduleApi),
-                      newTileParams: newTileParams is Map<String, dynamic>
-                          ? newTileParams
-                          : null,
-                    );
-                  },
                   // Edit Tile redesign shell (Phase 1, Step 1.4). Its own
                   // route so it can be reviewed independently of the legacy
                   // EditTile screen, which every production entry point still

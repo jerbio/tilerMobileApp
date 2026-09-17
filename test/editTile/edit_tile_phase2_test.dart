@@ -355,7 +355,7 @@ void main() {
       await tester.tap(find.text('Review draft'));
       await tester.pumpAndSettle();
       final RouteSettings pushed = shell.pushedRoutes.single;
-      expect(pushed.name, '/AddTileRedesign');
+      expect(pushed.name, '/AddTile');
       expect((pushed.arguments as Map)['preTile'], isNotNull);
       expect(
           ((pushed.arguments as Map)['preTile']).description, 'Review draft');

@@ -17,6 +17,7 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
@@ -1382,7 +1383,11 @@ class AddTileState extends State<AddTile> {
 
   @override
   Widget build(BuildContext context) {
-    Map? newTileParams = ModalRoute.of(context)?.settings.arguments as Map?;
+    // Read tolerantly: the preview sheet pushes a bare PreTile through
+    // /AddTile now that the flag governs every entry point (D65), and a
+    // hard cast threw whenever the flag was off.
+    Map? newTileParams =
+        readLegacyResultSlot(ModalRoute.of(context)?.settings.arguments);
     this.widget.newTileParams = newTileParams;
     List<Widget> childrenWidgets = [];
     List<Widget> appointmentWidgets = [];

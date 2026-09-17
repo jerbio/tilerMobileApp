@@ -26,6 +26,7 @@
 // so they stay pure, unit-testable, and reusable outside this flow (D29).
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/location.dart';
@@ -57,17 +58,33 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.da
 import 'package:tiler_app/routes/authenticatedUser/newTile/tileRouteAdapters.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
-/// Local, dependency-free feature flag (no remote-config coupling) so the new
-/// shell can be validated in isolation. Remote/rollout gating arrives later.
+/// Local, dependency-free feature flag (no remote-config coupling): the app
+/// has no remote rollout system, so a cohort is a BUILD (Step 5.2, D65).
+///
+/// Resolution, first match wins:
+///
+///   1. a runtime override, set through [addTileRedesignEnabled] — the
+///      rollback lever, and what tests use;
+///   2. `--dart-define=ADD_TILE_REDESIGN=true|false` at build time — how a
+///      release cohort is cut;
+///   3. the build mode: on for debug builds, off for release, so internal
+///      builds are the first cohort and a store build stays on the legacy
+///      screen until someone says otherwise.
 class AddTileFeatureFlags {
   AddTileFeatureFlags._();
 
-  static bool _addTileRedesignEnabled = false;
+  /// What this build resolves to with no runtime override.
+  static const bool buildDefault =
+      bool.fromEnvironment('ADD_TILE_REDESIGN', defaultValue: kDebugMode);
+
+  static bool? _override;
 
   /// `true` renders [AddTileRedesignScreen]; `false` renders the legacy flow.
-  static bool get addTileRedesignEnabled => _addTileRedesignEnabled;
-  static set addTileRedesignEnabled(bool value) =>
-      _addTileRedesignEnabled = value;
+  static bool get addTileRedesignEnabled => _override ?? buildDefault;
+  static set addTileRedesignEnabled(bool value) => _override = value;
+
+  /// Drops the runtime override, returning to [buildDefault].
+  static void reset() => _override = null;
 
   /// Analytics `flow_version` values.
   static const String redesignFlowVersion = addTileRedesignFlowVersion;

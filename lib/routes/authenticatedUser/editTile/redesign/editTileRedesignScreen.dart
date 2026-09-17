@@ -495,11 +495,14 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
     ));
   }
 
-  /// "Create as new tile" hands the suggestion to the REDESIGNED Add Tile
-  /// with a prefill, not the legacy screen the carousel pushed.
+  /// "Create as new tile" hands the suggestion to Add Tile with a prefill.
+  ///
+  /// Through the flagged `/AddTile` entry, not the direct redesign route,
+  /// so it obeys the same rollout as every other way in (D65); the entry
+  /// passes the `preTile` to whichever screen renders.
   void _createFromSuggestion(NextTileSuggestion suggestion) {
     Navigator.of(context).pushNamed(
-      '/AddTileRedesign',
+      '/AddTile',
       arguments: <String, dynamic>{
         'preTile': AutoTile(description: suggestion.name ?? ''),
       },
