@@ -1,3 +1,5 @@
+import 'package:tiler_app/services/analyticsSignal.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/tutorial/tutorial_bloc.dart';
@@ -9,14 +11,14 @@ import 'package:tiler_app/components/tutorial/tutorialSpotlightPainter.dart';
 import 'package:tiler_app/components/tutorial/tutorialStep.dart';
 import 'package:tiler_app/components/tutorial/tutorialTooltipWidget.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
 
 /// The number of steps in the onboarding tour.
 ///
 /// This MUST stay in sync with the list returned by [buildTutorialSteps].
-/// It is the single source of truth used by `TutorialBloc(stepCount:)` and the
-/// step-counter fallbacks in `AuthorizedRoute`. The onboarding sync tests assert
+/// It is the single source of truth used by the Home TourHost. Sync tests assert
 /// `buildTutorialSteps(context).length == kTutorialStepCount`.
-const int kTutorialStepCount = 8;
+const int kTutorialStepCount = 6;
 
 /// Builds the ordered list of onboarding tour steps.
 ///
@@ -50,65 +52,7 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       spotlightPadding: 6,
     ),
 
-    // Step 3: Quick Add explanation — opens the real add-tile sheet
-    TutorialStep(
-      id: 'quick_add',
-      targetKey: null, // full-screen overlay (sheet is shown via modal)
-      title: l10n.tutorialStepQuickCreateTitle,
-      body: l10n.tutorialStepQuickCreateBody,
-      headerIcon: Icons.bolt,
-      tooltipPosition: TooltipPosition.center,
-      callouts: [
-        TutorialCallout(
-          icon: Icons.edit,
-          label: l10n.tutorialCalloutNameYourTile,
-          description: l10n.tutorialCalloutNameYourTileDesc,
-        ),
-        TutorialCallout(
-          icon: Icons.timer,
-          label: l10n.tutorialCalloutSetDuration,
-          description: l10n.tutorialCalloutSetDurationDesc,
-        ),
-        TutorialCallout(
-          icon: Icons.tune,
-          label: l10n.tutorialCalloutMoreOptions,
-          description: l10n.tutorialCalloutMoreOptionsDesc,
-        ),
-      ],
-    ),
-
-    // Step 4: Smart Scheduling — Tiler Works for You
-    // Callouts mirror the real add-tile sheet action row:
-    // Shuffle · Defer All · Options (see PreviewAddWidget.renderModal).
-    TutorialStep(
-      id: 'smart_scheduling',
-      targetKey: TutorialKeys.bottomNavKey,
-      title: l10n.tutorialStepTilerWorksTitle,
-      body: l10n.tutorialStepTilerWorksBody,
-      headerIcon: Icons.auto_awesome,
-      tooltipPosition: TooltipPosition.above,
-      spotlightShape: SpotlightShape.roundedRect,
-      spotlightPadding: 4,
-      callouts: [
-        TutorialCallout(
-          icon: Icons.shuffle,
-          label: l10n.tutorialCalloutShuffle,
-          description: l10n.tutorialCalloutShuffleDesc,
-        ),
-        TutorialCallout(
-          icon: Icons.fast_forward,
-          label: l10n.tutorialCalloutDeferAll,
-          description: l10n.tutorialCalloutDeferAllDesc,
-        ),
-        TutorialCallout(
-          icon: Icons.more_time,
-          label: l10n.tutorialCalloutMoreOptions,
-          description: l10n.tutorialCalloutMoreOptionsSheetDesc,
-        ),
-      ],
-    ),
-
-    // Step 5: Tile Interactions
+    // Step 3: Tile Interactions
     TutorialStep(
       id: 'tile_interactions',
       targetKey: TutorialKeys.currentTileKey,
@@ -137,7 +81,7 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       ],
     ),
 
-    // Step 6: Switch Views — Calendar Toggle
+    // Step 4: Switch Views — Calendar Toggle
     TutorialStep(
       id: 'switch_views',
       targetKey: TutorialKeys.bottomNavKey,
@@ -166,7 +110,7 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       ],
     ),
 
-    // Step 7: Top-right tools — Search & Settings
+    // Step 5: Top-right tools — Search & Settings
     TutorialStep(
       id: 'quick_tools',
       targetKey: TutorialKeys.topRightActionsKey,
@@ -190,13 +134,15 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       ],
     ),
 
-    // Step 8: The Chat FAB — talk to Tiler
+    // Step 6: The Chat FAB — talk to Tiler
     TutorialStep(
       id: 'chat_fab',
       targetKey: TutorialKeys.fabKey,
       title: l10n.tutorialStepChatTitle,
       body: l10n.tutorialStepChatBody,
-      headerIcon: Icons.chat_outlined,
+      // The chat FAB renders Icons.auto_awesome (HomeFab) — the step icon
+      // must track the live FAB icon (see onboarding sync tests).
+      headerIcon: Icons.auto_awesome,
       tooltipPosition: TooltipPosition.above,
       spotlightShape: SpotlightShape.circle,
       spotlightPadding: 6,
@@ -204,26 +150,94 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
   ];
 }
 
-/// The main tutorial overlay that renders on top of the AuthorizedRoute.
-/// It reads the current step from TutorialBloc, highlights the target widget,
-/// and shows a tooltip with instructions.
+/// Contextual tour shown only after opening the add-tile sheet.
+const int kAddTileTourStepCount = 2;
+List<TutorialStep> buildAddTileTourSteps(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+  return [
+    // Step 1: Quick Add on the sheet the user opened
+    TutorialStep(
+      id: 'quick_add',
+      targetKey: null, // full-screen overlay (sheet is shown via modal)
+      title: l10n.tutorialStepQuickCreateTitle,
+      body: l10n.tutorialStepQuickCreateBody,
+      headerIcon: Icons.bolt,
+      tooltipPosition: TooltipPosition.center,
+      callouts: [
+        TutorialCallout(
+          icon: Icons.edit,
+          label: l10n.tutorialCalloutNameYourTile,
+          description: l10n.tutorialCalloutNameYourTileDesc,
+        ),
+        TutorialCallout(
+          icon: Icons.timer,
+          label: l10n.tutorialCalloutSetDuration,
+          description: l10n.tutorialCalloutSetDurationDesc,
+        ),
+        TutorialCallout(
+          icon: Icons.tune,
+          label: l10n.tutorialCalloutMoreOptions,
+          description: l10n.tutorialCalloutMoreOptionsDesc,
+        ),
+      ],
+    ),
+
+    // Step 2: Smart Scheduling — Tiler Works for You
+    // Callouts mirror the real add-tile sheet action row:
+    // Shuffle · Defer All · Options (see PreviewAddWidget.renderModal).
+    TutorialStep(
+      id: 'smart_scheduling',
+      targetKey: null,
+      title: l10n.tutorialStepTilerWorksTitle,
+      body: l10n.tutorialStepTilerWorksBody,
+      headerIcon: Icons.auto_awesome,
+      tooltipPosition: TooltipPosition.center,
+      spotlightShape: SpotlightShape.roundedRect,
+      spotlightPadding: 4,
+      callouts: [
+        TutorialCallout(
+          icon: Icons.shuffle,
+          label: l10n.tutorialCalloutShuffle,
+          description: l10n.tutorialCalloutShuffleDesc,
+        ),
+        TutorialCallout(
+          icon: Icons.fast_forward,
+          label: l10n.tutorialCalloutDeferAll,
+          description: l10n.tutorialCalloutDeferAllDesc,
+        ),
+        TutorialCallout(
+          icon: Icons.more_time,
+          label: l10n.tutorialCalloutMoreOptions,
+          description: l10n.tutorialCalloutMoreOptionsSheetDesc,
+        ),
+      ],
+    ),
+  ];
+}
+
+/// The main tutorial overlay. Renders on top of the surface hosting the
+/// tour, reads the current step from [TutorialBloc], highlights the target
+/// widget, and shows a tooltip with instructions.
+///
+/// Generalized per tour (product-tour-onboarding-redesign.md, Phase 1):
+/// [stepsBuilder] supplies any tour's steps (defaults to the home tour), and
+/// home-specific side effects (dummy-tile injection) only run when
+/// [tourId] is the home tour.
 class TutorialOverlay extends StatefulWidget {
   final Widget child;
 
-  /// Callback that opens the real add-tile bottom sheet during the tutorial.
-  /// Receives the [TutorialBloc] so the dialog shown on top of the sheet
-  /// can advance / go back without needing a BlocProvider lookup.
-  /// Returns a Future that completes when the sheet is dismissed.
-  final Future<void> Function(TutorialBloc bloc)? onShowAddTileSheet;
+  /// The tour id this overlay is rendering.
+  final String tourId;
 
-  /// Callback to dismiss the add-tile sheet if it's currently showing.
-  final VoidCallback? onDismissAddTileSheet;
+  /// Builds the ordered list of steps for [tourId]. Defaults to the home
+  /// tour steps.
+  final List<TutorialStep> Function(BuildContext context) stepsBuilder;
 
   const TutorialOverlay({
     Key? key,
     required this.child,
-    this.onShowAddTileSheet,
-    this.onDismissAddTileSheet,
+    this.tourId = TourPreferencesHelper.homeTourId,
+    this.stepsBuilder = buildTutorialSteps,
   }) : super(key: key);
 
   @override
@@ -238,9 +252,8 @@ class _TutorialOverlayState extends State<TutorialOverlay>
 
   /// Tracks the previous step index so we can fire onExit / onEnter.
   int _previousStepIndex = 0;
-
-  /// Whether the real add-tile sheet is currently showing.
-  bool _addTileSheetShowing = false;
+  TutorialStatus? _reportedStatus;
+  int? _reportedStep;
 
   /// Whether dummy tutorial tiles have been injected into the schedule.
   bool _dummyTilesInjected = false;
@@ -272,7 +285,7 @@ class _TutorialOverlayState extends State<TutorialOverlay>
   }
 
   List<TutorialStep> _buildSteps(BuildContext context) =>
-      buildTutorialSteps(context);
+      widget.stepsBuilder(context);
 
   /// Finds the Rect of the target widget on screen using its GlobalKey.
   Rect? _getTargetRect(GlobalKey? key) {
@@ -285,124 +298,43 @@ class _TutorialOverlayState extends State<TutorialOverlay>
     return null;
   }
 
-  /// Computes the position of the tooltip relative to the target.
-  /// Ensures the tooltip never overlaps the spotlight cutout.
-  Offset _computeTooltipOffset(
-    Rect? targetRect,
-    TooltipPosition position,
-    Size screenSize,
-  ) {
-    if (targetRect == null || position == TooltipPosition.center) {
-      return Offset(0, screenSize.height * 0.2);
-    }
-
-    const double tooltipMargin = 16.0;
-    const double estimatedTooltipHeight = 320.0;
-    const double minTopPadding = 40.0;
-
-    final double cutoutTop = targetRect.top -
-        (position == TooltipPosition.above || position == TooltipPosition.below
-            ? 8
-            : 0);
-    final double cutoutBottom =
-        targetRect.bottom + 8; // account for spotlightPadding
-    final double spaceAbove = cutoutTop - minTopPadding;
-    final double spaceBelow = screenSize.height - cutoutBottom;
-
-    if (position == TooltipPosition.above) {
-      // Try above first
-      if (spaceAbove >= estimatedTooltipHeight) {
-        double top = cutoutTop - tooltipMargin - estimatedTooltipHeight;
-        if (top < minTopPadding) top = minTopPadding;
-        return Offset(0, top);
-      }
-      // Fall back to below if not enough room above
-      double top = cutoutBottom + tooltipMargin;
-      return Offset(0, top);
-    } else {
-      // Below — try below first
-      if (spaceBelow >= estimatedTooltipHeight + tooltipMargin) {
-        double top = cutoutBottom + tooltipMargin;
-        return Offset(0, top);
-      }
-      // Fall back to above if not enough room below
-      if (spaceAbove >= estimatedTooltipHeight) {
-        double top = cutoutTop - tooltipMargin - estimatedTooltipHeight;
-        if (top < minTopPadding) top = minTopPadding;
-        return Offset(0, top);
-      }
-      // Neither side fits well — place at top of screen
-      return Offset(0, minTopPadding);
-    }
-  }
-
-  /// Opens the real add-tile sheet via the callback.
-  void _showAddTileSheet() {
-    if (widget.onShowAddTileSheet == null || _addTileSheetShowing) return;
-    _addTileSheetShowing = true;
-    final tutorialBloc = context.read<TutorialBloc>();
-    widget.onShowAddTileSheet!(tutorialBloc).whenComplete(() {
-      _addTileSheetShowing = false;
-      // If tutorial is still on the quick_add step when the sheet is dismissed
-      // (e.g. the user tapped the barrier), auto-advance to the next step.
-      if (mounted) {
-        final tutorialState = context.read<TutorialBloc>().state;
-        if (tutorialState.isActive &&
-            tutorialState.currentStepIndex < _steps.length &&
-            _steps[tutorialState.currentStepIndex].id == 'quick_add') {
-          context.read<TutorialBloc>().add(NextTutorialStepEvent());
-        }
-      }
-    });
-  }
-
-  /// Dismisses the real add-tile sheet if it's showing.
-  void _dismissAddTileSheet() {
-    if (_addTileSheetShowing) {
-      widget.onDismissAddTileSheet?.call();
-      _addTileSheetShowing = false;
-    }
-  }
-
-  /// Fires onExit for the old step, onEnter for the new step.
-  /// Also handles showing / dismissing the add-tile sheet for the quick_add step.
-  /// Steps that should keep the add-tile sheet visible.
-  static const _sheetSteps = {'quick_add', 'smart_scheduling'};
-
   void _handleStepTransition(int oldIndex, int newIndex) {
-    final oldId = oldIndex < _steps.length ? _steps[oldIndex].id : '';
-    final newId = newIndex < _steps.length ? _steps[newIndex].id : '';
-
-    // Exit old step
-    if (oldIndex < _steps.length) {
-      _steps[oldIndex].onExit?.call(context);
-      // Dismiss sheet only when leaving a sheet-step for a non-sheet-step
-      if (_sheetSteps.contains(oldId) && !_sheetSteps.contains(newId)) {
-        _dismissAddTileSheet();
-      }
-    }
-    // Enter new step
-    if (newIndex < _steps.length) {
-      _steps[newIndex].onEnter?.call(context);
-      // Open the sheet when entering a sheet-step from a non-sheet-step
-      if (_sheetSteps.contains(newId) && !_sheetSteps.contains(oldId)) {
-        Future.delayed(Duration(milliseconds: 300), () {
-          if (mounted) _showAddTileSheet();
-        });
-      }
-    }
+    if (oldIndex < _steps.length) _steps[oldIndex].onExit?.call(context);
+    if (newIndex < _steps.length) _steps[newIndex].onEnter?.call(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<TutorialBloc, TutorialState>(
       listener: (context, state) {
+        final stepId = _steps[state.currentStepIndex].id;
+        if (state.isActive) {
+          if (_reportedStatus != TutorialStatus.active) {
+            AnalysticsSignal.send('TOUR_STARTED',
+                parameters: {'tourId': widget.tourId, 'stepId': stepId});
+          }
+          if (_reportedStatus != TutorialStatus.active ||
+              _reportedStep != state.currentStepIndex) {
+            AnalysticsSignal.send('TOUR_STEP',
+                parameters: {'tourId': widget.tourId, 'stepId': stepId});
+          }
+        } else if (_reportedStatus == TutorialStatus.active) {
+          if (state.isCompleted || state.status == TutorialStatus.skipped) {
+            AnalysticsSignal.send(
+                state.isCompleted ? 'TOUR_COMPLETED' : 'TOUR_SKIPPED',
+                parameters: {'tourId': widget.tourId, 'stepId': stepId});
+          }
+        }
+        _reportedStatus = state.status;
+        _reportedStep = state.currentStepIndex;
         if (state.isActive) {
           _animationController.forward();
 
-          // Inject dummy tiles the first time the tutorial becomes active
-          // so new users see a populated schedule.
-          if (!_dummyTilesInjected) {
+          // Inject dummy tiles the first time the home tutorial becomes
+          // active so new users see a populated schedule. Home-specific:
+          // other tours must not mutate the schedule.
+          if (widget.tourId == TourPreferencesHelper.homeTourId &&
+              !_dummyTilesInjected) {
             _dummyTilesInjected = true;
             TutorialDummyData.injectDummyTiles(context);
           }
@@ -417,10 +349,6 @@ class _TutorialOverlayState extends State<TutorialOverlay>
           // Fire onExit for whatever step was active when tutorial ended
           if (_previousStepIndex < _steps.length) {
             _steps[_previousStepIndex].onExit?.call(context);
-            // Dismiss the sheet if it's showing (could be on any sheet step)
-            if (_sheetSteps.contains(_steps[_previousStepIndex].id)) {
-              _dismissAddTileSheet();
-            }
           }
 
           // Restore the real schedule now that the tutorial is done.
@@ -437,30 +365,30 @@ class _TutorialOverlayState extends State<TutorialOverlay>
           previous.status != current.status ||
           previous.currentStepIndex != current.currentStepIndex,
       builder: (context, state) {
-        if (!state.isActive) {
-          return widget.child;
-        }
+        final TutorialStep? currentStep =
+            state.isActive ? _steps[state.currentStepIndex] : null;
 
-        final currentStep = _steps[state.currentStepIndex];
+        final bool showOverlay = currentStep != null;
 
-        // Don't render the tutorial overlay on step 3 (quick_add)
-        // because the real modal bottom sheet is shown above everything.
-        // The tooltip is embedded in the modal itself.
-        final bool hideOverlay = currentStep.id == 'quick_add';
-
+        // The surface always lives at the same spot in the tree — under
+        // this Stack — whether or not the overlay is showing. Returning
+        // `widget.child` bare while inactive and wrapping it in a Stack
+        // once active changes the tree shape, which remounts the whole
+        // surface when the tour starts and again when it ends: a page
+        // that creates its bloc and fetches on mount (Tile Preferences)
+        // loaded twice.
         return Stack(
           children: [
             // The actual app content underneath
             widget.child,
 
-            if (!hideOverlay)
+            if (showOverlay)
               // Overlay layer with spotlight + tooltip
               _TutorialOverlayLayer(
                 fadeAnimation: _fadeAnimation,
                 currentStep: currentStep,
                 state: state,
                 getTargetRect: _getTargetRect,
-                computeTooltipOffset: _computeTooltipOffset,
               ),
           ],
         );
@@ -476,14 +404,12 @@ class _TutorialOverlayLayer extends StatefulWidget {
   final TutorialStep currentStep;
   final TutorialState state;
   final Rect? Function(GlobalKey?) getTargetRect;
-  final Offset Function(Rect?, TooltipPosition, Size) computeTooltipOffset;
 
   const _TutorialOverlayLayer({
     required this.fadeAnimation,
     required this.currentStep,
     required this.state,
     required this.getTargetRect,
-    required this.computeTooltipOffset,
   });
 
   @override
@@ -507,71 +433,101 @@ class _TutorialOverlayLayerState extends State<_TutorialOverlayLayer> {
     }
   }
 
-  void _resolveTargetRect() {
-    // Schedule after the frame so GlobalKeys have valid RenderObjects
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          _targetRect = widget.getTargetRect(widget.currentStep.targetKey);
-        });
-      }
-    });
+  Timer? _retry;
+  int _resolution = 0;
+
+  @override
+  void dispose() {
+    _retry?.cancel();
+    _resolution++;
+    super.dispose();
   }
 
-  /// Computes the bottom constraint for the tooltip so it never overlaps
-  /// the spotlight cutout. Returns null when no constraint is needed.
-  double? _getTooltipBottom(
-    Rect? targetRect,
-    double tooltipTop,
-    TooltipPosition position,
-    Size screenSize,
-  ) {
-    if (targetRect == null) return null;
-
-    const double padding = 8.0; // spotlightPadding allowance
-
-    if (position == TooltipPosition.above || tooltipTop < targetRect.top) {
-      // Tooltip is above the cutout — constrain its bottom edge
-      // so it doesn't extend into the cutout.
-      final bottomLimit = screenSize.height - (targetRect.top - padding);
-      return bottomLimit > 0 ? bottomLimit : null;
+  void _resolveTargetRect() {
+    _retry?.cancel();
+    final generation = ++_resolution;
+    _targetRect = null;
+    final step = widget.currentStep;
+    final key = step.targetKey;
+    // Full-surface steps deliberately have no spotlight.
+    if (key == null) return;
+    void attempt(int count) {
+      if (!mounted || generation != _resolution) return;
+      final bloc = context.read<TutorialBloc>();
+      if (!bloc.state.isActive ||
+          bloc.state.currentStepIndex != widget.state.currentStepIndex) return;
+      if (_scrollTargetIntoView(key)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => attempt(count));
+        return;
+      }
+      final rect = widget.getTargetRect(key);
+      if (rect != null &&
+          !rect.isEmpty &&
+          rect.left.isFinite &&
+          rect.top.isFinite) {
+        setState(() => _targetRect = rect);
+        return;
+      }
+      if (count < 5) {
+        _retry =
+            Timer(const Duration(milliseconds: 100), () => attempt(count + 1));
+        return;
+      }
+      AnalysticsSignal.send('TOUR_TARGET_MISSING',
+          parameters: {'tourId': bloc.tourId, 'stepId': step.id});
+      debugPrint('Tour target missing: ${bloc.tourId}/${step.id}');
+      bloc.add(NextTutorialStepEvent());
     }
 
-    // Tooltip is below the cutout — let it extend to screen bottom.
-    return null;
+    WidgetsBinding.instance.addPostFrameCallback((_) => attempt(0));
+  }
+
+  /// Scrolls the step's anchor into its enclosing scrollable, moving the
+  /// minimum needed (a fully visible anchor never moves — home-tour parity).
+  /// Returns true if a scroll position actually changed.
+  bool _scrollTargetIntoView(GlobalKey? key) {
+    final targetContext = key?.currentContext;
+    if (targetContext == null) return false;
+    final scrollable = Scrollable.maybeOf(targetContext);
+    if (scrollable == null || !scrollable.position.hasPixels) return false;
+    final before = scrollable.position.pixels;
+    // Forward only if the trailing edge is past the viewport end, then
+    // backward only if the leading edge is before the viewport start.
+    Scrollable.ensureVisible(
+      targetContext,
+      alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+    );
+    Scrollable.ensureVisible(
+      targetContext,
+      alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+    );
+    return scrollable.position.pixels != before;
   }
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final tooltipOffset = widget.computeTooltipOffset(
+    final slot = computeTooltipSlot(
       _targetRect,
       widget.currentStep.tooltipPosition,
       screenSize,
+      cutoutPadding: widget.currentStep.spotlightPadding,
     );
 
     return AnimatedBuilder(
       animation: widget.fadeAnimation,
       builder: (context, child) {
-        // Steps handled by dialog-on-dialog (shown over the sheet)
-        // don't need the overlay tooltip — it would be hidden behind the sheet.
-        final isSheetStep =
-            _TutorialOverlayState._sheetSteps.contains(widget.currentStep.id);
-
         return Stack(
           children: [
             // Spotlight overlay — absorbs taps
             Positioned.fill(
               child: GestureDetector(
                 onTap: () {
-                  // Don't advance via tap during sheet steps — dialogs handle it
-                  if (!isSheetStep) {
-                    context.read<TutorialBloc>().add(NextTutorialStepEvent());
-                  }
+                  context.read<TutorialBloc>().add(NextTutorialStepEvent());
                 },
                 child: CustomPaint(
                   painter: TutorialSpotlightPainter(
-                    targetRect: isSheetStep ? null : _targetRect,
+                    targetRect: _targetRect,
                     padding: widget.currentStep.spotlightPadding,
                     shape: widget.currentStep.spotlightShape,
                     animationValue: widget.fadeAnimation.value,
@@ -580,40 +536,123 @@ class _TutorialOverlayLayerState extends State<_TutorialOverlayLayer> {
               ),
             ),
 
-            // Tooltip card — hidden for sheet steps (dialog-on-dialog handles those)
-            if (!isSheetStep)
-              Positioned(
-                left: 0,
-                right: 0,
-                top: tooltipOffset.dy,
-                bottom: _getTooltipBottom(
-                  _targetRect,
-                  tooltipOffset.dy,
-                  widget.currentStep.tooltipPosition,
-                  screenSize,
-                ),
-                child: Center(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: TutorialTooltipWidget(
-                      step: widget.currentStep,
-                      currentStepIndex: widget.state.currentStepIndex,
-                      totalSteps: widget.state.totalSteps,
-                      onNext: () => context
-                          .read<TutorialBloc>()
-                          .add(NextTutorialStepEvent()),
-                      onPrevious: () => context
-                          .read<TutorialBloc>()
-                          .add(PreviousTutorialStepEvent()),
-                      onSkip: () =>
-                          context.read<TutorialBloc>().add(SkipTutorialEvent()),
-                    ),
+            // Tooltip card
+            Positioned(
+              left: 0,
+              right: 0,
+              top: slot.top,
+              bottom: slot.bottom,
+              child: Align(
+                alignment: slot.alignment,
+                child: Material(
+                  color: Colors.transparent,
+                  child: TutorialTooltipWidget(
+                    step: widget.currentStep,
+                    currentStepIndex: widget.state.currentStepIndex,
+                    totalSteps: widget.state.totalSteps,
+                    onNext: () => context
+                        .read<TutorialBloc>()
+                        .add(NextTutorialStepEvent()),
+                    onPrevious: () => context
+                        .read<TutorialBloc>()
+                        .add(PreviousTutorialStepEvent()),
+                    onSkip: () =>
+                        context.read<TutorialBloc>().add(SkipTutorialEvent()),
                   ),
                 ),
               ),
+            ),
           ],
         );
       },
     );
   }
+}
+
+/// The vertical band the tooltip card is laid out in, and where it sits
+/// inside that band.
+///
+/// The band is always bounded (top and bottom) so the card can only ever be
+/// as tall as the space it was given: [TutorialTooltipWidget] pins its
+/// header and footer and scrolls its body, so a tight band shrinks the card
+/// instead of overflowing it.
+class TooltipSlot {
+  final double top;
+  final double bottom;
+
+  /// `bottomCenter` when the card hugs a cutout from above, `topCenter`
+  /// when it hugs one from below, `center` when floating.
+  final Alignment alignment;
+
+  const TooltipSlot({
+    required this.top,
+    required this.bottom,
+    required this.alignment,
+  });
+}
+
+/// The smallest band in which the tooltip card is still usable: pinned
+/// header + step dots + nav row plus a couple of body lines.
+const double kTooltipMinUsableHeight = 200.0;
+
+/// Picks the band the tooltip card is laid out in relative to the spotlight
+/// cutout around [targetRect].
+///
+/// Honours [position] when that side can hold a usable card; otherwise takes
+/// whichever side has more room. When neither side can hold a usable card
+/// (a tall anchor on a short screen) the card floats over the full screen
+/// and overlaps the spotlight — a legible card over the cutout beats an
+/// overflowed one beside it. Exposed at the top level so the placement rule
+/// can be unit-tested without rendering the overlay.
+TooltipSlot computeTooltipSlot(
+  Rect? targetRect,
+  TooltipPosition position,
+  Size screenSize, {
+  double cutoutPadding = 8.0,
+}) {
+  const double tooltipMargin = 16.0;
+  const double minTopPadding = 40.0;
+  const double bottomMargin = 16.0;
+
+  if (targetRect == null || position == TooltipPosition.center) {
+    return TooltipSlot(
+      top: screenSize.height * 0.2,
+      bottom: bottomMargin,
+      alignment: Alignment.topCenter,
+    );
+  }
+
+  final double cutoutTop = targetRect.top - cutoutPadding;
+  final double cutoutBottom = targetRect.bottom + cutoutPadding;
+  final double spaceAbove = (cutoutTop - tooltipMargin) - minTopPadding;
+  final double spaceBelow =
+      (screenSize.height - bottomMargin) - (cutoutBottom + tooltipMargin);
+
+  final bool preferredUsable = position == TooltipPosition.above
+      ? spaceAbove >= kTooltipMinUsableHeight
+      : spaceBelow >= kTooltipMinUsableHeight;
+  final bool above = preferredUsable
+      ? position == TooltipPosition.above
+      : spaceAbove > spaceBelow;
+
+  if (above && spaceAbove >= kTooltipMinUsableHeight) {
+    return TooltipSlot(
+      top: minTopPadding,
+      bottom: screenSize.height - (cutoutTop - tooltipMargin),
+      alignment: Alignment.bottomCenter,
+    );
+  }
+  if (!above && spaceBelow >= kTooltipMinUsableHeight) {
+    return TooltipSlot(
+      top: cutoutBottom + tooltipMargin,
+      bottom: bottomMargin,
+      alignment: Alignment.topCenter,
+    );
+  }
+  // Neither side can hold a usable card: overlap the spotlight.
+  return TooltipSlot(
+    top: minTopPadding,
+    bottom: bottomMargin,
+    alignment: Alignment.center,
+  );
 }

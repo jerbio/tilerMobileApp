@@ -1,3 +1,4 @@
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -8,6 +9,7 @@ import 'package:tiler_app/data/onBoarding.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tileSuggestion.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -25,7 +27,13 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   final OnBoardingApi onBoardingApi;
   final SettingsApi settingsApi;
 
-  static const numberOfPages = 9;
+  /// Number of pages in the essentials onboarding flow (stage 3.1).
+  static const numberOfPages = 2;
+
+  /// The profession page of the essentials flow. Progression validation is
+  /// keyed to this page's role and the profession state rather than a magic
+  /// page number carried over from the legacy 10-page onboarding.
+  static const professionPageIndex = 0;
   OnboardingBloc({required this.onBoardingApi, required this.settingsApi})
       : super(OnboardingState(
           step: OnboardingStep.initial,
@@ -133,6 +141,12 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
 
   void _onNextPageChanged(
       NextPageEvent event, Emitter<OnboardingState> emit) async {
+    // Stage 3.3: the terminal skipped state has no page (pageNumber is
+    // null). Page navigation is meaningless after Skip, so treat the
+    // event as a guarded no-op instead of dereferencing pageNumber.
+    if (state.pageNumber == null || state.step == OnboardingStep.skipped) {
+      return;
+    }
     if (!_canProceedToNextPage(state)) {
       emit(state.copyWith(
           step: OnboardingStep.error,
@@ -141,23 +155,23 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
     if (state.step == OnboardingStep.suggestionLoading ||
         state.step == OnboardingStep.suggestionRefreshing) return;
-    if (state.pageNumber! < numberOfPages) {
-      _setWorkOrPersonalLoadedStep(emit);
-      if (state.pageNumber == 4) {
-        add(GetTimeAndLocationEvent(true));
-        return;
-      }
+    if (state.pageNumber! + 1 < numberOfPages) {
       emit(state.copyWith(
         pageNumber: state.pageNumber! + 1,
         step: OnboardingStep.pageChanged,
       ));
-    } else if (state.pageNumber! == numberOfPages) {
+    } else {
+      // Last essentials page: submit.
       add(OnboardingRequestedEvent());
     }
   }
 
   void _onPreviousPageEvent(
       PreviousPageEvent event, Emitter<OnboardingState> emit) {
+    // Stage 3.3: same terminal-state guard as _onNextPageChanged.
+    if (state.pageNumber == null || state.step == OnboardingStep.skipped) {
+      return;
+    }
     if (state.step == OnboardingStep.suggestionLoading ||
         state.step == OnboardingStep.suggestionRefreshing) return;
     if (state.pageNumber! > 0) {
@@ -165,15 +179,6 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         step: OnboardingStep.pageChanged,
         pageNumber: state.pageNumber! - 1,
       ));
-    }
-  }
-
-  void _setWorkOrPersonalLoadedStep(Emitter<OnboardingState> emit) {
-    if (state.pageNumber == 5) {
-      emit(state.copyWith(step: OnboardingStep.setWorkProfile));
-    }
-    if (state.pageNumber == 6) {
-      emit(state.copyWith(step: OnboardingStep.setPersonalProfile));
     }
   }
 
@@ -257,34 +262,42 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     ));
   }
 
+  /// Device-location consent (stage 3.1). Invoked ONLY by the in-page button
+  /// on the Location page — swiping/Next must never trigger the permission
+  /// flow. Records coordinates and timezone in state without advancing
+  /// navigation; declining leaves everything untouched because the primary
+  /// location is optional.
   void _onGetTimeAndLocationEvent(
       GetTimeAndLocationEvent event, Emitter<OnboardingState> emit) async {
     try {
-      if (event.approved) {
-        LocationPermission permission = await Geolocator.checkPermission();
-        if (permission != LocationPermission.whileInUse &&
-            permission != LocationPermission.always) {
-          permission = await Geolocator.requestPermission();
-        }
-
-        if (permission == LocationPermission.deniedForever) {
-          await Geolocator.openLocationSettings();
-          return;
-        }
-        Position position = await Geolocator.getCurrentPosition();
-        int timeZoneOffset = Utility.getTimeZoneOffset();
-        String timeZone = await FlutterTimezone.getLocalTimezone();
-        emit(state.copyWith(
-          step: OnboardingStep.getTimeAndLocation,
-          userLatitude: position.latitude.toString(),
-          userLongitude: position.longitude.toString(),
-          timeZoneOffset: timeZoneOffset,
-          timeZone: timeZone,
-        ));
+      if (!event.approved) {
+        return;
       }
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        await Geolocator.openLocationSettings();
+        return;
+      }
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
+        // User declined; the primary location stays optional.
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition();
+      int timeZoneOffset = Utility.getTimeZoneOffset();
+      String timeZone = await FlutterTimezone.getLocalTimezone();
       emit(state.copyWith(
-        pageNumber: state.pageNumber! + 1,
-        step: OnboardingStep.pageChanged,
+        step: OnboardingStep.getTimeAndLocation,
+        userLatitude: position.latitude.toString(),
+        userLongitude: position.longitude.toString(),
+        timeZoneOffset: timeZoneOffset,
+        timeZone: timeZone,
       ));
     } catch (e) {
       emit(state.copyWith(step: OnboardingStep.error, error: e.toString()));
@@ -361,7 +374,11 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
 
   void _onSkipOnboarding(
       SkipOnboardingEvent event, Emitter<OnboardingState> emit) async {
+    // Stage 4.1: the essentials done flag is the gate's canonical flag;
+    // the legacy skip flag is still written for readers that predate the
+    // essentials flow.
     await OnBoardingSharedPreferencesHelper.setSkipOnboarding(true);
+    await OnBoardingSharedPreferencesHelper.setEssentialsOnboardingDone(true);
     emit(OnboardingState(step: OnboardingStep.skipped));
   }
 
@@ -398,57 +415,55 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
 
   void _onOnboardingRequestedEvent(
       OnboardingRequestedEvent event, Emitter<OnboardingState> emit) async {
+    // Stage 3.4: wait for the in-flight text-edit debounce (same as
+    // before) so the latest entered value is what gets submitted.
     await Future.delayed(
         const Duration(milliseconds: Constants.onTextChangeDelayInMs));
     emit(state.copyWith(
       step: OnboardingStep.loading,
     ));
 
-    OnboardingContent onboardingContent = new OnboardingContent(
-      personalHoursStart: _requestFormatTime(state.wakeUpTime),
-      workHoursStart: _requestFormatTime(state.startingWorkDayTime),
+    // Essentials submit payload (stage 3.4): profession + primary
+    // location, plus the optional device coords / timezone captured by
+    // the in-page consent button. The legacy payload fields (hours, day
+    // sections, recurring tasks, suggestion tiles, usage) are no longer
+    // collected by the two-page flow and are not sent.
+    OnboardingContent onboardingContent = OnboardingContent(
+      personalHoursStart: null,
+      workHoursStart: null,
       workLocation:
           state.selectedPreferredWorkLocation ?? Location.fromDefault(),
-      preferredDaySections: [state.preferredDaySection.toString()],
       userLongitude: state.userLongitude,
       userLatitude: state.userLatitude,
       timeZoneOffset: state.timeZoneOffset,
       timeZone: state.timeZone,
-      recurringTasks: state.recurringTasks,
-      tileSuggestions: state.selectedSuggestionTiles,
-      usage: state.usage,
+      preferredDaySections: null,
+      recurringTasks: null,
+      tileSuggestions: null,
+      usage: null,
+      profession: state.profession,
     );
 
     try {
-      var jsonData = onboardingContent.toJson();
-      OnboardingContent? result =
-          await onBoardingApi.sendOnboardingData(onboardingContent);
-      if (state.workProfile != null) {
-        await settingsApi.updateRestrictionProfile(
-          state.workProfile!,
-          restrictionProfileType: 'work',
-        );
-      }
-
-      if (state.personalProfile != null) {
-        await settingsApi.updateRestrictionProfile(state.personalProfile!,
-            restrictionProfileType: 'personal');
-      }
-
+      await onBoardingApi.sendOnboardingData(onboardingContent);
+      // Stage 3.4: persist the local done flag only after a successful
+      // submit; the launch gate reads it on the next start (design
+      // section 3.5).
+      await OnBoardingSharedPreferencesHelper.setEssentialsOnboardingDone(true);
       emit(OnboardingState(step: OnboardingStep.submitted));
     } catch (e) {
+      AnalysticsSignal.send('ESSENTIALS_ONBOARDING_SUBMIT_FAILED');
+      // Failed submit: stay in the flow. The view's error branch shows
+      // the existing toast and Skip remains available. Restriction
+      // profile persistence is no longer part of the onboarding submit
+      // (Settings owns it; design section 3.2).
+      final String message =
+          e is TilerError ? (e.Message ?? e.toString()) : e.toString();
       emit(state.copyWith(
         step: OnboardingStep.error,
-        error: e.toString(),
+        error: message,
       ));
     }
-  }
-
-  String? _requestFormatTime(TimeOfDay? time) {
-    if (time == null) return null;
-    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
-    final period = time.period == DayPeriod.am ? 'Am' : 'Pm';
-    return '${hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}$period';
   }
 
   RestrictionProfile? _processRouteProfile(
@@ -513,13 +528,15 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   }
 
   bool _canProceedToNextPage(OnboardingState state) {
-    if (state.pageNumber == 7) {
-      if (state.isCustomProfession) {
-        return state.profession != null &&
-            state.profession != 'Other' &&
-            state.profession!.trim().length >= 3;
-      }
+    // Keyed to the profession page's role ([professionPageIndex]) and the
+    // profession state itself rather than a magic page number from the
+    // legacy 10-page flow.
+    if (state.pageNumber != professionPageIndex) return true;
+    if (state.isCustomProfession) {
+      return state.profession != null &&
+          state.profession != 'Other' &&
+          state.profession!.trim().length >= 3;
     }
-    return true;
+    return state.profession != null && state.profession!.trim().isNotEmpty;
   }
 }

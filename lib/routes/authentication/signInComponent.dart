@@ -1,14 +1,11 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/components/aiDataSharingNotice.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
@@ -22,9 +19,9 @@ import 'package:tiler_app/theme/tile_text_styles.dart';
 import '../../services/api/authorization.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/schedulePrimer.dart';
 
 import '../../services/api/thirdPartyAuthResult.dart';
-import '../../util.dart';
 
 class SignInComponent extends StatefulWidget {
   @override
@@ -330,19 +327,7 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        context.read<ScheduleBloc>().add(LogInScheduleEvent(
-              getContextCallBack: () => context,
-            ));
-        await Utility.checkOnboardingStatus();
-
-        context.read<ScheduleBloc>().add(GetScheduleEvent(
-            scheduleTimeline: Utility.initialScheduleTimeline,
-            isAlreadyLoaded: false,
-            previousSubEvents: []));
-        this.context.read<ScheduleSummaryBloc>().add(
-              GetScheduleDaySummaryEvent(
-                  timeline: Utility.initialScheduleTimeline),
-            );
+        primeScheduleAfterLogin(context);
         print("is sign in valid" + isValidSignIn.toString());
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
@@ -481,19 +466,7 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        context.read<ScheduleBloc>().add(LogInScheduleEvent(
-              getContextCallBack: () => context,
-            ));
-        await Utility.checkOnboardingStatus();
-
-        context.read<ScheduleBloc>().add(GetScheduleEvent(
-            scheduleTimeline: Utility.initialScheduleTimeline,
-            isAlreadyLoaded: false,
-            previousSubEvents: []));
-        context.read<ScheduleSummaryBloc>().add(
-              GetScheduleDaySummaryEvent(
-                  timeline: Utility.initialScheduleTimeline),
-            );
+        primeScheduleAfterLogin(context);
 
         Navigator.push(
           context,
@@ -569,7 +542,7 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        await Utility.checkOnboardingStatus();
+        primeScheduleAfterLogin(context);
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
@@ -585,11 +558,6 @@ class SignInComponentState extends State<SignInComponent>
             ),
           ),
         );
-
-        context.read<ScheduleBloc>().add(GetScheduleEvent(
-            scheduleTimeline: Utility.initialScheduleTimeline,
-            isAlreadyLoaded: false,
-            previousSubEvents: []));
 
         print(isValidSignIn);
       } catch (e) {
@@ -875,10 +843,7 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        context.read<ScheduleBloc>().add(LogInScheduleEvent(
-              getContextCallBack: () => context,
-            ));
-        await Utility.checkOnboardingStatus();
+        primeScheduleAfterLogin(context);
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
@@ -893,10 +858,6 @@ class SignInComponentState extends State<SignInComponent>
             ),
           ),
         );
-        context.read<ScheduleBloc>().add(GetScheduleEvent(
-            scheduleTimeline: Utility.initialScheduleTimeline,
-            isAlreadyLoaded: false,
-            previousSubEvents: []));
       }
     }
     setState(() {
@@ -938,10 +899,7 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        context.read<ScheduleBloc>().add(LogInScheduleEvent(
-              getContextCallBack: () => context,
-            ));
-        await Utility.checkOnboardingStatus();
+        primeScheduleAfterLogin(context);
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
@@ -956,10 +914,6 @@ class SignInComponentState extends State<SignInComponent>
             ),
           ),
         );
-        context.read<ScheduleBloc>().add(GetScheduleEvent(
-            scheduleTimeline: Utility.initialScheduleTimeline,
-            isAlreadyLoaded: false,
-            previousSubEvents: []));
       }
     }
     setState(() {
@@ -1001,10 +955,7 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        context.read<ScheduleBloc>().add(LogInScheduleEvent(
-              getContextCallBack: () => context,
-            ));
-        await Utility.checkOnboardingStatus();
+        primeScheduleAfterLogin(context);
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
@@ -1019,10 +970,6 @@ class SignInComponentState extends State<SignInComponent>
             ),
           ),
         );
-        context.read<ScheduleBloc>().add(GetScheduleEvent(
-            scheduleTimeline: Utility.initialScheduleTimeline,
-            isAlreadyLoaded: false,
-            previousSubEvents: []));
       }
     }
     setState(() {

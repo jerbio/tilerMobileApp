@@ -27,8 +27,10 @@ const _delegates = <LocalizationsDelegate<dynamic>>[
   GlobalCupertinoLocalizations.delegate,
 ];
 
+// English regardless of the generated list's order (it gained de/el/…
+// ahead of en on 2026-09-17).
 Locale _resolve(Locale? requested, Iterable<Locale> supported) =>
-    supported.first;
+    requested ?? const Locale('en');
 
 Location existing(String name, String address, {String id = 'loc-1'}) =>
     Location.fromLatitudeAndLongitude(latitude: 39.7, longitude: -104.9)

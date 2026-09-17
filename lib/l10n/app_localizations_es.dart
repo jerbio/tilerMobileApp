@@ -12,26 +12,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get whiteSpace => ' ';
 
   @override
-  String get add => 'Add';
+  String get add => 'Agregar';
 
   @override
-  String get setupCustomRestrictions => 'Set up Custom restrictions';
+  String get setupCustomRestrictions =>
+      'Configurar restricciones personalizadas';
 
   @override
-  String get customRestrictionTitle => 'Custom restrictions';
+  String get customRestrictionTitle => 'Restricciones personalizadas';
 
   @override
-  String get customRestrictionHeader => 'Set up Custom restrictions';
+  String get customRestrictionHeader =>
+      'Configurar restricciones personalizadas';
 
   @override
   String get customRestrictionHeaderDescription =>
-      'Select when you would like to complete this task.';
+      'Selecciona cuándo quieres completar esta tarea.';
 
   @override
-  String get day => 'Day';
+  String get day => 'Día';
 
   @override
-  String get hour => 'Hour';
+  String get hour => 'Hora';
 
   @override
   String get min => 'Min';
@@ -40,16 +42,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get monday => 'Lunes';
 
   @override
-  String get tuesday => 'Tuesday';
+  String get tuesday => 'Martes';
 
   @override
-  String get wednesday => 'Wednesday';
+  String get wednesday => 'Miércoles';
 
   @override
-  String get thursday => 'Thursday';
+  String get thursday => 'Jueves';
 
   @override
-  String get friday => 'Friday';
+  String get friday => 'Viernes';
 
   @override
   String get saturday => 'Sábado';
@@ -58,31 +60,31 @@ class AppLocalizationsEs extends AppLocalizations {
   String get sunday => 'Domingo';
 
   @override
-  String get duration => 'Duration';
+  String get duration => 'Duración';
 
   @override
-  String get durationStar => 'Duration*';
+  String get durationStar => 'Duración*';
 
   @override
-  String get addTile => 'Add Tile';
+  String get addTile => 'Agregar bloque';
 
   @override
-  String get defer => 'Defer';
+  String get defer => 'Diferir';
 
   @override
-  String get deferAll => 'Defer All';
+  String get deferAll => 'Diferir todo';
 
   @override
-  String get procrastinating => 'Procrastinating';
+  String get procrastinating => 'Procrastinando';
 
   @override
-  String get forecast => 'Forecast';
+  String get forecast => 'Pronóstico';
 
   @override
-  String get whenQ => 'When?';
+  String get whenQ => '¿Cuándo?';
 
   @override
-  String get loading => 'Loading';
+  String get loading => 'Cargando';
 
   @override
   String get loadingPrediction => 'Cargando prediccion';
@@ -91,82 +93,82 @@ class AppLocalizationsEs extends AppLocalizations {
   String get address => 'Dirección';
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'Configuración';
 
   @override
-  String get nickName => 'Nick Name';
+  String get nickName => 'Nombre de usuario';
 
   @override
-  String get deadline_anytime => 'Deadline(Anytime)';
+  String get deadline_anytime => 'Fecha límite (Cualquier momento)';
 
   @override
-  String get selectADeadline => 'Select a deadline';
+  String get selectADeadline => 'Selecciona una fecha límite';
 
   @override
   String get close => 'Cerrar';
 
   @override
-  String get tileName => 'Tile Name';
+  String get tileName => 'Nombre del bloque';
 
   @override
-  String get tileNameStar => 'Tile Name*';
+  String get tileNameStar => 'Nombre del bloque*';
 
   @override
-  String get starAreRequired => '* are required fields';
+  String get starAreRequired => '* son campos obligatorios';
 
   @override
-  String get howManyTimes => 'How many times';
+  String get howManyTimes => 'Cuántas veces';
 
   @override
-  String get once => 'Once';
+  String get once => 'Una vez';
 
   @override
-  String get weekdaysAndWorkHours => 'Weekdays and work hours';
+  String get weekdaysAndWorkHours => 'Días de semana y horario de trabajo';
 
   @override
-  String get weekend => 'Weekend';
+  String get weekend => 'Fin de semana';
 
   @override
-  String get anytime => 'En cualquier momento';
+  String get anytime => 'Cualquier momento';
 
   @override
-  String get repetition => 'Repetition';
+  String get repetition => 'Repetición';
 
   @override
-  String get reminder => 'Reminder';
+  String get reminder => 'Recordatorio';
 
   @override
-  String get restriction => 'Restriction';
+  String get restriction => 'Restricción';
 
   @override
-  String get username => 'Username';
+  String get username => 'Nombre de usuario';
 
   @override
   String get usernameOrEmail => 'Usuario o correo';
 
   @override
-  String get password => 'Password';
+  String get password => 'Contraseña';
 
   @override
   String get email => 'Email';
 
   @override
-  String get back => 'Back';
+  String get back => 'Atrás';
 
   @override
-  String get confirmPassword => 'Confirm Password';
+  String get confirmPassword => 'Confirmar contraseña';
 
   @override
-  String get passwordIsRequired => 'Password is required';
+  String get passwordIsRequired => 'La contraseña es obligatoria';
 
   @override
-  String get emailIsRequired => 'Email is required';
+  String get emailIsRequired => 'El email es obligatorio';
 
   @override
-  String get fieldIsRequired => 'Field is required';
+  String get fieldIsRequired => 'Este campo es obligatorio';
 
   @override
-  String get signingIn => 'Signing In';
+  String get signingIn => 'Iniciando sesión';
 
   @override
   String get signInWithEmailCode => 'Iniciar con codigo por correo';
@@ -184,7 +186,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get useAccessCodeInstead => 'Usar codigo de acceso';
 
   @override
-  String get registeringUser => 'Registering User';
+  String get registeringUser => 'Registrando usuario';
 
   @override
   String get sendVerificationCode => 'Enviar codigo de verificacion';
@@ -223,143 +225,170 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get confirmPasswordRequired => 'Confirmation password is required';
+  String get confirmPasswordRequired =>
+      'La contraseña de confirmación es obligatoria';
 
   @override
   String get passwordsDontMatch =>
-      'Password and confirmation password don\'t match';
+      'La contraseña y la confirmación no coinciden';
 
   @override
   String get passwordNeedToBeAtLeastSevenCharacters =>
-      'Password needs to be at least 7 characters';
+      'La contraseña debe tener al menos 7 caracteres';
 
   @override
   String get passwordNeedsToHaveUpperCaseChracters =>
-      'Password needs to have an upper case characters';
+      'La contraseña debe tener una letra mayúscula';
 
   @override
   String get passwordNeedsToHaveLowerCaseChracters =>
-      'Password needs to have an lower case characters';
+      'La contraseña debe tener una letra minúscula';
 
   @override
-  String get passwordNeedsToHaveNumber => 'Password needs to have a number';
+  String get passwordNeedsToHaveNumber => 'La contraseña debe tener un número';
 
   @override
   String get passwordNeedsToHaveASpecialCharacter =>
-      'Password needs to have at least 1 special character';
+      'La contraseña debe tener al menos 1 carácter especial';
 
   @override
-  String get enableLocations => 'Enable location permissions';
+  String get enableLocations => 'Habilitar permisos de ubicación';
 
   @override
-  String get noMatchWasFound => 'No match was found';
+  String get noMatchWasFound => 'No se encontraron coincidencias';
 
   @override
   String get atLeastThreeLettersForLookup =>
-      '...Tiler needs three characters for a lookup';
+      '…Tiler necesita tres caracteres para una búsqueda';
 
   @override
-  String get noLocationMatchWasFound => 'No location match was found';
+  String get searchSourceBadgeTiler => 'Tiler';
 
   @override
-  String get noLocation => 'No location';
+  String get searchSourceBadgeGoogle => 'Google';
 
   @override
-  String get clearedColon => 'Cleared: ';
+  String get searchSourceBadgeMicrosoft => 'Microsoft';
 
   @override
-  String get complete => 'Complete';
+  String searchConnectedAccount(String account) {
+    return 'vía $account';
+  }
 
   @override
-  String get delete => 'Delete';
+  String get searchPartialFailureWarning =>
+      'No se pudieron buscar algunos calendarios.';
+
+  @override
+  String get searchUnavailableMessage =>
+      'La búsqueda no está disponible temporalmente. Inténtalo de nuevo.';
+
+  @override
+  String get searchRetry => 'Reintentar';
+
+  @override
+  String get noLocationMatchWasFound =>
+      'No se encontró una coincidencia de ubicación';
+
+  @override
+  String get noLocation => 'Sin ubicación';
+
+  @override
+  String get clearedColon => 'Limpiado: ';
+
+  @override
+  String get complete => 'Completar';
+
+  @override
+  String get delete => 'Eliminar';
 
   @override
   String get cancel => 'Cancelar';
 
   @override
-  String get now => 'Now';
+  String get now => 'Ahora';
 
   @override
   String get color => 'Color';
 
   @override
-  String get pickAColor => 'Pick A Color';
+  String get pickAColor => 'Elegir un color';
 
   @override
-  String get pause => 'Pause';
+  String get pause => 'Pausar';
 
   @override
-  String get resume => 'Resume';
+  String get resume => 'Reanudar';
 
   @override
-  String get play => 'Play';
+  String get play => 'Reproducir';
 
   @override
-  String get successfullyPaused => 'Successfully Paused';
+  String get successfullyPaused => 'Pausado con éxito';
 
   @override
-  String get successfullyResumed => 'Successfully Resumed';
+  String get successfullyResumed => 'Reanudado con éxito';
 
   @override
-  String get successfullyCompleted => 'Successfully Completed';
+  String get successfullyCompleted => 'Completado con éxito';
 
   @override
-  String get completed => 'Completed';
+  String get completed => 'Completado';
 
   @override
-  String get deleted => 'Deleted';
+  String get deleted => 'Eliminado';
 
   @override
-  String get scheduled => 'Scheduled';
+  String get scheduled => 'Programado';
 
   @override
-  String get movedUpToNow => 'Moving up to now';
+  String get movedUpToNow => 'Moviéndolo hacia ahora';
 
   @override
-  String get pausing => 'Pausing';
+  String get pausing => 'Pausando';
 
   @override
-  String get resuming => 'Resuming';
+  String get resuming => 'Reanudando';
 
   @override
-  String get movingUp => 'Moving Up your tile';
+  String get movingUp => 'Moviendo tu bloque hacia arriba';
 
   @override
-  String get completing => 'Completing';
+  String get completing => 'Completando';
 
   @override
-  String get deleting => 'Deleting';
+  String get deleting => 'Eliminando';
 
   @override
-  String get deleteBlockConfirming => 'Deleting this block...';
+  String get deleteBlockConfirming => 'Eliminando este bloque...';
 
   @override
-  String get deleteTileConfirming => 'Deleting this tile...';
+  String get deleteTileConfirming => 'Eliminando este bloque...';
 
   @override
-  String get deleteNow => 'Delete Now';
+  String get deleteNow => 'Eliminar ahora';
 
   @override
   String get deleteGoogleWarning =>
-      '⚠️ This will also delete from Google Calendar';
+      '⚠️ Esto también se eliminará de Google Calendar';
 
   @override
-  String get deleteOutlookWarning => '⚠️ This will also delete from Outlook';
+  String get deleteOutlookWarning => '⚠️ Esto también se eliminará de Outlook';
 
   @override
-  String get previously => 'Previously';
+  String get previously => 'Anteriormente';
 
   @override
-  String get upcoming => 'Upcoming';
+  String get upcoming => 'Próximos';
 
   @override
-  String get failedToSendRequest => 'Failed to send request';
+  String get failedToSendRequest => 'Error al enviar la solicitud';
 
   @override
-  String get revise => 'Revise';
+  String get revise => 'Revisar';
 
   @override
-  String get revisingSchedule => 'Revising Schedule';
+  String get revisingSchedule => 'Revisando la agenda';
 
   @override
   String get procrastinateBlockOut => 'Descanso';
@@ -395,84 +424,85 @@ class AppLocalizationsEs extends AppLocalizations {
   String get blockedTime => 'Tiempo Bloqueado';
 
   @override
-  String get start => 'Start';
+  String get start => 'Inicio';
 
   @override
-  String get end => 'End';
+  String get end => 'Fin';
 
   @override
-  String get deadline => 'Deadline';
+  String get deadline => 'Fecha límite';
 
   @override
-  String get split => 'Split';
+  String get split => 'Dividir';
 
   @override
-  String get timeBlocks => 'Time blocks';
+  String get timeBlocks => 'Blocos de tiempo';
 
   @override
-  String get swipeRightToTileIt => 'Swipe Right to tile it';
+  String get swipeRightToTileIt => 'Desliza a la derecha para planificarlo';
 
   @override
   String get failedToReviseScheduleRequest =>
-      'Failed to revise schedule request';
+      'Error al enviar la solicitud de revisión de la agenda';
 
   @override
-  String get daily => 'Diariamente';
+  String get daily => 'Diario';
 
   @override
-  String get weekly => 'Semanalmente';
+  String get weekly => 'Semanal';
 
   @override
-  String get monthly => 'Mensualmente';
+  String get monthly => 'Mensual';
 
   @override
-  String get yearly => 'Anualmente';
+  String get yearly => 'Anual';
 
   @override
-  String get none => 'None';
+  String get none => 'Ninguno';
 
   @override
-  String get noneNotificationCategory => 'Default';
+  String get noneNotificationCategory => 'Predeterminado';
 
   @override
-  String get nextTileNotificationCategory => 'Next Tile';
+  String get nextTileNotificationCategory => 'Próximo bloque';
 
   @override
-  String get userSetReminderNotificationCategory => 'User Set Reminder';
+  String get userSetReminderNotificationCategory =>
+      'Recordatorio definido por el usuario';
 
   @override
-  String get depatureTimeNotificationCategory => 'Depature time';
+  String get depatureTimeNotificationCategory => 'Hora de salida';
 
   @override
   String get tile => 'Tile';
 
   @override
-  String get appointment => 'Block';
+  String get appointment => 'Bloque';
 
   @override
   String startingAtTime(String time) {
-    return 'Starts at $time';
+    return 'Comienza a las $time';
   }
 
   @override
   String endsAtTime(String time) {
-    return 'Ends at $time';
+    return 'Termina a las $time';
   }
 
   @override
-  String get startsInTenMinutes => 'Starts in ten minutes';
+  String get startsInTenMinutes => 'Comienza en diez minutos';
 
   @override
-  String get endsInTenMinutes => 'Ends in five minutes';
+  String get endsInTenMinutes => 'Termina en cinco minutos';
 
   @override
   String startsInDuration(String duration) {
-    return 'Starts in $duration';
+    return 'Comienza en $duration';
   }
 
   @override
   String concludesAtTime(String tileName) {
-    return '🏁 $tileName concludes soon';
+    return '🏁 $tileName terminará pronto';
   }
 
   @override
@@ -482,34 +512,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get work => 'Trabajo';
 
   @override
-  String get googleLogo => 'Google Logo';
+  String get googleLogo => 'Logotipo de Google';
 
   @override
-  String get edit => 'Edit';
+  String get edit => 'Editar';
 
   @override
-  String get workProfileHours => 'Work Hours';
+  String get workProfileHours => 'Horario de trabajo';
 
   @override
-  String get personalHours => 'Personal Hours';
+  String get personalHours => 'Horas personales';
 
   @override
-  String get setWorkProfileHours => 'Set Work Hours';
+  String get setWorkProfileHours => 'Definir horario de trabajo';
 
   @override
-  String get setPersonalHours => 'Set Personal Hours';
+  String get setPersonalHours => 'Definir horas personales';
 
   @override
-  String get customHours => 'Custom Hours';
+  String get customHours => 'Horas personalizadas';
 
   @override
-  String get logout => 'Logout';
+  String get logout => 'Cerrar sesión';
 
   @override
-  String get noteEllipsis => 'Note...';
+  String get noteEllipsis => 'Nota...';
 
   @override
-  String get tapToCreateNewTile => 'Tap to create a new tile';
+  String get tapToCreateNewTile => 'Toca para crear un nuevo bloque';
 
   @override
   String get emptyDayHeaderLine1 => 'Aún no hay planes.';
@@ -527,97 +557,97 @@ class AppLocalizationsEs extends AppLocalizations {
   String get emptyDayImportGoogleCalendarButton => 'Importar Google Calendar';
 
   @override
-  String get suggestions => 'Suggestions';
+  String get suggestions => 'Sugerencias';
 
   @override
-  String get progress => 'Progress';
+  String get progress => 'Progreso';
 
   @override
-  String get youNeedToLeaveIn => 'You need to leave in';
+  String get youNeedToLeaveIn => 'Necesitas salir en';
 
   @override
   String youNeedToLeaveInDuration(String duration) {
-    return 'You need to leave in $duration';
+    return 'Necesitas salir en $duration';
   }
 
   @override
   String durationLate(String duration) {
-    return '$duration Late';
+    return '$duration de retraso';
   }
 
   @override
   String elapsedDurationAgo(String duration) {
-    return 'Elapsed $duration ago';
+    return 'Transcurrido hace $duration';
   }
 
   @override
   String completedDurationAgo(String duration) {
-    return 'Completed $duration ago';
+    return 'Completado hace $duration';
   }
 
   @override
   String durationLeft(String duration) {
-    return '$duration left';
+    return 'Restan $duration';
   }
 
   @override
-  String get issuesConnectingToTiler => 'Issues connecting to Tiler';
+  String get issuesConnectingToTiler => 'Problemas para conectar con Tiler';
 
   @override
   String completedCount(String count) {
-    return 'Completed ($count)';
+    return 'Completados ($count)';
   }
 
   @override
   String deletedCount(String count) {
-    return 'Deleted ($count)';
+    return 'Eliminados ($count)';
   }
 
   @override
   String tiledCount(String count) {
-    return 'Tiles left ($count)';
+    return 'Bloques restantes ($count)';
   }
 
   @override
   String countTile(String count) {
-    return '$count Tiles';
+    return '$count bloques';
   }
 
   @override
   String numberOfTilesSelected(String number) {
-    return '$number Tiles selected';
+    return '$number bloques seleccionados';
   }
 
   @override
-  String get completeTiles => 'Complete Tiles';
+  String get completeTiles => 'Completar bloques';
 
   @override
-  String get thisFitsInYourSchedule => 'This fits in your schedule.';
+  String get thisFitsInYourSchedule => 'Esto cabe en tu agenda.';
 
   @override
-  String get warningColon => 'Warning: ';
+  String get warningColon => 'Advertencia:';
 
   @override
-  String get oneEventAtRisk => '1 event at risk';
+  String get oneEventAtRisk => '1 evento en riesgo';
 
   @override
   String countEventAtRisk(String number) {
-    return '$number events at risk';
+    return '$number eventos en riesgo';
   }
 
   @override
-  String get oneConflict => '1 Conflict';
+  String get oneConflict => '1 conflicto';
 
   @override
   String countConflict(String number) {
-    return '$number Conflicts';
+    return '$number conflictos';
   }
 
   @override
-  String get create => 'Create';
+  String get create => 'Crear';
 
   @override
-  String get thisEventWouldCause => 'This event would cause ';
+  String get thisEventWouldCause => 'Este evento causaría ';
 
   @override
   String errorMessage(String message) {
@@ -625,35 +655,35 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get unScheduledTiles => 'Unscheduled Tiles';
+  String get unScheduledTiles => 'Bloques sin programar';
 
   @override
   String numberOfUnScheduledTiles(String number) {
-    return '$number Unscheduled Tiles';
+    return '$number bloques sin programar';
   }
 
   @override
   String numberOfMoreUsers(String number) {
-    return '+$number more';
+    return '+$number más';
   }
 
   @override
-  String get unScheduled => 'Unscheduled';
+  String get unScheduled => 'Sin programar';
 
   @override
-  String get allScheduled => 'All Scheduled';
+  String get allScheduled => 'Todo programado';
 
   @override
-  String get getOnIt => 'Get on it';
+  String get getOnIt => 'Ponte a ello';
 
   @override
   String get done => 'Listo';
 
   @override
-  String get late => 'Late';
+  String get late => 'Atrasado';
 
   @override
-  String get onTime => 'On time';
+  String get onTime => 'A tiempo';
 
   @override
   String get todayStatusPlacedTitle => 'Programadas correctamente';
@@ -791,82 +821,83 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get analysis => 'Analysis';
+  String get analysis => 'Análisis';
 
   @override
-  String get noDataAvailable => 'No data available';
+  String get noDataAvailable => 'No hay datos disponibles';
 
   @override
-  String get sleep => 'Sleep';
+  String get sleep => 'Dormir';
 
   @override
-  String get overview => 'Overview';
+  String get overview => 'Resumen';
 
   @override
-  String get driveTime => 'Drive Time';
+  String get driveTime => 'Tiempo de conducción';
 
   @override
-  String get signUpWithGoogle => 'Sign In with Google';
+  String get signUpWithGoogle => 'Iniciar sesión con Google';
 
   @override
-  String get signUpWithApple => 'Sign in with Apple';
+  String get signUpWithApple => 'Iniciar sesión con Apple';
 
   @override
-  String get signUpWithMicrosoft => 'Sign in with Microsoft';
+  String get signUpWithMicrosoft => 'Iniciar sesión con Microsoft';
 
   @override
-  String get signIn => 'Sign In';
+  String get signIn => 'Iniciar sesión';
 
   @override
-  String get signUp => 'Sign Up';
+  String get signUp => 'Registrarse';
 
   @override
-  String get invalidUsernameOrPassword => 'Invalid username or password';
+  String get invalidUsernameOrPassword =>
+      'Nombre de usuario o contraseña no válidos';
 
   @override
-  String get noInternetConnection => 'No internet connection';
+  String get noInternetConnection => 'No hay conexión a internet';
 
   @override
-  String get oneHour => '1 hour';
+  String get oneHour => '1 hora';
 
   @override
   String countHours(String count) {
-    return '$count hours';
+    return '$count horas';
   }
 
   @override
-  String get oneMinute => '1 minute';
+  String get oneMinute => '1 minuto';
 
   @override
   String countMinutes(String count) {
-    return '$count minutes';
+    return '$count minutos';
   }
 
   @override
   String countDays(String count) {
-    return '$count days';
+    return '$count días';
   }
 
   @override
   String lateDate(String date) {
-    return 'Late ($date)';
+    return 'Atrasado ($date)';
   }
 
   @override
-  String get custom => 'Custom';
+  String get custom => 'Personalizado';
 
   @override
   String get allowAccessDescription =>
-      'Tiler collects location data to enable efficient scheduling of tiles and appointments. \nYour data remains private and is only used for this purpose.';
+      'Tiler recopila datos de ubicación para permitir una programación eficiente de bloques y citas. \nTus datos se mantienen privados y solo se usan para este fin.';
 
   @override
-  String get allowLocationAccessQ => 'Allow location access?';
+  String get allowLocationAccessQ => '¿Permitir acceso a la ubicación?';
 
   @override
-  String get allow => 'Allow';
+  String get allow => 'Permitir';
 
   @override
-  String get deny => 'Deny';
+  String get deny => 'Denegar';
 
   @override
   String get afternoon => 'Tarde';
@@ -875,22 +906,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get evening => 'Noche';
 
   @override
-  String get night => 'Night';
+  String get night => 'Noche';
 
   @override
-  String get morningAndAfternoon => 'Morning & Afternoon';
+  String get morningAndAfternoon => 'Mañana & Tarde';
 
   @override
-  String get afternoonAndEvening => 'Afternoon & Evening';
+  String get afternoonAndEvening => 'Tarde & Noche';
 
   @override
-  String get lateEvening => 'Late Evening';
+  String get lateEvening => 'Fin de la noche';
 
   @override
-  String get prediction => 'Prediction';
+  String get prediction => 'Predicción';
 
   @override
-  String get softDeadline => 'Soft Deadline';
+  String get softDeadline => 'Fecha límite flexible';
 
   @override
   String get location => 'Ubicación';
@@ -899,119 +930,111 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dashEmptyString => '--';
 
   @override
-  String get deleteAccount => 'Delete Account';
+  String get deleteAccount => 'Eliminar cuenta';
 
   @override
-  String get deleteYourTilerAccountQ => 'Delete Account?';
-
-  @override
-  String get yes => 'Yes';
+  String get deleteYourTilerAccountQ => '¿Eliminar cuenta?';
 
   @override
   String get no => 'No';
 
   @override
-  String get dismiss => 'Dismiss';
+  String get dismiss => 'Descartar';
 
   @override
-  String get forgetPassword => 'Forget Password';
+  String get forgetPassword => 'Olvidé mi contraseña';
 
   @override
-  String get forgotPasswordBtn => 'Forgot Password?';
+  String get forgotPasswordBtn => '¿Olvidaste tu contraseña?';
 
   @override
-  String get resetPassword => 'Reset password';
+  String get resetPassword => 'Restablecer contraseña';
 
   @override
-  String get reset => 'Reset';
+  String get reset => 'Restablecer';
 
   @override
   String lookingUp(String text) {
-    return 'Looking up $text';
+    return 'Buscando $text';
   }
 
   @override
-  String get lowPriorityTrunc => 'Low';
+  String get lowPriorityTrunc => 'Baja';
 
   @override
-  String get mediumPriorityTrunc => 'Mid';
+  String get mediumPriorityTrunc => 'Media';
 
   @override
-  String get highPriorityTrunc => 'High';
+  String get highPriorityTrunc => 'Alta';
 
   @override
   String failedToAddGoogleCalendar(String email) {
-    return 'Failed to add $email';
+    return 'Error al agregar $email';
   }
 
   @override
   String deletedCalendar(String email) {
-    return 'Deleted $email calendar';
+    return 'Calendario de $email eliminado';
   }
 
   @override
-  String get loadingIntegrations => 'Loading Integrations';
+  String get loadingIntegrations => 'Cargando integraciones';
 
   @override
-  String get noThirdPartyIntegtions => 'No Thirdparty calendars';
+  String get noThirdPartyIntegtions => 'Sin calendarios de terceros';
 
   @override
-  String get addGoogleCalendar => 'Add Google Calendar';
+  String get addGoogleCalendar => 'Agregar Google Calendar';
 
   @override
-  String get integrations => 'Integrations';
+  String get integrations => 'Integraciones';
 
   @override
-  String get integrateOtherCalendars => 'Integrate with third party calendars';
+  String get integrateOtherCalendars => 'Integrar con calendarios de terceros';
 
   @override
-  String get clear => 'Clear';
+  String get clear => 'Limpiar';
 
   @override
-  String get next => 'Next';
+  String get next => 'Siguiente';
 
   @override
-  String get previous => 'Previous';
+  String get previous => 'Anterior';
 
   @override
-  String get skip => 'Skip';
+  String get skip => 'Omitir';
 
   @override
-  String get morningPerson => '🌅 Morning person';
+  String get morningPerson => '🌅 Persona matutina';
 
   @override
   String get morning => 'Mañana';
 
   @override
-  String get middayPerson => '🌞 Midday person';
+  String get middayPerson => '🌞 Persona de mediodía';
 
   @override
-  String get nightPerson => '🌃 Night person';
+  String get nightPerson => '🌃 Persona nocturna';
 
   @override
-  String get enterAddress => 'Enter your address';
-
-  @override
-  String get wakeUpTimeQuestion =>
-      'What time do you usually wake up in the morning?';
-
-  @override
-  String get workdayStartQuestion =>
-      'What time do you typically start your workday?';
+  String get enterAddress => 'Ingresa tu dirección';
 
   @override
   String get primaryLocationQuestion =>
-      'What is your primary location for work or study?';
+      '¿Cuál es tu ubicación principal para el trabajo o los estudios?';
+
+  @override
+  String get useDeviceLocation => 'Usar la ubicación de mi dispositivo';
 
   @override
   String get energyLevelDescriptionQuestion =>
-      'How would you describe your energy levels throughout the day?';
+      '¿Cómo describirías tus niveles de energía a lo largo del día?';
 
   @override
-  String get incompleteRequest => 'Did not send complete request';
+  String get incompleteRequest => 'No se envió la solicitud completa';
 
   @override
-  String get addContact => 'Add contact';
+  String get addContact => 'Agregar contacto';
 
   @override
   String get invalidContactFormat =>
@@ -1019,7 +1042,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String deadlineTime(String time) {
-    return 'Deadline: $time';
+    return 'Fecha límite: $time';
   }
 
   @override
@@ -1029,126 +1052,127 @@ class AppLocalizationsEs extends AppLocalizations {
   String get decline => 'Rechazar';
 
   @override
-  String get preview => 'Preview';
+  String get preview => 'Vista previa';
 
   @override
-  String get addTilette => 'Add Tilette';
+  String get addTilette => 'Agregar Tilette';
 
   @override
-  String get tileShareName => 'Tile Share Name';
+  String get tileShareName => 'Nombre del bloque compartido';
 
   @override
-  String get tileShare => 'Tile Share';
+  String get tileShare => 'Bloque compartido';
 
   @override
-  String get update => 'Update';
+  String get update => 'Actualizar';
 
   @override
-  String get noDesignatedTiles => 'No designated tiles';
+  String get noDesignatedTiles => 'Sin bloques designados';
 
   @override
-  String get noTileCluster => 'No Tile Shares Created';
+  String get noTileCluster => 'No se crearon bloques compartidos';
 
   @override
-  String get errorLoadingTilelist => 'Error loading tilelist';
+  String get errorLoadingTilelist => 'Error al cargar la lista de bloques';
 
   @override
   String get failedToLoadTileShareCluster =>
-      'Failed to load tile share cluster';
+      'Error al cargar el cluster de bloques compartidos';
 
   @override
-  String get missingTileShareCluster => 'Missing TileShare cluster';
+  String get missingTileShareCluster => 'Falta el cluster de TileShare';
 
   @override
-  String get outBound => 'OutBound';
+  String get outBound => 'En salida';
 
   @override
-  String get inBound => 'Inbound';
+  String get inBound => 'En entrada';
 
   @override
-  String get multiShare => 'Multi Share';
+  String get multiShare => 'Compartir múltiple';
 
   @override
-  String get errorOccurred => 'An error occurred!!\nPlease try again.';
+  String get errorOccurred =>
+      '¡Ocurrió un error!!\nPor favor, inténtalo de nuevo.';
 
   @override
-  String get authenticationIssues => 'Issues with authentication.';
+  String get authenticationIssues => 'Problemas de autenticación.';
 
   @override
-  String get userIsNotAuthenticated => 'User is not authenticated.';
+  String get userIsNotAuthenticated => 'El usuario no está autenticado.';
 
   @override
   String get responseContentError =>
-      'Response does not contain expected Content.';
+      'La respuesta no contiene el contenido esperado.';
 
   @override
-  String get responseHandlingError => 'Failed to handle the response.';
+  String get responseHandlingError => 'Error al procesar la respuesta.';
 
   @override
-  String get today => 'Today';
+  String get today => 'Hoy';
 
   @override
-  String get yesterday => 'Yesterday';
+  String get yesterday => 'Ayer';
 
   @override
-  String get tomorrow => 'Tomorrow';
+  String get tomorrow => 'Mañana';
 
   @override
-  String get travel => 'Travel';
+  String get travel => 'Desplazamiento';
 
   @override
   String numberOfDayForecast(String number) {
-    return '$number-day Forecast';
+    return 'Pronóstico de $number días';
   }
 
   @override
   String get knotDuration => '--';
 
   @override
-  String get failedToGetPreview => 'Failed to get preview';
+  String get failedToGetPreview => 'Error al obtener la vista previa';
 
   @override
-  String get noDriving => 'No driving';
+  String get noDriving => 'Sin conducir';
 
   @override
-  String get tileShareNoteEllipsis => 'Note...';
+  String get tileShareNoteEllipsis => 'Nota...';
 
   @override
-  String get hi => 'Hi';
+  String get hi => 'Hola';
 
   @override
-  String get welcome => 'Welcome';
+  String get welcome => 'Bienvenido';
 
   @override
   String get passwordCreationMessagePart1 =>
-      'Create a strong, unique password with ';
+      'Crea una contraseña fuerte y única con ';
 
   @override
-  String get passwordConditionMinLength => 'at least six characters';
+  String get passwordConditionMinLength => 'al menos seis caracteres';
 
   @override
-  String get passwordCreationMessageIncluding => ', including ';
+  String get passwordCreationMessageIncluding => ', incluyendo ';
 
   @override
-  String get passwordConditionUppercaseLetters => 'uppercase letters';
+  String get passwordConditionUppercaseLetters => 'letras mayúsculas';
 
   @override
-  String get passwordConditionLowercaseLetters => 'lowercase letters';
+  String get passwordConditionLowercaseLetters => 'letras minúsculas';
 
   @override
-  String get passwordConditionNumbers => 'numbers';
+  String get passwordConditionNumbers => 'números';
 
   @override
-  String get passwordConditionSpecialCharacter => 'a special character';
+  String get passwordConditionSpecialCharacter => 'un carácter especial';
 
   @override
   String get listSeparator => ', ';
 
   @override
-  String get listFinalSeparator => ', and ';
+  String get listFinalSeparator => ', y ';
 
   @override
-  String get nonViableTimeSlot => 'No viable timeslot';
+  String get nonViableTimeSlot => 'Sin intervalo de tiempo viable';
 
   @override
   String numberAm(String number) {
@@ -1164,108 +1188,107 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dayCast => 'DayCast';
 
   @override
-  String get save => 'Save';
+  String get save => 'Guardar';
 
   @override
-  String get selectWeek => 'Select a Week';
+  String get selectWeek => 'Selecciona una semana';
 
   @override
-  String get selectYear => 'Select Year';
+  String get selectYear => 'Seleccionar año';
 
   @override
-  String get retrievingDataIssue => 'Issue with retrieving data';
+  String get retrievingDataIssue => 'Problema al recuperar datos';
 
   @override
-  String get recurring => 'Recurring';
+  String get recurring => 'Recurrente';
 
   @override
-  String get nonRecurring => 'Non-Recurring';
+  String get nonRecurring => 'No recurrente';
 
   @override
-  String get dailyReurring => 'Daily';
+  String get dailyReurring => 'Diario';
 
   @override
-  String get weeklyReurring => 'Weekly';
+  String get weeklyReurring => 'Semanal';
 
   @override
-  String get biweeklyReurring => 'Bi-Weekly';
+  String get biweeklyReurring => 'Quincenal';
 
   @override
-  String get monthlyReurring => 'Monthly';
+  String get monthlyReurring => 'Mensual';
 
   @override
-  String get yearlyReurring => 'Yearly';
+  String get yearlyReurring => 'Anual';
 
   @override
-  String get ellipsisEmprtNotes => 'Notes...';
+  String get ellipsisEmprtNotes => 'Notas...';
 
   @override
-  String get tileShareDelete => 'Delete';
+  String get tileShareDelete => 'Eliminar';
 
   @override
   String get commaDelimiter => ',';
 
   @override
-  String get foreCastTile => 'Forecast Tile';
+  String get foreCastTile => 'Bloque de pronóstico';
 
   @override
-  String get previewOthers => 'Others';
+  String get previewOthers => 'Otros';
 
   @override
-  String get goodMorning => 'GOod Morning';
+  String get goodMorning => 'Buenos días';
 
   @override
-  String get goodDay => 'Good Day';
+  String get goodDay => 'Buen día';
 
   @override
-  String get goodEvening => 'Good Evening';
+  String get goodEvening => 'Buenas tardes';
 
   @override
   String youHaveXBlocks(String count) {
-    return 'You have $count blocks coming up.';
+    return 'Tienes $count compromisos próximos.';
   }
 
   @override
   String youHaveXTiles(String count) {
-    return 'You have $count tiles coming up.';
+    return 'Tienes $count bloques próximos.';
   }
 
   @override
   String youHaveXTileShares(String count) {
-    return 'You have $count tileshares coming up.';
+    return 'Tienes $count bloques compartidos próximos.';
   }
 
   @override
   String countTileShare(String count) {
-    return '$count tileshares';
+    return '$count bloques compartidos';
   }
 
   @override
   String youHaveCountBlocksAndCountTiles(String blockCount, String tileCount) {
-    return 'You have $blockCount blocks and $tileCount tiles coming up.';
+    return 'Tienes $blockCount compromisos y $tileCount bloques próximos.';
   }
 
   @override
   String youHaveCountBlocksAndCountTileShares(
       String blockCount, String tileShareCount) {
-    return 'You have $blockCount blocks and $tileShareCount tileshares coming up.';
+    return 'Tienes $blockCount compromisos y $tileShareCount bloques compartidos próximos.';
   }
 
   @override
   String youHaveCountTilesAndCountTileShares(
       String tileCount, String tileShareCount) {
-    return 'You have $tileCount tiles and $tileShareCount tileshares coming up.';
+    return 'Tienes $tileCount bloques y $tileShareCount bloques compartidos próximos.';
   }
 
   @override
   String youHaveCountBlocksCountTilesAndCountTileShares(
       String blockCount, String tileCount, String tileShareCount) {
-    return 'You have $blockCount blocks, $tileCount tiles and $tileShareCount tileshares coming up.';
+    return 'Tienes $blockCount compromisos, $tileCount bloques y $tileShareCount bloques compartidos próximos.';
   }
 
   @override
-  String get noTilesPreview =>
-      'You have nothing coming up for the rest of today.';
+  String get noTilesPreview => 'No tienes nada previsto para el resto del día.';
 
   @override
   String previewEllipsisText(String shortenedText) {
@@ -1273,79 +1296,82 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get createTile => 'Create Tile';
+  String get createTile => 'Crear bloque';
 
   @override
-  String get previewTileForecast => 'Forecast';
+  String get previewTileForecast => 'Pronóstico';
 
   @override
-  String get previewTileOptions => 'Options';
+  String get previewTileOptions => 'Opciones';
 
   @override
-  String get previewTileMore => 'More';
+  String get previewTileMore => 'Más';
 
   @override
-  String get previewTileShuffle => 'Shuffle';
+  String get previewTileShuffle => 'Mezclar';
 
   @override
-  String get previewTileRevise => 'Revise';
+  String get previewTileRevise => 'Revisar';
 
   @override
-  String get previewTileDeferAll => 'Defer All';
+  String get previewTileDeferAll => 'Diferir todo';
 
   @override
-  String get previewLocationName => 'Location';
+  String get previewLocationName => 'Ubicación';
 
   @override
-  String get previewTagName => 'Tag';
+  String get previewTagName => 'Etiqueta';
 
   @override
-  String get previewClassificationName => 'Classification';
+  String get previewClassificationName => 'Clasificación';
 
   @override
-  String get previewBlockedOut => 'Blocked Out';
+  String get previewBlockedOut => 'Bloqueado';
 
   @override
-  String get accountInfo => 'Account info';
+  String get accountInfo => 'Información de la cuenta';
 
   @override
-  String get fistName => 'First Name';
+  String get fistName => 'Nombre';
 
   @override
-  String get lastName => 'Last Name';
+  String get lastName => 'Apellido';
 
   @override
-  String get tilePreferences => 'Tile Preferences';
+  String get tilePreferences => 'Preferencias de bloques';
 
   @override
-  String get notificationsPreferences => 'Notifications Preferences';
+  String get notificationsPreferences => 'Preferencias de notificaciones';
 
   @override
-  String get security => 'Security';
+  String get security => 'Seguridad';
 
   @override
-  String get connections => 'Connections';
+  String get connections => 'Conexiones';
 
   @override
-  String get myLocations => 'My Locations';
+  String get myLocations => 'Mis ubicaciones';
 
   @override
-  String get aboutTiler => 'About Tiler';
+  String get aboutTiler => 'Acerca de Tiler';
 
   @override
-  String get darkMode => 'Dark Mode';
+  String get howToUseTiler => 'Cómo usar Tiler';
 
   @override
-  String get setLocation => 'Set location';
+  String get darkMode => 'Modo oscuro';
 
   @override
-  String get connectCalendars => 'Connect your calendars';
+  String get setLocation => 'Definir ubicación';
 
   @override
-  String get configure => 'Configure';
+  String get connectCalendars => 'Conecta tus calendarios';
 
   @override
-  String get comingSoon => 'Coming soon';
+  String get configure => 'Configurar';
+
+  @override
+  String get comingSoon => 'Próximamente';
 
   @override
   String get googleCalendar => 'Google Calendar';
@@ -1376,31 +1402,31 @@ class AppLocalizationsEs extends AppLocalizations {
   String get calendarConnectionError => 'No se pudo conectar tu calendario';
 
   @override
-  String get sleepDuration => 'Sleep Duration';
+  String get sleepDuration => 'Duración del sueño';
 
   @override
-  String get transportationMethodQuestion => 'How do you move around?';
+  String get transportationMethodQuestion => '¿Cómo te desplazas?';
 
   @override
-  String get defineYourTimeRestrictions => 'Define Your Time Restrictions';
+  String get defineYourTimeRestrictions => 'Define tus restricciones de tiempo';
 
   @override
-  String get setWorkHours => 'Set Work Hours';
+  String get setWorkHours => 'Definir horario de trabajo';
 
   @override
-  String get setYourBlockOutHours => 'Set Your Block Out Hours';
+  String get setYourBlockOutHours => 'Define tus horas bloqueadas';
 
   @override
-  String get travelMediumBiking => 'Biking';
+  String get travelMediumBiking => 'En bicicleta';
 
   @override
-  String get travelMediumTransit => 'Transit';
+  String get travelMediumTransit => 'Transporte público';
 
   @override
-  String get travelMediumDriving => 'Driving';
+  String get travelMediumDriving => 'En auto';
 
   @override
-  String get travelMediumTransport => 'Transport';
+  String get travelMediumTransport => 'Transporte';
 
   @override
   String previewRatioTimeMinutes(String ratio) {
@@ -1409,305 +1435,253 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String previewRatioTimeHours(String ratio) {
-    return '$ratio hrs';
+    return '$ratio h';
   }
 
   @override
-  String get bedTime => 'Bed Time';
+  String get bedTime => 'Hora de dormir';
 
   @override
-  String get sleepTime => 'Sleep Time';
+  String get sleepTime => 'Hora de sueño';
+
+  @override
+  String get scheduleFullness => 'Ocupación del horario';
+
+  @override
+  String get scheduleFullnessDescription =>
+      '¿Qué tan ocupado debería estar tu horario?';
+
+  @override
+  String scheduleFullnessValue(int percentage) {
+    return '$percentage por ciento de ocupación objetivo';
+  }
+
+  @override
+  String scheduleFullnessLimits(int minimum, int maximum) {
+    return 'Los objetivos oscilan entre el $minimum% y el $maximum%. Esto mantiene una línea base útil mientras deja espacio para cambios y viajes.';
+  }
+
+  @override
+  String get schedulePreferences => 'Preferencias de horario';
+
+  @override
+  String get lighter => 'Más ligero';
+
+  @override
+  String get balanced => 'Equilibrado';
+
+  @override
+  String get fuller => 'Más completo';
 
   @override
   String get tilePreferencesUpdatedSuccessfully =>
-      'Tile Preferences have been updated successfully.';
+      'Las preferencias de bloques se actualizaron con éxito.';
 
   @override
   String get notificationsPreferencesUpdatedSuccessfully =>
-      'Notifications Preferences have been updated successfully.';
+      'Las preferencias de notificaciones se actualizaron con éxito.';
 
   @override
-  String get tileReminders => 'Tile Reminders';
+  String get tileReminders => 'Recordatorios de bloques';
 
   @override
-  String get appUpdates => 'App Updates';
+  String get appUpdates => 'Actualizaciones de la app';
 
   @override
-  String get marketingUpdates => 'Marketing Updates';
+  String get marketingUpdates => 'Actualizaciones de marketing';
 
   @override
-  String get emailNotifications => 'Email notifications';
+  String get emailNotifications => 'Notificaciones por email';
 
   @override
-  String get fullName => 'Full Name';
+  String get fullName => 'Nombre completo';
 
   @override
-  String get phoneNumber => 'Phone Number';
+  String get phoneNumber => 'Número de teléfono';
 
   @override
-  String get countryCode => 'Country Code';
+  String get countryCode => 'Código de país';
 
   @override
-  String get dateOfBirth => 'Date Of Birth';
+  String get dateOfBirth => 'Fecha de nacimiento';
 
   @override
   String get accountInfoUpdatedSuccessfully =>
-      'Account Information have been updated successfully.';
+      'La información de la cuenta se actualizó con éxito.';
 
   @override
-  String get reachingServerIssues => 'Issues with reaching Tiler servers';
+  String get reachingServerIssues =>
+      'Problemas para conectar con los servidores de Tiler';
 
   @override
   String get deleteAccountConfirmation =>
-      'Are you sure you want to delete your account? This action cannot be undone.';
+      '¿Seguro que quieres eliminar tu cuenta? Esta acción no se puede deshacer.';
 
   @override
-  String get disconnect => 'Disconnect';
+  String get disconnect => 'Desconectar';
 
   @override
-  String get integrationsSetLocation => 'Set location';
+  String get integrationsSetLocation => 'Definir ubicación';
 
   @override
-  String get googleCalender => 'Google Calender';
+  String get googleCalender => 'Google Calendar';
 
   @override
-  String get passwordsMustMatch => 'Passwords must match';
+  String get passwordsMustMatch => 'Las contraseñas deben coincidir';
 
   @override
-  String get parenthesisLate => '(Late)';
+  String get parenthesisLate => '(Atrasado)';
 
   @override
-  String get failedToAddIntegration => 'Failed to add integration';
+  String get failedToAddIntegration => 'Error al agregar la integración';
 
   @override
-  String get unknownProvider => 'Unknown Provider';
+  String get unknownProvider => 'Proveedor desconocido';
 
   @override
-  String get manageCalendars => 'Manage calendars';
+  String get manageCalendars => 'Gestionar calendarios';
 
   @override
-  String get calendarItems => 'Calendar Items';
+  String get calendarItems => 'Elementos del calendario';
 
   @override
-  String get noCalendarItemsFound => 'No calendar items found';
+  String get noCalendarItemsFound =>
+      'No se encontraron elementos del calendario';
 
   @override
   String get calendarItemsWillAppearHere =>
-      'Your calendar items will appear here';
+      'Los elementos de tu calendario aparecerán aquí';
 
   @override
   String calendarsActive(int selectedCount, int totalCount) {
-    return '$selectedCount of $totalCount calendars active';
+    return '$selectedCount de $totalCount calendarios activos';
   }
 
   @override
-  String get toggleCalendarsToSync => 'Toggle calendars to sync with Tiler';
+  String get toggleCalendarsToSync =>
+      'Activa los calendarios para sincronizar con Tiler';
 
   @override
-  String get unknownCalendar => 'Unknown Calendar';
+  String get unknownCalendar => 'Calendario desconocido';
 
   @override
   String activeStatusBadge(int selectedCount, int totalCount) {
-    return '$selectedCount of $totalCount active';
+    return '$selectedCount de $totalCount activos';
   }
 
   @override
   String integrationCount(int count) {
-    return '$count Integrations';
+    return '$count integraciones';
   }
 
   @override
-  String get errorLoadingCalendarItems => 'Error loading calendar items';
+  String get errorLoadingCalendarItems =>
+      'Error al cargar los elementos del calendario';
 
   @override
-  String get integratedCalendars => 'Calendars';
+  String get integratedCalendars => 'Calendarios';
 
   @override
-  String get integrationAdd => 'Add';
-
-  @override
-  String get timeAndLocationTitle => 'Time & Location';
-
-  @override
-  String get timeAndLocationSubTitle =>
-      'Where are you right now?\nWhat is the time over there?';
+  String get integrationAdd => 'Agregar';
 
   @override
   String get timeAndLocationSecondarySubTitle =>
-      'Can we access your location to provide location-\nbased recommendations and notifications?';
+      '¿Puede acceder a tu ubicación para ofrecer recomendaciones\ny notificaciones basadas en la ubicación?';
 
   @override
-  String get workProfileQuestion =>
-      'What is your typical daily routine like, set your work hours';
+  String get recurringTasks => 'Tareas recurrentes';
 
   @override
-  String get personalProfileQuestion =>
-      'Tell us about your ‘me time’ during the week';
+  String get yourProfession => '¿Tu profesión?';
 
   @override
-  String get grabACoffee => 'Grab a coffee';
+  String get yourProfessionQuestion => '¿A qué te dedicas?';
 
   @override
-  String get recurringTasks => 'Recurring Tasks';
+  String get yourProfessionHint => 'Describe a qué te dedicas en el trabajo';
 
   @override
-  String get recurringTasksQuestion =>
-      'Are there any specific recurring tasks or activities you want to schedule in Tiler?';
+  String get medicalProfessional => 'Profesional de la salud';
 
   @override
-  String get yourProfession => 'Your Profession?';
+  String get softwareDeveloper => 'Desarrollador de software';
 
   @override
-  String get yourProfessionQuestion => 'What do you do?';
+  String get student => 'Estudiante';
 
   @override
-  String get yourProfessionHint => 'Describe what you do for work';
+  String get engineer => 'Ingeniero';
 
   @override
-  String get medicalProfessional => 'Medical Professional';
+  String get fieldSalesProfessional => 'Profesional de ventas de campo';
 
   @override
-  String get softwareDeveloper => 'Software Developer';
+  String get remoteWorker => 'Trabajador remoto & nómada digital';
 
   @override
-  String get student => 'Student';
+  String get stayAtHomeParent => 'Padre/madre de casa';
 
   @override
-  String get engineer => 'Engineer';
+  String get clientAccountManagers => 'Gestores de clientes/cuentas';
 
   @override
-  String get fieldSalesProfessional => 'Field Sales Professional';
+  String get other => 'Otro';
 
   @override
-  String get remoteWorker => 'Remote Worker & Digital Nomad';
+  String get tileSuggestions => 'Sugerencias de bloques';
 
   @override
-  String get stayAtHomeParent => 'Stay At Home Parent';
+  String get personalOrWorkQuestion => '¿Para qué vas a usar Tiler?';
 
   @override
-  String get clientAccountManagers => 'Client/Account Managers';
-
-  @override
-  String get other => 'Other';
-
-  @override
-  String get tileSuggestions => 'Tile Suggestions';
-
-  @override
-  String get tileSuggestionsQuestion =>
-      'Select tiles that match your routine and let Tiler optimize your schedule';
-
-  @override
-  String get tileProfiling =>
-      'Tiler is profiling you based on your preferences..';
-
-  @override
-  String get addPlus => 'Add +';
-
-  @override
-  String get personalScheduling => 'Personal scheduling';
-
-  @override
-  String get workPlanning => 'Work planning';
-
-  @override
-  String get teamCoordination => 'Team coordination';
-
-  @override
-  String get fieldBaseCoordination => 'Field-base coordination';
-
-  @override
-  String get academicScheduling => 'Academic scheduling';
-
-  @override
-  String get clientManagement => 'Client management';
-
-  @override
-  String get personalOrWork => 'Personal or Work??';
-
-  @override
-  String get personalOrWorkQuestion => 'What will you be using Tiler for?';
-
-  @override
-  String get enter3chars => 'Enter at least 3 characters.';
-
-  @override
-  String get tilesVsBlocks => 'Tiles vs Blocks';
-
-  @override
-  String get vsTilesDescription =>
-      'Get auto-generated Tiles for your, workouts,\ndeadlines and block out times events that aren\'t\nflexible.';
-
-  @override
-  String get vsBlocksDescription =>
-      'Blocks are fixed time periods reserved for important tiles that must happen at a specific time and date.';
-
-  @override
-  String get swipeRight => 'Swipe Right>>';
-
-  @override
-  String get swipeRightDescription =>
-      'No more planning from scratch—just swipe\nright, and Tiler fits everything into your\nschedule seamlessly.';
-
-  @override
-  String get googleCalendarAndMore => 'Google Calendar +\nmore calendars';
-
-  @override
-  String get googleCalendarAndMoreDescription =>
-      'Sync your calendars, and let Tiler pull\neverything into one smart timeline.\nNo double booking, no stress';
-
-  @override
-  String get selectSuggestions => 'Select suggestions';
-
-  @override
-  String get typeSomething => 'Type something here';
+  String get enter3chars => 'Ingresa al menos 3 caracteres.';
 
   @override
   String leaveInDurationToArriveOnTime(String duration) {
-    return 'Leave in $duration to arrive on time';
+    return 'Sale en $duration para llegar a tiempo';
   }
 
   @override
-  String get leaveNowToArriveOnTime => 'Leave now to arrive on time!';
+  String get leaveNowToArriveOnTime => 'Sale ahora para llegar a tiempo!';
 
   @override
   String durationDrive(String duration) {
-    return '$duration drive';
+    return '$duration en auto';
   }
 
   @override
   String durationTransit(String duration) {
-    return '$duration transit';
+    return '$duration en transporte público';
   }
 
   @override
   String durationBike(String duration) {
-    return '$duration bike';
+    return '$duration en bicicleta';
   }
 
   @override
   String durationWalk(String duration) {
-    return '$duration walk';
+    return '$duration a pie';
   }
 
   @override
   String driveToDestination(String duration, String destination) {
-    return '$duration drive to $destination';
+    return '$duration en auto hasta $destination';
   }
 
   @override
   String transitToDestination(String duration, String destination) {
-    return '$duration transit to $destination';
+    return '$duration en transporte público hasta $destination';
   }
 
   @override
   String bikeToDestination(String duration, String destination) {
-    return '$duration bike to $destination';
+    return '$duration en bicicleta hasta $destination';
   }
 
   @override
   String walkToDestination(String duration, String destination) {
-    return '$duration walk to $destination';
+    return '$duration a pie hasta $destination';
   }
 
   @override
@@ -1717,27 +1691,27 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get trafficDetectedReroutingSuggested =>
-      'Traffic detected - rerouting suggested';
+      'Tráfico detectado - se sugiere nueva ruta';
 
   @override
   String trafficDelayMinutes(String minutes) {
-    return 'Traffic: +$minutes min delay';
+    return 'Tráfico: +$minutes min de retraso';
   }
 
   @override
-  String get heavyTrafficExpected => 'Heavy traffic expected';
+  String get heavyTrafficExpected => 'Se espera tráfico intenso';
 
   @override
-  String get addWithAI => 'Add with AI';
+  String get addWithAI => 'Agregar con IA';
 
   @override
-  String get focusTime => 'Focus Time';
+  String get focusTime => 'Tiempo de concentración';
 
   @override
-  String get videoMeeting => 'Video Meeting';
+  String get videoMeeting => 'Reunión de video';
 
   @override
-  String get sharedWith => 'Shared with';
+  String get sharedWith => 'Compartido con';
 
   @override
   String durationMinutes(String minutes) {
@@ -2006,37 +1980,38 @@ class AppLocalizationsEs extends AppLocalizations {
   String get seeTodaysRoute => 'Ver ruta de hoy';
 
   @override
-  String get whatWouldYouLikeToDo => 'What would you like to do?';
+  String get whatWouldYouLikeToDo => '¿Qué te gustaría hacer?';
 
   @override
-  String get describeATask => 'Describe a task, we\'ll handle the tiling.';
+  String get describeATask =>
+      'Describe una tarea y nosotros nos encargamos de la planificación.';
 
   @override
-  String get microphonePermissionDenied => 'Microphone permission denied.';
+  String get microphonePermissionDenied => 'Permiso del micrófono denegado.';
 
   @override
   String failedToStartRecording(String error) {
-    return 'Failed to start recording: $error';
+    return 'Error al iniciar la grabación: $error';
   }
 
   @override
   String failedToStopRecording(String error) {
-    return 'Failed to stop recording: $error';
+    return 'Error al detener la grabación: $error';
   }
 
   @override
   String audioConversionError(String error) {
-    return 'Audio conversion error: $error';
+    return 'Error de conversión de audio: $error';
   }
 
   @override
-  String get audioConversionFailed => 'Audio conversion failed';
+  String get audioConversionFailed => 'Error en la conversión de audio';
 
   @override
-  String get recordingPathIsEmpty => 'Recording path is empty';
+  String get recordingPathIsEmpty => 'La ruta de grabación está vacía';
 
   @override
-  String get noActiveRecording => 'No active recording';
+  String get noActiveRecording => 'Sin grabación activa';
 
   @override
   String get joinMeeting => 'Unirse a la reunión';
@@ -2045,10 +2020,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get openLink => 'Abrir enlace';
 
   @override
-  String get actions => 'Actions';
+  String get actions => 'Acciones';
 
   @override
-  String get hideActions => 'Hide actions';
+  String get hideActions => 'Ocultar acciones';
 
   @override
   String get pendingRsvpSingular => '1 Evento Necesita Respuesta';
@@ -2095,29 +2070,29 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pendingRsvpLater => 'Más Tarde Hoy y Próximos';
 
   @override
-  String get declinedRsvpSingular => '1 Declined Event';
+  String get declinedRsvpSingular => '1 evento rechazado';
 
   @override
   String declinedRsvpPlural(int count) {
-    return '$count Declined Events';
+    return '$count eventos rechazados';
   }
 
   @override
-  String get declinedRsvp => 'Declined Events';
+  String get declinedRsvp => 'Eventos rechazados';
 
   @override
   String rsvpMixedOnePending(int declinedCount) {
-    return '1 Pending, $declinedCount Declined';
+    return '1 pendiente, $declinedCount rechazados';
   }
 
   @override
   String rsvpMixedOneDeclined(int pendingCount) {
-    return '$pendingCount Pending, 1 Declined';
+    return '$pendingCount pendientes, 1 rechazado';
   }
 
   @override
   String rsvpMixed(int pendingCount, int declinedCount) {
-    return '$pendingCount Pending, $declinedCount Declined';
+    return '$pendingCount pendientes, $declinedCount rechazados';
   }
 
   @override
@@ -2445,255 +2420,334 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tutorialNavLetsGo => '¡Vamos!';
 
   @override
+  String get welcomeExplainerHeadline => 'Tiles y Bloques';
+
+  @override
+  String get welcomeExplainerSubtitle =>
+      'Un vistazo rápido a cómo Tiler planifica tu día.';
+
+  @override
+  String get welcomeExplainerBlocksCaption =>
+      'Los bloques son fijos. Ocurren a una hora determinada.';
+
+  @override
+  String get welcomeExplainerTilesCaption =>
+      'Los tiles son flexibles. Tiler los acomoda alrededor de tus bloques.';
+
+  @override
+  String welcomeExplainerReplanCaption(String time) {
+    return 'El dentista pasa a las $time: Tiler replanifica tus tiles a su alrededor.';
+  }
+
+  @override
+  String get welcomeExplainerMovedBadge => 'Cambió';
+
+  @override
+  String get welcomeExplainerReplannedBadge => 'Replanificado';
+
+  @override
+  String get welcomeExplainerBlockStandup => 'Reunión de equipo';
+
+  @override
+  String get welcomeExplainerBlockDentist => 'Dentista';
+
+  @override
+  String get welcomeExplainerTileWorkout => 'Ejercicio';
+
+  @override
+  String get welcomeExplainerTileReport => 'Escribir informe';
+
+  @override
+  String get welcomeExplainerTileGroceries => 'Compras';
+
+  @override
+  String get welcomeExplainerLegendBlock => 'Bloque';
+
+  @override
+  String get welcomeExplainerLegendTile => 'Tile';
+
+  @override
   String tutorialStepCounter(int current, int total) {
     return '$current/$total';
   }
 
   @override
+  String get tutorialStepSettingsTilesTitle => 'Preferencias de Tiles';
+
+  @override
+  String get tutorialStepSettingsTilesBody =>
+      'Tus preferencias de IA viven aquí: cómo te desplazas, tus horas de trabajo y personales, y el tiempo bloqueado.';
+
+  @override
+  String get tutorialStepTilePrefsTransportTitle => 'Cómo te desplazas';
+
+  @override
+  String get tutorialStepTilePrefsTransportBody =>
+      'Tiler calcula el tiempo de viaje entre tiles según tu forma habitual de desplazarte.';
+
+  @override
+  String get tutorialStepTilePrefsHoursTitle => 'Horas de trabajo y personales';
+
+  @override
+  String get tutorialStepTilePrefsHoursBody =>
+      'Cuándo Tiler puede programar tiles de trabajo o personales. Toca cualquiera para definir un perfil.';
+
+  @override
+  String get tutorialStepTilePrefsBlockOutTitle => 'Horas bloqueadas';
+
+  @override
+  String get tutorialStepTilePrefsBlockOutBody =>
+      'Hora de dormir y duración del sueño: horas en las que Tiler nunca programa nada.';
+
+  @override
   String get chat => 'Chat';
 
   @override
-  String get transcribing => 'Transcribing';
+  String get transcribing => 'Transcribiendo';
 
   @override
-  String get newChat => 'New chat';
+  String get newChat => 'Nuevo chat';
 
   @override
-  String get noChatHistory => 'No chat history';
+  String get noChatHistory => 'Sin historial de chat';
 
   @override
-  String get unknownChat => 'Unknown chat';
+  String get unknownChat => 'Chat desconocido';
 
   @override
-  String get transcriptionFailed => 'Transcription failed';
+  String get transcriptionFailed => 'Error en la transcripción';
 
   @override
-  String get acceptChanges => 'Accept Changes';
+  String get acceptChanges => 'Aceptar cambios';
 
   @override
-  String get noRequestToExecute => 'No request to execute';
+  String get noRequestToExecute => 'No hay solicitud para ejecutar';
 
   @override
-  String get initializingAction => 'Initializing action generation';
+  String get initializingAction => 'Iniciando la generación de la acción';
 
   @override
-  String get settingThingsUp => 'Setting things up';
+  String get settingThingsUp => 'Preparando';
 
   @override
-  String get preparingRequest => 'Preparing your request';
+  String get preparingRequest => 'Preparando tu solicitud';
 
   @override
-  String get gettingReady => 'Getting ready';
+  String get gettingReady => 'Preparándose';
 
   @override
-  String get processingAction => 'Processing action';
+  String get processingAction => 'Procesando la acción';
 
   @override
-  String get workingOnIt => 'Working on it';
+  String get workingOnIt => 'Trabajando en ello';
 
   @override
-  String get analyzingRequest => 'Analyzing your request';
+  String get analyzingRequest => 'Analizando tu solicitud';
 
   @override
-  String get thinking => 'Thinking';
+  String get thinking => 'Pensando';
 
   @override
-  String get actionComplete => 'Action processing complete';
+  String get actionComplete => 'Procesamiento de la acción completado';
 
   @override
-  String get processingDone => 'Processing done';
+  String get processingDone => 'Procesamiento completado';
 
   @override
-  String get allSet => 'All set';
+  String get allSet => 'Todo listo';
 
   @override
-  String get finishedProcessing => 'Finished processing';
+  String get finishedProcessing => 'Procesamiento finalizado';
 
   @override
-  String get generatingSummary => 'Generating summary';
+  String get generatingSummary => 'Generando resumen';
 
   @override
-  String get summarizingResults => 'Summarizing results';
+  String get summarizingResults => 'Resumiendo resultados';
 
   @override
-  String get creatingOverview => 'Creating overview';
+  String get creatingOverview => 'Creando resumen general';
 
   @override
-  String get preparingSummary => 'Preparing summary';
+  String get preparingSummary => 'Preparando resumen';
 
   @override
-  String get summaryComplete => 'Summary generation complete';
+  String get summaryComplete => 'Generación de resumen completada';
 
   @override
-  String get summaryReady => 'Summary ready';
+  String get summaryReady => 'Resumen listo';
 
   @override
-  String get overviewComplete => 'Overview complete';
+  String get overviewComplete => 'Resumen general completado';
 
   @override
-  String get doneSummarizing => 'Done summarizing';
+  String get doneSummarizing => 'Resumen completado';
 
   @override
-  String get loadingSchedule => 'Loading schedule data';
+  String get loadingSchedule => 'Cargando datos de la agenda';
 
   @override
-  String get fetchingSchedule => 'Fetching your schedule';
+  String get fetchingSchedule => 'Obteniendo tu agenda';
 
   @override
-  String get retrievingCalendar => 'Retrieving calendar';
+  String get retrievingCalendar => 'Recuperando calendario';
 
   @override
-  String get loadingTimeline => 'Loading timeline';
+  String get loadingTimeline => 'Cargando la línea de tiempo';
 
   @override
-  String get optimizingSchedule => 'Optimizing schedule';
+  String get optimizingSchedule => 'Optimizando la agenda';
 
   @override
-  String get reorganizingDay => 'Reorganizing your day';
+  String get reorganizingDay => 'Reorganizando tu día';
 
   @override
-  String get findingBestFit => 'Finding the best fit';
+  String get findingBestFit => 'Buscando el mejor encaje';
 
   @override
-  String get adjustingTimeline => 'Adjusting timeline';
+  String get adjustingTimeline => 'Ajustando la línea de tiempo';
 
   @override
-  String get scheduleComplete => 'Schedule optimization complete';
+  String get scheduleComplete => 'Optimización de la agenda completada';
 
   @override
-  String get scheduleUpdated => 'Schedule updated';
+  String get scheduleUpdated => 'Agenda actualizada';
 
   @override
-  String get timelineOptimized => 'Timeline optimized';
+  String get timelineOptimized => 'Línea de tiempo optimizada';
 
   @override
-  String get allDone => 'All done';
+  String get allDone => 'Todo hecho';
 
   @override
-  String get connectionLost => 'Connection lost. Please refresh';
+  String get connectionLost => 'Conexión perdida. Actualiza';
 
   @override
-  String get sendingRequest => 'Sending request';
+  String get sendingRequest => 'Enviando solicitud';
 
   @override
   String get webSocketConnectionLostAfter5Attempts =>
-      'WebSocket connection lost after 5 attempts';
+      'Conexión WebSocket perdida después de 5 intentos';
 
   @override
-  String get webSocketMessageHandlingError => 'Error while handling message';
+  String get webSocketMessageHandlingError => 'Error al procesar el mensaje';
 
   @override
-  String get jsonParseError => 'JSON parse error';
+  String get jsonParseError => 'Error de análisis JSON';
 
   @override
-  String get processError => 'Process error';
+  String get processError => 'Error de proceso';
 
   @override
-  String get socketConnectionError => 'Socket Connection Error';
+  String get socketConnectionError => 'Error de conexión de socket';
 
   @override
-  String get keepAliveFailed => 'Keeping connection alive failed';
+  String get keepAliveFailed => 'Error al mantener la conexión activa';
 
   @override
-  String get copy => 'Copy';
+  String get copy => 'Copiar';
 
   @override
-  String get entityIdNotFound => 'No preview entity id  found';
+  String get entityIdNotFound => 'No se encontró id de entidad de vista previa';
 
   @override
-  String get feedback => 'Feedback';
+  String get feedback => 'Comentarios';
 
   @override
-  String get feedbackCategory => 'Category';
+  String get feedbackCategory => 'Categoría';
 
   @override
-  String get feedbackCategoryBug => 'Bug';
+  String get feedbackCategoryBug => 'Error';
 
   @override
-  String get feedbackCategoryFeature => 'Feature';
+  String get feedbackCategoryFeature => 'Funcionalidad';
 
   @override
-  String get feedbackCategoryEnhancement => 'Enhancement';
+  String get feedbackCategoryEnhancement => 'Mejora';
 
   @override
   String get feedbackCategoryGeneral => 'General';
 
   @override
-  String get feedbackTitle => 'Title';
+  String get feedbackTitle => 'Título';
 
   @override
-  String get feedbackTitleHint => 'Brief summary of your feedback';
+  String get feedbackTitleHint => 'Resumen breve de tus comentarios';
 
   @override
-  String get feedbackDescription => 'Description';
+  String get feedbackDescription => 'Descripción';
 
   @override
-  String get feedbackDescriptionHint => 'Provide details about your feedback';
+  String get feedbackDescriptionHint =>
+      'Proporciona detalles sobre tus comentarios';
 
   @override
-  String get feedbackSubmitted => 'Feedback submitted successfully';
+  String get feedbackSubmitted => 'Comentarios enviados con éxito';
 
   @override
-  String get feedbackError => 'Failed to submit feedback';
+  String get feedbackError => 'Error al enviar los comentarios';
 
   @override
-  String get noPreviewsAvailable => 'No TileCasts available for this request';
+  String get noPreviewsAvailable =>
+      'No hay TileCasts disponibles para esta solicitud';
 
   @override
-  String get previewUnavailable => 'The selected TileCast is unavailable';
+  String get previewUnavailable =>
+      'El TileCast seleccionado no está disponible';
 
   @override
-  String get previewSummaryUnavailable => 'TileCast could not be loaded';
+  String get previewSummaryUnavailable => 'No se pudo cargar el TileCast';
 
   @override
-  String get previewGenerating => 'Generating TileCast…';
+  String get previewGenerating => 'Generando TileCast…';
 
   @override
   String get previewTimedOut =>
-      'TileCast is taking longer than expected. Try again in a moment.';
+      'El TileCast está tardando más de lo esperado. Intenta de nuevo en un momento.';
 
   @override
-  String get previewGenerationFailed => 'We couldn\'t generate this TileCast.';
+  String get previewGenerationFailed => 'No pudimos generar este TileCast.';
 
   @override
   String get previewInvalidated =>
-      'This TileCast is no longer valid because your schedule changed.';
+      'Este TileCast ya no es válido porque tu agenda cambió.';
 
   @override
   String get previewStaleBanner =>
-      'This TileCast reflects an earlier snapshot of your schedule.';
+      'Este TileCast refleja una instantánea anterior de tu agenda.';
 
   @override
-  String get previewNonViableLabel => 'Couldn\'t be scheduled';
+  String get previewNonViableLabel => 'No se pudo programar';
 
   @override
-  String get reviewChanges => 'Review changes';
+  String get reviewChanges => 'Revisar cambios';
 
   @override
-  String get previewRetry => 'Retry';
+  String get previewRetry => 'Reintentar';
 
   @override
-  String get previewPreparing => 'Preparing TileCast…';
+  String get previewPreparing => 'Preparando TileCast…';
 
   @override
-  String get previewReadyToView => 'Tap to view TileCast';
+  String get previewReadyToView => 'Toca para ver el TileCast';
 
   @override
-  String get previewActionsOutdated => 'Outdated — send a new message';
+  String get previewActionsOutdated =>
+      'Desactualizado — envía un nuevo mensaje';
 
   @override
-  String get previewActionsUnavailable => 'TileCast unavailable';
+  String get previewActionsUnavailable => 'TileCast no disponible';
 
   @override
   String get tileCastStaleNote =>
-      'Your schedule changed — this TileCast may be out of date';
+      'Tu agenda cambió — este TileCast puede estar desactualizado';
 
   @override
-  String get tileCastAlsoIncluded => 'Also included';
+  String get tileCastAlsoIncluded => 'También incluido';
 
   @override
   String actionsCount(int count) {
-    return '$count actions';
+    return '$count acciones';
   }
 
   @override
@@ -3606,4 +3660,35 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get addTileRetry => 'Reintentar';
+
+  @override
+  String searchResultsForQuery(int count, String query) {
+    return '$count resultados para \"$query\"';
+  }
+
+  @override
+  String get searchFilterAll => 'Todos';
+
+  @override
+  String get searchFilterTiler => 'Tiler';
+
+  @override
+  String get searchFilterGoogle => 'Google';
+
+  @override
+  String get searchFilterOutlook => 'Outlook';
+
+  @override
+  String get startNow => 'Empezar ahora';
+
+  @override
+  String dueOnDate(String date) {
+    return 'Vence $date';
+  }
+
+  @override
+  String get noResultsForProvider => 'No hay resultados de este calendario';
+
+  @override
+  String get readOnly => 'Solo lectura';
 }

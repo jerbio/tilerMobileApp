@@ -36,8 +36,10 @@ const _delegates = <LocalizationsDelegate<dynamic>>[
   GlobalCupertinoLocalizations.delegate,
 ];
 
+// English regardless of the generated list's order (it gained de/el/…
+// ahead of en on 2026-09-17).
 Locale _resolve(Locale? requested, Iterable<Locale> supported) =>
-    supported.first;
+    requested ?? const Locale('en');
 
 /// A scripted prediction source. [delay] lets a test hold a response open so
 /// a newer request can overtake it.

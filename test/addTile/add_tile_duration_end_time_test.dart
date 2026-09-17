@@ -28,8 +28,10 @@ const _delegates = <LocalizationsDelegate<dynamic>>[
   GlobalCupertinoLocalizations.delegate,
 ];
 
+// English regardless of the generated list's order (it gained de/el/…
+// ahead of en on 2026-09-17).
 Locale _resolve(Locale? requested, Iterable<Locale> supported) =>
-    supported.first;
+    requested ?? const Locale('en');
 
 final DateTime start = DateTime(2026, 9, 5, 14, 0);
 

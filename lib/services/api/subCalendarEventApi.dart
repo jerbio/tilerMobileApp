@@ -312,7 +312,8 @@ class SubCalendarEventApi extends AppApi {
             Utility.currentTime().timeZoneOffset.inHours.toString(),
         'ThirdPartyEventID': thirdPartyEventID,
         'ThirdPartyType': thirdPartyType,
-        'MobileApp': true.toString()
+        'MobileApp': true.toString(),
+        'Version': 'v2',
       };
 
       var injectedDeleteSubEventParameters =

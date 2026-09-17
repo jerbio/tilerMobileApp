@@ -87,6 +87,20 @@
     "enableLocations":"Enable location permissions",
     "noMatchWasFound":"No match was found",
     "atLeastThreeLettersForLookup": "...Tiler needs three characters for a lookup",
+    "searchSourceBadgeTiler": "Tiler",
+    "searchSourceBadgeGoogle": "Google",
+    "searchSourceBadgeMicrosoft": "Microsoft",
+    "searchConnectedAccount": "via {account}",
+    "@searchConnectedAccount": {
+        "placeholders": {
+            "account": {
+                "type": "String"
+            }
+        }
+    },
+    "searchPartialFailureWarning": "Some calendars couldn't be searched.",
+    "searchUnavailableMessage": "Search is temporarily unavailable. Please try again.",
+    "searchRetry": "Retry",
     "noLocationMatchWasFound":"No location match was found",
     "noLocation":"No location",
     "clearedColon":"Cleared: ",
@@ -540,7 +554,6 @@
     "dashEmptyString":"--",
     "deleteAccount": "Delete Account",
     "deleteYourTilerAccountQ": "Delete Account?",
-    "yes": "Yes",
     "no": "No",
     "dismiss": "Dismiss",
     "forgetPassword":"Forget Password",
@@ -591,9 +604,8 @@
     "middayPerson":"🌞 Midday person",
     "nightPerson":"🌃 Night person",
     "enterAddress":"Enter your address",
-    "wakeUpTimeQuestion":"What time do you usually wake up in the morning?",
-    "workdayStartQuestion":"What time do you typically start your workday?",
     "primaryLocationQuestion":"What is your primary location for work or study?",
+    "useDeviceLocation":"Use my device location",
     "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?",
     "incompleteRequest":"Did not send complete request",
     "addContact": "Add contact",
@@ -816,6 +828,7 @@
       "connections":"Connections",
       "myLocations":"My Locations",
       "aboutTiler":"About Tiler",
+      "howToUseTiler":"How to use Tiler",
       "darkMode":"Dark Mode",
       "setLocation":"Set location",
       "connectCalendars": "Connect your calendars",
@@ -861,6 +874,36 @@
       },
       "bedTime": "Bed Time",
       "sleepTime": "Sleep Time",
+      "scheduleFullness": "Schedule Fullness",
+      "scheduleFullnessDescription": "How full should your schedule be?",
+      "scheduleFullnessValue": "{percentage} percent target fullness",
+      "@scheduleFullnessValue": {
+        "description": "Screen reader description of the selected schedule fullness.",
+        "placeholders": {
+          "percentage": {
+            "type": "int",
+            "example": "50"
+          }
+        }
+      },
+      "scheduleFullnessLimits": "Targets range from {minimum}% to {maximum}%. This keeps a useful baseline while leaving room for changes and travel.",
+      "@scheduleFullnessLimits": {
+        "description": "Explains the supported range of the schedule fullness slider.",
+        "placeholders": {
+          "minimum": {
+            "type": "int",
+            "example": "15"
+          },
+          "maximum": {
+            "type": "int",
+            "example": "95"
+          }
+        }
+      },
+      "schedulePreferences": "Schedule Preferences",
+      "lighter": "Lighter",
+      "balanced": "Balanced",
+      "fuller": "Fuller",
       "tilePreferencesUpdatedSuccessfully": "Tile Preferences have been updated successfully.",
       "notificationsPreferencesUpdatedSuccessfully": "Notifications Preferences have been updated successfully.",
       "tileReminders":"Tile Reminders",
@@ -928,14 +971,8 @@
       "integratedCalendars":"Calendars",
       "integrationAdd": "Add",
       "passwordsMustMatch":"Passwords must match",
-      "timeAndLocationTitle":"Time & Location",
-      "timeAndLocationSubTitle":"Where are you right now?\nWhat is the time over there?",
       "timeAndLocationSecondarySubTitle":"Can we access your location to provide location-\nbased recommendations and notifications?",
-       "workProfileQuestion":"What is your typical daily routine like, set your work hours",
-        "personalProfileQuestion": "Tell us about your ‘me time’ during the week",
-        "grabACoffee":"Grab a coffee",
         "recurringTasks":"Recurring Tasks",
-        "recurringTasksQuestion":"Are there any specific recurring tasks or activities you want to schedule in Tiler?",
         "yourProfession":"Your Profession?",
         "yourProfessionQuestion":"What do you do?",
         "yourProfessionHint":"Describe what you do for work",
@@ -949,27 +986,8 @@
         "clientAccountManagers":"Client/Account Managers",
         "other":"Other",
         "tileSuggestions":"Tile Suggestions",
-        "tileSuggestionsQuestion":"Select tiles that match your routine and let Tiler optimize your schedule",
-        "tileProfiling":"Tiler is profiling you based on your preferences..",
-        "addPlus":"Add +",
-        "personalScheduling":"Personal scheduling",
-        "workPlanning":"Work planning",
-        "teamCoordination":"Team coordination",
-        "fieldBaseCoordination":"Field-base coordination",
-        "academicScheduling":"Academic scheduling",
-        "clientManagement":"Client management",
-        "personalOrWork":"Personal or Work??",
         "personalOrWorkQuestion":"What will you be using Tiler for?",
         "enter3chars":"Enter at least 3 characters.",
-        "tilesVsBlocks":"Tiles vs Blocks",
-        "vsTilesDescription":"Get auto-generated Tiles for your, workouts,\ndeadlines and block out times events that aren't\nflexible.",
-        "vsBlocksDescription":"Blocks are fixed time periods reserved for important tiles that must happen at a specific time and date.",
-        "swipeRight":"Swipe Right>>",
-        "swipeRightDescription":"No more planning from scratch—just swipe\nright, and Tiler fits everything into your\nschedule seamlessly.",
-        "googleCalendarAndMore":"Google Calendar +\nmore calendars",
-        "googleCalendarAndMoreDescription":"Sync your calendars, and let Tiler pull\neverything into one smart timeline.\nNo double booking, no stress",
-        "selectSuggestions":"Select suggestions",
-        "typeSomething":"Type something here",
         "leaveInDurationToArriveOnTime": "Leave in {duration} to arrive on time",
         "@leaveInDurationToArriveOnTime": {
           "description": "Proactive alert for departure time",
@@ -1687,6 +1705,27 @@
         "tutorialNavBackArrow": "← Back",
         "tutorialNavSkip": "Skip",
         "tutorialNavLetsGo": "Let's Go!",
+        "welcomeExplainerHeadline": "Tiles vs Blocks",
+        "welcomeExplainerSubtitle": "A quick look at how Tiler plans your day.",
+        "welcomeExplainerBlocksCaption": "Blocks are fixed. They happen at a set time.",
+        "welcomeExplainerTilesCaption": "Tiles are flexible. Tiler fits them around your blocks.",
+        "welcomeExplainerReplanCaption": "Dentist moved to {time} — Tiler re-plans your tiles around it.",
+        "@welcomeExplainerReplanCaption": {
+            "placeholders": {
+                "time": {
+                    "type": "String"
+                }
+            }
+        },
+        "welcomeExplainerMovedBadge": "Moved",
+        "welcomeExplainerReplannedBadge": "Re-planned",
+        "welcomeExplainerBlockStandup": "Team standup",
+        "welcomeExplainerBlockDentist": "Dentist",
+        "welcomeExplainerTileWorkout": "Workout",
+        "welcomeExplainerTileReport": "Write report",
+        "welcomeExplainerTileGroceries": "Groceries",
+        "welcomeExplainerLegendBlock": "Block",
+        "welcomeExplainerLegendTile": "Tile",
         "tutorialStepCounter": "{current}/{total}",
         "@tutorialStepCounter": {
           "description": "Step counter like 3/7",
@@ -1701,6 +1740,14 @@
             }
           }
         },
+        "tutorialStepSettingsTilesTitle": "Tile Preferences",
+        "tutorialStepSettingsTilesBody": "Your AI preferences live here — how you travel, your work and personal hours, and block-out time.",
+        "tutorialStepTilePrefsTransportTitle": "How you get around",
+        "tutorialStepTilePrefsTransportBody": "Tiler budgets travel time between tiles from the way you usually travel.",
+        "tutorialStepTilePrefsHoursTitle": "Work and personal hours",
+        "tutorialStepTilePrefsHoursBody": "When Tiler may schedule work versus personal tiles. Tap either to set a profile.",
+        "tutorialStepTilePrefsBlockOutTitle": "Block-out hours",
+        "tutorialStepTilePrefsBlockOutBody": "Bed time and sleep duration — hours Tiler never schedules into.",
         "chat":"Chat",
         "transcribing":"Transcribing",
         "newChat":"New chat",
@@ -2202,5 +2249,28 @@
   "@editTileDateChipSemantics": {"placeholders":{"field":{"type":"String"},"value":{"type":"String"}}},
 
   "addTileSubmitFailed": "Could not add this right now. Your details are saved.",
-  "addTileRetry": "Retry"
+  "addTileRetry": "Retry",
+
+    "searchResultsForQuery": "{count} results for \"{query}\"",
+    "@searchResultsForQuery": {
+      "description": "Result count header shown above tile name search results.",
+      "placeholders": {
+        "count": { "type": "int", "example": "23" },
+        "query": { "type": "String", "example": "work out" }
+      }
+    },
+    "searchFilterAll": "All",
+    "searchFilterTiler": "Tiler",
+    "searchFilterGoogle": "Google",
+    "searchFilterOutlook": "Outlook",
+    "startNow": "Start now",
+    "dueOnDate": "Due {date}",
+    "@dueOnDate": {
+      "description": "Deadline label on a search result card.",
+      "placeholders": {
+        "date": { "type": "String", "example": "Jun 23" }
+      }
+    },
+    "noResultsForProvider": "No results from this calendar",
+    "readOnly": "Read-only"
 }

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tileSuggestion.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/util.dart';
 import 'package:tiler_app/constants.dart' as Constants;
 import 'package:tiler_app/data/onBoarding.dart';
 import 'package:tiler_app/services/localizationService.dart';
@@ -23,7 +24,6 @@ class OnBoardingApi extends AppApi {
               Message: LocalizationService
                   .instance.translations.authenticationIssues);
         }
-        print('Request headers: $headers');
         var response = await httpClient.get(uri, headers: headers).timeout(
           AppApi.requestTimeout,
           onTimeout: () {
@@ -32,7 +32,7 @@ class OnBoardingApi extends AppApi {
                     LocalizationService.instance.translations.requestTimeout);
           },
         );
-        print('Response from fetchOnboardingData: ${response.body}');
+        Utility.debugPrint('fetchOnboardingData: HTTP ${response.statusCode}');
         return handleResponse(response);
       } else {
         throw TilerError(
@@ -40,7 +40,7 @@ class OnBoardingApi extends AppApi {
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
-      print(
+      Utility.debugPrint(
           'Exception occurred in fetchOnboardingData: ${e is TilerError ? e.Message : "Unknown error"}');
       throw TilerError(
           Message: e is TilerError
@@ -73,7 +73,7 @@ class OnBoardingApi extends AppApi {
                     LocalizationService.instance.translations.requestTimeout);
           },
         );
-        print('Response from sendOnboardingData: ${response.body}');
+        Utility.debugPrint('sendOnboardingData: HTTP ${response.statusCode}');
         return handleResponse(response);
       } else {
         throw TilerError(
@@ -81,7 +81,7 @@ class OnBoardingApi extends AppApi {
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
-      print(
+      Utility.debugPrint(
           'Exception occurred in sendOnboardingData: ${e is TilerError ? e.Message : "Unknown error"}');
       throw TilerError(
           Message: e is TilerError
@@ -152,7 +152,7 @@ class OnBoardingApi extends AppApi {
           },
         );
 
-        print('Response from generateTiles: ${response.body}');
+        Utility.debugPrint('generateTiles: HTTP ${response.statusCode}');
 
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
@@ -175,7 +175,7 @@ class OnBoardingApi extends AppApi {
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
-      print(
+      Utility.debugPrint(
           'Exception in generateTiles: ${e is TilerError ? e.Message : "Unknown error"}');
       throw TilerError(
           Message: e is TilerError

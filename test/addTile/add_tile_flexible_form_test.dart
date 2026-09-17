@@ -34,8 +34,10 @@ const _delegates = <LocalizationsDelegate<dynamic>>[
   GlobalCupertinoLocalizations.delegate,
 ];
 
+// English regardless of the generated list's order (it gained de/el/…
+// ahead of en on 2026-09-17).
 Locale _resolve(Locale? requested, Iterable<Locale> supported) =>
-    supported.first;
+    requested ?? const Locale('en');
 
 /// Pump the full redesigned screen (a full-screen Scaffold) against the app
 /// theme + localization + a controllable viewport.

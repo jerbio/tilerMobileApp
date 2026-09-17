@@ -16,6 +16,7 @@ class OnboardingContent {
   List<RecurringTask>? recurringTasks;
   List<TileSuggestion>? tileSuggestions;
   List<String>? usage;
+  String? profession;
 
   OnboardingContent(
       {required this.personalHoursStart,
@@ -28,7 +29,8 @@ class OnboardingContent {
       required this.preferredDaySections,
       required this.recurringTasks,
       required this.tileSuggestions,
-      required this.usage});
+      required this.usage,
+      this.profession});
 
   factory OnboardingContent.fromJson(Map<String, dynamic> json) {
     return OnboardingContent(
@@ -57,6 +59,7 @@ class OnboardingContent {
               .map((e) => TileSuggestion.fromJson(e))
               .toList()
           : [],
+      profession: json['Profession'] as String?,
     );
   }
   Map<String, dynamic> toJson() {
@@ -72,6 +75,7 @@ class OnboardingContent {
       'Repetitives': recurringTasks?.map((e) => e.toJson()).toList(),
       'TilerUsage': usage,
       'TileList': tileSuggestions?.map((e) => e.toJson()).toList(),
+      'Profession': profession,
     };
   }
 }

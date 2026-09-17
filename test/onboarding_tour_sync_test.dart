@@ -93,8 +93,6 @@ void main() {
   final Map<String, GlobalKey?> expectedTargets = {
     'schedule_view': TutorialKeys.scheduleViewKey,
     'add_tile_button': TutorialKeys.bottomNavAddTileKey,
-    'quick_add': null, // full-screen sheet step
-    'smart_scheduling': TutorialKeys.bottomNavKey,
     'tile_interactions': TutorialKeys.currentTileKey,
     'switch_views': TutorialKeys.bottomNavKey,
     'quick_tools': TutorialKeys.topRightActionsKey,
@@ -132,21 +130,18 @@ void main() {
         expect(
           knownTargetKeys.contains(step.targetKey),
           isTrue,
-          reason:
-              'Step "${step.id}" points at an unknown GlobalKey. Add it to '
+          reason: 'Step "${step.id}" points at an unknown GlobalKey. Add it to '
               'TutorialKeys and attach it to a real widget.',
         );
       }
     });
 
-    testWidgets('only the quick_add step is allowed to have a null target',
-        (tester) async {
+    testWidgets('home steps all target the home UI', (tester) async {
       final steps = await _loadSteps(tester);
       final nullTargetIds =
           steps.where((s) => s.targetKey == null).map((s) => s.id).toList();
-      expect(nullTargetIds, ['quick_add'],
-          reason:
-              'Only the quick_add sheet step may have a null spotlight target.');
+      expect(nullTargetIds, isEmpty,
+          reason: 'Sheet steps belong to the separate add-tile tour.');
     });
 
     testWidgets('each step is bound to its expected target key',
@@ -185,7 +180,8 @@ void main() {
           reason: 'The Chat step spotlights fabKey — it must live on HomeFab.');
     });
 
-    testWidgets('bottomNavKey and bottomNavAddTileKey are attached to HomeBottomNav',
+    testWidgets(
+        'bottomNavKey and bottomNavAddTileKey are attached to HomeBottomNav',
         (tester) async {
       await tester.pumpWidget(_wrap(
         HomeBottomNav(
@@ -199,8 +195,7 @@ void main() {
       expect(TutorialKeys.bottomNavKey.currentContext, isNotNull,
           reason: 'bottomNavKey must live on the bottom nav bar.');
       expect(TutorialKeys.bottomNavAddTileKey.currentContext, isNotNull,
-          reason:
-              'The Create-a-Tile step spotlights the centre logo — '
+          reason: 'The Create-a-Tile step spotlights the centre logo — '
               'bottomNavAddTileKey must live on it.');
     });
 
@@ -218,8 +213,7 @@ void main() {
       ));
       await tester.pump();
       expect(TutorialKeys.topRightActionsKey.currentContext, isNotNull,
-          reason:
-              'The Toolkit step spotlights the top-right cluster — '
+          reason: 'The Toolkit step spotlights the top-right cluster — '
               'topRightActionsKey must live on it.');
     });
   });
@@ -231,7 +225,7 @@ void main() {
     testWidgets('chat_fab step icon matches the chat FAB', (tester) async {
       final steps = await _loadSteps(tester);
       final chatStep = _stepById(steps, 'chat_fab');
-      expect(chatStep.headerIcon, Icons.chat_outlined);
+      expect(chatStep.headerIcon, Icons.auto_awesome);
 
       await tester.pumpWidget(_wrap(HomeFab(onPressed: () {})));
       await tester.pump();
@@ -239,7 +233,8 @@ void main() {
           reason: 'Chat step advertises an icon the FAB no longer shows.');
     });
 
-    testWidgets('quick_tools callouts match the top-right actions', (tester) async {
+    testWidgets('quick_tools callouts match the top-right actions',
+        (tester) async {
       final steps = await _loadSteps(tester);
       final toolkit = _stepById(steps, 'quick_tools');
       final calloutIcons = toolkit.callouts.map((c) => c.icon).toSet();
@@ -268,7 +263,8 @@ void main() {
       }
     });
 
-    testWidgets('switch_views step icon matches the calendar switcher in the bottom nav',
+    testWidgets(
+        'switch_views step icon matches the calendar switcher in the bottom nav',
         (tester) async {
       final steps = await _loadSteps(tester);
       final switchViews = _stepById(steps, 'switch_views');

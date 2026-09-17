@@ -32,8 +32,10 @@ const _delegates = <LocalizationsDelegate<dynamic>>[
   GlobalCupertinoLocalizations.delegate,
 ];
 
+// English regardless of the generated list's order (it gained de/el/…
+// ahead of en on 2026-09-17).
 Locale _resolve(Locale? requested, Iterable<Locale> supported) =>
-    supported.first;
+    requested ?? const Locale('en');
 
 /// A source that never finds a collision, so the editor's own rebuilds are the
 /// only thing under test.

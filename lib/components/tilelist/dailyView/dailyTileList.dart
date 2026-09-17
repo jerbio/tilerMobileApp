@@ -30,6 +30,32 @@ DateTime? endOfDayDateTimeFor(DateTime day, TimeOfDay? timeOfDay) {
       day.year, day.month, day.day, timeOfDay.hour, timeOfDay.minute);
 }
 
+/// Identifies the run of days a loaded schedule state renders in the day
+/// carousel (first and last universal day index of its lookup window).
+String carouselDaySpanId(Timeline lookupTimeline) {
+  return '${lookupTimeline.startTime.universalDayIndex}-'
+      '${lookupTimeline.endTime.universalDayIndex}';
+}
+
+/// Whether the day carousel must be re-created (new widget key) for a
+/// loaded schedule state.
+///
+/// A new evaluation ([statusId]) always re-creates it (existing behavior).
+/// So does a change in the rendered day span: `carousel_slider` re-creates
+/// its PageController at the *current* page on every widget update and
+/// ignores `initialPage` once mounted, so a reload that shrinks the page
+/// set below the current page (the home tour swaps the 7-day window for a
+/// single dummy day, with no evaluation id) would otherwise clamp the
+/// carousel to its last page — the future-edge "Loading upcoming days..."
+/// placeholder — and the tour could not find the current tile.
+bool shouldRemountCarousel({
+  required String? previousSpanId,
+  required String spanId,
+  required String? statusId,
+}) {
+  return statusId != null || previousSpanId != spanId;
+}
+
 class DailyTileList extends TileList {
   static final String routeName = '/DailyTileList';
   DailyTileList({Key? key}) : super(key: key);
@@ -41,6 +67,10 @@ class DailyTileList extends TileList {
 class _DailyTileListState extends TileListState {
   Map? contextParams;
   Key carouselKey = ValueKey(Utility.getUuid);
+
+  /// Day span of the schedule state the carousel was last built for; see
+  /// [shouldRemountCarousel].
+  String? _carouselSpanId;
   Map<String, Map<String, SubCalendarEvent>> statusToSubEvents = {};
   Map<int, List<SubCalendarEvent>> dayIndexToSubEvents = {};
   Map<int, Tuple2<int, Widget>> dayIndexToCarouselIndex = {};
@@ -857,16 +887,28 @@ class _DailyTileListState extends TileListState {
               bool wasLoadingPast = _isLoadingPastDays;
               bool wasLoadingFuture = _isLoadingFutureDays;
 
+              final String spanId = carouselDaySpanId(state.lookupTimeline);
+              final bool spanChanged = spanId != _carouselSpanId;
               setState(() {
                 loadedTimeline = state.timelines;
                 loadedSubCalendarEvent = state.subEvents;
                 if (state.previousLookupTimeline != null) {
                   previousTimeline = state.previousLookupTimeline!;
                 }
-                if (statusId != null) {
-                  String carouselId = _generateCarouselKeyId(statusId);
-                  carouselKey = ValueKey(carouselId);
+                if (shouldRemountCarousel(
+                    previousSpanId: _carouselSpanId,
+                    spanId: spanId,
+                    statusId: statusId)) {
+                  carouselKey = ValueKey(
+                      _generateCarouselKeyId(statusId ?? 'span-' + spanId));
                 }
+                if (spanChanged) {
+                  // A different run of days: the old page index no longer
+                  // means the same day, so open on today rather than
+                  // padding the carousel to preserve it.
+                  carouselSliderIndex = null;
+                }
+                _carouselSpanId = spanId;
                 // Reset edge loading flags when new data is loaded
                 _isLoadingPastDays = false;
                 _isLoadingFutureDays = false;

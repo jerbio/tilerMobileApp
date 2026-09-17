@@ -103,7 +103,8 @@ class AddTileWidgetHarness {
         debugShowCheckedModeBanner: false,
         locale: effectiveLocale,
         localeResolutionCallback:
-            (Locale? requested, Iterable<Locale> supported) => supported.first,
+            (Locale? requested, Iterable<Locale> supported) =>
+                requested ?? const Locale('en'),
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
