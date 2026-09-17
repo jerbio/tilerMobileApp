@@ -2,6 +2,20 @@
     "helloWorld": "¡Hola Mundo!",
     "useDeviceLocation": "Usar la ubicación de mi dispositivo",
     "todayStatusPlacedTitle": "Programadas correctamente",
+    "searchSourceBadgeTiler": "Tiler",
+    "searchSourceBadgeGoogle": "Google",
+    "searchSourceBadgeMicrosoft": "Microsoft",
+    "searchConnectedAccount": "vía {account}",
+    "@searchConnectedAccount": {
+        "placeholders": {
+            "account": {
+                "type": "String"
+            }
+        }
+    },
+    "searchPartialFailureWarning": "No se pudieron buscar algunos calendarios.",
+    "searchUnavailableMessage": "La búsqueda no está disponible temporalmente. Inténtalo de nuevo.",
+    "searchRetry": "Reintentar",
     "todayStatusAttentionTitle": "Necesitan atención",
     "todayStatusLateTitle": "Con retraso",
     "todayStatusAttentionHelper": "Estas no cupieron en el tiempo disponible de hoy.",
@@ -1324,5 +1338,25 @@
     "previewActionsUnavailable": "TileCast no disponible",
     "tileCastStaleNote": "Tu agenda cambió — este TileCast puede estar desactualizado",
     "tileCastAlsoIncluded": "También incluido",
-    "actionsCount": "{count} acciones"
+    "actionsCount": "{count} acciones",
+    "searchResultsForQuery": "{count} resultados para \"{query}\"",
+    "@searchResultsForQuery": {
+      "placeholders": {
+        "count": { "type": "int" },
+        "query": { "type": "String" }
+      }
+    },
+    "searchFilterAll": "Todos",
+    "searchFilterTiler": "Tiler",
+    "searchFilterGoogle": "Google",
+    "searchFilterOutlook": "Outlook",
+    "startNow": "Empezar ahora",
+    "dueOnDate": "Vence {date}",
+    "@dueOnDate": {
+      "placeholders": {
+        "date": { "type": "String" }
+      }
+    },
+    "noResultsForProvider": "No hay resultados de este calendario",
+    "readOnly": "Solo lectura"
 }

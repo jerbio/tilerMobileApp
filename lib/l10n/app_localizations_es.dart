@@ -262,6 +262,31 @@ class AppLocalizationsEs extends AppLocalizations {
       '…Tiler necesita tres caracteres para una búsqueda';
 
   @override
+  String get searchSourceBadgeTiler => 'Tiler';
+
+  @override
+  String get searchSourceBadgeGoogle => 'Google';
+
+  @override
+  String get searchSourceBadgeMicrosoft => 'Microsoft';
+
+  @override
+  String searchConnectedAccount(String account) {
+    return 'vía $account';
+  }
+
+  @override
+  String get searchPartialFailureWarning =>
+      'No se pudieron buscar algunos calendarios.';
+
+  @override
+  String get searchUnavailableMessage =>
+      'La búsqueda no está disponible temporalmente. Inténtalo de nuevo.';
+
+  @override
+  String get searchRetry => 'Reintentar';
+
+  @override
   String get noLocationMatchWasFound =>
       'No se encontró una coincidencia de ubicación';
 
@@ -2979,4 +3004,35 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiConsentLinkError => 'No se pudo abrir el enlace.';
+
+  @override
+  String searchResultsForQuery(int count, String query) {
+    return '$count resultados para \"$query\"';
+  }
+
+  @override
+  String get searchFilterAll => 'Todos';
+
+  @override
+  String get searchFilterTiler => 'Tiler';
+
+  @override
+  String get searchFilterGoogle => 'Google';
+
+  @override
+  String get searchFilterOutlook => 'Outlook';
+
+  @override
+  String get startNow => 'Empezar ahora';
+
+  @override
+  String dueOnDate(String date) {
+    return 'Vence $date';
+  }
+
+  @override
+  String get noResultsForProvider => 'No hay resultados de este calendario';
+
+  @override
+  String get readOnly => 'Solo lectura';
 }

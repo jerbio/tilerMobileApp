@@ -586,6 +586,48 @@ abstract class AppLocalizations {
   /// **'...Tiler needs three characters for a lookup'**
   String get atLeastThreeLettersForLookup;
 
+  /// No description provided for @searchSourceBadgeTiler.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler'**
+  String get searchSourceBadgeTiler;
+
+  /// No description provided for @searchSourceBadgeGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Google'**
+  String get searchSourceBadgeGoogle;
+
+  /// No description provided for @searchSourceBadgeMicrosoft.
+  ///
+  /// In en, this message translates to:
+  /// **'Microsoft'**
+  String get searchSourceBadgeMicrosoft;
+
+  /// No description provided for @searchConnectedAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'via {account}'**
+  String searchConnectedAccount(String account);
+
+  /// No description provided for @searchPartialFailureWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Some calendars couldn\'t be searched.'**
+  String get searchPartialFailureWarning;
+
+  /// No description provided for @searchUnavailableMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Search is temporarily unavailable. Please try again.'**
+  String get searchUnavailableMessage;
+
+  /// No description provided for @searchRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get searchRetry;
+
   /// No description provided for @noLocationMatchWasFound.
   ///
   /// In en, this message translates to:
@@ -5263,6 +5305,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not open the link.'**
   String get aiConsentLinkError;
+
+  /// Result count header shown above tile name search results.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} results for \"{query}\"'**
+  String searchResultsForQuery(int count, String query);
+
+  /// No description provided for @searchFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get searchFilterAll;
+
+  /// No description provided for @searchFilterTiler.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler'**
+  String get searchFilterTiler;
+
+  /// No description provided for @searchFilterGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Google'**
+  String get searchFilterGoogle;
+
+  /// No description provided for @searchFilterOutlook.
+  ///
+  /// In en, this message translates to:
+  /// **'Outlook'**
+  String get searchFilterOutlook;
+
+  /// No description provided for @startNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Start now'**
+  String get startNow;
+
+  /// Deadline label on a search result card.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String dueOnDate(String date);
+
+  /// No description provided for @noResultsForProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'No results from this calendar'**
+  String get noResultsForProvider;
+
+  /// No description provided for @readOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only'**
+  String get readOnly;
 }
 
 class _AppLocalizationsDelegate

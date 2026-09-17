@@ -87,6 +87,20 @@
     "enableLocations":"Enable location permissions",
     "noMatchWasFound":"No match was found",
     "atLeastThreeLettersForLookup": "...Tiler needs three characters for a lookup",
+    "searchSourceBadgeTiler": "Tiler",
+    "searchSourceBadgeGoogle": "Google",
+    "searchSourceBadgeMicrosoft": "Microsoft",
+    "searchConnectedAccount": "via {account}",
+    "@searchConnectedAccount": {
+        "placeholders": {
+            "account": {
+                "type": "String"
+            }
+        }
+    },
+    "searchPartialFailureWarning": "Some calendars couldn't be searched.",
+    "searchUnavailableMessage": "Search is temporarily unavailable. Please try again.",
+    "searchRetry": "Retry",
     "noLocationMatchWasFound":"No location match was found",
     "noLocation":"No location",
     "clearedColon":"Cleared: ",
@@ -2000,5 +2014,27 @@
             "aiConsentLinkError": "Could not open the link.",
             "@aiConsentLinkError": {
               "description": "Error message shown when a legal footer link cannot be opened."
-            }
+            },
+    "searchResultsForQuery": "{count} results for \"{query}\"",
+    "@searchResultsForQuery": {
+      "description": "Result count header shown above tile name search results.",
+      "placeholders": {
+        "count": { "type": "int", "example": "23" },
+        "query": { "type": "String", "example": "work out" }
+      }
+    },
+    "searchFilterAll": "All",
+    "searchFilterTiler": "Tiler",
+    "searchFilterGoogle": "Google",
+    "searchFilterOutlook": "Outlook",
+    "startNow": "Start now",
+    "dueOnDate": "Due {date}",
+    "@dueOnDate": {
+      "description": "Deadline label on a search result card.",
+      "placeholders": {
+        "date": { "type": "String", "example": "Jun 23" }
+      }
+    },
+    "noResultsForProvider": "No results from this calendar",
+    "readOnly": "Read-only"
 }

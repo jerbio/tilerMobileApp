@@ -259,6 +259,31 @@ class AppLocalizationsEl extends AppLocalizations {
       '...Ο Tiler χρειάζεται τρεις χαρακτήρες για αναζήτηση';
 
   @override
+  String get searchSourceBadgeTiler => 'Tiler';
+
+  @override
+  String get searchSourceBadgeGoogle => 'Google';
+
+  @override
+  String get searchSourceBadgeMicrosoft => 'Microsoft';
+
+  @override
+  String searchConnectedAccount(String account) {
+    return 'via $account';
+  }
+
+  @override
+  String get searchPartialFailureWarning =>
+      'Some calendars couldn\'t be searched.';
+
+  @override
+  String get searchUnavailableMessage =>
+      'Search is temporarily unavailable. Please try again.';
+
+  @override
+  String get searchRetry => 'Retry';
+
+  @override
   String get noLocationMatchWasFound => 'Δεν βρέθηκε τοποθεσία';
 
   @override
@@ -2983,4 +3008,35 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get aiConsentLinkError => 'Δεν ήταν δυνατή η άνοιξη του συνδέσμου.';
+
+  @override
+  String searchResultsForQuery(int count, String query) {
+    return '$count results for \"$query\"';
+  }
+
+  @override
+  String get searchFilterAll => 'All';
+
+  @override
+  String get searchFilterTiler => 'Tiler';
+
+  @override
+  String get searchFilterGoogle => 'Google';
+
+  @override
+  String get searchFilterOutlook => 'Outlook';
+
+  @override
+  String get startNow => 'Start now';
+
+  @override
+  String dueOnDate(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String get noResultsForProvider => 'No results from this calendar';
+
+  @override
+  String get readOnly => 'Read-only';
 }
