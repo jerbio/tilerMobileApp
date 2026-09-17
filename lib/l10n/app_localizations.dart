@@ -4985,6 +4985,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not open the link.'**
   String get aiConsentLinkError;
+
+  /// No description provided for @productTourStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'Your product tour is about to begin.'**
+  String get productTourStarting;
 }
 
 class _AppLocalizationsDelegate

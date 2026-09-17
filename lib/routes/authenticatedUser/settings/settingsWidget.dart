@@ -1,3 +1,6 @@
+import 'package:tiler_app/bloc/tutorial/tutorial_bloc.dart';
+import 'package:tiler_app/bloc/tutorial/tutorial_event.dart';
+import 'package:tiler_app/components/tutorial/tourCoordinator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -136,7 +139,7 @@ class Settings extends StatelessWidget {
               icon: 'assets/icons/settings/HowToUseTiler.svg',
               title: AppLocalizations.of(context)!.howToUseTiler,
               color: textColor,
-              onTap: _onHowToUseTiler,
+              onTap: () => _onHowToUseTiler(context),
             ),
             // _buildListTile(
             //   icon: 'assets/icons/settings/AboutTiler.svg',
@@ -187,17 +190,19 @@ class Settings extends StatelessWidget {
     );
   }
 
-  /// "How to use Tiler" (product-tour-onboarding-redesign.md, section 1
-  /// "Manual replay" + Phase 2 item 4): replay-all. Clears the completion
-  /// flag of every registered tour on this device so each tour replays the
-  /// next time its own surface is visited — the home tour on the next home
-  /// visit, the settings tour on the next settings visit. Completion state
-  /// is per-tour in [TourPreferencesHelper]; the in-memory TourCoordinator
-  /// only gates concurrent tours, so a tour that was blocked while another
-  /// was active also gets its chance.
-  void _onHowToUseTiler() {
+  /// Reset all tours and start the current Settings tour in place.
+  Future<void> _onHowToUseTiler(BuildContext context) async {
+    final bloc = context.read<TutorialBloc>();
     AnalysticsSignal.send('SETTINGS_REPLAY_TOURS');
-    TourPreferencesHelper.resetTours();
+    await TourPreferencesHelper.resetTours();
+    if (!context.mounted || bloc.isClosed) return;
+    if (!TourCoordinator.instance.requestStart(bloc.tourId)) return;
+    NotificationOverlayMessage().showToast(
+      context,
+      AppLocalizations.of(context)!.productTourStarting,
+      NotificationOverlayMessageType.info,
+    );
+    bloc.add(StartTutorialEvent());
   }
 
   Widget _buildListTile(

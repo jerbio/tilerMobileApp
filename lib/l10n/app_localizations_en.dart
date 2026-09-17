@@ -2780,4 +2780,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiConsentLinkError => 'Could not open the link.';
+
+  @override
+  String get productTourStarting => 'Your product tour is about to begin.';
 }

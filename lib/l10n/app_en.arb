@@ -1862,5 +1862,6 @@
             "aiConsentLinkError": "Could not open the link.",
             "@aiConsentLinkError": {
               "description": "Error message shown when a legal footer link cannot be opened."
-            }
+            },
+  "productTourStarting": "Your product tour is about to begin."
 }

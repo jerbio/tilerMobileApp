@@ -671,5 +671,6 @@
     "legalFooterTerms": "Términos",
     "legalFooterAnd": "y la",
     "legalFooterPrivacy": "Privacidad",
-    "aiConsentLinkError": "No se pudo abrir el enlace."
+    "aiConsentLinkError": "No se pudo abrir el enlace.",
+  "productTourStarting": "Tu recorrido por la app está a punto de comenzar."
 }

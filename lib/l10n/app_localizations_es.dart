@@ -2787,4 +2787,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiConsentLinkError => 'No se pudo abrir el enlace.';
+
+  @override
+  String get productTourStarting =>
+      'Tu recorrido por la app está a punto de comenzar.';
 }
