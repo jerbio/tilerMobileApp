@@ -762,5 +762,25 @@
     "addCalendar": "Añadir calendario",
     "calendarConnected": "Calendario conectado",
     "calendarConnectionDeclined": "La conexión del calendario se canceló",
-    "calendarConnectionError": "No se pudo conectar tu calendario"
+    "calendarConnectionError": "No se pudo conectar tu calendario",
+    "searchResultsForQuery": "{count} resultados para \"{query}\"",
+    "@searchResultsForQuery": {
+      "placeholders": {
+        "count": { "type": "int" },
+        "query": { "type": "String" }
+      }
+    },
+    "searchFilterAll": "Todos",
+    "searchFilterTiler": "Tiler",
+    "searchFilterGoogle": "Google",
+    "searchFilterOutlook": "Outlook",
+    "startNow": "Empezar ahora",
+    "dueOnDate": "Vence {date}",
+    "@dueOnDate": {
+      "placeholders": {
+        "date": { "type": "String" }
+      }
+    },
+    "noResultsForProvider": "No hay resultados de este calendario",
+    "readOnly": "Solo lectura"
 }

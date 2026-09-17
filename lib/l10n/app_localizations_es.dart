@@ -2975,4 +2975,35 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiConsentLinkError => 'No se pudo abrir el enlace.';
+
+  @override
+  String searchResultsForQuery(int count, String query) {
+    return '$count resultados para \"$query\"';
+  }
+
+  @override
+  String get searchFilterAll => 'Todos';
+
+  @override
+  String get searchFilterTiler => 'Tiler';
+
+  @override
+  String get searchFilterGoogle => 'Google';
+
+  @override
+  String get searchFilterOutlook => 'Outlook';
+
+  @override
+  String get startNow => 'Empezar ahora';
+
+  @override
+  String dueOnDate(String date) {
+    return 'Vence $date';
+  }
+
+  @override
+  String get noResultsForProvider => 'No hay resultados de este calendario';
+
+  @override
+  String get readOnly => 'Solo lectura';
 }

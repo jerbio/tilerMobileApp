@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
-import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/calendarSearch.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
@@ -65,7 +65,11 @@ class TileNameApi extends AppApi {
     return processTileEventList(response);
   }
 
-  Future<List<TilerEvent>> getTilesByName(String name) async {
+  /// Looks up tiles by name using the v2 search endpoint (the same one the
+  /// web client uses), which returns provider (thirdPartyType) info and
+  /// supports pagination via [batchSize] and [index].
+  Future<List<TilerEvent>> getTilesByName(String name,
+      {int? batchSize, int? index}) async {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain;
 
@@ -76,7 +80,10 @@ class TileNameApi extends AppApi {
         'Data': name,
         'TimeZoneOffset':
             Utility.currentTime().timeZoneOffset.inHours.toString(),
-        'MobileApp': true.toString()
+        'MobileApp': true.toString(),
+        'Version': 'v2',
+        if (batchSize != null) 'batchSize': batchSize.toString(),
+        if (index != null) 'index': index.toString(),
       };
 
       Uri uri = Uri.https(url, 'api/CalendarEvent/Name', queryParameters);
