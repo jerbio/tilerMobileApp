@@ -1,22 +1,17 @@
 // Tile Detail redesign — Step 6.6: the ONE production wiring of the
 // redesigned screen, and the drop-in route for the legacy push sites.
 //
-// D25: Edit Tile and Tile Detail ship together behind ONE flag
-// (`EditTileFeatureFlags.editTileRedesignEnabled`); the redesigned Edit
-// Tile always hands off here, never to the legacy `TileDetail`; every
-// legacy push site goes through `TileDetailRoute`, so the flag governs
-// all of them and 5.4 can delete both legacy screens in one move.
+// D25: Edit Tile and Tile Detail shipped together behind ONE flag; 5.4
+// deleted both legacy screens and the flag. Every push site goes through
+// `TileDetailRoute`, now unconditional.
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart'
-    show EditTileFeatureFlags;
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileScheduleRefresher.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailRedesignScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailSubmission.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileDetails/tileDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 
@@ -56,31 +51,21 @@ Future<void> pushTileDetailRedesign(
           routeContext, TileDetailTarget.calendarEvent(calendarEventId)),
     ));
 
-typedef TileDetailLegacyBuilder = Widget Function(
-    String tileId, bool loadSubEvents);
 typedef TileDetailRedesignBuilder = Widget Function(
     BuildContext context, TileDetailTarget target);
 
-Widget _legacy(String tileId, bool loadSubEvents) =>
-    TileDetail(tileId: tileId, loadSubEvents: loadSubEvents);
-
-Widget _legacyTemplate(String templateId, bool loadSubEvents) =>
-    TileDetail.byDesignatedTileId(
-        designatedTileTemplateId: templateId, loadSubEvents: loadSubEvents);
-
-/// Drop-in for the legacy `TileDetail(tileId:, loadSubEvents:)`: the
-/// redesign when the (shared) flag is on, the legacy screen when off.
-/// `loadSubEvents` only reaches the legacy screen — the redesign lists the
-/// occurrences of every Tiler-owned series.
+/// The one way to open Tile details, with the arguments the legacy
+/// `TileDetail(tileId:, loadSubEvents:)` took (5.4: the legacy screen is
+/// gone; the route stays so the push sites keep one API). `loadSubEvents`
+/// is accepted and ignored — the redesign lists the occurrences of every
+/// Tiler-owned series.
 class TileDetailRoute extends StatelessWidget {
   TileDetailRoute({
     super.key,
     required String tileId,
     this.loadSubEvents = true,
-    this.legacyBuilder = _legacy,
     this.redesignBuilder = buildTileDetailRedesign,
-  })  : target = TileDetailTarget.calendarEvent(tileId),
-        legacyTemplateBuilder = _legacyTemplate;
+  }) : target = TileDetailTarget.calendarEvent(tileId);
 
   /// Drop-in for `TileDetail.byDesignatedTileId(designatedTileTemplateId:,
   /// loadSubEvents:)` — the tile-share path (2026-09-17).
@@ -88,27 +73,15 @@ class TileDetailRoute extends StatelessWidget {
     super.key,
     required String designatedTileTemplateId,
     this.loadSubEvents = false,
-    this.legacyTemplateBuilder = _legacyTemplate,
     this.redesignBuilder = buildTileDetailRedesign,
-  })  : target = TileDetailTarget.designatedTile(designatedTileTemplateId),
-        legacyBuilder = _legacy;
+  }) : target = TileDetailTarget.designatedTile(designatedTileTemplateId);
 
   final TileDetailTarget target;
   final bool loadSubEvents;
 
-  /// Test seams; production uses the defaults.
-  final TileDetailLegacyBuilder legacyBuilder;
-  final TileDetailLegacyBuilder legacyTemplateBuilder;
+  /// Test seam; production uses the default.
   final TileDetailRedesignBuilder redesignBuilder;
 
   @override
-  Widget build(BuildContext context) {
-    if (!EditTileFeatureFlags.editTileRedesignEnabled) {
-      final String? templateId = target.designatedTileTemplateId;
-      return templateId != null
-          ? legacyTemplateBuilder(templateId, loadSubEvents)
-          : legacyBuilder(target.calendarEventId!, loadSubEvents);
-    }
-    return redesignBuilder(context, target);
-  }
+  Widget build(BuildContext context) => redesignBuilder(context, target);
 }

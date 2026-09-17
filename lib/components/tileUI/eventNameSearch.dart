@@ -11,7 +11,6 @@ import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileDetails/TileDetail.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/tileNameApi.dart';

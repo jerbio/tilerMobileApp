@@ -3298,15 +3298,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get editTileSectionTiming => 'HORARIO';
 
   @override
-  String get editTileFieldTitle => 'TÍTULO';
-
-  @override
-  String get editTileFieldType => 'TIPO';
-
-  @override
-  String get editTileFieldStart => 'INICIO';
-
-  @override
   String get editTileReasonNameRequired =>
       'Ponle un título a este tile para guardarlo';
 
@@ -3316,10 +3307,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get editTileReasonEndNotAfterStart =>
       'El fin debe ser después del inicio';
-
-  @override
-  String get editTileReasonRepeatAndTime =>
-      'Cambia la regla de repetición y la hora de este tile en guardados separados';
 
   @override
   String get editTileDiscardTitle => '¿Descartar cambios?';
@@ -3354,9 +3341,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get editTileSectionAdditional => 'DETALLES ADICIONALES';
-
-  @override
-  String get editTileFieldNotes => 'NOTAS';
 
   @override
   String get editTileSectionSuggestions => 'SUGERENCIAS';
@@ -3447,35 +3431,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get editTileLocationRemove => 'Quitar ubicación';
-
-  @override
-  String get editTileScopeLabel => 'Aplicar a';
-
-  @override
-  String get editTileScopeSingle => 'Este tile';
-
-  @override
-  String get editTileScopeAll => 'Todas las repeticiones';
-
-  @override
-  String get editTileScopeCaption =>
-      'La prioridad, la ubicación, el color y el título pueden aplicarse a todas las repeticiones de este tile.';
-
-  @override
-  String get editTileScopeLockedByTime =>
-      'Un cambio de hora aplica solo a este tile, así que el alcance queda bloqueado mientras haya uno pendiente.';
-
-  @override
-  String get editTileScopeAllConfirmTitle =>
-      '¿Aplicar a todas las repeticiones?';
-
-  @override
-  String editTileScopeAllConfirmBody(String title) {
-    return 'Esto cambia todas las repeticiones de \"$title\", no solo esta.';
-  }
-
-  @override
-  String get editTileScopeAllConfirm => 'Aplicar a todas';
 
   @override
   String get editTileMenuTileDetails => 'Detalles del tile';
@@ -3640,16 +3595,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String editTileDateChipSemantics(String field, String value) {
     return 'Fecha de $field, $value';
-  }
-
-  @override
-  String editTileTitleSemantics(String title) {
-    return 'Título, $title';
-  }
-
-  @override
-  String editTileStartValue(String date, String time) {
-    return '$date\n$time';
   }
 
   @override

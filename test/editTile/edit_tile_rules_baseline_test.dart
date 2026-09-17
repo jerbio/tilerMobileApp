@@ -21,7 +21,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/noteData.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/util.dart';
 
 final DateTime start = DateTime.utc(2026, 9, 12, 14, 0);
@@ -151,81 +150,7 @@ void main() {
     });
   });
 
-  group('updateProceed — when ✓ exists', () {
-    test('a normal tile: valid AND not equivalent', () {
-      expect(editTileCanProceed(seeded(), loaded(), isProcrastinate: false),
-          isFalse,
-          reason: 'nothing changed');
-      expect(
-          editTileCanProceed(seeded()..name = 'Changed', loaded(),
-              isProcrastinate: false),
-          isTrue);
-      expect(
-          editTileCanProceed(seeded()..name = '', loaded(),
-              isProcrastinate: false),
-          isFalse,
-          reason: 'changed but invalid');
-    });
-
-    test('a procrastinate tile: only the TIME matters', () {
-      // Name is fixed ("Blocked out"), split hidden. The time branch fires
-      // iff start or end moved and the frame is still positive; otherwise
-      // the normal rule applies (see the next test).
-      expect(editTileCanProceed(seeded(), loaded(), isProcrastinate: true),
-          isFalse);
-      expect(
-          editTileCanProceed(
-              seeded()..startTime = start.add(const Duration(minutes: 5)),
-              loaded(),
-              isProcrastinate: true),
-          isTrue);
-      expect(
-          editTileCanProceed(seeded()..name = 'Changed', loaded(),
-              isProcrastinate: true),
-          isTrue,
-          reason: 'the time branch did not fire, so the NORMAL rule applies: '
-              'valid and not equivalent → ✓. Unreachable from the UI (the '
-              'name field is disabled for a blocked-out tile) but it is the '
-              'rule, and the draft must not invent a stricter one');
-      expect(
-          editTileCanProceed(seeded()..endTime = start, loaded(),
-              isProcrastinate: true),
-          isFalse,
-          reason: 'moved, but start is no longer before end');
-    });
-
-    test('the time branch BYPASSES validity', () {
-      // What makes the branch observable: a blocked-out tile whose time
-      // moved proceeds even when the draft would fail `isValid` — its name
-      // is the fixed "Blocked out" placeholder and may be empty. Without
-      // the branch this would be false.
-      expect(
-          editTileCanProceed(
-              seeded()
-                ..name = ''
-                ..startTime = start.add(const Duration(minutes: 5)),
-              loaded(),
-              isProcrastinate: true),
-          isTrue);
-      expect(
-          editTileCanProceed(
-              seeded()
-                ..name = ''
-                ..startTime = start.add(const Duration(minutes: 5)),
-              loaded(),
-              isProcrastinate: false),
-          isFalse,
-          reason: 'the same draft on a normal tile is simply invalid');
-    });
-
-    test('a procrastinate tile with an unmoved time falls through', () {
-      // The legacy branch falls into the normal rule when the time did not
-      // move — so an otherwise-valid, non-equivalent change (e.g. split)
-      // still enables ✓. Pinned so the redesign does not "tidy" it.
-      expect(
-          editTileCanProceed(seeded()..splitCount = 5, loaded(),
-              isProcrastinate: true),
-          isTrue);
-    });
-  });
+  // `updateProceed` (the legacy ✓ rule) was pinned here against the legacy
+  // `editTileCanProceed` until Step 5.4 deleted the legacy screen. The rule
+  // lives on as `EditTileDraft.canSave`, pinned in edit_tile_draft_test.dart.
 }

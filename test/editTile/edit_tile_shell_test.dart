@@ -333,7 +333,7 @@ void main() {
               of: find.byKey(const ValueKey('editHero')), matching: titleField),
           findsOneWidget,
           reason: 'the editable title IS the hero title');
-      expect(find.text(testL10n.editTileFieldTitle), findsNothing,
+      expect(find.byType(AddTileTextFieldRow), findsNothing,
           reason: 'no TITLE row: it repeated the hero');
       final Finder pencil = find.byKey(const ValueKey('editTitlePencil'));
       expect(pencil, findsOneWidget);

@@ -3289,15 +3289,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editTileSectionTiming => 'TIMING';
 
   @override
-  String get editTileFieldTitle => 'TITLE';
-
-  @override
-  String get editTileFieldType => 'TYPE';
-
-  @override
-  String get editTileFieldStart => 'START';
-
-  @override
   String get editTileReasonNameRequired => 'Give this tile a title to save it';
 
   @override
@@ -3306,10 +3297,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get editTileReasonEndNotAfterStart =>
       'The end must be after the start';
-
-  @override
-  String get editTileReasonRepeatAndTime =>
-      'Change the repeat rule and this tile\'s time in separate saves';
 
   @override
   String get editTileDiscardTitle => 'Discard changes?';
@@ -3344,9 +3331,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editTileSectionAdditional => 'ADDITIONAL DETAILS';
-
-  @override
-  String get editTileFieldNotes => 'NOTES';
 
   @override
   String get editTileSectionSuggestions => 'SUGGESTIONS';
@@ -3438,34 +3422,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editTileLocationRemove => 'Remove location';
-
-  @override
-  String get editTileScopeLabel => 'Apply to';
-
-  @override
-  String get editTileScopeSingle => 'This tile';
-
-  @override
-  String get editTileScopeAll => 'All occurrences';
-
-  @override
-  String get editTileScopeCaption =>
-      'Priority, location, colour and title can apply to every occurrence of this tile.';
-
-  @override
-  String get editTileScopeLockedByTime =>
-      'A time change applies to this tile only, so the scope is locked while one is pending.';
-
-  @override
-  String get editTileScopeAllConfirmTitle => 'Apply to all occurrences?';
-
-  @override
-  String editTileScopeAllConfirmBody(String title) {
-    return 'This changes every occurrence of \"$title\", not just this one.';
-  }
-
-  @override
-  String get editTileScopeAllConfirm => 'Apply to all';
 
   @override
   String get editTileMenuTileDetails => 'Tile details';
@@ -3627,16 +3583,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String editTileDateChipSemantics(String field, String value) {
     return '$field date, $value';
-  }
-
-  @override
-  String editTileTitleSemantics(String title) {
-    return 'Title, $title';
-  }
-
-  @override
-  String editTileStartValue(String date, String time) {
-    return '$date\n$time';
   }
 
   @override

@@ -75,11 +75,10 @@ void main() {
 
   // ------------------------------------------------------------------ 5.2
   group('5.2 Entry point', () {
-    setUp(() => EditTileFeatureFlags.editTileRedesignEnabled = false);
-    tearDown(() => EditTileFeatureFlags.editTileRedesignEnabled = false);
-
-    Future<void> pumpEntry(WidgetTester tester,
-        {required Widget Function(String, TileSource?, String?) legacy}) async {
+    testWidgets('EditTileRoute renders the redesign with the same arguments',
+        (tester) async {
+      // 5.4: no flag, no legacy screen — the route is the one API the
+      // push sites use, so they never changed.
       await tester.pumpWidget(MaterialApp(
         theme: TileThemeData.lightTheme,
         locale: const Locale('en'),
@@ -89,7 +88,6 @@ void main() {
           tileId: 'sub-1',
           tileSource: TileSource.google,
           thirdPartyUserId: 'gcal-user-3',
-          legacyBuilder: legacy,
           redesignBuilder: (BuildContext _, EditTileRedesignRouteArgs args) =>
               EditTileRedesignScreen(
             tileId: args.tileId,
@@ -102,26 +100,6 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
-    }
-
-    testWidgets('flag off → the legacy screen, with the same arguments',
-        (tester) async {
-      final List<String> built = <String>[];
-      await pumpEntry(tester, legacy: (String id, TileSource? src, String? u) {
-        built.add('$id:${src?.name}:$u');
-        return const Scaffold(body: Text('legacy'));
-      });
-      expect(built, <String>['sub-1:google:gcal-user-3']);
-      expect(find.text('legacy'), findsOneWidget);
-      expect(find.byType(EditTileRedesignScreen), findsNothing);
-    });
-
-    testWidgets('flag on → the redesign, with the same arguments',
-        (tester) async {
-      EditTileFeatureFlags.editTileRedesignEnabled = true;
-      await pumpEntry(tester,
-          legacy: (_, __, ___) => const Scaffold(body: Text('legacy')));
-      expect(find.text('legacy'), findsNothing);
       final EditTileRedesignScreen screen = tester
           .widget<EditTileRedesignScreen>(find.byType(EditTileRedesignScreen));
       expect(screen.tileId, 'sub-1');
@@ -129,9 +107,9 @@ void main() {
       expect(screen.thirdPartyUserId, 'gcal-user-3');
     });
 
-    test('no production file constructs the legacy EditTile directly', () {
-      // Every push site goes through EditTileRoute, so the flag governs all
-      // of them and Step 5.4 can delete the legacy screen in one move.
+    test('no production file constructs an EditTile directly', () {
+      // Every push site goes through EditTileRoute — the one API — so a
+      // future change of screen is again one move.
       final List<String> offenders = <String>[];
       for (final FileSystemEntity e
           in Directory('lib').listSync(recursive: true)) {
@@ -163,18 +141,6 @@ void main() {
       expect(entry.contains('ApiTileDetailSubmission('), isTrue);
       expect(entry.contains('BlocEditTileScheduleRefresher('), isTrue,
           reason: 'the same schedule side-effects as Edit Tile');
-    });
-
-    test('main flips the ONE flag for debug builds, and only there', () {
-      // The device round (§15.2) runs through the normal push sites; a
-      // production build must keep the legacy screens until 5.4.
-      final String main = _code(File('lib/main.dart'));
-      expect(
-          main.contains(
-              'EditTileFeatureFlags.editTileRedesignEnabled = Constants.isDebug;'),
-          isTrue);
-      expect(main.contains('editTileRedesignEnabled = true'), isFalse,
-          reason: 'never hard-on');
     });
 
     test('the debug route and the entry build the redesign the same way', () {

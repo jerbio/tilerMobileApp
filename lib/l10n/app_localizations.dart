@@ -5826,24 +5826,6 @@ abstract class AppLocalizations {
   /// **'TIMING'**
   String get editTileSectionTiming;
 
-  /// No description provided for @editTileFieldTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'TITLE'**
-  String get editTileFieldTitle;
-
-  /// No description provided for @editTileFieldType.
-  ///
-  /// In en, this message translates to:
-  /// **'TYPE'**
-  String get editTileFieldType;
-
-  /// No description provided for @editTileFieldStart.
-  ///
-  /// In en, this message translates to:
-  /// **'START'**
-  String get editTileFieldStart;
-
   /// No description provided for @editTileReasonNameRequired.
   ///
   /// In en, this message translates to:
@@ -5861,12 +5843,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The end must be after the start'**
   String get editTileReasonEndNotAfterStart;
-
-  /// No description provided for @editTileReasonRepeatAndTime.
-  ///
-  /// In en, this message translates to:
-  /// **'Change the repeat rule and this tile\'s time in separate saves'**
-  String get editTileReasonRepeatAndTime;
 
   /// No description provided for @editTileDiscardTitle.
   ///
@@ -5933,12 +5909,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'ADDITIONAL DETAILS'**
   String get editTileSectionAdditional;
-
-  /// No description provided for @editTileFieldNotes.
-  ///
-  /// In en, this message translates to:
-  /// **'NOTES'**
-  String get editTileFieldNotes;
 
   /// No description provided for @editTileSectionSuggestions.
   ///
@@ -6089,54 +6059,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove location'**
   String get editTileLocationRemove;
-
-  /// No description provided for @editTileScopeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply to'**
-  String get editTileScopeLabel;
-
-  /// No description provided for @editTileScopeSingle.
-  ///
-  /// In en, this message translates to:
-  /// **'This tile'**
-  String get editTileScopeSingle;
-
-  /// No description provided for @editTileScopeAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All occurrences'**
-  String get editTileScopeAll;
-
-  /// No description provided for @editTileScopeCaption.
-  ///
-  /// In en, this message translates to:
-  /// **'Priority, location, colour and title can apply to every occurrence of this tile.'**
-  String get editTileScopeCaption;
-
-  /// No description provided for @editTileScopeLockedByTime.
-  ///
-  /// In en, this message translates to:
-  /// **'A time change applies to this tile only, so the scope is locked while one is pending.'**
-  String get editTileScopeLockedByTime;
-
-  /// No description provided for @editTileScopeAllConfirmTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply to all occurrences?'**
-  String get editTileScopeAllConfirmTitle;
-
-  /// No description provided for @editTileScopeAllConfirmBody.
-  ///
-  /// In en, this message translates to:
-  /// **'This changes every occurrence of \"{title}\", not just this one.'**
-  String editTileScopeAllConfirmBody(String title);
-
-  /// No description provided for @editTileScopeAllConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply to all'**
-  String get editTileScopeAllConfirm;
 
   /// No description provided for @editTileMenuTileDetails.
   ///
@@ -6401,18 +6323,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{field} date, {value}'**
   String editTileDateChipSemantics(String field, String value);
-
-  /// No description provided for @editTileTitleSemantics.
-  ///
-  /// In en, this message translates to:
-  /// **'Title, {title}'**
-  String editTileTitleSemantics(String title);
-
-  /// Two-line value of the Start row: the day, then the clock time.
-  ///
-  /// In en, this message translates to:
-  /// **'{date}\n{time}'**
-  String editTileStartValue(String date, String time);
 
   /// No description provided for @addTileSubmitFailed.
   ///
