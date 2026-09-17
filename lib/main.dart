@@ -88,6 +88,10 @@ Future main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   await dotenv.load(fileName: ".env");
+  // Edit Tile + Tile Detail redesign (D25: one flag for both). On for debug
+  // builds so the device round runs through the normal push sites; a
+  // production build keeps the legacy screens until 5.4 retires them.
+  EditTileFeatureFlags.editTileRedesignEnabled = Constants.isDebug;
   // if (!Constants.isDebug) {
   //   await Firebase.initializeApp(
   //     options: DefaultFirebaseOptions.currentPlatform,

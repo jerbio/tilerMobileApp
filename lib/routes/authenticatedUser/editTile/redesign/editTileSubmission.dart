@@ -23,6 +23,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRequestMapper.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/redesignLog.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
@@ -160,14 +161,26 @@ class ApiEditTileLoader implements EditTileLoader {
   Future<EditTileLoadResult> load(String tileId,
       {String? source, String? thirdPartyUserId}) async {
     final SubCalendarEvent tile;
+    final Map<String, Object?> identity = <String, Object?>{
+      'tileId': tileId,
+      'source': source,
+      'hasThirdPartyUserId': (thirdPartyUserId ?? '').isNotEmpty,
+    };
     try {
       // The bloc sent the missing source as "", not null; kept.
       tile = await subCalendarEventApi.getSubEvent(tileId,
           calendarSource: source ?? '',
           thirdPartyUserId: thirdPartyUserId ?? '');
-    } catch (e) {
+    } catch (e, st) {
+      RedesignLog.event('edit_tile_load_failed',
+          <String, Object?>{...identity, 'code': _reasonFor(e)},
+          error: e, stack: st);
       return EditTileLoadResult.failure(_reasonFor(e));
     }
+    RedesignLog.event('edit_tile_opened', <String, Object?>{
+      ...identity,
+      'mode': EditTileDraft.fromLoaded(tile).mode.name,
+    });
     // Suggestions are decoration: their failure is not the tile's.
     List<NextTileSuggestion> suggestions;
     try {
@@ -192,15 +205,18 @@ class ApiEditTileSubmission implements EditTileSubmission {
 
   /// Runs [call] inside the schedule side-effects, mapping failure to an
   /// allow-listed code.
-  Future<EditTileSaveResult> _mutate(
+  Future<EditTileSaveResult> _mutate(String event, Map<String, Object?> data,
       Future<SubCalendarEvent?> Function() call) async {
     refresher.beginEvaluation();
     try {
       final SubCalendarEvent? tile = await call();
       refresher.refreshAfterChange();
       return EditTileSaveResult.success(tile);
-    } catch (e) {
+    } catch (e, st) {
       refresher.abandonEvaluation();
+      RedesignLog.event(
+          '${event}_failed', <String, Object?>{...data, 'code': _reasonFor(e)},
+          error: e, stack: st);
       return EditTileSaveResult.failure(_reasonFor(e));
     }
   }
@@ -211,8 +227,14 @@ class ApiEditTileSubmission implements EditTileSubmission {
       return Future<EditTileSaveResult>.value(
           const EditTileSaveResult.nothingToSave());
     }
-    return _mutate(() =>
-        subCalendarEventApi.updateSubEventRequest(editTileUpdateParams(draft)));
+    return _mutate(
+        'edit_tile_save',
+        <String, Object?>{
+          'tileId': draft.id,
+          'dirty': draft.dirtyFields.map((f) => f.name).join('|'),
+        },
+        () => subCalendarEventApi
+            .updateSubEventRequest(editTileUpdateParams(draft)));
   }
 
   @override
@@ -224,19 +246,28 @@ class ApiEditTileSubmission implements EditTileSubmission {
     final Map<String, dynamic> params =
         SubCalendarEventApi.updateSubEventParams(
             toEditTilerEvent(asLoaded)..rsvpStatusUpdate = status);
-    return _mutate(() => subCalendarEventApi.updateSubEventRequest(params));
+    return _mutate(
+        'edit_tile_rsvp',
+        <String, Object?>{'tileId': draft.id, 'status': status.name},
+        () => subCalendarEventApi.updateSubEventRequest(params));
   }
 
   @override
-  Future<EditTileSaveResult> complete(SubCalendarEvent tile) =>
-      _mutate(() => subCalendarEventApi.complete(tile));
+  Future<EditTileSaveResult> complete(SubCalendarEvent tile) => _mutate(
+      'edit_tile_action',
+      <String, Object?>{'tileId': tile.id, 'kind': 'complete'},
+      () => subCalendarEventApi.complete(tile));
 
   @override
-  Future<EditTileSaveResult> startNow(SubCalendarEvent tile) =>
-      _mutate(() => subCalendarEventApi.setAsNow(tile));
+  Future<EditTileSaveResult> startNow(SubCalendarEvent tile) => _mutate(
+      'edit_tile_action',
+      <String, Object?>{'tileId': tile.id, 'kind': 'startNow'},
+      () => subCalendarEventApi.setAsNow(tile));
 
   @override
-  Future<EditTileSaveResult> delete(SubCalendarEvent tile) => _mutate(() async {
+  Future<EditTileSaveResult> delete(SubCalendarEvent tile) => _mutate(
+          'edit_tile_action',
+          <String, Object?>{'tileId': tile.id, 'kind': 'delete'}, () async {
         // The identity the legacy playback buttons send.
         await subCalendarEventApi.delete(
           tile.id!,
@@ -249,7 +280,8 @@ class ApiEditTileSubmission implements EditTileSubmission {
 
   @override
   Future<EditTileSaveResult> defer(SubCalendarEvent tile, Duration by) =>
-      _mutate(() async {
+      _mutate('edit_tile_action',
+          <String, Object?>{'tileId': tile.id, 'kind': 'defer'}, () async {
         await subCalendarEventApi.procrastinate(by, tile.id!);
         return null;
       });
@@ -261,7 +293,10 @@ class ApiEditTileSubmission implements EditTileSubmission {
           await whatIfApi.updateSubEvent(toEditTilerEvent(draft));
       if (result == null) return const WhatIfResult.failed();
       return WhatIfResult.fromPreview(result.item2);
-    } catch (_) {
+    } catch (e, st) {
+      RedesignLog.event('edit_tile_whatif_failed',
+          <String, Object?>{'tileId': draft.id, 'code': _reasonFor(e)},
+          error: e, stack: st);
       return const WhatIfResult.failed();
     }
   }

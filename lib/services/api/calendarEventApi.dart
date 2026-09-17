@@ -161,11 +161,17 @@ class CalendarEventApi extends AppApi {
   }
 
   Future<CalendarEvent> updateCalEvent(EditCalendarEvent calEvent,
-      {bool clearLocation = false}) async {
+          {bool clearLocation = false}) =>
+      updateCalEventRequest(
+          updateCalEventParams(calEvent, clearLocation: clearLocation));
+
+  /// Sends an already-built update map. The legacy screen builds it from an
+  /// `EditCalendarEvent` above; the redesigned Tile Detail builds the same
+  /// map plus `Priority` and sends it here.
+  Future<CalendarEvent> updateCalEventRequest(
+      Map<String, dynamic> queryParameters) async {
     TilerError error = new TilerError();
     error.Message = "Did not update tile";
-    final Map<String, dynamic> queryParameters =
-        updateCalEventParams(calEvent, clearLocation: clearLocation);
 
     return sendPostRequest('api/CalendarEvent/Update', queryParameters)
         .then((response) {

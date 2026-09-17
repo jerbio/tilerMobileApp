@@ -144,6 +144,39 @@ void main() {
       expect(offenders, isEmpty);
     });
 
+    test(
+        'the redesigned Edit Tile hands off to the redesigned Tile Detail, '
+        'never the legacy screen (D25)', () {
+      // The two ship together behind one flag; the ⋯ "Tile details" item
+      // and the Progress row must land on the redesign.
+      final String shell = _code(File(
+          'lib/routes/authenticatedUser/editTile/redesign/editTileRedesignScreen.dart'));
+      expect(shell.contains('tileDetails/tileDetail.dart'), isFalse,
+          reason: 'no import of the legacy TileDetail');
+      expect(RegExp(r'(?<![A-Za-z])TileDetail\(').hasMatch(shell), isFalse);
+      expect(shell.contains('pushTileDetailRedesign('), isTrue,
+          reason: 'through the entry, the ONE production wiring');
+      final String entry = _code(File(
+          'lib/routes/authenticatedUser/tileDetails/redesign/tileDetailEntry.dart'));
+      expect(entry.contains('buildTileDetailRedesign('), isTrue);
+      expect(entry.contains('ApiTileDetailLoader('), isTrue);
+      expect(entry.contains('ApiTileDetailSubmission('), isTrue);
+      expect(entry.contains('BlocEditTileScheduleRefresher('), isTrue,
+          reason: 'the same schedule side-effects as Edit Tile');
+    });
+
+    test('main flips the ONE flag for debug builds, and only there', () {
+      // The device round (§15.2) runs through the normal push sites; a
+      // production build must keep the legacy screens until 5.4.
+      final String main = _code(File('lib/main.dart'));
+      expect(
+          main.contains(
+              'EditTileFeatureFlags.editTileRedesignEnabled = Constants.isDebug;'),
+          isTrue);
+      expect(main.contains('editTileRedesignEnabled = true'), isFalse,
+          reason: 'never hard-on');
+    });
+
     test('the debug route and the entry build the redesign the same way', () {
       // One wiring function serves both: `main.dart`'s /EditTileRedesign
       // and EditTileRoute. A second copy would drift.

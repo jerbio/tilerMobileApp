@@ -27,7 +27,9 @@ EditTilerEvent toEditTilerEvent(EditTileDraft d) => EditTilerEvent()
   ..thirdPartyId = d.thirdPartyId
   ..thirdPartyType = d.thirdPartyType
   ..thirdPartyUserId = d.thirdPartyUserId
-  ..note = d.note;
+  // The note exactly as loaded (not the display-sanitised `d.note`): the
+  // wire value must stay the legacy one.
+  ..note = d.original.noteData?.note;
 
 /// The update request for [d].
 Map<String, dynamic> editTileUpdateParams(EditTileDraft d) {

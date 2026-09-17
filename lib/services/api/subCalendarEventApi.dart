@@ -50,8 +50,9 @@ class SubCalendarEventApi extends AppApi {
           return SubCalendarEvent.fromJson(jsonResult['Content']);
         }
       }
-
-      throw TilerError();
+      // Carry the server's reason (code + message) so a rejected load can be
+      // diagnosed from the log; a bare TilerError told nobody anything.
+      throw getTilerResponseError(jsonResult) ?? TilerError();
     }
     throw TilerError();
   }

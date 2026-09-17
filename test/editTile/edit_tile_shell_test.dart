@@ -367,6 +367,18 @@ void main() {
       expect(find.text('Write report'), findsOneWidget);
     });
 
+    testWidgets('a stored "null" note reads as no note (legacy pollution)',
+        (tester) async {
+      // The legacy screen sends `Notes: note.toString()` — the string
+      // "null" for a tile without a note — so that is what many tiles hold
+      // today. Seen on device 2026-09-15 as a literal "null" in the hero
+      // and the Notes row.
+      await pumpEdit(tester, tile: loaded(note: 'null'));
+      expect(find.text('null'), findsNothing);
+      await scrollTo(tester, find.byKey(const ValueKey('editNotesRow')));
+      expect(find.text(testL10n.addTileValueNotSet), findsOneWidget);
+    });
+
     testWidgets('the notes preview shows when there is a note', (tester) async {
       await pumpEdit(tester, tile: loaded(note: 'bring the charts'));
       expect(find.text('bring the charts'), findsOneWidget);

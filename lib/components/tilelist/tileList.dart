@@ -1,3 +1,4 @@
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailEntry.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -345,7 +346,7 @@ abstract class TileListState<T extends TileList> extends State<T>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => TileDetail(
+                    builder: (context) => TileDetailRoute(
                         tileId: subEvent.calendarEvent?.id ?? subEvent.id!),
                   ),
                 ).whenComplete(() {

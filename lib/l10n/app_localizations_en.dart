@@ -3572,6 +3572,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editTileEditTitle => 'Edit title';
 
   @override
+  String get tileDetailTitle => 'Tile details';
+
+  @override
+  String get tileDetailLoadFailed => 'Couldn\'t load this tile\'s details.';
+
+  @override
+  String get tileDetailSaveFailed =>
+      'Could not save right now. Your changes are kept.';
+
+  @override
+  String get tileDetailDeleteSeries => 'Delete tile';
+
+  @override
+  String tileDetailDeleteConfirm(String title) {
+    return 'Delete \"$title\"?';
+  }
+
+  @override
+  String get tileDetailDeleteBody =>
+      'Every occurrence of this tile will be removed from your schedule.';
+
+  @override
+  String get tileDetailDeleteFailed => 'Could not delete right now.';
+
+  @override
+  String get tileDetailSectionOccurrences => 'OCCURRENCES';
+
+  @override
+  String get tileDetailOccurrencesEmpty => 'No occurrences scheduled yet.';
+
+  @override
+  String get tileDetailOccurrencesFailed => 'Couldn\'t load the occurrences.';
+
+  @override
+  String get tileDetailOccurrencesEarlier => 'Show earlier';
+
+  @override
+  String get tileDetailOccurrencesLater => 'Show later';
+
+  @override
+  String get tileDetailOccurrenceDone => 'Done';
+
+  @override
+  String tileDetailOccurrenceSemantics(String day, String span, String done) {
+    return '$day, $span$done';
+  }
+
+  @override
   String editTileTimeChipSemantics(String field, String value) {
     return '$field time, $value';
   }

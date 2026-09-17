@@ -3582,6 +3582,57 @@ class AppLocalizationsEs extends AppLocalizations {
   String get editTileEditTitle => 'Editar título';
 
   @override
+  String get tileDetailTitle => 'Detalles del tile';
+
+  @override
+  String get tileDetailLoadFailed =>
+      'No se pudieron cargar los detalles de este tile.';
+
+  @override
+  String get tileDetailSaveFailed =>
+      'No se pudo guardar ahora. Tus cambios se conservan.';
+
+  @override
+  String get tileDetailDeleteSeries => 'Eliminar tile';
+
+  @override
+  String tileDetailDeleteConfirm(String title) {
+    return '¿Eliminar \"$title\"?';
+  }
+
+  @override
+  String get tileDetailDeleteBody =>
+      'Se eliminarán todas las repeticiones de este tile de tu agenda.';
+
+  @override
+  String get tileDetailDeleteFailed => 'No se pudo eliminar ahora.';
+
+  @override
+  String get tileDetailSectionOccurrences => 'REPETICIONES';
+
+  @override
+  String get tileDetailOccurrencesEmpty =>
+      'Aún no hay repeticiones programadas.';
+
+  @override
+  String get tileDetailOccurrencesFailed =>
+      'No se pudieron cargar las repeticiones.';
+
+  @override
+  String get tileDetailOccurrencesEarlier => 'Ver anteriores';
+
+  @override
+  String get tileDetailOccurrencesLater => 'Ver siguientes';
+
+  @override
+  String get tileDetailOccurrenceDone => 'Hecho';
+
+  @override
+  String tileDetailOccurrenceSemantics(String day, String span, String done) {
+    return '$day, $span$done';
+  }
+
+  @override
   String editTileTimeChipSemantics(String field, String value) {
     return 'Hora de $field, $value';
   }

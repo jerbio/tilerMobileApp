@@ -88,8 +88,17 @@ class EditTileDraft extends ChangeNotifier {
   String get thirdPartyType =>
       original.thirdpartyType?.name.toLowerCase() ?? '';
 
-  /// The note as loaded. Read-only here: notes persist themselves.
-  String? get note => original.noteData?.note;
+  /// The note as loaded, or null when there is none. Read-only here: notes
+  /// persist themselves. The legacy screen stores `note.toString()`, so a
+  /// tile without a note holds the literal "null"; that reads as none.
+  String? get note => presentNote(original.noteData?.note);
+
+  /// Null for an empty note or the legacy literal "null".
+  static String? presentNote(String? raw) {
+    final String? trimmed = raw?.trim();
+    if (trimmed == null || trimmed.isEmpty || trimmed == 'null') return null;
+    return trimmed;
+  }
 
   DateTime? get calStartTime => original.calendarEventStartTime;
 

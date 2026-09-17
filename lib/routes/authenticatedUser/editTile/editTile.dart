@@ -29,7 +29,7 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRed
 import '../../../constants.dart' as Constants;
 import 'package:tiler_app/data/notesPayload.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotePage.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileDetails/tileDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailEntry.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -835,7 +835,7 @@ class _EditTileState extends State<EditTile> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => TileDetail(
+                    builder: (context) => TileDetailRoute(
                           tileId: this.subEvent?.calendarEvent?.id ??
                               this.widget.tileId,
                           loadSubEvents: false,

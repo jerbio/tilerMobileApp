@@ -6306,6 +6306,90 @@ abstract class AppLocalizations {
   /// **'Edit title'**
   String get editTileEditTitle;
 
+  /// No description provided for @tileDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tile details'**
+  String get tileDetailTitle;
+
+  /// No description provided for @tileDetailLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this tile\'s details.'**
+  String get tileDetailLoadFailed;
+
+  /// No description provided for @tileDetailSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save right now. Your changes are kept.'**
+  String get tileDetailSaveFailed;
+
+  /// No description provided for @tileDetailDeleteSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tile'**
+  String get tileDetailDeleteSeries;
+
+  /// No description provided for @tileDetailDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{title}\"?'**
+  String tileDetailDeleteConfirm(String title);
+
+  /// No description provided for @tileDetailDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every occurrence of this tile will be removed from your schedule.'**
+  String get tileDetailDeleteBody;
+
+  /// No description provided for @tileDetailDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete right now.'**
+  String get tileDetailDeleteFailed;
+
+  /// No description provided for @tileDetailSectionOccurrences.
+  ///
+  /// In en, this message translates to:
+  /// **'OCCURRENCES'**
+  String get tileDetailSectionOccurrences;
+
+  /// No description provided for @tileDetailOccurrencesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No occurrences scheduled yet.'**
+  String get tileDetailOccurrencesEmpty;
+
+  /// No description provided for @tileDetailOccurrencesFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the occurrences.'**
+  String get tileDetailOccurrencesFailed;
+
+  /// No description provided for @tileDetailOccurrencesEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Show earlier'**
+  String get tileDetailOccurrencesEarlier;
+
+  /// No description provided for @tileDetailOccurrencesLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Show later'**
+  String get tileDetailOccurrencesLater;
+
+  /// No description provided for @tileDetailOccurrenceDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get tileDetailOccurrenceDone;
+
+  /// No description provided for @tileDetailOccurrenceSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{day}, {span}{done}'**
+  String tileDetailOccurrenceSemantics(String day, String span, String done);
+
   /// No description provided for @editTileTimeChipSemantics.
   ///
   /// In en, this message translates to:

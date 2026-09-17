@@ -25,6 +25,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRequestMapper.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileSubmission.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/redesignLog.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
@@ -213,6 +214,49 @@ void main() {
           .save(EditTileDraft.fromLoaded(loaded())..setName('Renamed'));
       expect(result.outcome, EditTileSaveOutcome.failure);
       expect(result.reasonCode, 'network_timeout');
+    });
+  });
+
+  group('logging (the Observe events of the plan)', () {
+    final List<String> logged = <String>[];
+    late ApiEditTileLoader loader;
+    setUp(() {
+      loader = ApiEditTileLoader(
+          subCalendarEventApi: subApi, calendarEventApi: calApi);
+      logged.clear();
+      RedesignLog.sink = (String event, Map<String, Object?> data) => logged.add(
+          '$event ${data.entries.map((e) => '${e.key}=${e.value}').join(',')}');
+    });
+    tearDown(() => RedesignLog.sink = null);
+
+    test('a failed load names the tile, the source, the code and the error',
+        () async {
+      subApi.failWith = TilerError(Message: 'no such tile');
+      await loader.load('sub-9', source: 'tiler', thirdPartyUserId: 'u');
+      expect(logged, hasLength(1));
+      expect(logged.single, startsWith('edit_tile_load_failed '));
+      expect(logged.single, contains('tileId=sub-9'));
+      expect(logged.single, contains('source=tiler'));
+      expect(logged.single, contains('code=api_rejected'));
+      expect(logged.single, contains('no such tile'));
+      expect(logged.single, isNot(contains('=u,')),
+          reason: 'a provider user id is never written out; only whether '
+              'there is one');
+    });
+
+    test('a successful load is an opened event with the mode and source',
+        () async {
+      await loader.load('sub-1', source: 'tiler');
+      expect(logged.single, startsWith('edit_tile_opened '));
+      expect(logged.single, contains('tileId=sub-1'));
+    });
+
+    test('a failed save names the code and the error', () async {
+      subApi.failWith = StateError('socket');
+      await submission.save(EditTileDraft.fromLoaded(loaded())..setName('x'));
+      expect(logged.single, startsWith('edit_tile_save_failed '));
+      expect(logged.single, contains('code=network_timeout'));
+      expect(logged.single, contains('socket'));
     });
   });
 

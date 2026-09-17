@@ -1,3 +1,4 @@
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailEntry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -493,7 +494,7 @@ class EventNameSearchState extends SearchWidgetState {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => TileDetail(tileId: tile.id!)));
+                  builder: (context) => TileDetailRoute(tileId: tile.id!)));
         }
       },
       child: Align(

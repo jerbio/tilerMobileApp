@@ -27,11 +27,12 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotePage.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileDetails/tileDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileActions.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileSubmission.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/tileFormSections.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDateTimeChoices.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
@@ -71,10 +72,9 @@ Future<Duration?> _durationScreen(
 typedef EditTileOpenSeries = Future<void> Function(
     BuildContext context, String calendarEventId);
 
+/// Always the redesigned Tile Detail (D25): the two screens ship together.
 Future<void> _openTileDetail(BuildContext context, String calendarEventId) =>
-    Navigator.of(context).push<void>(MaterialPageRoute<void>(
-      builder: (_) => TileDetail(tileId: calendarEventId, loadSubEvents: false),
-    ));
+    pushTileDetailRedesign(context, calendarEventId);
 
 /// The user-facing reason a draft cannot be saved.
 String editTileInvalidReasonText(
@@ -595,9 +595,12 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
           ],
         ),
         body: _loading
-            ? const _Skeleton()
+            ? const TileLoadSkeleton(sweepKey: ValueKey('editTileLoadingSweep'))
             : _loadFailure != null
-                ? _LoadFailure(onRetry: _load)
+                ? TileLoadFailure(
+                    retryKey: const ValueKey('editTileRetryLoad'),
+                    message: l10n.editTileLoadFailed,
+                    onRetry: _load)
                 : _Frame(
                     draft: d!,
                     submitting: _submitting,
@@ -624,60 +627,6 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
                     onWhatIfTap: _showWhatIf,
                     onWhatIfRetry: _retryWhatIf,
                   ),
-      ),
-    );
-  }
-}
-
-/// The card silhouette with the D63 sweep behind it, instead of a spinner.
-class _Skeleton extends StatelessWidget {
-  const _Skeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = TodayStatusTokens.of(context);
-    Widget block(double height) => Container(
-          height: height,
-          margin: const EdgeInsets.only(bottom: 14),
-          decoration: BoxDecoration(
-            color: tokens.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: tokens.cardBorder),
-          ),
-        );
-    return Stack(children: [
-      const Positioned.fill(
-          child: AddTilePendingSweep(key: ValueKey('editTileLoadingSweep'))),
-      ListView(
-        padding: const EdgeInsets.all(16),
-        children: [block(120), block(140), block(220)],
-      ),
-    ]);
-  }
-}
-
-class _LoadFailure extends StatelessWidget {
-  const _LoadFailure({required this.onRetry});
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(l10n.editTileLoadFailed, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            FilledButton(
-              key: const ValueKey('editTileRetryLoad'),
-              onPressed: onRetry,
-              child: Text(l10n.addTileRetry),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -921,8 +870,14 @@ class _Frame extends StatelessWidget {
                       // The hero IS the title editor (2026-09-15): a pencil
                       // to the left of the title focuses it. The former
                       // Title and Type rows repeated what the hero shows.
-                      _Hero(
-                        draft: draft,
+                      TileHero(
+                        keyPrefix: 'edit',
+                        name: draft.name,
+                        isRigid: draft.isRigid,
+                        note: draft.note,
+                        lockedTitle: draft.mode == EditTileMode.procrastinate
+                            ? l10n.procrastinateBlockOut
+                            : draft.name,
                         locked: titleLocked,
                         titleController: titleController,
                         titleFocus: titleFocus,
@@ -1351,147 +1306,6 @@ class _SpanValueRow extends StatelessWidget {
                 child: InkWell(onTap: onTap, child: content),
               )
             : content,
-      ),
-    );
-  }
-}
-
-/// The hero: the title — editable in place, with a pencil to its left —
-/// the type chip (display only, D3) and a two-line note preview. A locked
-/// tile shows the title as text and no pencil.
-class _Hero extends StatelessWidget {
-  const _Hero({
-    required this.draft,
-    required this.locked,
-    required this.titleController,
-    required this.titleFocus,
-    required this.onTitleChanged,
-  });
-  final EditTileDraft draft;
-  final bool locked;
-  final TextEditingController titleController;
-  final FocusNode titleFocus;
-  final ValueChanged<String> onTitleChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final tokens = TodayStatusTokens.of(context);
-    final textTheme = Theme.of(context).textTheme;
-    final String? note = draft.note?.trim();
-    final TextStyle? titleStyle = textTheme.titleLarge
-        ?.copyWith(color: tokens.textPrimary, fontWeight: FontWeight.w600);
-
-    final Widget title = locked
-        ? Text(
-            key: const ValueKey('editTitleLocked'),
-            draft.mode == EditTileMode.procrastinate
-                ? l10n.procrastinateBlockOut
-                : draft.name,
-            style: titleStyle,
-          )
-        : Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Semantics(
-                key: const ValueKey('editTitlePencil'),
-                container: true,
-                button: true,
-                label: l10n.editTileEditTitle,
-                onTap: titleFocus.requestFocus,
-                child: ExcludeSemantics(
-                  child: IconButton(
-                    icon: Icon(Icons.edit_outlined,
-                        size: 20, color: tokens.brand),
-                    padding: EdgeInsets.zero,
-                    constraints:
-                        const BoxConstraints(minWidth: 36, minHeight: 36),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: titleFocus.requestFocus,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: TextField(
-                  key: const ValueKey('editTitleField'),
-                  controller: titleController,
-                  focusNode: titleFocus,
-                  onChanged: onTitleChanged,
-                  style: titleStyle,
-                  maxLines: null,
-                  textInputAction: TextInputAction.done,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(
-                    isCollapsed: true,
-                    border: InputBorder.none,
-                    hintText: l10n.tileName,
-                    hintStyle:
-                        titleStyle?.copyWith(color: tokens.textSecondary),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 6),
-                  ),
-                ),
-              ),
-            ],
-          );
-
-    return Container(
-      key: const ValueKey('editHero'),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: tokens.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: tokens.cardBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          title,
-          const SizedBox(height: 10),
-          // Its own read-only node, so the type is announced apart from the
-          // title editor.
-          Semantics(
-            container: true,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: tokens.surfaceSubtle,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: tokens.cardBorder),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    draft.isRigid
-                        ? Icons.lock_clock_outlined
-                        : Icons.auto_awesome_outlined,
-                    size: 14,
-                    color: tokens.brand,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    draft.isRigid
-                        ? l10n.addTileTypeFixed
-                        : l10n.addTileTypeFlexible,
-                    style: textTheme.labelMedium
-                        ?.copyWith(color: tokens.textSecondary),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (note != null && note.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Text(
-              note,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style:
-                  textTheme.bodyMedium?.copyWith(color: tokens.textSecondary),
-            ),
-          ],
-        ],
       ),
     );
   }

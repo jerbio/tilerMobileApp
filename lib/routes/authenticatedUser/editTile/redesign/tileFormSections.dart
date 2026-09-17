@@ -18,10 +18,15 @@ import 'package:tiler_app/theme/today_status_tokens.dart';
 /// Sessions as a stepper: never below one, never typed (the legacy field was
 /// free text parsed with int.tryParse — Step 0.3's documented defect).
 class TileSessionsRow extends StatelessWidget {
-  const TileSessionsRow(
-      {super.key, required this.count, required this.onChanged});
+  const TileSessionsRow({
+    super.key,
+    required this.count,
+    required this.onChanged,
+    this.keyPrefix = 'edit',
+  });
   final int count;
   final ValueChanged<int> onChanged;
+  final String keyPrefix;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +70,7 @@ class TileSessionsRow extends StatelessWidget {
                 style:
                     textTheme.titleSmall?.copyWith(color: tokens.textPrimary)),
           ),
-          step(const ValueKey('editSessionsMinus'), Icons.remove,
+          step(ValueKey('${keyPrefix}SessionsMinus'), Icons.remove,
               count > 1 ? () => onChanged(count - 1) : null),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -73,7 +78,7 @@ class TileSessionsRow extends StatelessWidget {
                 style: textTheme.titleMedium?.copyWith(
                     color: tokens.textPrimary, fontWeight: FontWeight.w600)),
           ),
-          step(const ValueKey('editSessionsPlus'), Icons.add,
+          step(ValueKey('${keyPrefix}SessionsPlus'), Icons.add,
               () => onChanged(count + 1)),
         ],
       ),
@@ -83,9 +88,17 @@ class TileSessionsRow extends StatelessWidget {
 
 /// Low / Medium / High as selectable cards, the shared picker's copy.
 class TilePriorityCards extends StatelessWidget {
-  const TilePriorityCards({required this.selected, required this.onSelected});
+  const TilePriorityCards({
+    super.key,
+    required this.selected,
+    required this.onSelected,
+    this.keyPrefix = 'edit',
+  });
   final TilePriority selected;
-  final ValueChanged<TilePriority> onSelected;
+
+  /// Null locks the cards: still shown, selected still announced, no tap.
+  final ValueChanged<TilePriority>? onSelected;
+  final String keyPrefix;
 
   @override
   Widget build(BuildContext context) {
@@ -105,10 +118,10 @@ class TilePriorityCards extends StatelessWidget {
             for (final TilePriority p in TilePriority.values) ...[
               Expanded(
                 child: Semantics(
-                  key: ValueKey('editPriority_${p.name}'),
-                  button: true,
+                  key: ValueKey('${keyPrefix}Priority_${p.name}'),
+                  button: onSelected != null,
                   selected: p == selected,
-                  onTap: () => onSelected(p),
+                  onTap: onSelected == null ? null : () => onSelected!(p),
                   label: priorityName(l10n, p),
                   child: ExcludeSemantics(
                     child: Material(
@@ -118,7 +131,7 @@ class TilePriorityCards extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(14),
-                        onTap: () => onSelected(p),
+                        onTap: onSelected == null ? null : () => onSelected!(p),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               vertical: 14, horizontal: 6),
@@ -158,7 +171,7 @@ class TilePriorityCards extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 10),
           child: AddTileCallout(
-            key: const ValueKey('editPriorityCallout'),
+            key: ValueKey('${keyPrefix}PriorityCallout'),
             icon: Icons.auto_awesome_outlined,
             text: priorityConsequence(l10n, selected),
           ),
@@ -310,6 +323,222 @@ class TileColorRow extends StatelessWidget {
               ],
             ),
       onTap: onTap,
+    );
+  }
+}
+
+/// The card silhouette with the D63 sweep behind it, instead of a spinner.
+/// Shared by Edit Tile and Tile Detail.
+class TileLoadSkeleton extends StatelessWidget {
+  const TileLoadSkeleton({super.key, required this.sweepKey});
+  final Key sweepKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = TodayStatusTokens.of(context);
+    Widget block(double height) => Container(
+          height: height,
+          margin: const EdgeInsets.only(bottom: 14),
+          decoration: BoxDecoration(
+            color: tokens.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: tokens.cardBorder),
+          ),
+        );
+    return Stack(children: [
+      Positioned.fill(child: AddTilePendingSweep(key: sweepKey)),
+      ListView(
+        padding: const EdgeInsets.all(16),
+        children: [block(120), block(140), block(220)],
+      ),
+    ]);
+  }
+}
+
+class TileLoadFailure extends StatelessWidget {
+  const TileLoadFailure({
+    super.key,
+    required this.retryKey,
+    required this.message,
+    required this.onRetry,
+  });
+  final Key retryKey;
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            FilledButton(
+              key: retryKey,
+              onPressed: onRetry,
+              child: Text(l10n.addTileRetry),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The hero shared by Edit Tile and Tile Detail: the title — editable in
+/// place, with a pencil to its left — the type chip (display only, D3) and
+/// a two-line note preview. A locked tile shows the title as text and no
+/// pencil.
+class TileHero extends StatelessWidget {
+  const TileHero({
+    super.key,
+    required this.keyPrefix,
+    required this.name,
+    required this.isRigid,
+    required this.note,
+    required this.lockedTitle,
+    required this.locked,
+    required this.titleController,
+    required this.titleFocus,
+    required this.onTitleChanged,
+  });
+
+  /// `edit` / `detail`: keys are `<prefix>Hero`, `<prefix>TitlePencil`,
+  /// `<prefix>TitleField`, `<prefix>TitleLocked`.
+  final String keyPrefix;
+  final String name;
+  final bool isRigid;
+
+  /// Already display-sanitised (`EditTileDraft.presentNote`).
+  final String? note;
+
+  /// What a locked hero shows (the name, or the block-out label).
+  final String lockedTitle;
+  final bool locked;
+  final TextEditingController titleController;
+  final FocusNode titleFocus;
+  final ValueChanged<String> onTitleChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final tokens = TodayStatusTokens.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final String? note = this.note?.trim();
+    final TextStyle? titleStyle = textTheme.titleLarge
+        ?.copyWith(color: tokens.textPrimary, fontWeight: FontWeight.w600);
+
+    final Widget title = locked
+        ? Text(
+            key: ValueKey('${keyPrefix}TitleLocked'),
+            lockedTitle,
+            style: titleStyle,
+          )
+        : Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Semantics(
+                key: ValueKey('${keyPrefix}TitlePencil'),
+                container: true,
+                button: true,
+                label: l10n.editTileEditTitle,
+                onTap: titleFocus.requestFocus,
+                child: ExcludeSemantics(
+                  child: IconButton(
+                    icon: Icon(Icons.edit_outlined,
+                        size: 20, color: tokens.brand),
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: titleFocus.requestFocus,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: TextField(
+                  key: ValueKey('${keyPrefix}TitleField'),
+                  controller: titleController,
+                  focusNode: titleFocus,
+                  onChanged: onTitleChanged,
+                  style: titleStyle,
+                  maxLines: null,
+                  textInputAction: TextInputAction.done,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(
+                    isCollapsed: true,
+                    border: InputBorder.none,
+                    hintText: l10n.tileName,
+                    hintStyle:
+                        titleStyle?.copyWith(color: tokens.textSecondary),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                  ),
+                ),
+              ),
+            ],
+          );
+
+    return Container(
+      key: ValueKey('${keyPrefix}Hero'),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: tokens.cardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          title,
+          const SizedBox(height: 10),
+          // Its own read-only node, so the type is announced apart from the
+          // title editor.
+          Semantics(
+            container: true,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: tokens.surfaceSubtle,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: tokens.cardBorder),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isRigid
+                        ? Icons.lock_clock_outlined
+                        : Icons.auto_awesome_outlined,
+                    size: 14,
+                    color: tokens.brand,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    isRigid ? l10n.addTileTypeFixed : l10n.addTileTypeFlexible,
+                    style: textTheme.labelMedium
+                        ?.copyWith(color: tokens.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (note != null && note.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              note,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  textTheme.bodyMedium?.copyWith(color: tokens.textSecondary),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

@@ -79,6 +79,23 @@ void main() {
     });
   });
 
+  group('Note', () {
+    test('empty and the legacy literal "null" read as no note', () {
+      SubCalendarEvent withNote(String? n) =>
+          SubCalendarEvent.fromJson(<String, dynamic>{
+            'id': 'sub-1',
+            'name': 'x',
+            'start': start.millisecondsSinceEpoch,
+            'end': end.millisecondsSinceEpoch,
+            'blob': <String, dynamic>{'note': n},
+          });
+      expect(draft(withNote('bring the charts')).note, 'bring the charts');
+      expect(draft(withNote('null')).note, isNull);
+      expect(draft(withNote('  ')).note, isNull);
+      expect(draft(withNote(null)).note, isNull);
+    });
+  });
+
   group('Dirtiness is per field, against the original', () {
     test('each setter marks exactly its own field', () {
       final cases = <EditTileField, void Function(EditTileDraft)>{

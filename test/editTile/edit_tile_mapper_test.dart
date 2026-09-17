@@ -16,7 +16,7 @@ final DateTime end = DateTime.utc(2026, 9, 12, 15, 30); // 1789227000000
 final DateTime calStart = DateTime.utc(2026, 9, 10, 0, 0); // 1788998400000
 final DateTime calEnd = DateTime.utc(2026, 9, 20, 23, 59); // 1789948740000
 
-SubCalendarEvent loaded({String thirdPartyType = 'tiler'}) =>
+SubCalendarEvent loaded({String thirdPartyType = 'tiler', String? note}) =>
     SubCalendarEvent.fromJson(<String, dynamic>{
       'id': 'sub-1',
       'name': 'Write report',
@@ -29,6 +29,7 @@ SubCalendarEvent loaded({String thirdPartyType = 'tiler'}) =>
       'thirdPartyId': thirdPartyType == 'tiler' ? null : 'gcal-evt-9',
       'thirdPartyUserId': thirdPartyType == 'tiler' ? null : 'gcal-user-3',
       'priority': 'medium',
+      if (note != null) 'blob': <String, dynamic>{'note': note},
     });
 
 /// The Step 0.1 literal for the Tiler fixture.
@@ -64,6 +65,14 @@ void main() {
       expect(editTileWhatIfParams(d),
           WhatIfApi.subEventEditParams(toEditTilerEvent(d)));
       expect(editTileWhatIfParams(d), legacyMap);
+    });
+
+    test('a stored "null" note goes back as the legacy "null", untrimmed', () {
+      final EditTileDraft d =
+          EditTileDraft.fromLoaded(loaded(note: ' padded '));
+      expect(d.note, 'padded', reason: 'display is sanitised');
+      expect(editTileUpdateParams(d)['Notes'], ' padded ',
+          reason: 'the wire is not');
     });
 
     test('a third-party tile is addressed by its provider id', () {
