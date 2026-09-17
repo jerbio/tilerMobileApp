@@ -22,11 +22,12 @@ import 'package:tiler_app/services/api/locationApi.dart';
 
 /// Builds the redesigned Tile Detail for [calendarEventId] with the real
 /// APIs and the bloc-backed schedule refresher. Every entry point uses this.
-Widget buildTileDetailRedesign(BuildContext context, String calendarEventId) {
+Widget buildTileDetailRedesign(BuildContext context, TileDetailTarget target) {
   final CalendarEventApi calendarEventApi =
       CalendarEventApi(getContextCallBack: () => context);
   return TileDetailRedesignScreen(
-    calendarEventId: calendarEventId,
+    calendarEventId: target.calendarEventId,
+    designatedTileTemplateId: target.designatedTileTemplateId,
     loader: ApiTileDetailLoader(
       calendarEventApi: calendarEventApi,
       locationApi: LocationApi(getContextCallBack: () => context),
@@ -51,43 +52,63 @@ Widget buildTileDetailRedesign(BuildContext context, String calendarEventId) {
 Future<void> pushTileDetailRedesign(
         BuildContext context, String calendarEventId) =>
     Navigator.of(context).push<void>(MaterialPageRoute<void>(
-      builder: (BuildContext routeContext) =>
-          buildTileDetailRedesign(routeContext, calendarEventId),
+      builder: (BuildContext routeContext) => buildTileDetailRedesign(
+          routeContext, TileDetailTarget.calendarEvent(calendarEventId)),
     ));
 
 typedef TileDetailLegacyBuilder = Widget Function(
     String tileId, bool loadSubEvents);
 typedef TileDetailRedesignBuilder = Widget Function(
-    BuildContext context, String calendarEventId);
+    BuildContext context, TileDetailTarget target);
 
 Widget _legacy(String tileId, bool loadSubEvents) =>
     TileDetail(tileId: tileId, loadSubEvents: loadSubEvents);
+
+Widget _legacyTemplate(String templateId, bool loadSubEvents) =>
+    TileDetail.byDesignatedTileId(
+        designatedTileTemplateId: templateId, loadSubEvents: loadSubEvents);
 
 /// Drop-in for the legacy `TileDetail(tileId:, loadSubEvents:)`: the
 /// redesign when the (shared) flag is on, the legacy screen when off.
 /// `loadSubEvents` only reaches the legacy screen — the redesign lists the
 /// occurrences of every Tiler-owned series.
 class TileDetailRoute extends StatelessWidget {
-  const TileDetailRoute({
+  TileDetailRoute({
     super.key,
-    required this.tileId,
+    required String tileId,
     this.loadSubEvents = true,
     this.legacyBuilder = _legacy,
     this.redesignBuilder = buildTileDetailRedesign,
-  });
+  })  : target = TileDetailTarget.calendarEvent(tileId),
+        legacyTemplateBuilder = _legacyTemplate;
 
-  final String tileId;
+  /// Drop-in for `TileDetail.byDesignatedTileId(designatedTileTemplateId:,
+  /// loadSubEvents:)` — the tile-share path (2026-09-17).
+  TileDetailRoute.byDesignatedTileId({
+    super.key,
+    required String designatedTileTemplateId,
+    this.loadSubEvents = false,
+    this.legacyTemplateBuilder = _legacyTemplate,
+    this.redesignBuilder = buildTileDetailRedesign,
+  })  : target = TileDetailTarget.designatedTile(designatedTileTemplateId),
+        legacyBuilder = _legacy;
+
+  final TileDetailTarget target;
   final bool loadSubEvents;
 
   /// Test seams; production uses the defaults.
   final TileDetailLegacyBuilder legacyBuilder;
+  final TileDetailLegacyBuilder legacyTemplateBuilder;
   final TileDetailRedesignBuilder redesignBuilder;
 
   @override
   Widget build(BuildContext context) {
     if (!EditTileFeatureFlags.editTileRedesignEnabled) {
-      return legacyBuilder(tileId, loadSubEvents);
+      final String? templateId = target.designatedTileTemplateId;
+      return templateId != null
+          ? legacyTemplateBuilder(templateId, loadSubEvents)
+          : legacyBuilder(target.calendarEventId!, loadSubEvents);
     }
-    return redesignBuilder(context, tileId);
+    return redesignBuilder(context, target);
   }
 }

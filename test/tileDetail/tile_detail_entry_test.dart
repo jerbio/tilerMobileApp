@@ -6,9 +6,9 @@
 // Edit Tile — the two ship together), the legacy screen when it is off,
 // with the same arguments. A source scan keeps every push site on it.
 //
-// Out of scope, deliberately: `TileDetail.byDesignatedTileId` (the tile
-// share template path) loads by template id, not calendar-event id, and
-// stays on the legacy screen.
+// `TileDetailRoute.byDesignatedTileId` is the drop-in for the tile-share
+// template path (2026-09-17): the same redesigned screen, loading its
+// calendar event by template id.
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -41,6 +41,15 @@ void main() {
   setUp(() => EditTileFeatureFlags.editTileRedesignEnabled = false);
   tearDown(() => EditTileFeatureFlags.editTileRedesignEnabled = false);
 
+  Widget redesign(BuildContext _, TileDetailTarget target) =>
+      TileDetailRedesignScreen(
+        calendarEventId: target.calendarEventId,
+        designatedTileTemplateId: target.designatedTileTemplateId,
+        loader:
+            shell.FakeLoader(TileDetailLoadResult.success(fx.loaded(), null)),
+        submission: shell.FakeSubmission(),
+      );
+
   Future<void> pumpEntry(WidgetTester tester,
       {required Widget Function(String, bool) legacy}) async {
     await tester.pumpWidget(MaterialApp(
@@ -52,13 +61,24 @@ void main() {
         tileId: 'cal-1',
         loadSubEvents: false,
         legacyBuilder: legacy,
-        redesignBuilder: (BuildContext _, String id) =>
-            TileDetailRedesignScreen(
-          calendarEventId: id,
-          loader:
-              shell.FakeLoader(TileDetailLoadResult.success(fx.loaded(), null)),
-          submission: shell.FakeSubmission(),
-        ),
+        redesignBuilder: redesign,
+      ),
+    ));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> pumpTemplateEntry(WidgetTester tester,
+      {required Widget Function(String, bool) legacy}) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: TileThemeData.lightTheme,
+      locale: const Locale('en'),
+      localizationsDelegates: _delegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: TileDetailRoute.byDesignatedTileId(
+        designatedTileTemplateId: 'tpl-9',
+        loadSubEvents: true,
+        legacyTemplateBuilder: legacy,
+        redesignBuilder: redesign,
       ),
     ));
     await tester.pumpAndSettle();
@@ -87,6 +107,30 @@ void main() {
     expect(screen.calendarEventId, 'cal-1');
   });
 
+  testWidgets('template, flag off → the legacy byDesignatedTileId, same args',
+      (tester) async {
+    final List<String> built = <String>[];
+    await pumpTemplateEntry(tester, legacy: (String id, bool loadSubEvents) {
+      built.add('$id:$loadSubEvents');
+      return const Scaffold(body: Text('legacy'));
+    });
+    expect(built, <String>['tpl-9:true']);
+    expect(find.text('legacy'), findsOneWidget);
+  });
+
+  testWidgets('template, flag on → the redesign, by template id',
+      (tester) async {
+    EditTileFeatureFlags.editTileRedesignEnabled = true;
+    await pumpTemplateEntry(tester,
+        legacy: (_, __) => const Scaffold(body: Text('legacy')));
+    expect(find.text('legacy'), findsNothing);
+    final TileDetailRedesignScreen screen =
+        tester.widget<TileDetailRedesignScreen>(
+            find.byType(TileDetailRedesignScreen));
+    expect(screen.calendarEventId, isNull);
+    expect(screen.designatedTileTemplateId, 'tpl-9');
+  });
+
   test('no production file constructs the legacy TileDetail directly', () {
     // Every push site goes through TileDetailRoute, so the ONE flag governs
     // both screens and 5.4 can delete the legacy screens in one move.
@@ -97,8 +141,9 @@ void main() {
       final String path = e.path.replaceAll('\\', '/');
       if (path.endsWith('/tileDetails/tileDetail.dart')) continue;
       if (path.contains('/tileDetails/redesign/')) continue;
-      // `TileDetail(` — not `TileDetail.byDesignatedTileId(` (out of scope).
-      final RegExp direct = RegExp(r'(?<![A-Za-z.])TileDetail\(');
+      // Either constructor: `TileDetail(` or `TileDetail.byDesignatedTileId(`.
+      final RegExp direct =
+          RegExp(r'(?<![A-Za-z.])TileDetail(\.byDesignatedTileId)?\(');
       if (direct.hasMatch(_code(e))) offenders.add(path);
     }
     expect(offenders, isEmpty);

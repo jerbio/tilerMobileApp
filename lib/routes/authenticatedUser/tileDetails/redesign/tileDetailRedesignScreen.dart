@@ -171,9 +171,13 @@ String tileDetailInvalidReasonText(
 }
 
 class TileDetailRedesignScreen extends StatefulWidget {
+  /// Exactly one of [calendarEventId] / [designatedTileTemplateId]: the
+  /// calendar event to edit, or the tile-share template whose event the
+  /// server resolves (`TileDetail.byDesignatedTileId`).
   const TileDetailRedesignScreen({
     super.key,
-    required this.calendarEventId,
+    this.calendarEventId,
+    this.designatedTileTemplateId,
     required this.loader,
     required this.submission,
     this.pickDuration = _durationScreen,
@@ -184,7 +188,13 @@ class TileDetailRedesignScreen extends StatefulWidget {
     this.openOccurrence = _openEditTile,
   });
 
-  final String calendarEventId;
+  final String? calendarEventId;
+  final String? designatedTileTemplateId;
+
+  TileDetailTarget get target => calendarEventId != null
+      ? TileDetailTarget.calendarEvent(calendarEventId!)
+      : TileDetailTarget.designatedTile(designatedTileTemplateId ?? '');
+
   final TileDetailLoader loader;
   final TileDetailSubmission submission;
   final TileDetailPickDuration pickDuration;
@@ -238,8 +248,7 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
       _loading = true;
       _loadFailure = null;
     });
-    final TileDetailLoadResult result =
-        await widget.loader.load(widget.calendarEventId);
+    final TileDetailLoadResult result = await widget.loader.load(widget.target);
     if (!mounted) return;
     setState(() {
       _loading = false;
@@ -261,6 +270,10 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
 
   void _onDraftChanged() => setState(() {});
 
+  /// The LOADED event's id — what occurrences, saves and logs address.
+  /// (A template target has no event id until the load answers.)
+  String get _eventId => draft?.id ?? widget.calendarEventId ?? '';
+
   // ----------------------------------------------------------- occurrences
 
   Future<void> _loadOccurrences() async {
@@ -271,8 +284,7 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
       _occurrencesFailed = false;
     });
     try {
-      final List<SubCalendarEvent> first =
-          await source.initial(widget.calendarEventId);
+      final List<SubCalendarEvent> first = await source.initial(_eventId);
       if (!mounted) return;
       setState(() {
         _paging.setInitial(first);
@@ -281,7 +293,7 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
       });
     } catch (e, st) {
       RedesignLog.event('tile_detail_occurrences_failed',
-          <String, Object?>{'calendarEventId': widget.calendarEventId},
+          <String, Object?>{'calendarEventId': _eventId},
           error: e, stack: st);
       if (!mounted) return;
       setState(() {
@@ -299,7 +311,7 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
     setState(() => _paging.isLoadingAfter = true);
     try {
       final List<SubCalendarEvent> page =
-          await source.after(widget.calendarEventId, _paging.rightCursorId!);
+          await source.after(_eventId, _paging.rightCursorId!);
       if (!mounted) return;
       setState(() {
         _paging.appendPage(page);
@@ -320,7 +332,7 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
     setState(() => _paging.isLoadingBefore = true);
     try {
       final List<SubCalendarEvent> page =
-          await source.before(widget.calendarEventId, _paging.leftCursorId!);
+          await source.before(_eventId, _paging.leftCursorId!);
       if (!mounted) return;
       setState(() {
         _paging.prependPage(page);
@@ -339,7 +351,7 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
   /// occurrence shows where it now is. A dismissed edit keeps the list.
   Future<void> _openOccurrence(SubCalendarEvent sub) async {
     RedesignLog.event('tile_detail_occurrence_opened', <String, Object?>{
-      'calendarEventId': widget.calendarEventId,
+      'calendarEventId': _eventId,
       'tileId': sub.id,
       'source': sub.thirdpartyType?.name,
       'hasThirdPartyUserId': sub.thirdPartyUserId.isNotEmpty,

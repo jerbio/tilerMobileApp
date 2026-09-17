@@ -48,10 +48,12 @@ class FakeLoader implements TileDetailLoader {
   TileDetailLoadResult result;
   Completer<TileDetailLoadResult>? gate;
   int calls = 0;
+  final List<TileDetailTarget> targets = <TileDetailTarget>[];
 
   @override
-  Future<TileDetailLoadResult> load(String calendarEventId) {
+  Future<TileDetailLoadResult> load(TileDetailTarget target) {
     calls++;
+    targets.add(target);
     return gate?.future ?? Future<TileDetailLoadResult>.value(result);
   }
 }
@@ -155,6 +157,7 @@ Future<void> pumpDetail(
   Size viewSize = AddTileTestMatrix.standard,
   bool dark = false,
   FakeOccurrences? occurrencesSource,
+  String? designatedTileTemplateId,
 }) async {
   tester.view.physicalSize = AddTileTestMatrix.physicalSizeOf(viewSize);
   addTearDown(tester.view.reset);
@@ -191,7 +194,9 @@ Future<void> pumpDetail(
             key: const ValueKey('open'),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
               builder: (_) => TileDetailRedesignScreen(
-                calendarEventId: 'cal-1',
+                calendarEventId:
+                    designatedTileTemplateId == null ? 'cal-1' : null,
+                designatedTileTemplateId: designatedTileTemplateId,
                 loader: loader,
                 submission: submission,
                 occurrences: occurrences,
@@ -304,6 +309,20 @@ void main() {
       await tester.pumpAndSettle();
       expect(loader.calls, 2);
       expect(titleField, findsOneWidget);
+    });
+
+    testWidgets(
+        'a designated tile template is the same screen, loaded by template '
+        'id; occurrences and the hand-offs use the loaded event\'s id',
+        (tester) async {
+      final FakeOccurrences src = FakeOccurrences();
+      await pumpDetail(tester,
+          designatedTileTemplateId: 'tpl-9', occurrencesSource: src);
+      expect(loader.targets.single,
+          const TileDetailTarget.designatedTile('tpl-9'));
+      expect(titleField, findsOneWidget);
+      expect(src.calls, <String>['initial:cal-1'],
+          reason: 'by the LOADED calendar event, not the template');
     });
 
     testWidgets('the loader\'s location seeds the draft', (tester) async {

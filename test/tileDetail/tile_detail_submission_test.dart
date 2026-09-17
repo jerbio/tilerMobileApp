@@ -37,7 +37,7 @@ class FakeCalendarEventApi extends CalendarEventApi {
 
   @override
   Future<CalendarEvent> getCalEvent({String? id, String? designatedTileId}) =>
-      _answer('get:$id', answer ?? fx.loaded());
+      _answer('get:$id:$designatedTileId', answer ?? fx.loaded());
 
   @override
   Future<CalendarEvent> updateCalEventRequest(
@@ -97,28 +97,46 @@ void main() {
   group('load', () {
     test('fetches the event by id and its location by calendar id', () async {
       locationApi.answer = fx.place('Work', '456 Market St');
-      final TileDetailLoadResult r = await loader.load('cal-1');
+      final TileDetailLoadResult r =
+          await loader.load(const TileDetailTarget.calendarEvent('cal-1'));
       expect(r.failed, isFalse);
       expect(r.event?.id, 'cal-1');
       expect(r.location?.description, 'Work');
-      expect(calApi.calls, <String>['get:cal-1']);
+      expect(calApi.calls, <String>['get:cal-1:null']);
+      expect(locationApi.calls, <String>['byCal:cal-1']);
+    });
+
+    test(
+        'a designated tile template loads its calendar event by template '
+        'id, then the location by the LOADED event\'s id', () async {
+      // `TileDetail.byDesignatedTileId`: the tile-share path. The legacy
+      // bloc called getCalEvent(designatedTileId:) and everything after
+      // used state.calEvent.id.
+      locationApi.answer = fx.place('Work', '456 Market St');
+      final TileDetailLoadResult r =
+          await loader.load(const TileDetailTarget.designatedTile('tpl-9'));
+      expect(r.failed, isFalse);
+      expect(r.event?.id, 'cal-1');
+      expect(calApi.calls, <String>['get:null:tpl-9']);
       expect(locationApi.calls, <String>['byCal:cal-1']);
     });
 
     test('a missing or failed location is not the event\'s failure', () async {
       locationApi.failWith = StateError('socket');
-      final TileDetailLoadResult r = await loader.load('cal-1');
+      final TileDetailLoadResult r =
+          await loader.load(const TileDetailTarget.calendarEvent('cal-1'));
       expect(r.failed, isFalse);
       expect(r.location, isNull);
     });
 
     test('a failed event is a typed failure', () async {
       calApi.failWith = TilerError(Message: 'no');
-      TileDetailLoadResult r = await loader.load('cal-1');
+      TileDetailLoadResult r =
+          await loader.load(const TileDetailTarget.calendarEvent('cal-1'));
       expect(r.failed, isTrue);
       expect(r.reasonCode, editTileFailureApiRejected);
       calApi.failWith = StateError('socket');
-      r = await loader.load('cal-1');
+      r = await loader.load(const TileDetailTarget.calendarEvent('cal-1'));
       expect(r.reasonCode, editTileFailureNetwork);
       expect(locationApi.calls, isEmpty,
           reason: 'no location fetch without an event');
@@ -169,7 +187,7 @@ void main() {
 
     test('load, save, delete and occurrence failures are named', () async {
       calApi.failWith = TilerError(Message: 'gone');
-      await loader.load('cal-1');
+      await loader.load(const TileDetailTarget.calendarEvent('cal-1'));
       await submission
           .save(TileDetailDraft.fromLoaded(fx.loaded())..setSplit(4));
       await submission.deleteSeries(TileDetailDraft.fromLoaded(fx.loaded()));

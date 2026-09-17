@@ -73,8 +73,41 @@ class TileDetailLoadResult {
 
 // ------------------------------------------------------------------- seams
 
+/// What Tile details is opened FOR: a calendar event by id, or — the
+/// tile-share path, `TileDetail.byDesignatedTileId` — a designated tile
+/// template whose calendar event the server resolves. Everything after
+/// the load (location, occurrences, saves) uses the LOADED event's id.
+class TileDetailTarget {
+  const TileDetailTarget.calendarEvent(String id)
+      : calendarEventId = id,
+        designatedTileTemplateId = null;
+  const TileDetailTarget.designatedTile(String templateId)
+      : calendarEventId = null,
+        designatedTileTemplateId = templateId;
+
+  final String? calendarEventId;
+  final String? designatedTileTemplateId;
+
+  /// For logs: whichever id this target names.
+  String get describe => calendarEventId != null
+      ? 'calendarEventId=$calendarEventId'
+      : 'designatedTileTemplateId=$designatedTileTemplateId';
+
+  @override
+  bool operator ==(Object other) =>
+      other is TileDetailTarget &&
+      other.calendarEventId == calendarEventId &&
+      other.designatedTileTemplateId == designatedTileTemplateId;
+
+  @override
+  int get hashCode => Object.hash(calendarEventId, designatedTileTemplateId);
+
+  @override
+  String toString() => 'TileDetailTarget($describe)';
+}
+
 abstract class TileDetailLoader {
-  Future<TileDetailLoadResult> load(String calendarEventId);
+  Future<TileDetailLoadResult> load(TileDetailTarget target);
 }
 
 abstract class TileDetailSubmission {
@@ -103,33 +136,32 @@ class ApiTileDetailLoader implements TileDetailLoader {
   final LocationApi locationApi;
 
   @override
-  Future<TileDetailLoadResult> load(String calendarEventId) async {
+  Future<TileDetailLoadResult> load(TileDetailTarget target) async {
     final CalendarEvent event;
     try {
-      event = await calendarEventApi.getCalEvent(id: calendarEventId);
+      // The legacy bloc: GetCalendarTileEvent(calEventId) or
+      // GetCalendarTileEventByDesignatedTileTemplate(tileTemplateId).
+      event = await calendarEventApi.getCalEvent(
+          id: target.calendarEventId,
+          designatedTileId: target.designatedTileTemplateId);
     } catch (e, st) {
-      RedesignLog.event(
-          'tile_detail_load_failed',
-          <String, Object?>{
-            'calendarEventId': calendarEventId,
-            'code': _reasonFor(e)
-          },
-          error: e,
-          stack: st);
+      RedesignLog.event('tile_detail_load_failed',
+          <String, Object?>{'target': target.describe, 'code': _reasonFor(e)},
+          error: e, stack: st);
       return TileDetailLoadResult.failure(_reasonFor(e));
     }
     Location? location;
     try {
-      location = await locationApi.getLocationById(calendarId: calendarEventId);
+      location = await locationApi.getLocationById(calendarId: event.id);
     } catch (e, st) {
       // Not the event's failure; still worth a line.
       RedesignLog.event('tile_detail_location_failed',
-          <String, Object?>{'calendarEventId': calendarEventId},
+          <String, Object?>{'target': target.describe},
           error: e, stack: st);
       location = null;
     }
     RedesignLog.event('tile_detail_opened', <String, Object?>{
-      'calendarEventId': calendarEventId,
+      'target': target.describe,
       'hasLocation': location != null,
     });
     return TileDetailLoadResult.success(event, location);
