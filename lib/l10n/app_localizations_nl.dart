@@ -3685,4 +3685,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get readOnly => 'Read-only';
+
+  @override
+  String get productTourStarting => 'Your product tour is about to begin.';
 }
