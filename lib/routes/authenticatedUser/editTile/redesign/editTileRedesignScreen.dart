@@ -28,6 +28,8 @@ import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotePage.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailEntry.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailRedesignScreen.dart'
+    show TileDetailDeleted;
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileActions.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileDraft.dart';
@@ -69,11 +71,13 @@ Future<Duration?> _durationScreen(
 
 /// Opens the series (calendar event) screen — `TileDetail`, kept per D1 —
 /// for [calendarEventId]. Injected in tests.
-typedef EditTileOpenSeries = Future<void> Function(
+/// Resolves with what Tile details popped: the saved `CalendarEvent`, a
+/// `TileDetailDeleted`, or null for a plain Back.
+typedef EditTileOpenSeries = Future<Object?> Function(
     BuildContext context, String calendarEventId);
 
 /// Always the redesigned Tile Detail (D25): the two screens ship together.
-Future<void> _openTileDetail(BuildContext context, String calendarEventId) =>
+Future<Object?> _openTileDetail(BuildContext context, String calendarEventId) =>
     pushTileDetailRedesign(context, calendarEventId);
 
 /// The user-facing reason a draft cannot be saved.
@@ -373,8 +377,14 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
   Future<void> _openSeries() async {
     final String? id = draft?.original.calendarEvent?.id;
     if (id == null || id.isEmpty) return;
-    await widget.openSeries(context, id);
+    final Object? result = await widget.openSeries(context, id);
     if (!mounted) return;
+    // The series was deleted: this occurrence went with it, so there is
+    // nothing to reload — leave, passing the deletion up (2026-09-17).
+    if (result is TileDetailDeleted) {
+      Navigator.of(context).pop(result);
+      return;
+    }
     await _load();
   }
 

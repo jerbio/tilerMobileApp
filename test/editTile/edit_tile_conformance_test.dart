@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotePage.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRedesignScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailRedesignScreen.dart'
+    show TileDetailDeleted;
 
 import '../addTile/l10n_fixture.dart';
 import 'edit_tile_phase2_test.dart' as p2;
@@ -18,9 +20,13 @@ Finder key(String k) => find.byKey(ValueKey(k));
 
 String? openedSeriesId;
 
+/// What the (fake) Tile details pops with.
+Object? seriesResult;
+
 Future<void> open(WidgetTester tester,
     {bool withSeries = true, String? note, Location? location}) async {
   openedSeriesId = null;
+  seriesResult = null;
   await shell.pumpEdit(
     tester,
     tile: p2.tile(
@@ -30,6 +36,7 @@ Future<void> open(WidgetTester tester,
     ),
     openSeries: (_, String calendarEventId) async {
       openedSeriesId = calendarEventId;
+      return seriesResult;
     },
   );
 }
@@ -81,6 +88,19 @@ void main() {
       expect(openedSeriesId, 'cal-1');
       expect(shell.loader.calls, 2,
           reason: 'the series screen may have changed what this tile shows');
+    });
+
+    testWidgets(
+        'a series deleted from Tile details pops Edit Tile too, without '
+        'reloading the occurrence that no longer exists (2026-09-17)',
+        (tester) async {
+      await open(tester);
+      seriesResult = const TileDetailDeleted(null);
+      await tester.tap(key('editTileDetails'));
+      await tester.pumpAndSettle();
+      expect(shell.loader.calls, 1, reason: 'no reload of a deleted tile');
+      expect(find.byType(EditTileRedesignScreen), findsNothing,
+          reason: 'the occurrence is gone with its series');
     });
 
     testWidgets('no series → no Tile details button', (tester) async {

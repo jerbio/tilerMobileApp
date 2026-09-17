@@ -6060,6 +6060,12 @@ abstract class AppLocalizations {
   /// **'Remove location'**
   String get editTileLocationRemove;
 
+  /// No description provided for @addTileDeadlineClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove deadline'**
+  String get addTileDeadlineClear;
+
   /// No description provided for @editTileMenuTileDetails.
   ///
   /// In en, this message translates to:

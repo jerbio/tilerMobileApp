@@ -60,6 +60,7 @@ class FlexibleTileForm extends StatelessWidget {
     this.onNameSubmitted,
     this.onDurationTap,
     this.onDeadlineTap,
+    this.onDeadlineClear,
     this.onPreferredTimeSelected,
     this.onAdvancedPreferredTimeTap,
     this.onLocationTap,
@@ -78,6 +79,10 @@ class FlexibleTileForm extends StatelessWidget {
   final ValueChanged<String>? onNameSubmitted;
   final VoidCallback? onDurationTap;
   final VoidCallback? onDeadlineTap;
+
+  /// Back to Anytime (no deadline). Shown as a × only while one is set: the
+  /// date picker cannot answer "no date" (2026-09-17).
+  final VoidCallback? onDeadlineClear;
 
   /// Fired with the tapped day part. The shell applies it directly; choosing
   /// a day part while Custom is selected REPLACES the advanced profile (D40).
@@ -140,6 +145,30 @@ class FlexibleTileForm extends StatelessWidget {
               label: l10n.addTileFieldCompleteBy,
               value: deadlineText,
               onTap: onDeadlineTap,
+              trailing: draft.endTime == null || onDeadlineClear == null
+                  ? null
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Semantics(
+                          key: const ValueKey('completeByClear'),
+                          container: true,
+                          button: true,
+                          label: l10n.addTileDeadlineClear,
+                          onTap: onDeadlineClear,
+                          child: ExcludeSemantics(
+                            child: IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: onDeadlineClear,
+                            ),
+                          ),
+                        ),
+                        if (onDeadlineTap != null)
+                          Icon(Icons.chevron_right,
+                              color:
+                                  TodayStatusTokens.of(context).textSecondary),
+                      ],
+                    ),
             ),
           ],
         ),

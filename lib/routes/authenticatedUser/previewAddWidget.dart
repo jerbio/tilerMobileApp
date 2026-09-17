@@ -15,7 +15,6 @@ import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/preview/previewWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';

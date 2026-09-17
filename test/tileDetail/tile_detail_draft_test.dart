@@ -62,6 +62,7 @@ CalendarEvent loaded({
   bool isComplete = false,
   int split = 3,
   int? durationMinutes = 90,
+  bool noDeadline = false,
   String priority = 'medium',
   Map<String, dynamic>? repetition,
   Location? location,
@@ -73,7 +74,8 @@ CalendarEvent loaded({
       'id': 'cal-1',
       'name': 'Write report',
       'start': start.millisecondsSinceEpoch,
-      'end': end.millisecondsSinceEpoch,
+      // No deadline arrives as NO end (the model then reads 0).
+      if (!noDeadline) 'end': end.millisecondsSinceEpoch,
       'splitCount': split,
       // Null: the key is ABSENT, as `api/CalendarEvent` sends it today.
       if (thirdPartyType != null) 'thirdPartyType': thirdPartyType,
@@ -285,11 +287,43 @@ void main() {
     });
   });
 
+  group('Anytime (no deadline) and disabled rules', () {
+    test('no end on the wire is Anytime: a null deadline, valid, clean', () {
+      final d = draft(loaded(noDeadline: true));
+      expect(d.deadline, isNull);
+      expect(d.isValid, isTrue, reason: 'Anytime is a fine deadline');
+      expect(d.isDirty, isFalse);
+    });
+
+    test('setting a deadline from Anytime, and clearing back, are changes', () {
+      final d = draft(loaded(noDeadline: true));
+      d.setDeadline(end);
+      expect(d.dirtyFields, <TileDetailField>{TileDetailField.deadline});
+      d.setDeadline(null);
+      expect(d.isDirty, isFalse);
+      final e = draft()..setDeadline(null);
+      expect(e.dirtyFields, <TileDetailField>{TileDetailField.deadline},
+          reason: 'a loaded deadline removed is a change');
+      expect(e.isValid, isTrue);
+    });
+
+    test('a disabled rule on the wire is no rule', () {
+      // A non-repeating series can arrive with a repetition object whose
+      // isEnabled is false; the picker\'s vocabulary has no such state.
+      final d = draft(loaded(repetition: <String, dynamic>{
+        ...weeklyJson(),
+        'isEnabled': false,
+      }));
+      expect(d.repetition, isNull);
+      expect(d.isDirty, isFalse);
+    });
+  });
+
   group('Deadline (non-repeating series, 2026-09-17)', () {
     test('seeded from the series end, held local, dirty by instant', () {
       final d = draft();
-      expect(d.deadline.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
-      expect(d.deadline.isUtc, isFalse);
+      expect(d.deadline?.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+      expect(d.deadline?.isUtc, isFalse);
       d.setDeadline(end.add(const Duration(days: 2)));
       expect(d.dirtyFields, <TileDetailField>{TileDetailField.deadline});
       d.setDeadline(end.toLocal());

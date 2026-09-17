@@ -44,9 +44,9 @@ Widget buildTileDetailRedesign(BuildContext context, TileDetailTarget target) {
 /// context (the route's own builder context sits above the providers only
 /// when the app wires them at the root, which it does — but reading them
 /// here keeps the dependency explicit).
-Future<void> pushTileDetailRedesign(
+Future<Object?> pushTileDetailRedesign(
         BuildContext context, String calendarEventId) =>
-    Navigator.of(context).push<void>(MaterialPageRoute<void>(
+    Navigator.of(context).push<Object?>(MaterialPageRoute<Object?>(
       builder: (BuildContext routeContext) => buildTileDetailRedesign(
           routeContext, TileDetailTarget.calendarEvent(calendarEventId)),
     ));

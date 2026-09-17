@@ -175,6 +175,47 @@ void main() {
       expect(find.text('1 hr 30 min'), findsOneWidget);
     });
 
+    testWidgets(
+        'a set deadline offers a × back to Anytime; none set offers nothing '
+        '(2026-09-17)', (tester) async {
+      // Seen on device: once a deadline was picked there was no way back
+      // to "Anytime" — the picker cannot answer "no date".
+      final c = TextEditingController();
+      final f = FocusNode();
+      final d = AddTileDraft.flexible(now: now);
+      int cleared = 0;
+      await pumpForm(
+        tester,
+        FlexibleTileForm(
+            draft: d,
+            nameController: c,
+            nameFocus: f,
+            onDeadlineClear: () => cleared++),
+      );
+      expect(find.byKey(const ValueKey('completeByClear')), findsNothing);
+      d.endTime = DateTime(2026, 9, 12, 23, 59);
+      await pumpForm(
+        tester,
+        FlexibleTileForm(
+            draft: d,
+            nameController: c,
+            nameFocus: f,
+            onDeadlineClear: () => cleared++),
+      );
+      expect(find.byKey(const ValueKey('completeByClear')), findsOneWidget);
+      final SemanticsHandle h = tester.ensureSemantics();
+      expect(
+          tester.getSemantics(find.byKey(const ValueKey('completeByClear'))),
+          matchesSemantics(
+              isButton: true,
+              hasTapAction: true,
+              label: testL10n.addTileDeadlineClear));
+      h.dispose();
+      await tester.tap(find.byKey(const ValueKey('completeByClear')));
+      await tester.pump();
+      expect(cleared, 1);
+    });
+
     testWidgets('Complete by shows the formatted date when a deadline is set',
         (tester) async {
       final c = TextEditingController();

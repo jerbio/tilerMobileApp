@@ -38,12 +38,14 @@ TileDetailRequest toTileDetailRequest(TileDetailDraft d) {
     ..id = d.id
     ..name = d.name
     ..splitCount = d.split
-    // The start as loaded (D14); the end is the editable deadline.
+    // The start as loaded (D14); the end is the editable deadline. Anytime
+    // goes as the legacy screen sent a loaded null end: `endTime` of a
+    // 0 end, i.e. epoch 0 → `End: '0'`.
     ..startTime = d.windowStart
-    ..endTime = d.deadline
+    ..endTime = d.deadline ?? DateTime.fromMillisecondsSinceEpoch(0)
     // Required by `isValid`, never sent: the legacy seed uses "now".
     ..calStartTime = d.windowStart
-    ..calEndTime = d.deadline
+    ..calEndTime = d.deadline ?? DateTime.fromMillisecondsSinceEpoch(0)
     ..thirdPartyId = d.thirdPartyId
     ..thirdPartyUserId = d.thirdPartyUserId
     ..thirdPartyType = d.thirdPartyType

@@ -168,18 +168,34 @@ class AddTileFieldRow extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null)
-            trailing!
-          else if (onTap != null)
+          if (trailing == null && onTap != null)
             Icon(Icons.chevron_right, color: tokens.textSecondary),
         ],
       ),
     );
 
+    final Widget body = onTap == null
+        ? ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 64),
+            child: content,
+          )
+        : Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 64),
+                child: content,
+              ),
+            ),
+          );
     return Semantics(
       // Its own node, so a read-only row is not merged into a neighbouring
       // field's node and inherits that field's tap.
       container: true,
+      // A trailing control keeps its OWN node beside this one (it used to
+      // sit inside the ExcludeSemantics, unreachable to assistive tech).
+      explicitChildNodes: trailing != null,
       button: onTap != null,
       // The tap has to live on THIS node: the InkWell below is excluded from
       // semantics, so without it a screen reader announced a button it could
@@ -188,23 +204,13 @@ class AddTileFieldRow extends StatelessWidget {
       label: semanticLabel ??
           '$label${required ? ', required' : ''}, $value'
               '${error != null ? ', $error' : ''}',
-      child: ExcludeSemantics(
-        child: onTap == null
-            ? ConstrainedBox(
-                constraints: const BoxConstraints(minHeight: 64),
-                child: content,
-              )
-            : Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onTap,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 64),
-                    child: content,
-                  ),
-                ),
-              ),
-      ),
+      child: trailing == null
+          ? ExcludeSemantics(child: body)
+          : Row(children: [
+              Expanded(child: ExcludeSemantics(child: body)),
+              Padding(
+                  padding: const EdgeInsets.only(right: 10), child: trailing!),
+            ]),
     );
   }
 }
@@ -238,60 +244,65 @@ class AddTileNavRow extends StatelessWidget {
     final tokens = TodayStatusTokens.of(context);
     final textTheme = Theme.of(context).textTheme;
 
-    return Semantics(
-      button: onTap != null,
-      onTap: onTap, // D62
-      label: subtitle == null ? title : '$title, $subtitle',
-      child: ExcludeSemantics(
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 60),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                child: Row(
-                  children: [
-                    AddTileIconChip(icon: icon, muted: mutedIcon),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            title,
-                            style: textTheme.titleMedium?.copyWith(
-                              color: tokens.textPrimary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (subtitle != null)
-                            Text(
-                              subtitle!,
-                              maxLines: subtitleMaxLines,
-                              overflow: subtitleMaxLines == null
-                                  ? null
-                                  : TextOverflow.ellipsis,
-                              style: textTheme.bodySmall
-                                  ?.copyWith(color: tokens.textSecondary),
-                            ),
-                        ],
+    final Widget body = Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 60),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              children: [
+                AddTileIconChip(icon: icon, muted: mutedIcon),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: tokens.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    if (trailing != null)
-                      trailing!
-                    else if (onTap != null)
-                      Icon(Icons.chevron_right, color: tokens.textSecondary),
-                  ],
+                      if (subtitle != null)
+                        Text(
+                          subtitle!,
+                          maxLines: subtitleMaxLines,
+                          overflow: subtitleMaxLines == null
+                              ? null
+                              : TextOverflow.ellipsis,
+                          style: textTheme.bodySmall
+                              ?.copyWith(color: tokens.textSecondary),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
+                if (trailing == null && onTap != null)
+                  Icon(Icons.chevron_right, color: tokens.textSecondary),
+              ],
             ),
           ),
         ),
       ),
+    );
+    return Semantics(
+      button: onTap != null,
+      onTap: onTap, // D62
+      label: subtitle == null ? title : '$title, $subtitle',
+      // A trailing control keeps its OWN node beside this one (see
+      // AddTileFieldRow).
+      explicitChildNodes: trailing != null,
+      child: trailing == null
+          ? ExcludeSemantics(child: body)
+          : Row(children: [
+              Expanded(child: ExcludeSemantics(child: body)),
+              Padding(
+                  padding: const EdgeInsets.only(right: 10), child: trailing!),
+            ]),
     );
   }
 }

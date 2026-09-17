@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
+import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
@@ -156,25 +159,20 @@ class AutoAddTileState extends State<AutoAddTile> {
         decoration: TileDecorations.populatedDecoration(
             colorScheme.surfaceContainerLowest),
         textColor: colorScheme.onInverseSurface,
-        onPress: () {
-          Location locationHolder = _location!;
-          Map<String, dynamic> locationParams = {'location': locationHolder};
-
-          Navigator.pushNamed(context, '/LocationRoute',
-                  arguments: locationParams)
-              .whenComplete(() {
-            print('done with pop');
-            print(locationParams['location'].description);
-            Location? populatedLocation =
-                locationParams['location'] as Location;
-            setState(() {
-              if (populatedLocation != null &&
-                  populatedLocation.isNotNullAndNotDefault != null &&
-                  populatedLocation.isNotNullAndNotDefault!) {
-                _location = populatedLocation;
-              }
-            });
-          });
+        onPress: () async {
+          // The shared picker (P5-1, D66); null means backed out, unchanged.
+          final Location? picked = await Navigator.of(context).push<Location>(
+            MaterialPageRoute<Location>(
+              builder: (BuildContext context) => AddTileLocationScreen(
+                source: ApiAddTileLocationSource(
+                  locationApi: LocationApi(getContextCallBack: () => context),
+                ),
+                initialLocation: _location,
+              ),
+            ),
+          );
+          if (picked == null || !mounted) return;
+          setState(() => _location = picked);
         },
       );
       autoPredictionButtons.add(locationWidget);

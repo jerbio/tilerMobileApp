@@ -127,6 +127,10 @@ class FakeOccurrences implements TileDetailOccurrences {
 late FakeLoader loader;
 late FakeSubmission submission;
 late FakeOccurrences occurrences;
+
+/// What the screen popped with, once it has.
+Object? poppedResult;
+bool popped = false;
 final List<String> openedOccurrences = <String>[];
 Object? openOccurrenceAnswer;
 Duration? pickedDurationSeed;
@@ -173,6 +177,8 @@ Future<void> pumpDetail(
   openedNotes.clear();
   notesPersistAnswer = null;
   occurrences = occurrencesSource ?? FakeOccurrences();
+  poppedResult = null;
+  popped = false;
   openedOccurrences.clear();
   openOccurrenceAnswer = null;
   loader = FakeLoader(loadResult ??
@@ -192,7 +198,8 @@ Future<void> pumpDetail(
         body: Center(
           child: TextButton(
             key: const ValueKey('open'),
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+            onPressed: () => Navigator.of(context)
+                .push<Object?>(MaterialPageRoute<Object?>(
               builder: (_) => TileDetailRedesignScreen(
                 calendarEventId:
                     designatedTileTemplateId == null ? 'cal-1' : null,
@@ -243,7 +250,11 @@ Future<void> pumpDetail(
                   },
                 ),
               ),
-            )),
+            ))
+                .then((Object? r) {
+              popped = true;
+              poppedResult = r;
+            }),
             child: const Text('open'),
           ),
         ),
@@ -450,6 +461,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(submission.saved, hasLength(1));
       expect(screen, findsNothing, reason: 'popped');
+      expect(poppedResult, isNot(isA<TileDetailDeleted>()),
+          reason: 'a save pops the event, not a deletion');
     });
 
     testWidgets('the form is inert while the save is in flight',
@@ -543,6 +556,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(submission.deleted, hasLength(1));
       expect(screen, findsNothing);
+      // The pop SAYS the series is gone, so a caller that opened this
+      // screen for one of its occurrences knows not to reload it.
+      expect(poppedResult, isA<TileDetailDeleted>());
     });
 
     testWidgets('a dirty draft is named as discarded by the delete',

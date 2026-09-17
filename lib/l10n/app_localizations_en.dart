@@ -3424,6 +3424,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editTileLocationRemove => 'Remove location';
 
   @override
+  String get addTileDeadlineClear => 'Remove deadline';
+
+  @override
   String get editTileMenuTileDetails => 'Tile details';
 
   @override

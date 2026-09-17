@@ -26,7 +26,6 @@
 // so they stay pure, unit-testable, and reusable outside this flow (D29).
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/location.dart';
@@ -57,39 +56,6 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/newTileRequestMapper.
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/tileRouteAdapters.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
-
-/// Local, dependency-free feature flag (no remote-config coupling): the app
-/// has no remote rollout system, so a cohort is a BUILD (Step 5.2, D65).
-///
-/// Resolution, first match wins:
-///
-///   1. a runtime override, set through [addTileRedesignEnabled] — the
-///      rollback lever, and what tests use;
-///   2. `--dart-define=ADD_TILE_REDESIGN=true|false` at build time — how a
-///      release cohort is cut;
-///   3. the build mode: on for debug builds, off for release, so internal
-///      builds are the first cohort and a store build stays on the legacy
-///      screen until someone says otherwise.
-class AddTileFeatureFlags {
-  AddTileFeatureFlags._();
-
-  /// What this build resolves to with no runtime override.
-  static const bool buildDefault =
-      bool.fromEnvironment('ADD_TILE_REDESIGN', defaultValue: kDebugMode);
-
-  static bool? _override;
-
-  /// `true` renders [AddTileRedesignScreen]; `false` renders the legacy flow.
-  static bool get addTileRedesignEnabled => _override ?? buildDefault;
-  static set addTileRedesignEnabled(bool value) => _override = value;
-
-  /// Drops the runtime override, returning to [buildDefault].
-  static void reset() => _override = null;
-
-  /// Analytics `flow_version` values.
-  static const String redesignFlowVersion = addTileRedesignFlowVersion;
-  static const String legacyFlowVersion = addTileLegacyFlowVersion;
-}
 
 /// Non-swipeable segmented type selector. One control for the
 /// Flexible Tile / Fixed Block decision — the legacy carousel + toggle
@@ -652,15 +618,12 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     _draft.setRestrictionProfile(restrictionProfileForPreferredTime(part));
   }
 
-  /// Opens the legacy `/LocationRoute` through its typed adapter. A cancelled
-  /// route returns `null` and the draft is left untouched (not dirtied).
-  /// Opens the redesigned Location picker (Phase 4.1). A cancelled Back
-  /// returns `null` and the draft is left untouched.
+  /// Opens the Location picker (Phase 4.1). A cancelled Back returns `null`
+  /// and the draft is left untouched.
   ///
   /// [locationSource] is injected by tests; the app supplies the real API +
-  /// geolocator source. The legacy `/LocationRoute` remains the destination
-  /// for the "Add custom location" path inside the new screen and for the five
-  /// non-redesign callers, until Phase 5.3 cleanup.
+  /// geolocator source. Since Step 5.3 this picker is the ONLY location
+  /// screen in the app (P5-1).
   Future<void> _openLocationPicker() async {
     final AddTileLocationSource? source = widget.locationSource;
     if (source == null) return; // no source wired (test harness) — no-op.
@@ -676,11 +639,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     _draft.setLocation(picked);
   }
 
-  /// Opens the legacy `/RepetitionRoute` through its typed adapter, which
-  /// preserves the legacy apply/clear/unchanged result semantics.
-  /// Opens the redesigned Repeat picker (Step 4.2).
-  ///
-  /// Replaces the legacy `/RepetitionRoute` for this flow. The result is
+  /// Opens the Repeat picker (Step 4.2). The result is
   /// wrapped so a confirmed "Does not repeat" (a null repetition) stays
   /// distinguishable from backing out, which must leave the draft alone.
   Future<void> _openRepeatPicker() async {
@@ -762,16 +721,11 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     _draft.setPriority(picked);
   }
 
-  /// Opens the redesigned Color picker (Step 4.3b), replacing the legacy
-  /// `/PickColor` route for this flow.
+  /// Opens the Color picker (Step 4.3b).
   ///
   /// A confirmed `null` is meaningful here — it means Automatic — so the
   /// result carries `made` rather than relying on nullability, and backing
-  /// out leaves the draft's color untouched. The legacy `openColorRoute`
-  /// adapter could not express "the user chose Automatic" at all, and now has
-  /// no caller — the legacy Add Tile flow pushes `/PickColor` directly. It is
-  /// left in `tileRouteAdapters.dart` with the other now-unreferenced route
-  /// helpers, to be removed together at Phase 5.3.
+  /// out leaves the draft's color untouched.
   Future<void> _openColorPicker() async {
     final ColorChoice? choice = await Navigator.of(context).push<ColorChoice>(
       MaterialPageRoute<ColorChoice>(
@@ -1055,6 +1009,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         onNameSubmitted: (_) => _attemptSubmit(),
         onDurationTap: _openDurationPicker,
         onDeadlineTap: _openDeadlinePicker,
+        onDeadlineClear: () => _draft.endTime = null,
         onPreferredTimeSelected: _onPreferredTimeSelected,
         onAdvancedPreferredTimeTap: _openAdvancedPreferredTime,
         onLocationTap: _openLocationPicker,

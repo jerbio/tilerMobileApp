@@ -11,6 +11,7 @@
 // Details — on the shared widgets and the shared Add Tile pickers. The
 // occurrences list is 6.5, the route drop-in 6.6.
 import 'package:flutter/material.dart';
+import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/notesPayload.dart';
 import 'package:tiler_app/data/repetitionData.dart';
@@ -41,6 +42,17 @@ import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDeta
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailSubmission.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/subEventPaging.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
+
+/// What Tile details pops with after deleting the series. Distinct from a
+/// save (which pops the updated `CalendarEvent`) so a caller that opened
+/// this screen for ONE occurrence knows that occurrence is gone too and
+/// must not reload it (2026-09-17).
+class TileDetailDeleted {
+  const TileDetailDeleted(this.event);
+
+  /// What the delete endpoint answered, if anything.
+  final CalendarEvent? event;
+}
 
 typedef TileDetailPickDuration = Future<Duration?> Function(
     BuildContext context, Duration seed);
@@ -377,7 +389,9 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
   /// "complete by" rule.
   Future<void> _editDeadline() async {
     final TileDetailDraft d = draft!;
-    final DateTime? day = await widget.pickDate(context, d.deadline);
+    // Anytime seeds the picker on today.
+    final DateTime? day = await widget.pickDate(
+        context, d.deadline ?? deadlineForPickedDay(DateTime.now()));
     if (day == null || !mounted) return;
     d.setDeadline(deadlineForPickedDay(day));
   }
@@ -536,7 +550,7 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
     if (!mounted) return;
     setState(() => _submitting = false);
     if (result.outcome == EditTileSaveOutcome.success) {
-      Navigator.of(context).pop(result.event);
+      Navigator.of(context).pop(TileDetailDeleted(result.event));
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -632,6 +646,7 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
                     onTitleChanged: _onTitleChanged,
                     onDurationTap: _editDuration,
                     onDeadlineTap: _editDeadline,
+                    onDeadlineClear: () => draft!.setDeadline(null),
                     onRepeatTap: _editRepeat,
                     onLocationTap: _editLocation,
                     onNameLocationTap: _nameLocation,
@@ -670,6 +685,7 @@ class _Frame extends StatelessWidget {
     required this.onTitleChanged,
     required this.onDurationTap,
     required this.onDeadlineTap,
+    required this.onDeadlineClear,
     required this.onRepeatTap,
     required this.onLocationTap,
     required this.onNameLocationTap,
@@ -687,6 +703,7 @@ class _Frame extends StatelessWidget {
   final ValueChanged<String> onTitleChanged;
   final VoidCallback onDurationTap;
   final VoidCallback onDeadlineTap;
+  final VoidCallback onDeadlineClear;
   final VoidCallback onRepeatTap;
   final VoidCallback onLocationTap;
   final VoidCallback onNameLocationTap;
@@ -797,8 +814,36 @@ class _Frame extends StatelessWidget {
                             key: const ValueKey('detailDeadlineRow'),
                             icon: Icons.flag_outlined,
                             label: l10n.editTileFieldDeadline,
-                            value: DateFormat.yMMMEd().format(draft.deadline),
+                            // Anytime = no deadline (Add Tile's wording).
+                            value: draft.deadline == null
+                                ? l10n.anytime
+                                : DateFormat.yMMMEd().format(draft.deadline!),
                             onTap: rowsLocked ? null : onDeadlineTap,
+                            // Back to Anytime: the date picker cannot answer
+                            // "no date" (Add Tile D64).
+                            trailing: draft.deadline == null || rowsLocked
+                                ? null
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Semantics(
+                                        key: const ValueKey(
+                                            'detailDeadlineClear'),
+                                        container: true,
+                                        button: true,
+                                        label: l10n.addTileDeadlineClear,
+                                        onTap: onDeadlineClear,
+                                        child: ExcludeSemantics(
+                                          child: IconButton(
+                                            icon: const Icon(Icons.close),
+                                            onPressed: onDeadlineClear,
+                                          ),
+                                        ),
+                                      ),
+                                      Icon(Icons.chevron_right,
+                                          color: tokens.textSecondary),
+                                    ],
+                                  ),
                           ),
                       ]),
                       if (showSessions) ...[

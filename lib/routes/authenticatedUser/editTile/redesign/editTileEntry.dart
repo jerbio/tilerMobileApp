@@ -21,9 +21,7 @@ import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
 
-/// Local, dependency-free flag, as `AddTileFeatureFlags`. Off by default:
-/// production entry points keep the legacy screen until the rollout
-/// (plan Step 5.2); the debug ✨ entry reaches the redesign regardless.
+/// The builder the route renders; a seam for tests.
 typedef EditTileRedesignBuilder = Widget Function(
     BuildContext context, EditTileRedesignRouteArgs args);
 

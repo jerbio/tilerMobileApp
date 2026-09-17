@@ -29,10 +29,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRedesignScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/repetitionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
-import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/account%20info/accountInfo.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/connetions.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
@@ -208,18 +205,8 @@ class _TilerAppState extends State<TilerApp> {
                   '/AuthorizedUser': (BuildContext context) =>
                       new AuthorizedRoute(),
                   '/LoggedOut': (BuildContext context) => new SignInRoute(),
-                  // Add Tile: ONE entry for every push site, rendering the
-                  // redesign or the legacy screen by `AddTileFeatureFlags`
-                  // (Step 5.2, D65).
+                  // Add Tile: ONE entry for every push site (D65, D66).
                   '/AddTile': (BuildContext context) => const AddTileEntry(),
-                  // The redesign unconditionally — the debug long-press on the
-                  // home "add" button. Same wiring as the flagged path.
-                  '/AddTileRedesign': (BuildContext context) =>
-                      buildAddTileRedesign(
-                        context,
-                        AddTileRouteArgs.from(
-                            ModalRoute.of(context)?.settings.arguments),
-                      ),
                   // Edit Tile redesign shell (Phase 1, Step 1.4). Its own
                   // route so it can be reviewed independently of the legacy
                   // EditTile screen, which every production entry point still
@@ -234,8 +221,6 @@ class _TilerAppState extends State<TilerApp> {
                   },
                   '/SearchTile': (BuildContext context) =>
                       new EventNameSearchWidget(context: context),
-                  '/LocationRoute': (BuildContext context) =>
-                      new LocationRoute(),
                   '/CustomRestrictionsRoute': (BuildContext context) =>
                       new CustomTimeRestrictionRoute(),
                   '/TimeRestrictionRoute': (BuildContext context) =>
@@ -249,8 +234,6 @@ class _TilerAppState extends State<TilerApp> {
                           Duration(hours: 1),
                         ],
                       ),
-                  '/RepetitionRoute': (ctx) => RepetitionRoute(),
-                  '/PickColor': (ctx) => PickColor(),
                   '/Setting': (ctx) => Settings(),
                   '/Integrations': (ctx) => IntegrationWidgetRoute(),
                   '/OnBoarding': (ctx) => OnboardingView(),

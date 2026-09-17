@@ -914,6 +914,7 @@
   "editTileSectionPriority": "PRIORIDAD",
   "editTileSectionLocation": "UBICACIÓN",
   "editTileLocationRemove": "Quitar ubicación",
+  "addTileDeadlineClear": "Quitar fecha límite",
   "editTileMenuTileDetails": "Detalles del tile",
   "editTileMoreMenu": "Más",
   "editTileRepeatEveryDay": "Cada día",

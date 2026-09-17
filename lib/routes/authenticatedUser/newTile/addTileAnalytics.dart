@@ -28,7 +28,6 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 /// drift from the flag that selects it. Underscore-separated, matching every
 /// other enumerated value in the schema.
 const String addTileRedesignFlowVersion = 'redesign_v1';
-const String addTileLegacyFlowVersion = 'legacy';
 
 /// Schema Section 4 — enumerated field ids. The ONLY tokens allowed in
 /// `missing_fields` / `last_completed_field`.

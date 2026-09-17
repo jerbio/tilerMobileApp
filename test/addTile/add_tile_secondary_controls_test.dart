@@ -190,6 +190,21 @@ void main() {
           find.byKey(const ValueKey('preferredTimeAnytime')), findsOneWidget);
     });
 
+    testWidgets('clearing the deadline returns Complete by to Anytime',
+        (tester) async {
+      final draft = AddTileDraft.flexible(now: now);
+      draft.endTime = DateTime(2026, 9, 12, 23, 59);
+      await pumpScreen(tester, AddTileRedesignScreen(draft: draft, now: now));
+      await tester.pump();
+      expect(find.text('Anytime'), findsOneWidget,
+          reason: 'only the preferred-time Anytime while a deadline is set');
+      await tester.tap(find.byKey(const ValueKey('completeByClear')));
+      await tester.pump();
+      expect(draft.endTime, isNull);
+      expect(find.text('Anytime'), findsNWidgets(2));
+      expect(find.byKey(const ValueKey('completeByClear')), findsNothing);
+    });
+
     testWidgets('selecting a day part stores the matching profile',
         (tester) async {
       final draft = AddTileDraft.flexible(now: now);

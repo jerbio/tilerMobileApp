@@ -14,6 +14,8 @@ import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
@@ -47,7 +49,6 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
 
   // final BoxDecoration populatedDecoration = TileStyles.configUpdate_Selected;
 
-  late final LocationApi locationApi;
   late ThemeData theme;
   late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
@@ -56,8 +57,6 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
   late Color populatedOnSurfaceColor;
   late BoxDecoration populatedDecoration;
 
-  Location? _homeLocation;
-  Location? _workLocation;
   bool isPendingAutoResult = false;
   String? latestPendingResultId = null;
   String? newEventForeCastId = null;
@@ -67,19 +66,6 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
     super.initState();
 
     scheduleApi = ScheduleApi(getContextCallBack: () => context);
-    locationApi = LocationApi(getContextCallBack: () => context);
-    locationApi
-        .getSpecificLocationByNickName(Location.homeLocationNickName)
-        .then((homeLocation) {
-      locationApi
-          .getSpecificLocationByNickName(Location.workLocationNickName)
-          .then((workLocation) {
-        setState(() {
-          _homeLocation = homeLocation;
-          _workLocation = workLocation;
-        });
-      });
-    });
     this.newTile =
         NewTile.fromJson((this.widget.newTile ?? NewTile()).toJson());
   }
@@ -436,43 +422,26 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
       textColor: isLocationConfigSet
           ? populatedOnSurfaceColor
           : unPopulatedOnSurfaceColor,
-      onPress: () {
-        Location locationHolder = _locationResponse ?? Location.fromDefault();
-        Map<String, dynamic> locationParams = {
-          'location': locationHolder,
-        };
-        List<Location> defaultLocations = [];
-
-        if (_homeLocation != null && _homeLocation!.isNotNullAndNotDefault) {
-          defaultLocations.add(_homeLocation!);
-        }
-        if (_workLocation != null && _workLocation!.isNotNullAndNotDefault) {
-          defaultLocations.add(_workLocation!);
-        }
-        if (defaultLocations.isNotEmpty) {
-          locationParams['defaults'] = defaultLocations;
-        }
-
-        Navigator.pushNamed(context, '/LocationRoute',
-                arguments: locationParams)
-            .whenComplete(() {
-          Location? populatedLocation = locationParams['location'] as Location?;
-          AnalysticsSignal.send('ADD_TILE_NEWTILE_MANUAL_LOCATION_NAVIGATION');
-          setState(() {
-            if (populatedLocation != null) {
-              Location? updatedLocationRes = populatedLocation;
-              if (!updatedLocationRes.address.isNot_NullEmptyOrWhiteSpace() &&
-                  !updatedLocationRes.description
-                      .isNot_NullEmptyOrWhiteSpace() &&
-                  !updatedLocationRes.id.isNot_NullEmptyOrWhiteSpace() &&
-                  updatedLocationRes.longitude == null &&
-                  updatedLocationRes.latitude == null) {
-                updatedLocationRes = null;
-              }
-              onLocationUpdate(updatedLocationRes);
-            }
-            _isLocationManuallySet = true;
-          });
+      onPress: () async {
+        // The shared picker (P5-1, D66): it loads Home / Work itself and pops
+        // with the chosen place, or null when backed out of. The legacy
+        // route wrote into a by-reference map and could hand back an empty
+        // Location that had to be recognised and discarded.
+        final Location? picked = await Navigator.of(context).push<Location>(
+          MaterialPageRoute<Location>(
+            builder: (BuildContext context) => AddTileLocationScreen(
+              source: ApiAddTileLocationSource(
+                locationApi: LocationApi(getContextCallBack: () => context),
+              ),
+              initialLocation: _locationResponse,
+            ),
+          ),
+        );
+        AnalysticsSignal.send('ADD_TILE_NEWTILE_MANUAL_LOCATION_NAVIGATION');
+        if (picked == null || !mounted) return;
+        setState(() {
+          onLocationUpdate(picked);
+          _isLocationManuallySet = true;
         });
       },
     );

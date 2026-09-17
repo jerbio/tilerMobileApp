@@ -3433,6 +3433,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get editTileLocationRemove => 'Quitar ubicación';
 
   @override
+  String get addTileDeadlineClear => 'Quitar fecha límite';
+
+  @override
   String get editTileMenuTileDetails => 'Detalles del tile';
 
   @override

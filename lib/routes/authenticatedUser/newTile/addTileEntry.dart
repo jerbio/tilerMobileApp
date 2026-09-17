@@ -1,18 +1,16 @@
-// Add Tile — Step 5.2: the one entry point (D65).
+// Add Tile — the one entry point (Step 5.2, D65; legacy removed in 5.3, D66).
 //
 // Every place that opens Add Tile goes through `AddTileEntry`: the `/AddTile`
-// route, and the two sites that used to construct the legacy screen
-// directly. It renders the redesign when `AddTileFeatureFlags` says so and
-// the legacy `AddTile` otherwise, so one flag governs every entry point and
-// a rollback is a flag flip, not a code change.
+// route, and the two sites that push a `MaterialPageRoute` with a prefill.
+// Until 5.3 it chose between the legacy `AddTile` and the redesign by a
+// flag; the legacy screen is gone and the entry is unconditional — kept so
+// the push sites keep one API and one argument shape.
 //
 // The redesign's production wiring lives in ONE function,
-// `buildAddTileRedesign`, shared with the direct `/AddTileRedesign` route in
-// `main.dart` — a second copy of the API wiring would drift.
+// `buildAddTileRedesign` — a second copy of the API wiring would drift.
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePredictionSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
@@ -28,21 +26,16 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 ///   * the empty-day and forecast-preview sites push a `{newTile}` map the
 ///     created tile is written back into;
 ///   * the Edit Tile suggestions push that map with a `preTile` inside it;
-///   * the free-slot and auto-tile sites construct the screen with a
+///   * the free-slot and auto-tile sites construct the entry with a
 ///     `preTile` and an `autoDeadline`.
-///
-/// Both screens read from here, so they cannot disagree about a prefill.
 class AddTileRouteArgs {
-  const AddTileRouteArgs({this.preTile, this.newTileParams, this.autoDeadline});
+  const AddTileRouteArgs({this.preTile, this.newTileParams});
 
   final PreTile? preTile;
 
   /// The legacy result slot, kept by identity: the caller reads the created
   /// tile back out of the very map it pushed.
   final Map<String, dynamic>? newTileParams;
-
-  /// Legacy `AddTile` takes the deadline beside the prefill; kept for it.
-  final DateTime? autoDeadline;
 
   /// Folds route [arguments] and constructor [preTile] / [autoDeadline].
   ///
@@ -71,17 +64,11 @@ class AddTileRouteArgs {
       )..startTime = source?.startTime;
     }
 
-    return AddTileRouteArgs(
-      preTile: folded,
-      newTileParams: slot,
-      autoDeadline: autoDeadline,
-    );
+    return AddTileRouteArgs(preTile: folded, newTileParams: slot);
   }
 }
 
 typedef AddTileRedesignBuilder = Widget Function(
-    BuildContext context, AddTileRouteArgs args);
-typedef AddTileLegacyBuilder = Widget Function(
     BuildContext context, AddTileRouteArgs args);
 
 /// The redesigned screen with its production wiring.
@@ -99,25 +86,12 @@ Widget buildAddTileRedesign(BuildContext context, AddTileRouteArgs args) {
   );
 }
 
-/// The legacy screen. It reads its result slot from the route itself.
-Widget buildAddTileLegacy(BuildContext context, AddTileRouteArgs args) =>
-    AddTile(preTile: args.preTile, autoDeadline: args.autoDeadline);
-
-/// The legacy screen's result slot, read tolerantly.
-///
-/// `AddTile.build` cast `settings.arguments as Map?`; with the preview sheet
-/// now pushing a bare [PreTile] through `/AddTile`, that cast threw whenever
-/// the flag was off.
-Map? readLegacyResultSlot(Object? arguments) =>
-    arguments is Map ? arguments : null;
-
 class AddTileEntry extends StatelessWidget {
   const AddTileEntry({
     super.key,
     this.preTile,
     this.autoDeadline,
     this.redesignBuilder = buildAddTileRedesign,
-    this.legacyBuilder = buildAddTileLegacy,
   });
 
   /// Constructor-time prefill, for sites that push a `MaterialPageRoute`
@@ -125,9 +99,8 @@ class AddTileEntry extends StatelessWidget {
   final PreTile? preTile;
   final DateTime? autoDeadline;
 
-  /// Test seams; production uses the defaults.
+  /// Test seam; production uses the default.
   final AddTileRedesignBuilder redesignBuilder;
-  final AddTileLegacyBuilder legacyBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -136,9 +109,6 @@ class AddTileEntry extends StatelessWidget {
       preTile: preTile,
       autoDeadline: autoDeadline,
     );
-    if (!AddTileFeatureFlags.addTileRedesignEnabled) {
-      return legacyBuilder(context, args);
-    }
     return redesignBuilder(context, args);
   }
 }

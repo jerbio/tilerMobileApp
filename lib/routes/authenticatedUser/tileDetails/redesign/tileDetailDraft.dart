@@ -63,13 +63,19 @@ class TileDetailDraft extends ChangeNotifier {
         _duration = original.tileDuration,
         _split = original.split ?? 1,
         _location = _present(location ?? original.location),
-        _repetition = original.repetition?.toRepetitionData(),
+        // A rule the server sends disabled is no rule to the picker's
+        // vocabulary (Add Tile's "Does not repeat"); the object still goes
+        // back untouched if the user leaves repetition alone (mapper).
+        _repetition = original.repetition?.isEnabled == true
+            ? original.repetition?.toRepetitionData()
+            : null,
         _priority = original.priority,
         _color = original.uiConfig?.tileColor?.toColor,
         _restriction = original.restrictionProfile,
         // Local, like every other time the draft holds (a picker seeded
-        // with UTC opens on the wrong day near midnight).
-        _deadline = original.endTime.toLocal() {
+        // with UTC opens on the wrong day near midnight). NO end on the
+        // wire (the model reads it as 0) is Anytime — a null deadline.
+        _deadline = _hasDeadline(original) ? original.endTime.toLocal() : null {
     _originalName = _name;
     _originalDuration = _duration;
     _originalSplit = _split;
@@ -134,7 +140,7 @@ class TileDetailDraft extends ChangeNotifier {
   TilePriority _priority;
   Color? _color;
   RestrictionProfile? _restriction;
-  DateTime _deadline;
+  DateTime? _deadline;
 
   late final String _originalName;
   late final Duration? _originalDuration;
@@ -144,7 +150,7 @@ class TileDetailDraft extends ChangeNotifier {
   late final TilePriority _originalPriority;
   late final Color? _originalColor;
   late final RestrictionProfile? _originalRestriction;
-  late final DateTime _originalDeadline;
+  late final DateTime? _originalDeadline;
 
   String get name => _name;
 
@@ -169,9 +175,15 @@ class TileDetailDraft extends ChangeNotifier {
   /// The preferred-time (restriction) profile; null is Anytime.
   RestrictionProfile? get restrictionProfile => _restriction;
 
-  /// The series deadline (`End` on the wire). Editable for a NON-repeating
-  /// series (2026-09-17); a repeating one is ended by its rule instead.
-  DateTime get deadline => _deadline;
+  /// The series deadline (`End` on the wire), or null for Anytime — no
+  /// deadline. Editable for a NON-repeating series (2026-09-17); a
+  /// repeating one is ended by its rule instead.
+  DateTime? get deadline => _deadline;
+
+  /// An `end` of 0 / absent is the wire's "no deadline" (Add Tile sends
+  /// the End* fields as null for Anytime; the model reads a missing end
+  /// as 0).
+  static bool _hasDeadline(CalendarEvent e) => (e.end ?? 0) > 0;
 
   void setName(String value) => _update(() => _name = value);
   void setDuration(Duration? value) => _update(() => _duration = value);
@@ -185,7 +197,9 @@ class TileDetailDraft extends ChangeNotifier {
   void setColor(Color? value) => _update(() => _color = value);
   void setRestrictionProfile(RestrictionProfile? value) =>
       _update(() => _restriction = value);
-  void setDeadline(DateTime value) => _update(() => _deadline = value);
+
+  /// Null returns the series to Anytime.
+  void setDeadline(DateTime? value) => _update(() => _deadline = value);
 
   void _update(void Function() change) {
     change();
@@ -266,8 +280,9 @@ class TileDetailDraft extends ChangeNotifier {
   TileDetailInvalidReason? get invalidReason {
     if (_name.trim().isEmpty) return TileDetailInvalidReason.nameRequired;
     if (_split < 1) return TileDetailInvalidReason.splitRequired;
-    // `EditCalendarEvent.isValid`: start < end.
-    if (!_deadline.isAfter(original.startTime)) {
+    // `EditCalendarEvent.isValid`: start < end — when there IS an end.
+    final DateTime? deadline = _deadline;
+    if (deadline != null && !deadline.isAfter(original.startTime)) {
       return TileDetailInvalidReason.deadlineNotAfterStart;
     }
     return null;

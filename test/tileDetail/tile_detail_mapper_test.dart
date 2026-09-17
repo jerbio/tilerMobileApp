@@ -139,6 +139,28 @@ void main() {
       expect(tileDetailUpdateParams(anytime)['RestrictiveWeek'], isNull);
     });
 
+    test(
+        'Anytime travels as End 0 — what the legacy screen sent back for a '
+        'loaded null end (endTime of epoch 0)', () {
+      final TileDetailDraft d = draft(fx.loaded(noDeadline: true))..setSplit(4);
+      expect(tileDetailUpdateParams(d)['End'], '0');
+      final TileDetailDraft cleared = draft()..setDeadline(null);
+      expect(tileDetailUpdateParams(cleared)['End'], '0');
+    });
+
+    test('a disabled loaded rule is passed through untouched on the wire', () {
+      // Not a rule to the draft, but the server\'s object goes back as it
+      // came when the user did not touch repetition.
+      final TileDetailDraft d = draft(fx.loaded(repetition: <String, dynamic>{
+        ...fx.weeklyJson(),
+        'isEnabled': false,
+      }))
+        ..setSplit(4);
+      final Map<String, dynamic> rule =
+          tileDetailUpdateParams(d)['RepetitionConfig'] as Map<String, dynamic>;
+      expect(rule['IsEnabled'], false);
+    });
+
     test('a moved deadline travels as End; the start is untouched', () {
       final TileDetailDraft d = draft()
         ..setDeadline(fx.end.add(const Duration(days: 2)));

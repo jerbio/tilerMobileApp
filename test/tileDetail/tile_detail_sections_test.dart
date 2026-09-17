@@ -156,7 +156,7 @@ void main() {
       await tester.tap(key('detailDeadlineRow'));
       await tester.pumpAndSettle();
       expect(shell.pickedDateSeed?.day, 20, reason: 'seeded on the deadline');
-      final DateTime picked = shell.draftOf(tester).deadline;
+      final DateTime picked = shell.draftOf(tester).deadline!;
       expect(DateTime(picked.year, picked.month, picked.day),
           DateTime(2026, 9, 25));
       expect(picked.hour, 23, reason: 'the END of the picked day');
@@ -171,6 +171,57 @@ void main() {
       expect(
           find.byKey(const ValueKey('detailDeadlineRow'), skipOffstage: false),
           findsNothing);
+    });
+
+    testWidgets(
+        'no deadline reads Anytime; a pick sets one; × returns to Anytime '
+        '(2026-09-17)', (tester) async {
+      await shell.pumpDetail(tester, event: fx.loaded(noDeadline: true));
+      await reveal(tester, key('detailDeadlineRow'));
+      expect(
+          find.descendant(
+              of: key('detailDeadlineRow'),
+              matching: find.text(testL10n.anytime)),
+          findsOneWidget);
+      expect(key('detailDeadlineClear'), findsNothing);
+      shell.pickedDateAnswer = DateTime(2026, 9, 25);
+      await tester.tap(key('detailDeadlineRow'));
+      await tester.pumpAndSettle();
+      expect(shell.draftOf(tester).deadline?.day, 25);
+      expect(key('detailDeadlineClear'), findsOneWidget);
+      final SemanticsHandle h = tester.ensureSemantics();
+      expect(
+          tester.getSemantics(key('detailDeadlineClear')),
+          matchesSemantics(
+              isButton: true,
+              hasTapAction: true,
+              label: testL10n.addTileDeadlineClear));
+      h.dispose();
+      await tester.tap(key('detailDeadlineClear'));
+      await tester.pump();
+      expect(shell.draftOf(tester).deadline, isNull);
+      expect(
+          find.descendant(
+              of: key('detailDeadlineRow'),
+              matching: find.text(testL10n.anytime)),
+          findsOneWidget);
+    });
+
+    testWidgets('a disabled rule shows Does not repeat AND the deadline row',
+        (tester) async {
+      await shell.pumpDetail(tester,
+          event: fx.loaded(repetition: <String, dynamic>{
+            ...fx.weeklyJson(),
+            'isEnabled': false,
+          }));
+      await reveal(tester, key('detailDeadlineRow'));
+      expect(key('detailDeadlineRow'), findsOneWidget);
+      await reveal(tester, key('detailRepeatRow'));
+      expect(
+          find.descendant(
+              of: key('detailRepeatRow'),
+              matching: find.text(testL10n.addTileRepeatNever)),
+          findsOneWidget);
     });
 
     testWidgets('clearing the rule brings the deadline row back',

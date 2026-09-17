@@ -2145,6 +2145,7 @@
   "editTileSectionPriority": "PRIORITY",
   "editTileSectionLocation": "LOCATION",
   "editTileLocationRemove": "Remove location",
+  "addTileDeadlineClear": "Remove deadline",
   "editTileMenuTileDetails": "Tile details",
   "editTileMoreMenu": "More",
   "editTileRepeatEveryDay": "Every day",

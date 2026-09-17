@@ -121,6 +121,74 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets(
+      'a trailing control inside a field row keeps its own button node '
+      '(2026-09-17)', (tester) async {
+    // Both rows wrapped EVERYTHING in ExcludeSemantics, so a trailing ×
+    // or name button was unreachable to assistive tech.
+    final SemanticsHandle handle = tester.ensureSemantics();
+    int rowTaps = 0;
+    int clearTaps = 0;
+    await pumpControl(
+      tester,
+      AddTileFieldRow(
+        key: const ValueKey('row'),
+        icon: Icons.event_outlined,
+        label: 'Complete by',
+        value: 'Sep 12, 2026',
+        onTap: () => rowTaps++,
+        trailing: Semantics(
+          key: const ValueKey('clear'),
+          container: true,
+          button: true,
+          label: 'Remove deadline',
+          onTap: () => clearTaps++,
+          child: const ExcludeSemantics(child: Icon(Icons.close)),
+        ),
+      ),
+    );
+    expect(
+        tester.getSemantics(find.byKey(const ValueKey('row'))),
+        matchesSemantics(
+            isButton: true,
+            hasTapAction: true,
+            label: 'Complete by, Sep 12, 2026'));
+    expect(
+        tester.getSemantics(find.byKey(const ValueKey('clear'))),
+        matchesSemantics(
+            isButton: true, hasTapAction: true, label: 'Remove deadline'));
+    activate(tester, find.byKey(const ValueKey('clear')));
+    await tester.pump();
+    expect(clearTaps, 1);
+    expect(rowTaps, 0, reason: 'the × is not the row');
+    handle.dispose();
+  });
+
+  testWidgets(
+      'a trailing control inside a nav row keeps its own button node '
+      '(2026-09-17)', (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    int taps = 0;
+    await pumpControl(
+      tester,
+      AddTileNavRow(
+        key: const ValueKey('row'),
+        icon: Icons.place_outlined,
+        title: 'Location',
+        subtitle: 'Work',
+        onTap: () {},
+        trailing: NameLocationButton(
+            key: const ValueKey('name'), onTap: () => taps++),
+      ),
+    );
+    expect(tester.getSemantics(find.byKey(const ValueKey('name'))),
+        matchesSemantics(isButton: true, hasTapAction: true));
+    activate(tester, find.byKey(const ValueKey('name')));
+    await tester.pump();
+    expect(taps, 1);
+    handle.dispose();
+  });
+
   testWidgets('the name-this-place button is activatable', (tester) async {
     final SemanticsHandle handle = tester.ensureSemantics();
     int taps = 0;

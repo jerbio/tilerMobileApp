@@ -20,7 +20,6 @@ class HomeBottomNav extends StatelessWidget {
   ///
   /// Used only for the debug-only Add Tile redesign entry point. Null in all
   /// production paths, so behaviour is unchanged when not provided.
-  final VoidCallback? onAddTileLongPress;
 
   /// The currently active calendar view — drives the switcher icon and which
   /// two views the pop-out offers.
@@ -33,7 +32,6 @@ class HomeBottomNav extends StatelessWidget {
     super.key,
     required this.onShare,
     required this.onAddTile,
-    this.onAddTileLongPress,
     required this.currentView,
     required this.onSelectView,
   });
@@ -130,7 +128,6 @@ class HomeBottomNav extends StatelessWidget {
               GestureDetector(
                 key: TutorialKeys.bottomNavAddTileKey,
                 onTap: onAddTile,
-                onLongPress: onAddTileLongPress,
                 child: Container(
                   width: 56,
                   height: 56,
