@@ -8,9 +8,12 @@ class QuickActionChipsRow extends StatelessWidget {
   final VoidCallback? onReOptimize;
   final bool preview;
 
-  const QuickActionChipsRow(
-      {Key? key, this.onShowRoute, this.onReOptimize, this.preview = false})
-      : super(key: key);
+  const QuickActionChipsRow({
+    Key? key,
+    this.onShowRoute,
+    this.onReOptimize,
+    this.preview = false
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -27,15 +30,7 @@ class QuickActionChipsRow extends StatelessWidget {
               preview: preview,
               icon: Icons.route,
               label: l10n.showRouteChip,
-              onTap: (){
-//                 String tileId =  "1he3d5sih83tbte3v29dm50ltu_20260911T163000Z";
-// Map<String, dynamic> editParams = {'tileId': tileId, 'source': "google", 
-// 'thirdPartyUserId': "jeromebiotidara@gmail.com"};
-                String tileId =  "6c82dcb2-519f-4bb6-8fa3-0e352784a209_7_01KTNTV37DHZD428TYRGXS9YBF_01KTNTV37DDDE5ZMQTZXXCCTJK";
-Map<String, dynamic> editParams = {'tileId': tileId, 'source': "tiler", 
-'thirdPartyUserId': ""};
-      Navigator.pushNamed(context, '/EditTileRedesign', arguments: editParams);
-              }!,
+              onTap: onShowRoute!,
             ),
           if (onShowRoute != null && onReOptimize != null)
             const SizedBox(width: 8),
