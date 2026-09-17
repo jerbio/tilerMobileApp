@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
+import 'package:tiler_app/components/tileUI/tileAccentBar.dart';
 import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -9,6 +10,7 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -187,6 +189,16 @@ class EnhancedTileCard extends StatefulWidget {
   final bool hasDottedBorder;
   final bool initiallyExpanded;
 
+  /// When true, renders a compact, fixed-height card (name + time range only)
+  /// instead of the full detail card, so many more tiles fit on screen. The
+  /// full detail (location, scrub, playback, actions) is instead surfaced by
+  /// [onTileTap] (the caller opens the tile detail bottom sheet).
+  final bool compact;
+
+  /// Tap handler for the compact card. When null the compact card falls back
+  /// to the default tap (navigate to EditTile), same as the full card.
+  final VoidCallback? onTileTap;
+
   const EnhancedTileCard({
     Key? key,
     required this.subEvent,
@@ -196,6 +208,8 @@ class EnhancedTileCard extends StatefulWidget {
     this.preview = false,
     this.hasDottedBorder = false,
     this.initiallyExpanded = false,
+    this.compact = false,
+    this.onTileTap,
   }) : super(key: key);
 
   @override
@@ -292,11 +306,289 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     }
   }
 
+  /// Compact, fixed-height list tile. Shows only a left accent bar, the time
+  /// range (one line) and the tile name (one line) — the same information
+  /// density as a grid tile — so many more tiles fit on screen. The richer
+  /// detail (location, playback, actions) is moved to the detail bottom sheet
+  /// the caller opens from [EnhancedTileCard.onTileTap].
+  ///
+  /// The currently-active tile (current time falls within it) is a little taller
+  /// and adds an inline [TimeScrubWidget] strip so the "now" tile is easy to
+  /// spot in the list.
+  Widget _buildCompactCard(BuildContext context) {
+    final subEvent = widget.subEvent;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final tileColor = Color.fromRGBO(subEvent.colorRed ?? 127,
+        subEvent.colorGreen ?? 127, subEvent.colorBlue ?? 127, 1);
+
+    final hslColor = HSLColor.fromColor(tileColor);
+    final isLightBackground = hslColor.lightness > 0.6;
+    final Color textColor = isLightBackground ? Colors.black87 : Colors.white;
+    final Color secondaryTextColor =
+        isLightBackground ? Colors.black54 : Colors.white.withOpacity(0.85);
+
+    final rsvpStyle = RsvpStyleConfig.forEvent(subEvent);
+    final effectiveOpacity = rsvpStyle.opacity;
+    final isTardy = subEvent.isTardy ?? false;
+    // Location / video link (if any) shown as a tappable icon to the right
+    // of the tile name.
+    final String? location = _getLocationText();
+    // The "now" tile (current time falls within it) shows an inline time-scrub
+    // strip so it's easy to spot in the list; all other tiles stay short.
+    final bool isCurrent = subEvent.isCurrentTimeWithin;
+    final bool isPastTile = resolveTileTemporalState(
+          startMs: subEvent.start,
+          endMs: subEvent.end,
+          nowMs: Utility.msCurrentTime,
+        ) ==
+        TileTemporalState.past;
+
+    return GestureDetector(
+      onTap: widget.preview
+          ? null
+          : (widget.onTileTap ??
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditTileRoute(
+                      tileId: (subEvent.isFromTiler
+                              ? subEvent.id
+                              : subEvent.thirdpartyId) ??
+                          "",
+                      tileSource: subEvent.thirdpartyType,
+                      thirdPartyUserId: subEvent.thirdPartyUserId,
+                    ),
+                  ),
+                );
+              }),
+      child: Opacity(
+        key: const ValueKey('enhancedTileCardCompactOpacity'),
+        opacity: effectiveOpacity * (isPastTile ? 0.6 : 1.0),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          height: isCurrent
+              ? TileDimensions.compactListTileHeightActive
+              : TileDimensions.compactListTileHeight,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: rsvpStyle.useDashedBorder || rsvpStyle.useOutlineStyle
+                ? Border.all(
+                    color: tileColor,
+                    width: 2,
+                    strokeAlign: BorderSide.strokeAlignOutside,
+                  )
+                : null,
+            boxShadow: rsvpStyle.useOutlineStyle
+                ? []
+                : [
+                    BoxShadow(
+                      color: tileColor.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: rsvpStyle.useOutlineStyle
+                    ? null
+                    : LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          hslColor
+                              .withLightness(
+                                  (hslColor.lightness + 0.05).clamp(0, 1))
+                              .toColor(),
+                          tileColor,
+                          hslColor
+                              .withLightness(
+                                  (hslColor.lightness - 0.05).clamp(0, 1))
+                              .toColor(),
+                        ],
+                      ),
+                color: rsvpStyle.useOutlineStyle ? colorScheme.surface : null,
+              ),
+              child: Stack(
+                children: [
+                  // Left accent / tardy strip, full card height.
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: TileAccentBar(
+                      color: isTardy ? TileColors.late : tileColor,
+                    ),
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Time range; a block's lock (P8/A) follows it.
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                _formatTimeRange(context),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: TileTextStyles.rubikFontName,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: secondaryTextColor,
+                                ),
+                              ),
+                            ),
+                            if (subEvent.isRigid == true) ...[
+                              const SizedBox(width: 5),
+                              Icon(
+                                Icons.lock_outline,
+                                size: 12,
+                                color: secondaryTextColor,
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                subEvent.name ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: TileTextStyles.rubikFontName,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: textColor,
+                                  decoration: rsvpStyle.showStrikethrough
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                ),
+                              ),
+                            ),
+
+                            // Tappable location / video-link badge to the right
+                            // of the name (same labeled style as the detail
+                            // bottom sheet). Opens maps for a physical address
+                            // or the video/URL link (see _onLocationTap).
+                            if (location != null) ...[
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                key:
+                                    const ValueKey('compactTileLocationButton'),
+                                behavior: HitTestBehavior.opaque,
+                                onTap: _onLocationTap,
+                                child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 160),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: rsvpStyle.useOutlineStyle
+                                          ? tileColor.withOpacity(0.1)
+                                          : Colors.white.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          _getLocationIcon(location),
+                                          size: 14,
+                                          color: textColor,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                              maxWidth: 104),
+                                          child: Text(
+                                            location,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontFamily:
+                                                  TileTextStyles.rubikFontName,
+                                              fontSize: 12,
+                                              color: textColor,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              decorationColor:
+                                                  textColor.withOpacity(0.5),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Icon(
+                                          Icons.open_in_new,
+                                          size: 12,
+                                          color: textColor.withOpacity(0.7),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        // Inline time-scrub so the "now" tile stands out in the
+                        // list (loadTimeScrub: false => scrub strip only, no
+                        // play buttons; those live in the detail sheet).
+                        if (isCurrent) ...[
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            height: 34,
+                            child: TimeScrubWidget(
+                              timeline: subEvent,
+                              loadTimeScrub: false,
+                              isTardy: isTardy,
+                              // Align the scrub's right edge with the location
+                              // badge's right edge (both anchored to the tile's
+                              // right edge) so they line up visually.
+                              alignRightEdge: location != null,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Render procrastinate/break tiles with special styling
     if (_isProcrastinate) {
       return _buildProcrastinateTile(context);
+    }
+
+    // Compact, fixed-height list tile: name + time range only. The full detail
+    // (location, scrub, playback, actions) is surfaced by the detail bottom
+    // sheet the caller opens from [widget.onTileTap].
+    if (widget.compact) {
+      return _buildCompactCard(context);
     }
 
     final theme = Theme.of(context);
@@ -340,7 +632,7 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     final isCurrent = widget.subEvent.isCurrentTimeWithin;
     final isPaused = widget.subEvent.isPaused ?? false;
 
-    // Temporal orientation (P2/P3): mute cards whose occurrence has already
+    // Temporal orientation: mute cards whose occurrence has already
     // ended so active/upcoming work stands out. Editing stays available via
     // the existing whole-card tap, so no extra affordance is added.
     final bool isPastTile = resolveTileTemporalState(

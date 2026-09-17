@@ -3241,6 +3241,66 @@ abstract class AppLocalizations {
   /// **'Re-optimize'**
   String get reOptimizeChip;
 
+  /// No description provided for @dayFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get dayFilterAll;
+
+  /// No description provided for @dayFilterBlocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocks'**
+  String get dayFilterBlocks;
+
+  /// No description provided for @dayFilterTiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiles'**
+  String get dayFilterTiles;
+
+  /// No description provided for @dayFilterTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all, blocks only, or tiles only'**
+  String get dayFilterTooltip;
+
+  /// No description provided for @dayFilterShowingBlocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing blocks only · {shown} of {total}'**
+  String dayFilterShowingBlocks(int shown, int total);
+
+  /// No description provided for @dayFilterShowingTiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing tiles only · {shown} of {total}'**
+  String dayFilterShowingTiles(int shown, int total);
+
+  /// No description provided for @dayFilterEmptyBlocks.
+  ///
+  /// In en, this message translates to:
+  /// **'No blocks on {day}'**
+  String dayFilterEmptyBlocks(String day);
+
+  /// No description provided for @dayFilterEmptyTiles.
+  ///
+  /// In en, this message translates to:
+  /// **'No tiles on {day}'**
+  String dayFilterEmptyTiles(String day);
+
+  /// No description provided for @dayFilterShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get dayFilterShowAll;
+
+  /// No description provided for @dayFilterAutoCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing all — filter cleared'**
+  String get dayFilterAutoCleared;
+
   /// No description provided for @todayColon.
   ///
   /// In en, this message translates to:
@@ -3420,6 +3480,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Extended Events'**
   String get extendedEventsTitle;
+
+  /// Trailing label on the day-grid pinned card for a tile that spans the whole day
+  ///
+  /// In en, this message translates to:
+  /// **'All day'**
+  String get dayGridAllDay;
+
+  /// Day-grid scroll header subtitle when the day has no conflicts or pending RSVPs
+  ///
+  /// In en, this message translates to:
+  /// **'All clear'**
+  String get dayGridHeaderAllClear;
+
+  /// No description provided for @dayGridHeaderConflictCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 conflict} other{{count} conflicts}}'**
+  String dayGridHeaderConflictCount(int count);
+
+  /// Day-grid scroll header subtitle; summary is e.g. '2 conflicts · 1 RSVP', count is the total number of items
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{summary} needs attention} other{{summary} need attention}}'**
+  String dayGridHeaderNeedAttention(int count, String summary);
+
+  /// No description provided for @dayGridHeaderReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get dayGridHeaderReview;
+
+  /// No description provided for @dayGridDaySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Day summary'**
+  String get dayGridDaySummary;
+
+  /// No description provided for @bottomNavToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get bottomNavToday;
+
+  /// No description provided for @bottomNavTiler.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler'**
+  String get bottomNavTiler;
+
+  /// No description provided for @dayGridHeaderRespond.
+  ///
+  /// In en, this message translates to:
+  /// **'Respond'**
+  String get dayGridHeaderRespond;
 
   /// No description provided for @extendedEventsSubtitle.
   ///
@@ -5064,6 +5178,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Switch calendar view'**
   String get switchCalendarView;
+
+  /// No description provided for @switchDayGridLayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch day layout'**
+  String get switchDayGridLayout;
+
+  /// No description provided for @openDayRibbon.
+  ///
+  /// In en, this message translates to:
+  /// **'View days'**
+  String get openDayRibbon;
 
   /// No description provided for @previewSundialGreeting.
   ///

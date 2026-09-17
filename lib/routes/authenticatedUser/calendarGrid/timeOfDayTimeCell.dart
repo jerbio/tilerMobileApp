@@ -5,7 +5,8 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 
 class TimeOfDayTimeCellWidget extends TimeCellWidget {
   final TimeOfDay? start;
-  TimeOfDayTimeCellWidget({this.start});
+  TimeOfDayTimeCellWidget({this.start, double? height})
+      : super(timeCellHeight: height);
 
   @override
   _TimeOfDayTimeCellState createState() => _TimeOfDayTimeCellState();
@@ -44,23 +45,37 @@ class _TimeOfDayTimeCellState extends TimeCellWidgetState {
     }
     return Positioned(
       top: topPosition,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        height: this.widgetHeight,
-        width: widgetWidth,
-        child: Stack(
-          children: [
-            Positioned(right: 0, child: Text("$formattedTimeOfDay")),
-            Positioned(
-                right: 0,
-                child: Container(
-                  color: colorScheme.primary,
-                  height: TileDimensions.thickness,
-                  width: 20,
-                ))
-          ],
+      // IgnorePointer: the time label is display-only but its Container has a
+      // (BorderRadius) decoration, making it hit-test-opaque, and the inner
+      // Stack with only Positioned children expands to the available width.
+      // Without this it would swallow taps across the grid and block the
+      // DayGrid background tap-to-add detector. No visual change.
+      child: IgnorePointer(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          height: this.widgetHeight,
+          width: widgetWidth,
+          child: Stack(
+            children: [
+              // Small, muted label sitting just above the hour line; the
+              // line itself starts at the gutter edge (TileTimeCellWidget).
+              Positioned(
+                right: 4,
+                top: 2,
+                child: Text(
+                  "$formattedTimeOfDay",
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 1.0,
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

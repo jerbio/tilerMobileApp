@@ -49,6 +49,10 @@ class TilerEvent extends TilerObj with TimeRange {
     return _isRigid;
   }
 
+  set isRigid(bool? value) {
+    _isRigid = value ?? false;
+  }
+
   bool get isComplete {
     return _isComplete;
   }
@@ -210,9 +214,9 @@ class TilerEvent extends TilerObj with TimeRange {
   Color? get color {
     if (this.colorRed != null &&
         this.colorGreen != null &&
-        this.colorGreen != null) {
+        this.colorBlue != null) {
       return Color.fromRGBO(
-          this.colorRed!, this.colorGreen!, this.colorGreen!, 1);
+          this.colorRed!, this.colorGreen!, this.colorBlue!, 1);
     }
     return null;
   }

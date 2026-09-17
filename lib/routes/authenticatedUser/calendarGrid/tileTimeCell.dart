@@ -35,18 +35,38 @@ class _TileTimeCellState extends TimeCellWidgetState {
     return Positioned(
       top: topPosition,
       left: this.leftPosition,
-      child: Container(
-        decoration: (this.widget as TileTimeCellWidget).decoration ??
-            BoxDecoration(
-              border: Border(
-                  top: BorderSide(
-                      color: colorScheme.primary,
-                      width: TileDimensions.thickness)),
+      // Width comes from the available constraints instead
+      // of MediaQuery, so the line tracks the grid's real viewport width.
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          double width = MediaQuery.sizeOf(context).width -
+              TileDimensions.timeOfDayCellWidth;
+          if (constraints.maxWidth.isFinite) {
+            width = constraints.maxWidth;
+          }
+          // Width comes from the available constraints instead
+          // of MediaQuery, so the line tracks the grid's real viewport width.
+          // IgnorePointer: the hour row is a purely decorative guide line
+          // (a Container with a Border decoration is hit-test-opaque).
+          // Without this it swallows taps in the empty grid area and blocks
+          // the DayGrid background tap-to-add detector. No visual change.
+          return IgnorePointer(
+            child: Container(
+              decoration: (this.widget as TileTimeCellWidget).decoration ??
+                  BoxDecoration(
+                    // Neutral hairline so the grid reads as a calm ruler
+                    // and the now-line (error) stays the only accent.
+                    border: Border(
+                        top: BorderSide(
+                            color: colorScheme.outlineVariant,
+                            width: TileDimensions.thickness)),
+                  ),
+              height: this.widgetHeight,
+              width: width,
+              child: this.widget.child,
             ),
-        height: this.widgetHeight,
-        width: MediaQuery.sizeOf(context).width -
-            TileDimensions.timeOfDayCellWidth,
-        child: this.widget.child,
+          );
+        },
       ),
     );
   }

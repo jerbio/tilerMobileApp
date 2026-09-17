@@ -3,18 +3,21 @@ import 'package:tiler_app/data/tilerEvent.dart';
 
 /// A contiguous open window between two scheduled tiles in a day.
 ///
-/// Detection is deterministic and clamps every gap's start to "now" so
-/// elapsed time is never surfaced. Because "now" is always the real wall
-/// clock, the same formula handles today, future days, and past days:
-///   - future day: gap starts after `now`  -> full window
-///   - today:      gap straddles `now`      -> only the remaining portion
+/// Each gap is surfaced in full — from the previous tile's end to the next
+/// tile's start (minus travel) — so the window's true start is visible even
+/// after part of it has elapsed. Because "now" is always the real wall clock,
+/// the same formula handles today, future days, and past days:
+///   - future day: gap starts after `now`  -> full window, not live
+///   - today:      gap straddles `now`      -> full window, live (scrubber shows
+///                 the elapsed portion from the start up to `now`)
 ///   - past day:   gap ends before `now`    -> dropped
 class FreeSlot {
   final int startMs;
   final int endMs;
 
-  /// True when this window is currently live (its clamped start equals `now`
-  /// because the preceding tile has already ended).
+  /// True when this window is currently live (the wall clock falls inside
+  /// `[startMs, endMs]`, i.e. the preceding tile has already ended and the
+  /// following tile has not yet begun).
   final bool isLive;
 
   const FreeSlot({
@@ -59,12 +62,17 @@ class FreeSlot {
 
       if (runningEnd != null && start > runningEnd) {
         final int travel = (tile.travelTimeBefore ?? 0).toInt();
-        final int gapStart = runningEnd > nowMs ? runningEnd : nowMs;
+        // Surface the full open window, from the previous tile's end to the
+        // next tile's start (minus travel). The elapsed portion is conveyed by
+        // the row's scrubber rather than by shrinking the window to "now".
+        final int gapStart = runningEnd;
         final int gapEnd = start - travel;
         final int freeMs = gapEnd - gapStart;
 
-        if (freeMs >= minDurationMs) {
-          final bool isLive = gapStart == nowMs && runningEnd <= nowMs;
+        // Drop windows that have already ended (e.g. past days / earlier gaps
+        // today); keep future and currently-live windows.
+        if (freeMs >= minDurationMs && nowMs <= gapEnd) {
+          final bool isLive = nowMs >= gapStart && nowMs <= gapEnd;
           slots.add(FreeSlot(
             startMs: gapStart,
             endMs: gapEnd,

@@ -195,7 +195,7 @@ class _LiveFreeSlotFooterState extends State<_LiveFreeSlotFooter>
       endMs: widget.slot.endMs,
       nowMs: nowMs,
     );
-    final double remainingFraction = (1.0 - geometry.progress).clamp(0.0, 1.0);
+    final double progress = geometry.progress;
     final int spanMs = widget.slot.endMs - widget.slot.startMs;
     final Duration remaining = Duration(
       milliseconds: (widget.slot.endMs - nowMs).clamp(0, spanMs),
@@ -219,31 +219,50 @@ class _LiveFreeSlotFooterState extends State<_LiveFreeSlotFooter>
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: AnimatedBuilder(
-              animation: _glow,
-              builder: (context, _) {
-                final double glow = 0.35 + (_glow.value * 0.45);
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(3),
-                  child: Container(
-                    height: 5,
-                    color: widget.accent.withOpacity(0.15),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: remainingFraction,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: widget.accent.withOpacity(glow),
-                          boxShadow: [
-                            BoxShadow(
-                              color: widget.accent.withOpacity(glow * 0.6),
-                              blurRadius: 6,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return AnimatedBuilder(
+                  animation: _glow,
+                  builder: (context, _) {
+                    final double glow = 0.35 + (_glow.value * 0.45);
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: SizedBox(
+                        height: 5,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            // Full-span, lighter track for the open window.
+                            Container(
+                              color: widget.accent.withOpacity(0.15),
+                            ),
+                            // Bright, left-anchored fill that grows from the
+                            // slot's start to the current time.
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: FractionallySizedBox(
+                                alignment: Alignment.centerLeft,
+                                widthFactor: progress.clamp(0.0, 1.0),
+                                child: Container(
+                                  height: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: widget.accent.withOpacity(glow),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: widget.accent
+                                            .withOpacity(glow * 0.6),
+                                        blurRadius: 6,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 );
               },
             ),

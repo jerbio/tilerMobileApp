@@ -1796,6 +1796,44 @@ class AppLocalizationsDe extends AppLocalizations {
   String get reOptimizeChip => 'Neu optimieren';
 
   @override
+  String get dayFilterAll => 'All';
+
+  @override
+  String get dayFilterBlocks => 'Blocks';
+
+  @override
+  String get dayFilterTiles => 'Tiles';
+
+  @override
+  String get dayFilterTooltip => 'Show all, blocks only, or tiles only';
+
+  @override
+  String dayFilterShowingBlocks(int shown, int total) {
+    return 'Showing blocks only · $shown of $total';
+  }
+
+  @override
+  String dayFilterShowingTiles(int shown, int total) {
+    return 'Showing tiles only · $shown of $total';
+  }
+
+  @override
+  String dayFilterEmptyBlocks(String day) {
+    return 'No blocks on $day';
+  }
+
+  @override
+  String dayFilterEmptyTiles(String day) {
+    return 'No tiles on $day';
+  }
+
+  @override
+  String get dayFilterShowAll => 'Show all';
+
+  @override
+  String get dayFilterAutoCleared => 'Showing all — filter cleared';
+
+  @override
   String get todayColon => 'Heute:';
 
   @override
@@ -1917,6 +1955,49 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get extendedEventsTitle => 'Extended-Events';
+
+  @override
+  String get dayGridAllDay => 'Ganzt?gig';
+
+  @override
+  String get dayGridHeaderAllClear => 'Alles in Ordnung';
+
+  @override
+  String dayGridHeaderConflictCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Konflikte',
+      one: '1 Konflikt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dayGridHeaderNeedAttention(int count, String summary) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$summary ben?tigen Aufmerksamkeit',
+      one: '$summary ben?tigt Aufmerksamkeit',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayGridHeaderReview => '?berpr?fen';
+
+  @override
+  String get dayGridDaySummary => 'Tages?bersicht';
+
+  @override
+  String get bottomNavToday => 'Heute';
+
+  @override
+  String get bottomNavTiler => 'Tiler';
+
+  @override
+  String get dayGridHeaderRespond => 'Antworten';
 
   @override
   String extendedEventsSubtitle(int count) {
@@ -2869,6 +2950,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get switchCalendarView => 'Kalenderansicht wechseln';
+
+  @override
+  String get switchDayGridLayout => 'Tageslayout wechseln';
+
+  @override
+  String get openDayRibbon => 'Tage anzeigen';
 
   @override
   String get previewSundialGreeting => 'Hallo.';

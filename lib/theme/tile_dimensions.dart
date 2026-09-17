@@ -4,6 +4,18 @@ class TileDimensions {
   TileDimensions._();
 
   static const double tileHeight = 300;
+
+  /// Fixed, compact height for a list-view tile. Each list tile is capped to
+  /// this height (name + time range only) so noticeably more tiles fit on
+  /// screen; tapping one opens the detail bottom sheet (playback + time scrub).
+  /// A single named constant so the density is easy to nudge.
+  static const double compactListTileHeight = 72;
+
+  /// Height of a compact tile that is **currently active** (the current time
+  /// falls within it): the two-line header plus the ~30px time-scrub strip, so
+  /// the "now" tile is easy to spot in the list.
+  static const double compactListTileHeightActive = 112;
+
   static const double tileWidthRatio = 0.85;
   static const double tileIconSize = 12;
   static const double borderRadius = 12;

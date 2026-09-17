@@ -7,7 +7,7 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
-import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
+import 'package:tiler_app/components/tilelist/dailyView/dayGridPage.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedWithinNowBatch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
@@ -58,7 +58,22 @@ bool shouldRemountCarousel({
 
 class DailyTileList extends TileList {
   static final String routeName = '/DailyTileList';
-  DailyTileList({Key? key}) : super(key: key);
+
+  /// The viewport height the day carousel should claim. When
+  /// non-null (grid mode, hosted inside a bounded `Expanded` region) the caller
+  /// passes that region's height so the `CarouselSlider` doesn't claim the
+  /// full screen and overflow the region. When null (the default — list mode
+  /// and every other caller) it keeps the existing full-screen height, so
+  /// existing call sites are byte-for-byte unchanged.
+  final double? carouselHeight;
+
+  /// Whether today's list page pins its own day-summary header. `false`
+  /// when hosted under the Daily top bar (which carries the day pill +
+  /// summary button).
+  final bool showDaySummaryHeader;
+  DailyTileList(
+      {Key? key, this.carouselHeight, this.showDaySummaryHeader = true})
+      : super(key: key);
 
   @override
   _DailyTileListState createState() => _DailyTileListState();
@@ -84,6 +99,18 @@ class _DailyTileListState extends TileListState {
       CarouselSliderController();
   Map<String, ScheduleLoadedState> incrementalIdToMapping = {};
   int? carouselSliderIndex = null;
+
+  /// The carousel's *structural* signature — the day window +
+  /// current view day + forced-refresh counter. Used to keep [carouselKey]
+  /// stable across pure schedule-data updates so the `CarouselSlider` (and
+  /// every `DayGridWidget` inside it) is NOT remounted on every update. A
+  /// remount would wipe the grid's position-transition state: a fresh
+  /// `DayGridWidget` has no "old position" to animate from, so tiles hard-cut
+  /// to their new spots instead of sliding. The carousel is only remounted
+  /// when this signature actually changes (day window / current day / refresh),
+  /// which is when `carousel_slider`'s non-reactive `initialPage` must
+  /// re-apply.
+  String _carouselStructureSignature = '';
 
   // Edge loading placeholders - these mark the loading pages at carousel edges
   static const int _edgeLoadingPastIndex = -1;
@@ -351,13 +378,14 @@ class _DailyTileListState extends TileListState {
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          EnhancedTileBatch upcomingTileBatch = EnhancedTileBatch(
+          // Day pages are switchable (list | grid); the
+          // layout comes from DailyViewLayoutCubit.
+          DayGridPage upcomingTileBatch = DayGridPage(
             dayIndex: dayIndex,
+            showDaySummaryHeader:
+                (this.widget as DailyTileList).showDaySummaryHeader,
             tiles: allTiles,
             key: key,
-            showEnhancedCards: true,
-            showTravelConnectors: true,
-            showTimelineMarkers: true,
             endOfDayTime: _endOfDayFor(dayIndex),
             onEndOfDayUpdated: _fetchUserEndOfDay,
           );
@@ -371,13 +399,13 @@ class _DailyTileListState extends TileListState {
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          EnhancedTileBatch precedingDayTileBatch = EnhancedTileBatch(
+          // Day pages are switchable (list | grid).
+          DayGridPage precedingDayTileBatch = DayGridPage(
             dayIndex: dayIndex,
+            showDaySummaryHeader:
+                (this.widget as DailyTileList).showDaySummaryHeader,
             key: key,
             tiles: allTiles,
-            showEnhancedCards: true,
-            showTravelConnectors: true,
-            showTimelineMarkers: true,
             endOfDayTime: _endOfDayFor(dayIndex),
             onEndOfDayUpdated: _fetchUserEndOfDay,
           );
@@ -387,7 +415,8 @@ class _DailyTileListState extends TileListState {
     }
   }
 
-  EnhancedWithinNowBatch processTodayTiles(List<TilerEvent> todayTiles) {
+  EnhancedWithinNowBatch processTodayTiles(List<TilerEvent> todayTiles,
+      {bool showConnectors = true}) {
     DateTime currentTime = Utility.currentTime();
     List<TilerEvent> elapsedTiles = [];
     List<TilerEvent> notElapsedTiles = [];
@@ -405,6 +434,9 @@ class _DailyTileListState extends TileListState {
       tiles: [...elapsedTiles, ...notElapsedTiles],
       endOfDayTime: _endOfDayFor(Utility.currentTime().universalDayIndex),
       onEndOfDayUpdated: _fetchUserEndOfDay,
+      showDaySummaryHeader: (widget as DailyTileList).showDaySummaryHeader,
+      showTravelConnectors: showConnectors,
+      showFreeSlots: showConnectors,
     );
   }
 
@@ -446,11 +478,21 @@ class _DailyTileListState extends TileListState {
 
     DateTime currentTime = Utility.currentTime();
     if (todayTiles.length > 0) {
-      EnhancedWithinNowBatch todayBatch = processTodayTiles(todayTiles);
-      childTileBatches.add(todayBatch);
+      // Today's page is switchable too; list mode keeps the
+      // within-now batch (built from the page's FILTERED tiles, P7), grid
+      // mode renders the day grid.
+      DayGridPage todayPage = DayGridPage(
+        dayIndex: currentTime.universalDayIndex,
+        tiles: todayTiles,
+        listViewBuilder: (visible, showConnectors) =>
+            processTodayTiles(visible, showConnectors: showConnectors),
+        endOfDayTime: _endOfDayFor(currentTime.universalDayIndex),
+        onEndOfDayUpdated: _fetchUserEndOfDay,
+      );
+      childTileBatches.add(todayPage);
       dayIndexToWidget[currentTime.universalDayIndex] = Container(
         height: MediaQuery.of(context).size.height,
-        child: todayBatch,
+        child: todayPage,
       );
     } else {
       DateTime currentTime = Utility.currentTime();
@@ -459,13 +501,21 @@ class _DailyTileListState extends TileListState {
         tiles: [],
         endOfDayTime: _endOfDayFor(currentTime.universalDayIndex),
         onEndOfDayUpdated: _fetchUserEndOfDay,
+        showDaySummaryHeader: (this.widget as DailyTileList).showDaySummaryHeader,
+      );
+      DayGridPage todayPage = DayGridPage(
+        dayIndex: currentTime.universalDayIndex,
+        tiles: const <TilerEvent>[],
+        listViewBuilder: (_, __) => emptyTodayBatch,
+        endOfDayTime: _endOfDayFor(currentTime.universalDayIndex),
+        onEndOfDayUpdated: _fetchUserEndOfDay,
       );
       Widget widget = Container(
         height: MediaQuery.of(context).size.height,
-        child: emptyTodayBatch,
+        child: todayPage,
       );
       dayIndexToWidget[currentTime.universalDayIndex] = widget;
-      childTileBatches.add(emptyTodayBatch);
+      childTileBatches.add(todayPage);
     }
 
     for (int dayIndex in upcomingDayIndexes) {
@@ -649,7 +699,11 @@ class _DailyTileListState extends TileListState {
         carouselController: tileListDayCarouselController,
         items: carouselItems,
         options: CarouselOptions(
-          height: MediaQuery.of(context).size.height,
+          // Honor the bounded grid-mode height when provided;
+          // otherwise keep the full-screen height so list-mode callers are
+          // unchanged.
+          height: (widget as DailyTileList).carouselHeight ??
+              MediaQuery.of(context).size.height,
           viewportFraction: 1,
           initialPage: initialCarouselIndex,
           enableInfiniteScroll: false,
@@ -899,8 +953,35 @@ class _DailyTileListState extends TileListState {
                     previousSpanId: _carouselSpanId,
                     spanId: spanId,
                     statusId: statusId)) {
-                  carouselKey = ValueKey(
-                      _generateCarouselKeyId(statusId ?? 'span-' + spanId));
+                  // Keep the carousel key STABLE across pure
+                  // schedule-data updates. The old code rebuilt it from the
+                  // volatile `evaluationId` (which changes every update), which
+                  // remounted the whole `CarouselSlider` and, with it, every
+                  // `DayGridWidget` — killing the position transitions.
+                  // Only remount when the structure (visible day window,
+                  // current view day, or a forced refresh) actually changed.
+                  // A span change with no evaluation id (the home tour's
+                  // single-day swap) still lands here and always changes the
+                  // signature, so it remounts as [shouldRemountCarousel]
+                  // requires.
+                  final int windowStart =
+                      state.lookupTimeline.startTime.universalDayIndex;
+                  final int windowEnd =
+                      state.lookupTimeline.endTime.universalDayIndex;
+                  int currentViewDay =
+                      Utility.currentTime().universalDayIndex;
+                  final uiDateState = context.read<UiDateManagerBloc>().state;
+                  if (uiDateState is UiDateManagerUpdated) {
+                    currentViewDay =
+                        uiDateState.currentDate.universalDayIndex;
+                  }
+                  final String structureSignature =
+                      'gridwin_${windowStart}_${windowEnd}_d${currentViewDay}_r$_forceRefreshCounter';
+                  if (structureSignature != _carouselStructureSignature) {
+                    _carouselStructureSignature = structureSignature;
+                    carouselKey =
+                        ValueKey(_generateCarouselKeyId(structureSignature));
+                  }
                 }
                 if (spanChanged) {
                   // A different run of days: the old page index no longer

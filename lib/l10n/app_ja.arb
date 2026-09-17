@@ -885,5 +885,16 @@
   "scheduleFullnessValue": "目標充実度{percentage}%",
   "balanced": "バランス",
   "fuller": "充実",
-  "lighter": "軽め"
+  "lighter": "軽め",
+  "bottomNavTiler": "Tiler",
+  "bottomNavToday": "??",
+  "dayGridAllDay": "??",
+  "dayGridDaySummary": "1????",
+  "dayGridHeaderAllClear": "???????",
+  "dayGridHeaderConflictCount": "{count, plural, =1{??1?} other{??{count}?}}",
+  "dayGridHeaderNeedAttention": "{count, plural, =1{{summary}????????} other{{summary}????????}}",
+  "dayGridHeaderRespond": "??",
+  "dayGridHeaderReview": "??",
+  "openDayRibbon": "1????",
+  "switchDayGridLayout": "1????????????"
 }

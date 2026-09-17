@@ -1790,6 +1790,44 @@ class AppLocalizationsEl extends AppLocalizations {
   String get reOptimizeChip => 'Επανα-βελτιστοποίηση';
 
   @override
+  String get dayFilterAll => 'All';
+
+  @override
+  String get dayFilterBlocks => 'Blocks';
+
+  @override
+  String get dayFilterTiles => 'Tiles';
+
+  @override
+  String get dayFilterTooltip => 'Show all, blocks only, or tiles only';
+
+  @override
+  String dayFilterShowingBlocks(int shown, int total) {
+    return 'Showing blocks only · $shown of $total';
+  }
+
+  @override
+  String dayFilterShowingTiles(int shown, int total) {
+    return 'Showing tiles only · $shown of $total';
+  }
+
+  @override
+  String dayFilterEmptyBlocks(String day) {
+    return 'No blocks on $day';
+  }
+
+  @override
+  String dayFilterEmptyTiles(String day) {
+    return 'No tiles on $day';
+  }
+
+  @override
+  String get dayFilterShowAll => 'Show all';
+
+  @override
+  String get dayFilterAutoCleared => 'Showing all — filter cleared';
+
+  @override
   String get todayColon => 'Σήμερα:';
 
   @override
@@ -1911,6 +1949,49 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get extendedEventsTitle => 'Επεκταμένα γεγονότα';
+
+  @override
+  String get dayGridAllDay => '??? ? ????';
+
+  @override
+  String get dayGridHeaderAllClear => '??? ?? ????';
+
+  @override
+  String dayGridHeaderConflictCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ???????????',
+      one: '1 ?????????',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dayGridHeaderNeedAttention(int count, String summary) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$summary ??????????? ???????',
+      one: '$summary ?????????? ???????',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayGridHeaderReview => '???????';
+
+  @override
+  String get dayGridDaySummary => '?????? ??????';
+
+  @override
+  String get bottomNavToday => '??????';
+
+  @override
+  String get bottomNavTiler => 'Tiler';
+
+  @override
+  String get dayGridHeaderRespond => '????????';
 
   @override
   String extendedEventsSubtitle(int count) {
@@ -2861,6 +2942,12 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get switchCalendarView => 'Εναλλαγή προβολής ατζέντας';
+
+  @override
+  String get switchDayGridLayout => '???????? ???????? ??????';
+
+  @override
+  String get openDayRibbon => '???????? ??????';
 
   @override
   String get previewSundialGreeting => 'Γεια.';

@@ -18,8 +18,17 @@ class DaySummaryHeader extends StatefulWidget {
   final DateTime? date;
   final TimelineSummary? dayData;
   final bool preview;
+
+  /// Optional tap observer, invoked the moment the header's own tap resolves
+  /// (immediately before navigation, only when not [preview]). Lets a caller
+  /// react to the tap without the header knowing about it — e.g. the grid-mode
+  /// mount site fires its `daygrid_summary_opened` analytics tag here. Because
+  /// it is called from the header's own (deepest) tap recognizer, it fires
+  /// exactly once per real tap that also navigates — no arena ambiguity and no
+  /// overcounting from stray pointer-up events.
+  final VoidCallback? onOpen;
   const DaySummaryHeader(
-      {Key? key, this.date, this.dayData, this.preview = false})
+      {Key? key, this.date, this.dayData, this.preview = false, this.onOpen})
       : super(key: key);
 
   @override
@@ -195,7 +204,16 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
               BlendMode.srcATop,
             ),
             child: GestureDetector(
-              onTap: widget.preview ? null : () => _navigateToSummary(context),
+              onTap: widget.preview
+                  ? null
+                  : () {
+                      // Fire the (caller-provided) open observer first, then
+                      // navigate. Guarded by the preview ternary above, so this
+                      // only runs for a real non-preview header tap — the same
+                      // single gesture that drives navigation.
+                      widget.onOpen?.call();
+                      _navigateToSummary(context);
+                    },
               child: Container(
                 margin: EdgeInsets.zero,
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),

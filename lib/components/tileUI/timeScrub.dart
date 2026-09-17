@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/components/tileUI/timeScrubGeometry.dart';
@@ -17,10 +16,18 @@ class TimeScrubWidget extends StatefulWidget {
   late TimeRange timeline;
   bool loadTimeScrub = false;
   bool isTardy = true;
+
+  /// When true, the scrub track spans the full available width (no side
+  /// inset), so its right edge sits flush with the parent's right edge. Used
+  /// by the compact list tile to line up the scrub's end with the location
+  /// badge's end, which is anchored to the tile's right edge.
+  bool alignRightEdge = false;
+
   TimeScrubWidget(
       {required this.timeline,
       this.loadTimeScrub = false,
-      this.isTardy = false}) {
+      this.isTardy = false,
+      this.alignRightEdge = false}) {
     assert(this.timeline != null);
   }
   @override
@@ -80,6 +87,14 @@ class TimeScrubWidgetState extends State<TimeScrubWidget>
   /// when the parent is unbounded (e.g. inside an unconstrained Row).
   double _trackWidthFor(BoxConstraints constraints) {
     if (constraints.maxWidth.isFinite) {
+      if (widget.alignRightEdge) {
+        // Span the full available width exactly (no clamp), so the track's
+        // right edge lands flush with the parent's right edge, matching a
+        // right-anchored badge.
+        return constraints.maxWidth;
+      }
+      // By default the track keeps a 10px inset on each side (20px total) so
+      // the start/end time labels sit slightly inside the tile edges.
       return (constraints.maxWidth - 20).clamp(120.0, 600.0);
     }
     return fallbackTrackWidth;
@@ -129,6 +144,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget>
               .format(DateTime.fromMillisecondsSinceEpoch(end.toInt()));
 
           final backgroundShade = Container(
+            key: const ValueKey('timeScrubTrack'),
             width: trackWidth,
             height: 5,
             margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
@@ -219,7 +235,12 @@ class TimeScrubWidgetState extends State<TimeScrubWidget>
             scrubberElements.add(movingBallWidget);
           }
           timeline = Align(
-              alignment: Alignment.center,
+              // The compact list tile (loadTimeScrub: false) wants the track
+              // flush with the tile's leading edge; the detail sheet keeps the
+              // original centered placement.
+              alignment: widget.loadTimeScrub
+                  ? Alignment.center
+                  : Alignment.centerLeft,
               child: SizedBox(
                 width: trackWidth,
                 child: Column(children: [
@@ -306,7 +327,21 @@ class TimeScrubWidgetState extends State<TimeScrubWidget>
         return SizedBox(
           width: outerWidth,
           height: 30,
-          child: timeline,
+          // In the compact list tile (loadTimeScrub: false) the scrub sits in the same
+          // left-aligned column as the tile name, so left-align the strip to keep
+          // its leading edge flush with the name. The detail sheet (true) keeps
+          // its original centered layout.
+          //
+          // [Align] lays its child out against finite (loose) constraints, which
+          // is what the fallback "starts in"/elapsed strip requires: it contains
+          // Flexible text and cannot lay out against the unbounded width a plain
+          // non-flex child of a Row would receive.
+          child: widget.loadTimeScrub
+              ? timeline
+              : Align(
+                  alignment: Alignment.centerLeft,
+                  child: timeline,
+                ),
         );
       },
     );

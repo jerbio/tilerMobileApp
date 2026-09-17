@@ -884,5 +884,16 @@
   "scheduleFullnessValue": "Charge cible de {percentage} %",
   "balanced": "Équilibré",
   "fuller": "Plus chargé",
-  "lighter": "Plus léger"
+  "lighter": "Plus léger",
+  "bottomNavTiler": "Tiler",
+  "bottomNavToday": "Aujourd'hui",
+  "dayGridAllDay": "Toute la journ?e",
+  "dayGridDaySummary": "R?sum? de la journ?e",
+  "dayGridHeaderAllClear": "Tout est en ordre",
+  "dayGridHeaderConflictCount": "{count, plural, =1{1 conflit} other{{count} conflits}}",
+  "dayGridHeaderNeedAttention": "{count, plural, =1{{summary} n?cessite une attention} other{{summary} n?cessitent une attention}}",
+  "dayGridHeaderRespond": "R?pondre",
+  "dayGridHeaderReview": "Examiner",
+  "openDayRibbon": "Voir les journ?es",
+  "switchDayGridLayout": "Changer la mise en page de la journ?e"
 }

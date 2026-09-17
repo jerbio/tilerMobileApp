@@ -1240,6 +1240,20 @@
         "focusModeChip": "Focus Mode",
         "showRouteChip": "Show Route",
         "reOptimizeChip": "Re-optimize",
+        "dayFilterAll": "All",
+        "dayFilterBlocks": "Blocks",
+        "dayFilterTiles": "Tiles",
+        "dayFilterTooltip": "Show all, blocks only, or tiles only",
+        "dayFilterShowingBlocks": "Showing blocks only · {shown} of {total}",
+        "@dayFilterShowingBlocks": {"placeholders": {"shown": {"type": "int"}, "total": {"type": "int"}}},
+        "dayFilterShowingTiles": "Showing tiles only · {shown} of {total}",
+        "@dayFilterShowingTiles": {"placeholders": {"shown": {"type": "int"}, "total": {"type": "int"}}},
+        "dayFilterEmptyBlocks": "No blocks on {day}",
+        "@dayFilterEmptyBlocks": {"placeholders": {"day": {"type": "String"}}},
+        "dayFilterEmptyTiles": "No tiles on {day}",
+        "@dayFilterEmptyTiles": {"placeholders": {"day": {"type": "String"}}},
+        "dayFilterShowAll": "Show all",
+        "dayFilterAutoCleared": "Showing all — filter cleared",
         "todayColon": "Today:",
         "tilesBlocksCount": "{tileCount} tiles, {blockCount} blocks",
         "@tilesBlocksCount": {
@@ -1391,6 +1405,33 @@
         },
         "extendedEventsTapToView": "Tap to view all-day and long events",
         "extendedEventsTitle": "Extended Events",
+        "dayGridAllDay": "All day",
+        "dayGridHeaderAllClear": "All clear",
+        "@dayGridHeaderAllClear": {
+          "description": "Day-grid scroll header subtitle when the day has no conflicts or pending RSVPs"
+        },
+        "dayGridHeaderConflictCount": "{count, plural, =1{1 conflict} other{{count} conflicts}}",
+        "@dayGridHeaderConflictCount": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "dayGridHeaderNeedAttention": "{count, plural, =1{{summary} needs attention} other{{summary} need attention}}",
+        "@dayGridHeaderNeedAttention": {
+          "description": "Day-grid scroll header subtitle; summary is e.g. '2 conflicts · 1 RSVP', count is the total number of items",
+          "placeholders": {
+            "count": {"type": "int"},
+            "summary": {"type": "String"}
+          }
+        },
+        "dayGridHeaderReview": "Review",
+        "dayGridDaySummary": "Day summary",
+        "bottomNavToday": "Today",
+        "bottomNavTiler": "Tiler",
+        "dayGridHeaderRespond": "Respond",
+        "@dayGridAllDay": {
+          "description": "Trailing label on the day-grid pinned card for a tile that spans the whole day"
+        },
         "extendedEventsSubtitle": "{count, plural, =1{1 event over 16 hours} other{{count} events over 16 hours}}",
         "@extendedEventsSubtitle": {
           "placeholders": {
@@ -1866,6 +1907,8 @@
             "openChat": "Open chat",
             "goToToday": "Go to today",
             "switchCalendarView": "Switch calendar view",
+            "switchDayGridLayout": "Switch day layout",
+            "openDayRibbon": "View days",
 
             "previewSundialGreeting": "Hello.",
             "previewSundialCountsPrefix": "Today has",

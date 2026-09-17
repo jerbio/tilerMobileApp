@@ -7,7 +7,6 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 // ---------------------------------------------------------------------------
 
 const int _minute = 60 * 1000;
-const int _hour = 60 * _minute;
 
 SubCalendarEvent _tile({
   required String id,
@@ -26,10 +25,10 @@ SubCalendarEvent _tile({
 }
 
 // Base day used across tests; "now" is set explicitly per test.
-DateTime _at(int hour, [int minute = 0]) =>
-    DateTime(2026, 6, 28, hour, minute);
+DateTime _at(int hour, [int minute = 0]) => DateTime(2026, 6, 28, hour, minute);
 
-int _nowAt(int hour, [int minute = 0]) => _at(hour, minute).millisecondsSinceEpoch;
+int _nowAt(int hour, [int minute = 0]) =>
+    _at(hour, minute).millisecondsSinceEpoch;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -97,7 +96,7 @@ void main() {
     });
   });
 
-  group('FreeSlot.detect — now clamping', () {
+  group('FreeSlot.detect — live window vs now', () {
     test('gap entirely in the future is unclamped', () {
       final tiles = [
         _tile(id: 'a', start: _at(14), end: _at(15)),
@@ -111,18 +110,20 @@ void main() {
       expect(slots.first.isLive, isFalse);
     });
 
-    test('gap straddling now is clamped to now and marked live', () {
+    test('gap straddling now keeps its full window and is live', () {
       final tiles = [
         _tile(id: 'a', start: _at(9), end: _at(10)),
         _tile(id: 'b', start: _at(13), end: _at(14)),
       ];
 
-      // now is inside the 10:00–13:00 gap.
+      // now is inside the 10:00–13:00 gap; the window keeps its true start
+      // (10:00, the previous tile's end) instead of being clamped to now.
       final slots = FreeSlot.detect(orderedTiles: tiles, nowMs: _nowAt(11));
 
       expect(slots, hasLength(1));
-      expect(slots.first.startMs, _nowAt(11));
+      expect(slots.first.startMs, _at(10).millisecondsSinceEpoch);
       expect(slots.first.endMs, _at(13).millisecondsSinceEpoch);
+      expect(slots.first.duration, const Duration(hours: 3));
       expect(slots.first.isLive, isTrue);
     });
 
@@ -139,15 +140,16 @@ void main() {
       );
     });
 
-    test('clamped remainder shorter than minimum is dropped', () {
+    test('window shorter than the minimum is dropped even when live', () {
       final tiles = [
         _tile(id: 'a', start: _at(9), end: _at(10)),
-        _tile(id: 'b', start: _at(11), end: _at(12)),
+        // 20 min full window, below the 30 min default.
+        _tile(id: 'b', start: _at(10, 20), end: _at(11)),
       ];
 
-      // now leaves only 20 min until the next tile.
+      // now is inside the short window; it is still dropped by the minimum.
       expect(
-        FreeSlot.detect(orderedTiles: tiles, nowMs: _nowAt(10, 40)),
+        FreeSlot.detect(orderedTiles: tiles, nowMs: _nowAt(10, 10)),
         isEmpty,
       );
     });

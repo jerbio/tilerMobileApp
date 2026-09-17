@@ -1,6 +1,6 @@
 // today_status_recovery_test.dart
 //
-// §8.1 row 4: when anything is late the screen enters the recovery state, and
+// When anything is late the screen enters the recovery state, and
 // that section takes precedence over placed / attention rather than trailing
 // them where it can fall below the fold.
 

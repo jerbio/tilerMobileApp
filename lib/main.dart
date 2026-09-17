@@ -55,6 +55,8 @@ import 'bloc/vibeChat/vibe_chat_bloc.dart';
 import 'components/notification_overlay.dart';
 import 'routes/authenticatedUser/settings/settingsWidget.dart';
 import 'routes/authentication/authorizedRoute.dart';
+import 'bloc/dailyViewLayout/daily_view_layout_cubit.dart';
+import 'bloc/dayContentFilter/day_content_filter_cubit.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
@@ -178,6 +180,9 @@ class _TilerAppState extends State<TilerApp> {
                   })),
           BlocProvider(create: (context) => WeeklyUiDateManagerBloc()),
           BlocProvider(create: (context) => MonthlyUiDateManagerBloc()),
+          // Daily-view list/grid layout (restored + persisted).
+          BlocProvider(create: (context) => DailyViewLayoutCubit()),
+          BlocProvider(create: (context) => DayContentFilterCubit()),
           BlocProvider(
               create: (context) => PreviewSummaryBloc(getContextCallBack: () {
                     return _navigatorKey.currentState?.overlay?.context ??

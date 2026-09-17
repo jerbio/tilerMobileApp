@@ -4,6 +4,7 @@ import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/components/tileUI/timeScrub.dart';
+import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
@@ -114,15 +115,19 @@ class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
               isTardy: widget.subEvent.isTardy ?? false,
             ))));
 
-    // allElements.add(Container(
-    //     margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
-    //     child: PlayBack(
-    //       widget.subEvent,
-    //       isWeeklyView: true,
-    //       forcedOption: (widget.subEvent.isRigid == true
-    //           ? [PlaybackOptions.Delete]
-    //           : null),
-    //     )));
+    // Playback controls (complete, now, defer, delete) — the same block as
+    // `WeeklyDetailsTile`. The grid detail sheet is a modal bottom sheet, so
+    // `isWeeklyView: true` makes the (already-present) handlers pop the
+    // sheet after a playback action. Rigid tiles only offer Delete.
+    allElements.add(Container(
+        margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
+        child: PlayBack(
+          widget.subEvent,
+          isWeeklyView: true,
+          forcedOption: (widget.subEvent.isRigid == true
+              ? [PlaybackOptions.Delete]
+              : null),
+        )));
 
     return Material(
       type: MaterialType.transparency,

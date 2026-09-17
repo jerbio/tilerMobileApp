@@ -1749,6 +1749,44 @@ class AppLocalizationsJa extends AppLocalizations {
   String get reOptimizeChip => '再最適化';
 
   @override
+  String get dayFilterAll => 'All';
+
+  @override
+  String get dayFilterBlocks => 'Blocks';
+
+  @override
+  String get dayFilterTiles => 'Tiles';
+
+  @override
+  String get dayFilterTooltip => 'Show all, blocks only, or tiles only';
+
+  @override
+  String dayFilterShowingBlocks(int shown, int total) {
+    return 'Showing blocks only · $shown of $total';
+  }
+
+  @override
+  String dayFilterShowingTiles(int shown, int total) {
+    return 'Showing tiles only · $shown of $total';
+  }
+
+  @override
+  String dayFilterEmptyBlocks(String day) {
+    return 'No blocks on $day';
+  }
+
+  @override
+  String dayFilterEmptyTiles(String day) {
+    return 'No tiles on $day';
+  }
+
+  @override
+  String get dayFilterShowAll => 'Show all';
+
+  @override
+  String get dayFilterAutoCleared => 'Showing all — filter cleared';
+
+  @override
   String get todayColon => '今日:';
 
   @override
@@ -1869,6 +1907,49 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get extendedEventsTitle => '長時間イベント';
+
+  @override
+  String get dayGridAllDay => '??';
+
+  @override
+  String get dayGridHeaderAllClear => '???????';
+
+  @override
+  String dayGridHeaderConflictCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '??$count?',
+      one: '??1?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dayGridHeaderNeedAttention(int count, String summary) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$summary????????',
+      one: '$summary????????',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayGridHeaderReview => '??';
+
+  @override
+  String get dayGridDaySummary => '1????';
+
+  @override
+  String get bottomNavToday => '??';
+
+  @override
+  String get bottomNavTiler => 'Tiler';
+
+  @override
+  String get dayGridHeaderRespond => '??';
 
   @override
   String extendedEventsSubtitle(int count) {
@@ -2783,6 +2864,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get switchCalendarView => 'カレンダーのビューを切り替え';
+
+  @override
+  String get switchDayGridLayout => '1????????????';
+
+  @override
+  String get openDayRibbon => '1????';
 
   @override
   String get previewSundialGreeting => 'こんにちは。';
