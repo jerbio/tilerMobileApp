@@ -85,6 +85,16 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
   }
 
   @override
+  void dispose() {
+    // More options pops this sheet, usually within the name debounce. Left
+    // running, the debounce called setState on a disposed State — an
+    // assertion in debug — and issued a prediction nobody would read (D64).
+    autoPopulateSubscription?.cancel();
+    autoPopulateSubscription = null;
+    super.dispose();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     theme = Theme.of(context);
@@ -166,9 +176,16 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
     if (newTile.Name == tileName) {
       return;
     }
+    // The name is recorded on EVERY change, and the parent told, regardless
+    // of whether it is long enough to predict on. It used to be set only
+    // inside the prediction branch and reported only when a prediction
+    // landed, so More options opened blank whenever the user tapped it
+    // before the prediction returned, typed fewer than three characters, or
+    // got an empty prediction (D64).
+    newTile.Name = tileName.isNot_NullEmptyOrWhiteSpace() ? tileName : null;
+    onTileUpdate(newTile);
     if (tileName != null &&
         tileName.isNot_NullEmptyOrWhiteSpace(minLength: 3)) {
-      newTile.Name = tileName;
       if (autoPopulateSubscription != null) {
         autoPopulateSubscription!.cancel();
       }

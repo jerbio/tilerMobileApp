@@ -13,6 +13,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
@@ -102,6 +104,42 @@ void main() {
   // Non-const: this SDK's DateTime constructor is not const in widget-test
   // context; the value is still deterministic.
   final now = DateTime(2026, 9, 4, 14, 0);
+
+  group('Arriving from the preview add sheet', () {
+    testWidgets('everything the user already provided is on screen',
+        (tester) async {
+      // The sheet hands over a `SimpleAdditionTile` (D64). The draft-level
+      // tests prove it seeds the draft; this proves the user SEES it — the
+      // name in the field, the duration and location on their rows — with
+      // nothing to re-enter.
+      final SimpleAdditionTile pre = SimpleAdditionTile(
+        description: 'Dentist appointment',
+        duration: const Duration(minutes: 45),
+        location: Location.fromDefault()
+          ..isNull = false
+          ..isDefault = false
+          ..description = 'Smile Dental'
+          ..address = '12 High St',
+      );
+      await pumpShell(tester, AddTileRedesignScreen(preTile: pre, now: now));
+      await tester.pump();
+
+      final EditableText name = tester.widget<EditableText>(find.descendant(
+          of: find.byKey(const ValueKey('taskNameField')),
+          matching: find.byType(EditableText)));
+      expect(name.controller.text, 'Dentist appointment');
+      expect(
+          find.descendant(
+              of: find.byKey(const ValueKey('durationRow')),
+              matching: find.text('45 min')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const ValueKey('locationRow')),
+              matching: find.text('Smile Dental')),
+          findsOneWidget);
+    });
+  });
 
   group('shell — shared frame', () {
     testWidgets('type selector appears before the fields', (tester) async {
