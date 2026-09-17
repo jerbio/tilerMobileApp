@@ -823,7 +823,7 @@ class _Frame extends StatelessWidget {
               // While the what-if check runs the whole form sweeps behind
               // the fields, as Add Tile's prediction does (D63) — the form
               // stays live; the sweep ignores pointers.
-              else if (false)
+              else if (whatIfPending)
                 const Positioned.fill(
                     child:
                         AddTilePendingSweep(key: ValueKey('editWhatIfSweep'))),

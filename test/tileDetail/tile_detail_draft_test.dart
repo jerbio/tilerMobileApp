@@ -143,6 +143,14 @@ void main() {
       expect(d.repetition?.weeklyRepetition, <int>{1, 3, 5});
     });
 
+    test('a rule\'s weekdays survive the server\'s capitalisation', () {
+      // `Utility.weekdays` is lowercase; a capitalised name from the wire
+      // used to index as -1 and show the wrong day (or none) in the picker.
+      final d = draft(
+          loaded(repetition: weeklyJson(days: <String>['Monday', 'friday'])));
+      expect(d.repetition?.weeklyRepetition, <int>{1, 5});
+    });
+
     test('absent optionals seed as absent', () {
       final d = draft(loaded(durationMinutes: null));
       expect(d.duration, isNull);
@@ -274,6 +282,25 @@ void main() {
       d.setPriority(TilePriority.low);
       d.clearLocation();
       expect(notified, 3);
+    });
+  });
+
+  group('Deadline (non-repeating series, 2026-09-17)', () {
+    test('seeded from the series end, held local, dirty by instant', () {
+      final d = draft();
+      expect(d.deadline.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+      expect(d.deadline.isUtc, isFalse);
+      d.setDeadline(end.add(const Duration(days: 2)));
+      expect(d.dirtyFields, <TileDetailField>{TileDetailField.deadline});
+      d.setDeadline(end.toLocal());
+      expect(d.isDirty, isFalse);
+    });
+
+    test('a deadline at or before the series start is invalid, named', () {
+      final d = draft()..setDeadline(start);
+      expect(d.isValid, isFalse);
+      expect(d.invalidReason, TileDetailInvalidReason.deadlineNotAfterStart);
+      expect(d.canSave, isFalse);
     });
   });
 

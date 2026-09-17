@@ -44,6 +44,16 @@ import 'package:tiler_app/theme/today_status_tokens.dart';
 
 typedef TileDetailPickDuration = Future<Duration?> Function(
     BuildContext context, Duration seed);
+typedef TileDetailPickDate = Future<DateTime?> Function(
+    BuildContext context, DateTime seed);
+
+Future<DateTime?> _platformDate(BuildContext context, DateTime seed) =>
+    showDatePicker(
+      context: context,
+      initialDate: seed,
+      firstDate: seed.subtract(const Duration(days: 365)),
+      lastDate: seed.add(const Duration(days: 365 * 5)),
+    );
 
 /// The Add Tile duration wheel, with no start time: this is the length of
 /// EVERY occurrence, not of one.
@@ -155,6 +165,8 @@ String tileDetailInvalidReasonText(
       return l10n.editTileReasonNameRequired;
     case TileDetailInvalidReason.splitRequired:
       return l10n.editTileReasonSplitRequired;
+    case TileDetailInvalidReason.deadlineNotAfterStart:
+      return l10n.editTileReasonEndNotAfterStart;
   }
 }
 
@@ -165,6 +177,7 @@ class TileDetailRedesignScreen extends StatefulWidget {
     required this.loader,
     required this.submission,
     this.pickDuration = _durationScreen,
+    this.pickDate = _platformDate,
     this.pickers = const TileDetailPickers(),
     this.locationSource,
     this.occurrences,
@@ -175,6 +188,7 @@ class TileDetailRedesignScreen extends StatefulWidget {
   final TileDetailLoader loader;
   final TileDetailSubmission submission;
   final TileDetailPickDuration pickDuration;
+  final TileDetailPickDate pickDate;
   final TileDetailPickers pickers;
 
   /// Backs the default Location picker and place editor.
@@ -345,6 +359,15 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
         context, d.duration ?? const Duration(hours: 1));
     if (picked == null || !mounted) return;
     d.setDuration(picked);
+  }
+
+  /// The deadline is a DAY; the value kept is the end of it, as Add Tile's
+  /// "complete by" rule.
+  Future<void> _editDeadline() async {
+    final TileDetailDraft d = draft!;
+    final DateTime? day = await widget.pickDate(context, d.deadline);
+    if (day == null || !mounted) return;
+    d.setDeadline(deadlineForPickedDay(day));
   }
 
   Future<void> _editRepeat() async {
@@ -596,6 +619,7 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
                     titleFocus: _titleFocus,
                     onTitleChanged: _onTitleChanged,
                     onDurationTap: _editDuration,
+                    onDeadlineTap: _editDeadline,
                     onRepeatTap: _editRepeat,
                     onLocationTap: _editLocation,
                     onNameLocationTap: _nameLocation,
@@ -633,6 +657,7 @@ class _Frame extends StatelessWidget {
     required this.titleFocus,
     required this.onTitleChanged,
     required this.onDurationTap,
+    required this.onDeadlineTap,
     required this.onRepeatTap,
     required this.onLocationTap,
     required this.onNameLocationTap,
@@ -649,6 +674,7 @@ class _Frame extends StatelessWidget {
   final FocusNode titleFocus;
   final ValueChanged<String> onTitleChanged;
   final VoidCallback onDurationTap;
+  final VoidCallback onDeadlineTap;
   final VoidCallback onRepeatTap;
   final VoidCallback onLocationTap;
   final VoidCallback onNameLocationTap;
@@ -752,6 +778,16 @@ class _Frame extends StatelessWidget {
                           valueIsPlaceholder: draft.duration == null,
                           onTap: rowsLocked ? null : onDurationTap,
                         ),
+                        // A non-repeating series is ended by its deadline;
+                        // a repeating one by its rule (2026-09-17).
+                        if (draft.repetition == null)
+                          AddTileFieldRow(
+                            key: const ValueKey('detailDeadlineRow'),
+                            icon: Icons.flag_outlined,
+                            label: l10n.editTileFieldDeadline,
+                            value: DateFormat.yMMMEd().format(draft.deadline),
+                            onTap: rowsLocked ? null : onDeadlineTap,
+                          ),
                       ]),
                       if (showSessions) ...[
                         heading(l10n.editTileSectionSessions),

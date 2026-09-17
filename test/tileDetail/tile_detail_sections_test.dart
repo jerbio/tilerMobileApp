@@ -140,6 +140,67 @@ void main() {
     });
   });
 
+  // ------------------------------------------------------------ Deadline
+  group('Deadline (2026-09-17)', () {
+    testWidgets(
+        'a non-repeating series shows its deadline; a date pick keeps '
+        'the end of that day', (tester) async {
+      await shell.pumpDetail(tester);
+      await reveal(tester, key('detailDeadlineRow'));
+      expect(
+          find.descendant(
+              of: key('detailDeadlineRow'),
+              matching: find.textContaining('Sep 20')),
+          findsOneWidget);
+      shell.pickedDateAnswer = DateTime(2026, 9, 25);
+      await tester.tap(key('detailDeadlineRow'));
+      await tester.pumpAndSettle();
+      expect(shell.pickedDateSeed?.day, 20, reason: 'seeded on the deadline');
+      final DateTime picked = shell.draftOf(tester).deadline;
+      expect(DateTime(picked.year, picked.month, picked.day),
+          DateTime(2026, 9, 25));
+      expect(picked.hour, 23, reason: 'the END of the picked day');
+      expect(shell.draftOf(tester).canSave, isTrue);
+    });
+
+    testWidgets('a repeating series has no deadline row: its rule ends it',
+        (tester) async {
+      await shell.pumpDetail(tester,
+          event: fx.loaded(repetition: fx.weeklyJson()));
+      await reveal(tester, key('detailRepeatRow'));
+      expect(
+          find.byKey(const ValueKey('detailDeadlineRow'), skipOffstage: false),
+          findsNothing);
+    });
+
+    testWidgets('clearing the rule brings the deadline row back',
+        (tester) async {
+      await shell.pumpDetail(tester,
+          event: fx.loaded(repetition: fx.weeklyJson()));
+      await reveal(tester, key('detailRepeatRow'));
+      shell.repeatAnswer = const RepeatPickerResult(null);
+      await tester.tap(key('detailRepeatRow'));
+      await tester.pumpAndSettle();
+      // The row sits ABOVE Repetition: scroll back up to it.
+      await tester.scrollUntilVisible(key('detailDeadlineRow'), -120,
+          scrollable: find.byType(Scrollable).first);
+      await tester.pumpAndSettle();
+      expect(key('detailDeadlineRow'), findsOneWidget);
+    });
+
+    testWidgets('a deadline before the start disables Save with the reason',
+        (tester) async {
+      await shell.pumpDetail(tester);
+      await reveal(tester, key('detailDeadlineRow'));
+      shell.pickedDateAnswer = DateTime(2026, 9, 1);
+      await tester.tap(key('detailDeadlineRow'));
+      await tester.pumpAndSettle();
+      await reveal(tester, shell.save);
+      expect(
+          find.text(testL10n.editTileReasonEndNotAfterStart), findsOneWidget);
+    });
+  });
+
   // ------------------------------------------------------------ Priority
   group('Priority', () {
     testWidgets('the loaded priority is selected; a tap moves it',
@@ -339,6 +400,16 @@ void main() {
       h.dispose();
       expect(key('detailLocationClear'), findsNothing);
       expect(find.byType(TileSessionsRow, skipOffstage: false), findsNothing);
+    });
+
+    testWidgets(
+        'a finished non-repeating series: the deadline row is not tappable',
+        (tester) async {
+      await shell.pumpDetail(tester, event: fx.loaded(isComplete: true));
+      await reveal(tester, key('detailDeadlineRow'));
+      final SemanticsHandle h = tester.ensureSemantics();
+      expect(hasTap(tester, key('detailDeadlineRow')), isFalse);
+      h.dispose();
     });
   });
 

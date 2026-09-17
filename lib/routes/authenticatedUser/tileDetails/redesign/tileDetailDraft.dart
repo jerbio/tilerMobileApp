@@ -43,11 +43,16 @@ enum TileDetailField {
   priority,
   color,
   restriction,
+  deadline,
 }
 
 /// Why a draft cannot be saved, for the CTA's disabled hint. Ordered as
 /// `EditCalendarEvent.isValid` checks them; the first failure is reported.
-enum TileDetailInvalidReason { nameRequired, splitRequired }
+enum TileDetailInvalidReason {
+  nameRequired,
+  splitRequired,
+  deadlineNotAfterStart,
+}
 
 class TileDetailDraft extends ChangeNotifier {
   /// [location] is the separately loaded location the legacy screen edits
@@ -61,7 +66,10 @@ class TileDetailDraft extends ChangeNotifier {
         _repetition = original.repetition?.toRepetitionData(),
         _priority = original.priority,
         _color = original.uiConfig?.tileColor?.toColor,
-        _restriction = original.restrictionProfile {
+        _restriction = original.restrictionProfile,
+        // Local, like every other time the draft holds (a picker seeded
+        // with UTC opens on the wrong day near midnight).
+        _deadline = original.endTime.toLocal() {
     _originalName = _name;
     _originalDuration = _duration;
     _originalSplit = _split;
@@ -70,6 +78,7 @@ class TileDetailDraft extends ChangeNotifier {
     _originalPriority = _priority;
     _originalColor = _color;
     _originalRestriction = _restriction;
+    _originalDeadline = _deadline;
   }
 
   /// The calendar event as loaded. Never mutated.
@@ -85,8 +94,11 @@ class TileDetailDraft extends ChangeNotifier {
 
   // ------------------------------------------------------------ passthrough
 
-  /// The series window. Not edited here; sent as loaded (D14).
+  /// The series start. Not edited here; sent as loaded (D14).
   DateTime get windowStart => original.startTime;
+
+  /// The series end as loaded. The EDITABLE value is [deadline]; this
+  /// getter is the original, for the mapper's identity and for tests.
   DateTime get windowEnd => original.endTime;
 
   /// Deadline automation. Not surfaced; sent as loaded (D14). Note that
@@ -122,6 +134,7 @@ class TileDetailDraft extends ChangeNotifier {
   TilePriority _priority;
   Color? _color;
   RestrictionProfile? _restriction;
+  DateTime _deadline;
 
   late final String _originalName;
   late final Duration? _originalDuration;
@@ -131,6 +144,7 @@ class TileDetailDraft extends ChangeNotifier {
   late final TilePriority _originalPriority;
   late final Color? _originalColor;
   late final RestrictionProfile? _originalRestriction;
+  late final DateTime _originalDeadline;
 
   String get name => _name;
 
@@ -155,6 +169,10 @@ class TileDetailDraft extends ChangeNotifier {
   /// The preferred-time (restriction) profile; null is Anytime.
   RestrictionProfile? get restrictionProfile => _restriction;
 
+  /// The series deadline (`End` on the wire). Editable for a NON-repeating
+  /// series (2026-09-17); a repeating one is ended by its rule instead.
+  DateTime get deadline => _deadline;
+
   void setName(String value) => _update(() => _name = value);
   void setDuration(Duration? value) => _update(() => _duration = value);
   void setSplit(int value) => _update(() => _split = value);
@@ -167,6 +185,7 @@ class TileDetailDraft extends ChangeNotifier {
   void setColor(Color? value) => _update(() => _color = value);
   void setRestrictionProfile(RestrictionProfile? value) =>
       _update(() => _restriction = value);
+  void setDeadline(DateTime value) => _update(() => _deadline = value);
 
   void _update(void Function() change) {
     change();
@@ -229,6 +248,8 @@ class TileDetailDraft extends ChangeNotifier {
         if (_color != _originalColor) TileDetailField.color,
         if (!_sameProfile(_restriction, _originalRestriction))
           TileDetailField.restriction,
+        if (!_sameInstant(_deadline, _originalDeadline))
+          TileDetailField.deadline,
       };
 
   bool get isDirty => dirtyFields.isNotEmpty;
@@ -245,6 +266,10 @@ class TileDetailDraft extends ChangeNotifier {
   TileDetailInvalidReason? get invalidReason {
     if (_name.trim().isEmpty) return TileDetailInvalidReason.nameRequired;
     if (_split < 1) return TileDetailInvalidReason.splitRequired;
+    // `EditCalendarEvent.isValid`: start < end.
+    if (!_deadline.isAfter(original.startTime)) {
+      return TileDetailInvalidReason.deadlineNotAfterStart;
+    }
     return null;
   }
 

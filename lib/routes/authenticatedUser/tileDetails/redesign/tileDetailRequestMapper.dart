@@ -38,12 +38,12 @@ TileDetailRequest toTileDetailRequest(TileDetailDraft d) {
     ..id = d.id
     ..name = d.name
     ..splitCount = d.split
-    // The window, as loaded (D14).
+    // The start as loaded (D14); the end is the editable deadline.
     ..startTime = d.windowStart
-    ..endTime = d.windowEnd
+    ..endTime = d.deadline
     // Required by `isValid`, never sent: the legacy seed uses "now".
     ..calStartTime = d.windowStart
-    ..calEndTime = d.windowEnd
+    ..calEndTime = d.deadline
     ..thirdPartyId = d.thirdPartyId
     ..thirdPartyUserId = d.thirdPartyUserId
     ..thirdPartyType = d.thirdPartyType
@@ -65,10 +65,14 @@ TileDetailRequest toTileDetailRequest(TileDetailDraft d) {
   // A loaded rule / colour is passed through untouched so nothing is lost
   // in a round trip; only a CHANGED one is rebuilt from the picker's shape.
   final Set<TileDetailField> dirty = d.dirtyFields;
+  // A changed rule is rebuilt from the picker's shape but keeps the loaded
+  // rule's tile timeline (TileStart/TileEnd), as the legacy
+  // RepetitionSelectorWidget copied it onto the rebuilt one.
   e.repetition = dirty.contains(TileDetailField.repetition)
       ? (d.repetition == null
           ? null
-          : Repetition.fromRepetitionData(d.repetition!))
+          : (Repetition.fromRepetitionData(d.repetition!)
+            ..tileTimeline = d.original.repetition?.tileTimeline))
       : d.original.repetition;
   e.uiConfig = dirty.contains(TileDetailField.color)
       ? (d.color == null

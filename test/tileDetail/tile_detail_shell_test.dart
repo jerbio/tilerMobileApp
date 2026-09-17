@@ -129,6 +129,8 @@ final List<String> openedOccurrences = <String>[];
 Object? openOccurrenceAnswer;
 Duration? pickedDurationSeed;
 Duration? pickedDurationAnswer;
+DateTime? pickedDateSeed;
+DateTime? pickedDateAnswer;
 
 // Picker seams (6.4): each records its seed and answers what the test set.
 RepetitionData? repeatSeed;
@@ -157,6 +159,7 @@ Future<void> pumpDetail(
   tester.view.physicalSize = AddTileTestMatrix.physicalSizeOf(viewSize);
   addTearDown(tester.view.reset);
   pickedDurationSeed = pickedDurationAnswer = null;
+  pickedDateSeed = pickedDateAnswer = null;
   repeatSeed = null;
   repeatAnswer = null;
   locationSeed = locationAnswer = placeSeed = placeAnswer = null;
@@ -200,6 +203,10 @@ Future<void> pumpDetail(
                 pickDuration: (_, Duration seed) async {
                   pickedDurationSeed = seed;
                   return pickedDurationAnswer;
+                },
+                pickDate: (_, DateTime seed) async {
+                  pickedDateSeed = seed;
+                  return pickedDateAnswer;
                 },
                 pickers: TileDetailPickers(
                   pickRepeat: (_, RepetitionData? seed) async {

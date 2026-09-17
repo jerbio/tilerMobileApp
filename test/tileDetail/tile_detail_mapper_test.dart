@@ -139,6 +139,39 @@ void main() {
       expect(tileDetailUpdateParams(anytime)['RestrictiveWeek'], isNull);
     });
 
+    test('a moved deadline travels as End; the start is untouched', () {
+      final TileDetailDraft d = draft()
+        ..setDeadline(fx.end.add(const Duration(days: 2)));
+      final Map<String, dynamic> map = tileDetailUpdateParams(d);
+      expect(
+          map['End'],
+          fx.end
+              .add(const Duration(days: 2))
+              .millisecondsSinceEpoch
+              .toString());
+      expect(map['Start'], legacyMap['Start']);
+    });
+
+    test(
+        'a changed rule keeps the loaded tile timeline, as the legacy '
+        'selector did', () {
+      // RepetitionSelectorWidget copied `tileTimeline` from the loaded rule
+      // onto the rebuilt one; dropping it sends TileStart/TileEnd as null.
+      final TileDetailDraft d = draft(fx.loaded(repetition: <String, dynamic>{
+        ...fx.weeklyJson(),
+        'tileTimeline': <String, dynamic>{
+          'start': fx.start.millisecondsSinceEpoch,
+          'end': fx.start.add(const Duration(hours: 1)).millisecondsSinceEpoch,
+        },
+      }))
+        ..setRepetition(fx.weekly(days: <int>{2}));
+      final Map<String, dynamic> rule =
+          tileDetailUpdateParams(d)['RepetitionConfig'] as Map<String, dynamic>;
+      expect(rule['DayOfWeekRepetitions'], <String>['tuesday']);
+      expect(rule['TileStart'], fx.start.millisecondsSinceEpoch);
+      expect(rule['TileEnd'], isNotNull);
+    });
+
     test('a third-party event keeps its provider identity', () {
       final Map<String, dynamic> map =
           tileDetailUpdateParams(draft(fx.loaded(thirdPartyType: 'google')));
