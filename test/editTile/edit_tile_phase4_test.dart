@@ -15,7 +15,6 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/components/thirdPartyDecisionBar.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRedesignScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileSubmission.dart';
 
@@ -109,16 +108,20 @@ void main() {
 
   // ------------------------------------------------------------------ 4.2
   group('4.2 Third-party mode and RSVP', () {
-    testWidgets('banner names the provider; rows locked; Delete only',
+    testWidgets(
+        'banner names the provider; title locked, timing live; Delete only',
         (tester) async {
       await shell.pumpEdit(tester, tile: thirdParty());
       expect(
           find.text(
               testL10n.editTileModeThirdParty(testL10n.editTileProviderGoogle)),
           findsOneWidget);
+      // The time can be moved from here (the legacy screen allowed it and
+      // the update is routed by the third-party ids); the title cannot.
+      // Pinned in detail by edit_tile_third_party_timing_test.dart.
       await reveal(tester, shell.durationRow);
       final SemanticsHandle h = tester.ensureSemantics();
-      expect(isButton(tester, shell.durationRow), isFalse);
+      expect(isButton(tester, shell.durationRow), isTrue);
       h.dispose();
       expect(shell.titleField, findsNothing);
       await reveal(tester, key('editActions'));

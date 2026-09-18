@@ -3550,7 +3550,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String editTileModeThirdParty(String provider) {
-    return 'Gestionado por $provider. Responde a la invitación o elimínalo aquí; edita el evento en $provider.';
+    return 'Gestionado por $provider. Aquí puedes moverlo (inicio, fin, duración), responder a la invitación o eliminarlo; todo lo demás se edita en $provider.';
   }
 
   @override

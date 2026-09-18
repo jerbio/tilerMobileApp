@@ -6239,7 +6239,7 @@ abstract class AppLocalizations {
   /// No description provided for @editTileModeThirdParty.
   ///
   /// In en, this message translates to:
-  /// **'Managed by {provider}. Respond to the invitation or delete it here; edit the event in {provider}.'**
+  /// **'Managed by {provider}. You can move it here (start, end, duration), respond to the invitation, or delete it; everything else is edited in {provider}.'**
   String editTileModeThirdParty(String provider);
 
   /// No description provided for @editTileProviderGoogle.

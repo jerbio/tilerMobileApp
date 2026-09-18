@@ -965,7 +965,7 @@
   "editTileNotesTitle": "Notas",
   "editTileModeReadOnly": "Este tile ya terminó, así que no se puede editar. Aún puedes eliminarlo.",
   "editTileModeProcrastinate": "Tiempo bloqueado. Muévelo, márcalo como hecho o elimínalo.",
-  "editTileModeThirdParty": "Gestionado por {provider}. Responde a la invitación o elimínalo aquí; edita el evento en {provider}.",
+  "editTileModeThirdParty": "Gestionado por {provider}. Aquí puedes moverlo (inicio, fin, duración), responder a la invitación o eliminarlo; todo lo demás se edita en {provider}.",
   "editTileProviderGoogle": "Google Calendar",
   "editTileProviderOutlook": "Outlook",
   "editTileRsvpFailed": "No se pudo enviar tu respuesta en este momento.",

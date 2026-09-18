@@ -734,14 +734,19 @@ class _Frame extends StatelessWidget {
         : null;
     final SubCalendarEvent original = draft.original;
     final bool isEditable = draft.mode == EditTileMode.editable;
-    // ONE rule for locking, not per-widget flags (plan §1.7): a read-only
-    // or provider-owned tile has no editable row; a blocked-out tile keeps
-    // its time editable and only its title fixed.
+    // ONE rule for locking, not per-widget flags (plan §1.7), in two
+    // parts. TIME (Starts, Ends, Duration) is locked only for a finished
+    // tile: a provider-owned event can be moved from here — the legacy
+    // screen allowed it and `updateSubEvent` routes the change by the
+    // third-party ids — and a blocked-out tile keeps its time editable
+    // too. Everything else provider-owned (the title) stays the
+    // provider's; a blocked-out tile's title is fixed as well.
+    final bool timeLocked = draft.mode == EditTileMode.readOnly;
     final bool rowsLocked = draft.mode == EditTileMode.readOnly ||
         draft.mode == EditTileMode.thirdParty;
     final bool titleLocked =
         rowsLocked || draft.mode == EditTileMode.procrastinate;
-    final bool showSave = !rowsLocked;
+    final bool showSave = !timeLocked;
     final bool showRsvp = draft.mode == EditTileMode.thirdParty &&
         const <RsvpStatus>{
           RsvpStatus.needsAction,
@@ -789,8 +794,8 @@ class _Frame extends StatelessWidget {
           label: l10n.addTileFieldStarts,
           time: formatClockTime(draft.startTime),
           date: DateFormat.yMMMEd().format(draft.startTime),
-          onTimeTap: rowsLocked ? null : onStartTimeTap,
-          onDateTap: rowsLocked ? null : onStartDateTap,
+          onTimeTap: timeLocked ? null : onStartTimeTap,
+          onDateTap: timeLocked ? null : onStartDateTap,
         ),
         end: _SpanCell(
           key: const ValueKey('editEndRow'),
@@ -799,8 +804,8 @@ class _Frame extends StatelessWidget {
           label: l10n.addTileFieldEnds,
           time: formatClockTime(draft.endTime),
           date: DateFormat.yMMMEd().format(draft.endTime),
-          onTimeTap: rowsLocked ? null : onEndTimeTap,
-          onDateTap: rowsLocked ? null : onEndDateTap,
+          onTimeTap: timeLocked ? null : onEndTimeTap,
+          onDateTap: timeLocked ? null : onEndDateTap,
         ),
       ),
       AddTileFieldRow(
@@ -810,7 +815,7 @@ class _Frame extends StatelessWidget {
         value: formatDurationSummary(
                 l10n, draft.endTime.difference(draft.startTime)) ??
             '',
-        onTap: rowsLocked ? null : onDurationTap,
+        onTap: timeLocked ? null : onDurationTap,
       ),
       if (showDeadline)
         AddTileFieldRow(

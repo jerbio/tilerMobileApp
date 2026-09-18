@@ -2212,7 +2212,7 @@
   "editTileNotesTitle": "Notes",
   "editTileModeReadOnly": "This tile is finished, so it can't be edited. You can still delete it.",
   "editTileModeProcrastinate": "Blocked-out time. Move it, mark it done, or delete it.",
-  "editTileModeThirdParty": "Managed by {provider}. Respond to the invitation or delete it here; edit the event in {provider}.",
+  "editTileModeThirdParty": "Managed by {provider}. You can move it here (start, end, duration), respond to the invitation, or delete it; everything else is edited in {provider}.",
   "@editTileModeThirdParty": {"placeholders":{"provider":{"type":"String"}}},
   "editTileProviderGoogle": "Google Calendar",
   "editTileProviderOutlook": "Outlook",
