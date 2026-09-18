@@ -50,8 +50,9 @@ class SubCalendarEventApi extends AppApi {
           return SubCalendarEvent.fromJson(jsonResult['Content']);
         }
       }
-
-      throw TilerError();
+      // Carry the server's reason (code + message) so a rejected load can be
+      // diagnosed from the log; a bare TilerError told nobody anything.
+      throw getTilerResponseError(jsonResult) ?? TilerError();
     }
     throw TilerError();
   }
@@ -144,7 +145,8 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> resumeTile(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToResumeTile;
+    error.Message =
+        LocalizationService.instance.translations.failedToResumeTile;
     return sendPostRequest('api/Schedule/Event/Resume', {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
@@ -164,7 +166,8 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> setAsNow(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToMoveUpTask;
+    error.Message =
+        LocalizationService.instance.translations.failedToMoveUpTask;
     return sendPostRequest('api/Schedule/Event/Now', {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
@@ -182,10 +185,16 @@ class SubCalendarEventApi extends AppApi {
     });
   }
 
-  Future<SubCalendarEvent> updateSubEvent(EditTilerEvent subEvent) async {
-    TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToUpdateTile;
-    var queryParameters = {
+  /// The query map `updateSubEvent` sends, built without sending it.
+  ///
+  /// Static and side-effect free so it can be pinned by
+  /// `test/editTile/edit_tile_payload_baseline_test.dart` (Edit Tile
+  /// redesign, Step 0.1) and reproduced by the redesign's mapper. The map
+  /// is exactly what it was when inline: absent third-party ids and notes
+  /// go out as the string "null" via `toString()`, and `Notes` is always
+  /// present. Those are pinned deliberately, not endorsed.
+  static Map<String, dynamic> updateSubEventParams(EditTilerEvent subEvent) {
+    var queryParameters = <String, dynamic>{
       'EventID': subEvent.id,
       'EventName': subEvent.name,
       'Start': subEvent.startTime!.toUtc().millisecondsSinceEpoch.toString(),
@@ -204,6 +213,20 @@ class SubCalendarEventApi extends AppApi {
     if (rsvpUpdateValue != null) {
       queryParameters['RsvpStatusUpdate'] = rsvpUpdateValue;
     }
+    return queryParameters;
+  }
+
+  Future<SubCalendarEvent> updateSubEvent(EditTilerEvent subEvent) =>
+      updateSubEventRequest(updateSubEventParams(subEvent));
+
+  /// Sends an already-built update map. The legacy screen builds it from an
+  /// `EditTilerEvent` above; the redesigned one builds a wider map (priority,
+  /// location, colour, repetition, `ApplicableOccurence`) and sends it here.
+  Future<SubCalendarEvent> updateSubEventRequest(
+      Map<String, dynamic> queryParameters) async {
+    TilerError error = new TilerError();
+    error.Message =
+        LocalizationService.instance.translations.failedToUpdateTile;
 
     return sendPostRequest('api/SubCalendarEvent/Update', queryParameters)
         .then((response) {
@@ -222,7 +245,8 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> complete(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToSendRequest;
+    error.Message =
+        LocalizationService.instance.translations.failedToSendRequest;
     print(subEvent);
     print(subEvent.id);
     return sendPostRequest('api/Schedule/Event/Complete', {
@@ -248,7 +272,8 @@ class SubCalendarEventApi extends AppApi {
 
   Future completeTiles(String id, String type, String userId) async {
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToSendRequest;
+    error.Message =
+        LocalizationService.instance.translations.failedToSendRequest;
     return sendPostRequest('api/Schedule/Events/Complete', {
       'EventID': id,
       'ThirdPartyType': type,

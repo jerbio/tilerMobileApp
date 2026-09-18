@@ -123,11 +123,15 @@ class CalendarEventApi extends AppApi {
     throw error;
   }
 
-  Future<CalendarEvent> updateCalEvent(EditCalendarEvent calEvent,
-      {bool clearLocation = false}) async {
-    TilerError error = new TilerError();
-    error.Message = "Did not update tile";
-    var queryParameters = {
+  /// The query map `updateCalEvent` sends, built without sending it.
+  ///
+  /// Static and side-effect free so `test/editTile/`
+  /// `edit_tile_series_payload_baseline_test.dart` can pin it (Edit Tile
+  /// redesign, Step 0.2): these names and value formats are the vocabulary
+  /// the redesigned Edit Tile sends to the SUB-event endpoint (D15).
+  static Map<String, dynamic> updateCalEventParams(EditCalendarEvent calEvent,
+      {bool clearLocation = false}) {
+    var queryParameters = <String, dynamic>{
       'EventID': calEvent.id,
       'EventName': calEvent.name,
       'Start': calEvent.startTime!.millisecondsSinceEpoch.toString(),
@@ -153,6 +157,21 @@ class CalendarEventApi extends AppApi {
       queryParameters['Duration'] =
           calEvent.tileDuration!.inMilliseconds.toString();
     }
+    return queryParameters;
+  }
+
+  Future<CalendarEvent> updateCalEvent(EditCalendarEvent calEvent,
+          {bool clearLocation = false}) =>
+      updateCalEventRequest(
+          updateCalEventParams(calEvent, clearLocation: clearLocation));
+
+  /// Sends an already-built update map. The legacy screen builds it from an
+  /// `EditCalendarEvent` above; the redesigned Tile Detail builds the same
+  /// map plus `Priority` and sends it here.
+  Future<CalendarEvent> updateCalEventRequest(
+      Map<String, dynamic> queryParameters) async {
+    TilerError error = new TilerError();
+    error.Message = "Did not update tile";
 
     return sendPostRequest('api/CalendarEvent/Update', queryParameters)
         .then((response) {

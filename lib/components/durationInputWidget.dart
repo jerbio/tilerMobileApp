@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_box_shadows.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
@@ -35,20 +36,17 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
     final colorScheme = theme.colorScheme;
     final tileThemeExtension = theme.extension<TileThemeExtension>();
     final void Function()? setDuration = () async {
-      Map<String, dynamic> durationParams = {'duration': _duration};
-      Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
-          .whenComplete(() {
-        print(durationParams['duration']);
-        Duration? populatedDuration = durationParams['duration'] as Duration?;
-        setState(() {
-          if (populatedDuration != null) {
-            _setDuration = populatedDuration;
-          }
-        });
-        if (this.widget.onDurationChange != null) {
-          this.widget.onDurationChange!(_duration);
-        }
+      // The redesigned picker; null means the user went Back, which is
+      // not a change.
+      final Duration? picked = await pushDurationPicker(context,
+          initialDuration: _duration ?? Duration.zero);
+      if (picked == null || !mounted) return;
+      setState(() {
+        _setDuration = picked;
       });
+      if (this.widget.onDurationChange != null) {
+        this.widget.onDurationChange!(_duration);
+      }
     };
     String? textButtonString =
         this.widget.placeholder ?? AppLocalizations.of(context)!.durationStar;

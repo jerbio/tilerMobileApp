@@ -217,7 +217,8 @@ class _EditTileNoteState extends State<EditTileNote> {
   NotesPayload? _conflictPayload;
 
   /// Current editor contents serialized back to markdown (the storage format).
-  String get _currentMarkdown => _quillDocumentToMarkdown(_quillController.document);
+  String get _currentMarkdown =>
+      _quillDocumentToMarkdown(_quillController.document);
 
   /// Whether the rich-text document currently has any visible characters.
   bool get _isEditorEmpty =>

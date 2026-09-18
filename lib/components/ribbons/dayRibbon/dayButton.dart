@@ -16,7 +16,7 @@ class DayButton extends StatefulWidget {
     this.onTapped,
     this.showMonth = false,
     this.isSelected = false,
-    this.preview=false,
+    this.preview = false,
   }) : super(
             key: ValueKey(
                 dateTime.toString() + Utility.currentTime().day.toString()));
@@ -34,57 +34,65 @@ class _DayButtonState extends State<DayButton> {
 
   @override
   Widget build(BuildContext context) {
-    final theme= Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
-    var decoration = this.widget.isSelected ? TileDecorations.ribbonsButtonSelectedDecoration(colorScheme.primary) : TileDecorations.ribbonsButtonDefaultDecoration(colorScheme.surfaceContainer);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
+    var decoration = this.widget.isSelected
+        ? TileDecorations.ribbonsButtonSelectedDecoration(colorScheme.primary)
+        : TileDecorations.ribbonsButtonDefaultDecoration(
+            colorScheme.surfaceContainer);
     double buttonHeight = 40 * (this.widget.isSelected ? 1.3 : 1);
     double buttonWidth = 40 * (this.widget.isSelected ? 1.3 : 1);
     List<Widget> childWidgets = [
       Container(
-        margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-        alignment: Alignment.center,
-        height: buttonHeight,
-        width: buttonWidth,
-        decoration: decoration,
-        child: Text(
-          DateFormat(DateFormat.DAY).format(this.dateTime),
-          style: TextStyle(
-              fontSize: 20,
-              fontWeight: this.widget.isSelected ? FontWeight.w500 : null,
-              color: this.widget.isSelected
-                  ? colorScheme.onPrimary
-                  : tileThemeExtension.onSurfaceVariantSecondary
-          ),
-        )
-      ),
+          margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+          alignment: Alignment.center,
+          height: buttonHeight,
+          width: buttonWidth,
+          decoration: decoration,
+          child: Text(
+            DateFormat(DateFormat.DAY).format(this.dateTime),
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: this.widget.isSelected ? FontWeight.w500 : null,
+                color: this.widget.isSelected
+                    ? colorScheme.onPrimary
+                    : tileThemeExtension.onSurfaceVariantSecondary),
+          )),
       Container(
-          padding:
-              this.widget.isSelected ? EdgeInsets.all(11) : EdgeInsets.all(17),
-          child: Text(DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
-              style: TextStyle(
-                  fontFamily: TileTextStyles.rubikFontName,
-                  color: this.widget.isSelected ? colorScheme.onSurface: tileThemeExtension.onSurfaceVariantSecondary,
-              ),
-          )
-      ,)
+        padding:
+            this.widget.isSelected ? EdgeInsets.all(11) : EdgeInsets.all(17),
+        child: Text(
+          DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
+          style: TextStyle(
+            fontFamily: TileTextStyles.rubikFontName,
+            color: this.widget.isSelected
+                ? colorScheme.onSurface
+                : tileThemeExtension.onSurfaceVariantSecondary,
+          ),
+        ),
+      )
     ];
     if (this.widget.showMonth) {
       childWidgets.add(Container(
         child: Text(
           DateFormat(DateFormat.ABBR_MONTH).format(this.dateTime),
           style: TextStyle(
-              color: this.widget.isSelected ? colorScheme.onSurface :  tileThemeExtension.onSurfaceVariantSecondary),
+              color: this.widget.isSelected
+                  ? colorScheme.onSurface
+                  : tileThemeExtension.onSurfaceVariantSecondary),
         ),
       ));
     }
 
     return GestureDetector(
-      onTap: widget.preview?null:() {
-        if (this.widget.onTapped != null) {
-          this.widget.onTapped!(this.dateTime);
-        }
-      },
+      onTap: widget.preview
+          ? null
+          : () {
+              if (this.widget.onTapped != null) {
+                this.widget.onTapped!(this.dateTime);
+              }
+            },
       child: Container(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,

@@ -18,7 +18,6 @@ import 'package:tuple/tuple.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TileBatch extends StatefulWidget {
-
   List<TilerEvent>? tiles;
   Timeline? sleepTimeline;
   int? dayIndex;
@@ -76,8 +75,8 @@ class TileBatchState extends State<TileBatch> {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
 
@@ -194,7 +193,6 @@ class TileBatchState extends State<TileBatch> {
       );
     }
 
-
     Widget? sleepWidget;
 
     if (sleepTimeline != null) {
@@ -202,7 +200,6 @@ class TileBatchState extends State<TileBatch> {
       sleepWidget = SleepTileWidget(sleepTimeline);
       childrenColumnWidgets.add(sleepWidget);
     }
-
 
     evaluateTileDelta(renderedTiles.values);
     late Widget dayContent;

@@ -1,58 +1,58 @@
-import 'dart:ffi';
-
-import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
-import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/util.dart';
 
+/// "Defer this tile": push one tile back by a chosen duration.
+///
+/// The screen IS the redesigned duration picker ([AddTileDurationScreen],
+/// titled "Defer"); it used to embed the raw package `DurationPicker` inside
+/// the old Cancel/Proceed template. Committing a value sends the defer,
+/// hands the request to [callBack] as [PlaybackOptions.Procrastinate], asks
+/// the schedule to evaluate, and pops; Back defers nothing.
 class TileProcrastinateRoute extends StatefulWidget {
-  Map? _params;
-  Duration? duration;
-  String tileId;
-  Function? callBack;
-  TileProcrastinateRoute({this.duration, required this.tileId, this.callBack});
+  final Duration? duration;
+  final String tileId;
+  final Function? callBack;
+
+  /// Optional API seam (tests). Production creates its own.
+  final SubCalendarEventApi? subCalendarEventApi;
+
+  const TileProcrastinateRoute({
+    Key? key,
+    this.duration,
+    required this.tileId,
+    this.callBack,
+    this.subCalendarEventApi,
+  }) : super(key: key);
+
   static final String routeName = '/TileProcrastinate';
+
   @override
   TileProcrastinateRouteState createState() => TileProcrastinateRouteState();
 }
 
 class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
-  Key switchUpID = ValueKey(Utility.getUuid);
-  Duration _duration = Duration();
-  bool _isInitialize = false;
-  Duration? _selectedPresetValue = null;
-  Map<String, Duration> durationStringToDuration = {};
   late SubCalendarEventApi _subCalendarEventApi;
-  late ThemeData theme;
-  late ColorScheme colorScheme;
+  bool _submitting = false;
 
   @override
   void initState() {
     super.initState();
-    _subCalendarEventApi =
-        new SubCalendarEventApi(getContextCallBack: () => context);
+    _subCalendarEventApi = widget.subCalendarEventApi ??
+        SubCalendarEventApi(getContextCallBack: () => context);
   }
-
-  @override
-  void didChangeDependencies() {
-    theme = Theme.of(context);
-    colorScheme = theme.colorScheme;
-    super.didChangeDependencies();
-  }
-
-  static final String tileProcrastinateCancelAndProceedRouteName =
-      "tileProcrastinateCancelAndProceed";
 
   void showMessage(String message) {
+    final colorScheme = Theme.of(context).colorScheme;
     Fluttertoast.showToast(
         msg: message,
         toastLength: Toast.LENGTH_SHORT,
@@ -63,11 +63,11 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
         fontSize: 16.0);
   }
 
-  Future onProceedTap() {
-    if (this.widget._params != null) {
-      this.widget._params!['duration'] = _duration;
-    }
-    Duration populatedDuration = _duration;
+  /// Sends the defer and wires the schedule's evaluating state to it.
+  /// Returns the request so the caller's callback (and the pop) can wait
+  /// on it. A schedule already evaluating within the last minute is left
+  /// alone.
+  Future _procrastinate(Duration duration) {
     String tileId = this.widget.tileId;
     showMessage(AppLocalizations.of(context)!.procrastinating);
     final scheduleState = this.context.read<ScheduleBloc>().state;
@@ -81,31 +81,26 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
-    ScheduleStatus scheduleStatus = ScheduleStatus();
 
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
-      scheduleStatus = scheduleState.scheduleStatus;
     }
 
     if (scheduleState is ScheduleEvaluationState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
-      scheduleStatus = scheduleState.scheduleStatus;
     }
 
     if (scheduleState is ScheduleLoadingState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.previousLookupTimeline;
-      scheduleStatus = scheduleState.scheduleStatus;
     }
 
-    var requestFuture =
-        _subCalendarEventApi.procrastinate(populatedDuration, tileId);
+    var requestFuture = _subCalendarEventApi.procrastinate(duration, tileId);
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.Procrastinate, requestFuture);
     }
@@ -120,78 +115,27 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
     return requestFuture;
   }
 
-  onTabTypeChange(value) {
-    if (value == AppLocalizations.of(context)!.custom) {
-      setState(() {
-        _selectedPresetValue = null;
-      });
-    } else {
-      setState(() {
-        _selectedPresetValue = durationStringToDuration[value];
-        _duration = _selectedPresetValue!;
-      });
+  Future<void> _onSelected(Duration duration) async {
+    if (_submitting || duration.inMilliseconds <= 0) return;
+    // Busy from the first frame: the picker dims and shows a spinner so the
+    // tap is visibly acknowledged while the request is in flight.
+    setState(() => _submitting = true);
+    try {
+      await _procrastinate(duration);
+    } catch (_) {
+      // The schedule's evaluation state surfaces the failure; leaving the
+      // picker up would only strand the user on it.
     }
-  }
-
-  onDurationButtonTap(Duration duration) {
-    setState(() {
-      _duration = duration;
-      _selectedPresetValue = duration;
-    });
-  }
-
-  resetSselectedPresetValue() {
-    if (_selectedPresetValue != null) {
-      switchUpID = ValueKey(Utility.getUuid);
-    }
-    _selectedPresetValue = null;
+    if (mounted) Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    Map durationParams =
-        ModalRoute.of(context)?.settings.arguments as Map? ?? {};
-    if (!_isInitialize) {
-      _isInitialize = true;
-      this.widget._params = durationParams;
-      if (durationParams.containsKey('initialDuration') &&
-          durationParams['initialDuration'] != null) {
-        this.widget.duration = durationParams['initialDuration'];
-        _duration = this.widget.duration!;
-      }
-    }
-
-    List<Widget> widgetColumn = <Widget>[
-      Expanded(
-          child: DurationPicker(
-        duration: _duration,
-        onChange: (val) {
-          setState(() {
-            _duration = val;
-            resetSselectedPresetValue();
-          });
-        },
-        snapToMins: 5.0,
-      ))
-    ];
-
-    CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
-        routeName: tileProcrastinateCancelAndProceedRouteName,
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.duration),
-          automaticallyImplyLeading: false,
-        ),
-        child: Container(
-          margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-          alignment: Alignment.topCenter,
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: widgetColumn),
-        ),
-        onProceed: () {
-          return this.onProceedTap();
-        });
-
-    return retValue;
+    return AddTileDurationScreen(
+      title: AppLocalizations.of(context)!.defer,
+      initialDuration: widget.duration ?? Duration.zero,
+      onSelected: _onSelected,
+      busy: _submitting,
+    );
   }
 }

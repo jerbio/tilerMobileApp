@@ -84,8 +84,8 @@ class IntegrationApi extends AppApi {
     final isAuthenticated = await authentication.isUserAuthenticated();
     if (!isAuthenticated.item1) {
       throw TilerError(
-          Message: LocalizationService
-              .instance.translations.userIsNotAuthenticated);
+          Message:
+              LocalizationService.instance.translations.userIsNotAuthenticated);
     }
     await checkAndReplaceCredentialCache();
     final queryParameters = {
@@ -179,16 +179,14 @@ class IntegrationApi extends AppApi {
     Utility.debugPrint(
         'Deleting integration: $injectedDeleteIntegrationParameters');
     final response = await httpClient
-        .delete(
-            Uri.https(Constants.tilerDomain, 'api/Integrations'),
+        .delete(Uri.https(Constants.tilerDomain, 'api/Integrations'),
             headers: header,
             body: json.encode(injectedDeleteIntegrationParameters))
         .timeout(
       AppApi.requestTimeout,
       onTimeout: () {
         throw TilerError(
-            Message:
-                LocalizationService.instance.translations.requestTimeout);
+            Message: LocalizationService.instance.translations.requestTimeout);
       },
     );
     Utility.debugPrint('Delete integration API response: '
@@ -301,8 +299,7 @@ Future<String> getCalendarConnectAuthorizationUrl(
   final String? authorizationUrl =
       _headerValueIgnoreCase(response.headers, 'Location');
   if (authorizationUrl == null || authorizationUrl.isEmpty) {
-    Utility.debugPrint(
-        'Calendar connect response missing Location header: '
+    Utility.debugPrint('Calendar connect response missing Location header: '
         '${response.statusCode} ${response.body}');
     throw TilerError(
         Message: LocalizationService.instance.translations.errorOccurred);

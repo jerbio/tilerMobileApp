@@ -14,6 +14,7 @@ import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/bloc
 import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/scheduleFullnessSlider.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
@@ -302,18 +303,12 @@ class TilePreferencesScreen extends StatelessWidget {
         ),
         ElevatedButton(
           style: TileButtonStyles.stripped(),
-          onPressed: () {
-            Map<String, dynamic> durationParams = {'duration': sleepDuration};
-            Navigator.pushNamed(context, '/DurationDial',
-                    arguments: durationParams)
-                .whenComplete(() {
-              Duration? updatedDuration =
-                  durationParams['duration'] as Duration?;
-              if (updatedDuration != null) {
-                final bloc = context.read<TilePreferencesBloc>();
-                bloc.add(UpdateSleepDuration(updatedDuration.inMilliseconds));
-              }
-            });
+          onPressed: () async {
+            final bloc = context.read<TilePreferencesBloc>();
+            final Duration? picked = await pushDurationPicker(context,
+                initialDuration: sleepDuration);
+            if (picked == null) return;
+            bloc.add(UpdateSleepDuration(picked.inMilliseconds));
           },
           child: Row(
             children: [

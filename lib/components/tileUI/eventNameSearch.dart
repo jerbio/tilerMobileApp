@@ -1,3 +1,4 @@
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -12,7 +13,6 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -664,7 +664,7 @@ class EventNameSearchState extends SearchWidgetState {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => EditTile(
+            builder: (context) => EditTileRoute(
                   tileId: tileId,
                   tileSource: _tileSourceOf(item),
                   thirdPartyUserId: item.thirdPartyUserId,
@@ -810,8 +810,7 @@ class EventNameSearchState extends SearchWidgetState {
           height: 28,
           decoration: BoxDecoration(
             color: TileColors.completedGreen.withValues(alpha: 0.18),
-            shape: BoxShape.circle,
-          ),
+            shape: BoxShape.circle,          ),
           child: Icon(Icons.check, size: 16, color: TileColors.completedGreen),
         ),
         label: localization.complete,

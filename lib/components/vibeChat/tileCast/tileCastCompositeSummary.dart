@@ -63,8 +63,9 @@ class TileCastCompositeSummary extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            ...actions.take(maxVisible).map(
-                (a) => _buildRow(context, a, localization)),
+            ...actions
+                .take(maxVisible)
+                .map((a) => _buildRow(context, a, localization)),
             if (actions.length > maxVisible)
               Padding(
                 padding: const EdgeInsets.only(top: 4),

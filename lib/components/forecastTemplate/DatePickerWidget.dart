@@ -11,13 +11,15 @@ class DatePickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Padding(
       padding: EdgeInsets.only(right: 15, top: 10, left: 15),
       child: TextFormField(
           controller: dateController,
-          style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 17),
+          style: TextStyle(
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
+              fontSize: 17),
           textAlign: TextAlign.start,
           decoration: InputDecoration(
               enabledBorder: OutlineInputBorder(
@@ -31,7 +33,8 @@ class DatePickerField extends StatelessWidget {
                 color: colorScheme.onSurface.withValues(alpha: 0.4),
               ),
               hintStyle: TextStyle(
-                  color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 17)),
+                  color: colorScheme.onSurface.withValues(alpha: 0.4),
+                  fontSize: 17)),
           onTap: () async {
             List months = [
               'Jan',

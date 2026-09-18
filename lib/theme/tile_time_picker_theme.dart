@@ -5,7 +5,7 @@ import 'tile_colors.dart';
 class TileTimePickerTheme {
   TileTimePickerTheme._();
 
-  static  TimePickerThemeData  lightTheme = TimePickerThemeData(
+  static TimePickerThemeData lightTheme = TimePickerThemeData(
     hourMinuteTextStyle: TileTextStyles.hourAndMinutesTimePicker,
     dayPeriodColor: TileColors.primaryContainerLight.toColor(),
     dayPeriodTextColor: WidgetStateColor.resolveWith((states) {
@@ -16,7 +16,7 @@ class TileTimePickerTheme {
     }),
   );
 
-  static TimePickerThemeData  darkTheme = TimePickerThemeData(
+  static TimePickerThemeData darkTheme = TimePickerThemeData(
     hourMinuteTextStyle: TileTextStyles.hourAndMinutesTimePicker,
     dayPeriodColor: TileColors.primaryContainerDark.toColor(),
     dayPeriodTextColor: WidgetStateColor.resolveWith((states) {
@@ -26,6 +26,4 @@ class TileTimePickerTheme {
       return TileColors.darkContent;
     }),
   );
-
-
 }

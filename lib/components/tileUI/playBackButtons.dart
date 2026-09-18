@@ -23,7 +23,10 @@ class PlayBack extends StatefulWidget {
   bool isWeeklyView;
   bool preview;
   PlayBack(this.subEvent,
-      {this.forcedOption, this.callBack, this.isWeeklyView = false,this.preview = false});
+      {this.forcedOption,
+      this.callBack,
+      this.isWeeklyView = false,
+      this.preview = false});
   @override
   PlayBackState createState() => PlayBackState();
 }
@@ -34,7 +37,7 @@ class PlayBackState extends State<PlayBack> {
   late ThemeData theme;
   late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
-  
+
   // Deletion confirmation UI state
   bool _showDeletionConfirmation = false;
 
@@ -356,37 +359,37 @@ class PlayBackState extends State<PlayBack> {
   }) {
     return ColorFiltered(
         colorFilter: ColorFilter.mode(
-        widget.preview
-        ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
-            : Colors.transparent,
-        BlendMode.srcATop,
-    ),
-    child: GestureDetector(
-      onTap: widget.preview? null: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-            child: Transform.rotate(
-              angle: rotationAngle,
-              child: Icon(
-                icon,
-                color: colorScheme.onSurface,
-                size: iconSize,
+          widget.preview
+              ? tileThemeExtension.vibeChatPreviewDisableColor
+                  .withValues(alpha: 0.6)
+              : Colors.transparent,
+          BlendMode.srcATop,
+        ),
+        child: GestureDetector(
+          onTap: widget.preview ? null : onTap,
+          child: Column(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                child: Transform.rotate(
+                  angle: rotationAngle,
+                  child: Icon(
+                    icon,
+                    color: colorScheme.onSurface,
+                    size: iconSize,
+                  ),
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.onSurface.withValues(alpha: .1),
+                  borderRadius: BorderRadius.circular(25),
+                ),
               ),
-            ),
-            decoration: BoxDecoration(
-              color: colorScheme.onSurface.withValues(alpha: .1),
-              borderRadius: BorderRadius.circular(25),
-            ),
+              Text(label, style: TextStyle(fontSize: 12))
+            ],
           ),
-          Text(label, style: TextStyle(fontSize: 12))
-        ],
-      ),
-      )
-    );
+        ));
   }
 
   @override
@@ -394,7 +397,7 @@ class PlayBackState extends State<PlayBack> {
     // If deletion confirmation is showing, display it instead of normal buttons
     if (_showDeletionConfirmation) {
       SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
-      
+
       // Determine TileSource from thirdpartyType
       TileSource? tileSource;
       if (subTile.thirdpartyType != null) {
@@ -407,7 +410,7 @@ class PlayBackState extends State<PlayBack> {
           tileSource = TileSource.tiler;
         }
       }
-      
+
       return DeletionConfirmationWidget(
         isRigid: subTile.isRigid ?? false,
         tileSource: tileSource,
@@ -421,7 +424,7 @@ class PlayBackState extends State<PlayBack> {
         },
       );
     }
-    
+
     Set<PlaybackOptions> alreadyAddedButton = Set<PlaybackOptions>();
     Widget? playPauseButton;
     Widget? deleteButton;

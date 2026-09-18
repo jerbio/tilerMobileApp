@@ -56,8 +56,8 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     bool checkStatus = isChecked;
     if (this.widget.isChecked != null) {
       checkStatus = this.widget.isChecked!;
@@ -67,20 +67,20 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
         child: Stack(
           children: [
             Transform.scale(
-                scale:  1,
+                scale: 1,
                 child: Checkbox(
                   checkColor: colorScheme.onPrimary,
                   fillColor: WidgetStateProperty.resolveWith(getColor),
                   value: checkStatus,
                   splashRadius: 15,
                   side: WidgetStateBorderSide.resolveWith((states) {
-                      return BorderSide(
-                        width: 3.0,
-                        color: states.contains(MaterialState.selected)
-                            ? colorScheme.primary
-                            : colorScheme.onPrimary.withLightness(0.7),
-                        strokeAlign: BorderSide.strokeAlignOutside,
-                      );
+                    return BorderSide(
+                      width: 3.0,
+                      color: states.contains(MaterialState.selected)
+                          ? colorScheme.primary
+                          : colorScheme.onPrimary.withLightness(0.7),
+                      strokeAlign: BorderSide.strokeAlignOutside,
+                    );
                   }),
                   shape: CircleBorder(),
                   onChanged: (bool? value) {
@@ -97,19 +97,20 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
 
     Widget textBox = Container(
       margin: EdgeInsets.fromLTRB(12, 0, 0, 0),
-      child: Text(this.text,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize:15,
-              fontWeight: FontWeight.w600,
-              color: checkStatus
-                  ? colorScheme.onSurface
-                  :colorScheme.onPrimary.withLightness(0.7),
-              ),
-          ),
-      );
+      child: Text(
+        this.text,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: checkStatus
+              ? colorScheme.onSurface
+              : colorScheme.onPrimary.withLightness(0.7),
+        ),
+      ),
+    );
     return new GestureDetector(
         onTap: onTap,
         child: Container(

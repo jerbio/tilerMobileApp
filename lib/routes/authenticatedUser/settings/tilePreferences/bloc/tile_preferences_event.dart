@@ -4,14 +4,17 @@ part of 'tile_preferences_bloc.dart';
 abstract class TilePreferencesEvent {}
 
 class FetchProfiles extends TilePreferencesEvent {}
+
 class UpdateWorkProfile extends TilePreferencesEvent {
   final RestrictionProfile? profile;
   UpdateWorkProfile(this.profile);
 }
+
 class UpdatePersonalProfile extends TilePreferencesEvent {
   final RestrictionProfile? profile;
   UpdatePersonalProfile(this.profile);
 }
+
 class UpdateEndOfDay extends TilePreferencesEvent {
   final StartOfDay? endOfDay;
   UpdateEndOfDay(this.endOfDay);

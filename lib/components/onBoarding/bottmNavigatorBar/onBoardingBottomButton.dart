@@ -14,8 +14,8 @@ class onBoardingBottomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       decoration: BoxDecoration(
           shape: BoxShape.circle,
@@ -33,7 +33,7 @@ class onBoardingBottomButton extends StatelessWidget {
         height: 60.0,
         child: IconButton(
             iconSize: 32.0,
-            icon: Icon(icon, color:colorScheme.onPrimary),
+            icon: Icon(icon, color: colorScheme.onPrimary),
             onPressed: press),
       ),
     );

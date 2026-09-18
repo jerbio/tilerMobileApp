@@ -14,11 +14,10 @@ class TileDate extends StatefulWidget {
 }
 
 class _TileDateState extends State<TileDate> {
-
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme= theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     String locale = Localizations.localeOf(context).languageCode;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
@@ -27,7 +26,8 @@ class _TileDateState extends State<TileDate> {
           Container(
               width: 25,
               height: 25,
-              decoration: TileDecorations.tileIconContainerBoxDecoration(colorScheme.onSurface),
+              decoration: TileDecorations.tileIconContainerBoxDecoration(
+                  colorScheme.onSurface),
               margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
               child: Icon(
                 Icons.calendar_month,
@@ -38,8 +38,8 @@ class _TileDateState extends State<TileDate> {
             DateFormat.yMMMd(locale).format(this.widget.date),
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-                fontSize: 15,
-                fontFamily: TileTextStyles.rubikFontName,
+              fontSize: 15,
+              fontFamily: TileTextStyles.rubikFontName,
             ),
           )
         ],

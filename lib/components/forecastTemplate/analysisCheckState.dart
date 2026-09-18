@@ -18,15 +18,15 @@ class AnalysisCheckState extends StatelessWidget {
   final double height;
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     if (isPass) {
       return Container(
         width: height / (height / 24),
         height: height / (height / 24),
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(height / (height / 8)),
-            color: TileColors.forecastAnalysisCheck,
+          borderRadius: BorderRadius.circular(height / (height / 8)),
+          color: TileColors.forecastAnalysisCheck,
         ),
         child: Center(
           child: SvgPicture.asset(
@@ -42,8 +42,7 @@ class AnalysisCheckState extends StatelessWidget {
         height: height / (height / 24),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(height / (height / 8)),
-            color: TileColors.forecastAnalysisWarning
-        ),
+            color: TileColors.forecastAnalysisWarning),
         child: Center(
           child: SvgPicture.asset(
             'assets/images/exclamation.svg',
@@ -58,8 +57,7 @@ class AnalysisCheckState extends StatelessWidget {
         height: height / (height / 24),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(height / (height / 8)),
-            color:  TileColors.forecastAnalysisConflict
-        ),
+            color: TileColors.forecastAnalysisConflict),
         child: Center(
           child: SvgPicture.asset(
             'assets/images/exclamation.svg',
@@ -74,7 +72,7 @@ class AnalysisCheckState extends StatelessWidget {
       height: height / (height / 24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(height / (height / 8)),
-        color:colorScheme.onSurface.withValues(alpha: 0.05),
+        color: colorScheme.onSurface.withValues(alpha: 0.05),
       ),
       child: Center(
         child: SvgPicture.asset(

@@ -15,7 +15,6 @@ import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/preview/previewWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -317,8 +316,9 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           Navigator.pop(context);
         }
         this.context.read<ForecastBloc>().add(ResetEvent());
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => AddTile(preTile: preTile)));
+        // Through the flagged entry, not the direct redesign route, so More
+        // options obeys the same rollout as every other way in (D65).
+        Navigator.pushNamed(context, '/AddTile', arguments: preTile);
       },
     );
   }

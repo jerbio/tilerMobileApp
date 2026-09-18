@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+
 class ThemeManager {
   static const String THEME_KEY = 'isDarkMode';
 
@@ -11,7 +12,4 @@ class ThemeManager {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(THEME_KEY, isDarkMode);
   }
-
-
-
 }

@@ -9,7 +9,9 @@ import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/int
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/calendarItemsRoute.dart';
 import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/data/location.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
+import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
@@ -92,10 +94,9 @@ class IntegrationWidgetRoute extends StatelessWidget {
     // P4-2: the page is shared by the Google and Microsoft connect flows —
     // the AppBar title reflects the provider of the bloc above it.
     final integrationType = context.read<IntegrationsBloc>().integrationType;
-    final appBarTitle =
-        integrationType == IntegrationType.microsoft
-            ? localization.microsoft
-            : localization.googleCalender;
+    final appBarTitle = integrationType == IntegrationType.microsoft
+        ? localization.microsoft
+        : localization.googleCalender;
 
     return CancelAndProceedTemplateWidget(
       routeName: routeName,
@@ -176,30 +177,27 @@ class _IntegrationItem extends StatelessWidget {
         AppLocalizations.of(context)!.integrationsSetLocation;
   }
 
-  void _updateLocation(BuildContext context, CalendarIntegration integration) {
-    Map<String, dynamic> locationParams = {
-      'location': integration.location,
-    };
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LocationRoute(
-          disableNickName: true,
-          hideHomeButton: true,
-          hideWorkButton: true,
-          locationArgs: locationParams,
+  Future<void> _updateLocation(
+      BuildContext context, CalendarIntegration integration) async {
+    // The shared picker (P5-1, D66). Backing out returns null and changes
+    // nothing; the legacy route dispatched an update even on cancel, with a
+    // blank default location.
+    final IntegrationsBloc bloc = context.read<IntegrationsBloc>();
+    final Location? picked = await Navigator.of(context).push<Location>(
+      MaterialPageRoute<Location>(
+        builder: (BuildContext context) => AddTileLocationScreen(
+          source: ApiAddTileLocationSource(
+            locationApi: LocationApi(getContextCallBack: () => context),
+          ),
+          initialLocation: integration.location,
         ),
       ),
-    ).whenComplete(() {
-      Location? populatedLocation =
-          locationParams['location'] as Location? ?? Location.fromDefault();
-      AnalysticsSignal.send('INTEGRATION_GOOGLE_LOCATION_NAVIGATION');
-      if (integration.id != null) {
-        integration.location = populatedLocation;
-        context.read<IntegrationsBloc>().add(UpdateIntegrationLocationEvent(
-            integrationId: integration.id!, location: populatedLocation));
-      }
-    });
+    );
+    AnalysticsSignal.send('INTEGRATION_GOOGLE_LOCATION_NAVIGATION');
+    if (picked == null || integration.id == null) return;
+    integration.location = picked;
+    bloc.add(UpdateIntegrationLocationEvent(
+        integrationId: integration.id!, location: picked));
   }
 
   void _navigateToCalendarItems(

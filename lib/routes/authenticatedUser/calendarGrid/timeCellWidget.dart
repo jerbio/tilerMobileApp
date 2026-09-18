@@ -19,11 +19,10 @@ abstract class TimeCellWidget extends GridPositionableWidget {
       this.decoration,
       this.durationPerCell = const Duration(hours: 1)})
       : super(
-          left: left,
-           height: timeCellHeight ??
-          GridPositionableWidget.defaultHeigtPerDuration,
-          top: top
-      );
+            left: left,
+            height: timeCellHeight ??
+                GridPositionableWidget.defaultHeigtPerDuration,
+            top: top);
 }
 
 abstract class TimeCellWidgetState extends GridPositionableState {

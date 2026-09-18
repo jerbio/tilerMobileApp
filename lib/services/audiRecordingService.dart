@@ -13,7 +13,8 @@ class AudioRecordingService {
   // Amplitude is an object from the record package containing audio volume measurements
   StreamSubscription<Amplitude>? _amplitudeSubscription;
   StreamController<double>? _amplitudeController;
-  Stream<double> get amplitudeStream => _amplitudeController?.stream ?? Stream.empty();
+  Stream<double> get amplitudeStream =>
+      _amplitudeController?.stream ?? Stream.empty();
 
   Future<void> startRecording() async {
     try {
@@ -24,14 +25,13 @@ class AudioRecordingService {
         await openAppSettings();
         await cancelRecording();
         throw TilerError(
-            Message: LocalizationService.instance.translations.microphonePermissionDenied
-        );
+            Message: LocalizationService
+                .instance.translations.microphonePermissionDenied);
       }
       _amplitudeController = StreamController<double>.broadcast();
       final directory = await getApplicationDocumentsDirectory();
-      final pcmPath = '${directory.path}/audio_${DateTime
-          .now()
-          .millisecondsSinceEpoch}.pcm';
+      final pcmPath =
+          '${directory.path}/audio_${DateTime.now().millisecondsSinceEpoch}.pcm';
       _currentRecordingPath = pcmPath;
 
       await _audioRecorder!.start(
@@ -53,15 +53,16 @@ class AudioRecordingService {
           normalized = ((amp.current + 50) / 50).clamp(0.2, 1.0);
         }
         _amplitudeController!.add(normalized);
-      }
-      );
-    }catch (e) {
+      });
+    } catch (e) {
       await cancelRecording();
 
       if (e is TilerError) {
         rethrow;
       }
-      throw TilerError(Message: LocalizationService.instance.translations.failedToStartRecording(e.toString()));
+      throw TilerError(
+          Message: LocalizationService.instance.translations
+              .failedToStartRecording(e.toString()));
     }
   }
 
@@ -72,28 +73,31 @@ class AudioRecordingService {
       final webmPath = '${dir.path}/audio_$timestamp.webm';
 
       await FFmpegKit.execute(
-          '-f s16le -ar 48000 -ac 1 -i "$pcmPath" -c:a libopus -b:a 128k "$webmPath"'
-      );
+          '-f s16le -ar 48000 -ac 1 -i "$pcmPath" -c:a libopus -b:a 128k "$webmPath"');
 
       if (!await File(webmPath).exists()) {
-        throw TilerError(Message: LocalizationService.instance.translations.audioConversionFailed);
+        throw TilerError(
+            Message: LocalizationService
+                .instance.translations.audioConversionFailed);
       }
 
       await File(pcmPath).delete();
 
       return webmPath;
-
     } catch (e) {
       if (e is TilerError) {
         rethrow;
       }
-      throw TilerError(Message: LocalizationService.instance.translations.audioConversionError(e.toString()));
+      throw TilerError(
+          Message: LocalizationService.instance.translations
+              .audioConversionError(e.toString()));
     }
   }
 
   Future<String> stopRecording() async {
     if (_audioRecorder == null) {
-      throw TilerError(Message: LocalizationService.instance.translations.noActiveRecording);
+      throw TilerError(
+          Message: LocalizationService.instance.translations.noActiveRecording);
     }
 
     try {
@@ -111,16 +115,19 @@ class AudioRecordingService {
       _currentRecordingPath = null;
 
       if (path == null || path.isEmpty) {
-        throw TilerError(Message: LocalizationService.instance.translations.recordingPathIsEmpty);
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.recordingPathIsEmpty);
       }
 
       return await _convertPcmToWebm(path);
-
     } catch (e) {
       if (e is TilerError) {
         rethrow;
       }
-      throw TilerError(Message: LocalizationService.instance.translations.failedToStopRecording(e.toString()));
+      throw TilerError(
+          Message: LocalizationService.instance.translations
+              .failedToStopRecording(e.toString()));
     }
   }
 
@@ -149,5 +156,4 @@ class AudioRecordingService {
     _amplitudeController?.close();
     _audioRecorder?.dispose();
   }
-
 }

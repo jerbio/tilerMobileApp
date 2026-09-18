@@ -24,7 +24,8 @@ class ActionsList extends StatefulWidget {
   State<ActionsList> createState() => _ActionsListState();
 }
 
-class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClientMixin {
+class _ActionsListState extends State<ActionsList>
+    with AutomaticKeepAliveClientMixin {
   bool _expanded = false;
   bool _readinessRequested = false;
   late ColorScheme colorScheme;
@@ -37,9 +38,7 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    colorScheme = Theme
-        .of(context)
-        .colorScheme;
+    colorScheme = Theme.of(context).colorScheme;
     tileThemeExtension = Theme.of(context).extension<TileThemeExtension>()!;
     localization = AppLocalizations.of(context)!;
     _requestReadinessTracking();
@@ -53,9 +52,7 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
     if (requestId == null || requestId.isEmpty) return;
     if (!_hasClickableActions) return;
     _readinessRequested = true;
-    context
-        .read<VibeChatBloc>()
-        .add(TrackTileCastReadinessEvent(requestId));
+    context.read<VibeChatBloc>().add(TrackTileCastReadinessEvent(requestId));
   }
 
   static const Set<ActionType> _nonClickableTypes = {
@@ -84,8 +81,7 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
     return true;
   }
 
-  bool get _hasClickableActions =>
-      widget.actions.any(_isActionClickable);
+  bool get _hasClickableActions => widget.actions.any(_isActionClickable);
 
   PreviewState get _previewState =>
       widget.state.tileCastStateFor(widget.requestId);
@@ -196,8 +192,8 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
             label: label,
             color: color,
             showSpinner: showSpinner,
-            tappable: _previewState == PreviewState.ready &&
-                widget.requestId != null,
+            tappable:
+                _previewState == PreviewState.ready && widget.requestId != null,
           ),
           if (_isTileCastStale) _buildStaleNote(),
         ],
@@ -250,9 +246,7 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
       key: const ValueKey('tilecast_ready_banner_tap'),
       onTap: () {
         if (widget.requestId == null) return;
-        context
-            .read<VibeChatBloc>()
-            .add(LoadTileCastEvent(widget.requestId!));
+        context.read<VibeChatBloc>().add(LoadTileCastEvent(widget.requestId!));
       },
       child: row,
     );
@@ -267,8 +261,7 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.history_rounded,
-              size: 13, color: colorScheme.tertiary),
+          Icon(Icons.history_rounded, size: 13, color: colorScheme.tertiary),
           const SizedBox(width: 6),
           Flexible(
             child: Text(
@@ -284,8 +277,7 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
     );
   }
 
-  Widget _buildPillGroup(List<VibeAction> actions
-      ) {
+  Widget _buildPillGroup(List<VibeAction> actions) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: IntrinsicWidth(
@@ -299,12 +291,14 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
                 duration: Duration(milliseconds: 200),
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
-                  color: _expanded ? colorScheme.primary : colorScheme
-                      .surfaceContainerHighest,
+                  color: _expanded
+                      ? colorScheme.primary
+                      : colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: _expanded ? colorScheme.primary : colorScheme.outline
-                        .withValues(alpha: 0.3),
+                    color: _expanded
+                        ? colorScheme.primary
+                        : colorScheme.outline.withValues(alpha: 0.3),
                     width: 0.5,
                   ),
                 ),
@@ -313,18 +307,21 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
                     Icon(
                       Icons.auto_awesome,
                       size: 13,
-                      color: _expanded ? colorScheme.onPrimary : colorScheme
-                          .primary,
+                      color: _expanded
+                          ? colorScheme.onPrimary
+                          : colorScheme.primary,
                     ),
                     SizedBox(width: 6),
                     Text(
-                      _expanded ? localization.hideActions : localization
-                          .actionsCount(actions.length),
+                      _expanded
+                          ? localization.hideActions
+                          : localization.actionsCount(actions.length),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: _expanded ? colorScheme.onPrimary : colorScheme
-                            .onSurface,
+                        color: _expanded
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurface,
                       ),
                     ),
                     Spacer(),
@@ -334,8 +331,9 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
                       child: Icon(
                         Icons.keyboard_arrow_down_rounded,
                         size: 16,
-                        color: _expanded ? colorScheme.onPrimary : colorScheme
-                            .onSurfaceVariant,
+                        color: _expanded
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -347,10 +345,7 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
               curve: Curves.easeInOut,
               child: SizedBox(height: _expanded ? 5 : 0),
             ),
-            ...actions
-                .asMap()
-                .entries
-                .map((entry) {
+            ...actions.asMap().entries.map((entry) {
               final i = entry.key;
               final action = entry.value;
               return AnimatedAlign(
@@ -362,8 +357,7 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
                     duration: Duration(milliseconds: 200 + i * 40),
                     opacity: _expanded ? 1.0 : 0.0,
                     child: _buildActionTile(action: action),
-                  )
-              );
+                  ));
             }),
           ],
         ),
@@ -372,7 +366,8 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
   }
 
   Widget _buildActionTile({required VibeAction action}) {
-    final statusColor = _getActionStatusColor(action.status, tileThemeExtension);
+    final statusColor =
+        _getActionStatusColor(action.status, tileThemeExtension);
 
     return GestureDetector(
       onTap: () {
@@ -384,8 +379,9 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
         if (!_isTileCastReady) return;
 
         if (widget.requestId != null) {
-          context.read<VibeChatBloc>().add(
-              LoadTileCastEvent(widget.requestId!, actionId: action.id));
+          context
+              .read<VibeChatBloc>()
+              .add(LoadTileCastEvent(widget.requestId!, actionId: action.id));
         }
       },
       child: Align(

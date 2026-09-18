@@ -17,7 +17,8 @@ void selectCalendarView({
   required WeeklyUiDateManagerBloc weeklyDateBloc,
   required MonthlyUiDateManagerBloc monthlyDateBloc,
 }) {
-  final AuthorizedRouteTileListPage currentView = scheduleBloc.state.currentView;
+  final AuthorizedRouteTileListPage currentView =
+      scheduleBloc.state.currentView;
   if (newView == currentView) {
     return;
   }

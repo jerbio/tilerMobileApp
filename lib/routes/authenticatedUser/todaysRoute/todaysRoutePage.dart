@@ -7,7 +7,7 @@ import 'package:tiler_app/data/executionEnums.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
@@ -1068,7 +1068,7 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => EditTile(
+                                    builder: (context) => EditTileRoute(
                                       tileId: (tile.isFromTiler
                                               ? tile.id
                                               : tile.thirdpartyId) ??

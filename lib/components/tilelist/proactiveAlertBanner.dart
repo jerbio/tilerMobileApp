@@ -158,7 +158,7 @@ class _ProactiveAlertBannerState extends State<ProactiveAlertBanner>
         );
       },
       child: GestureDetector(
-        onTap: widget.preview?null:widget.onTap,
+        onTap: widget.preview ? null : widget.onTap,
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

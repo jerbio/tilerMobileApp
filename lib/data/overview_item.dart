@@ -1,10 +1,6 @@
-class OverViewItem{
-String? name;
-int? duration;
+class OverViewItem {
+  String? name;
+  int? duration;
 
-OverViewItem({
-this.name,
-this.duration
-});
-
+  OverViewItem({this.name, this.duration});
 }

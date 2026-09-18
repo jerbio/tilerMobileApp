@@ -79,10 +79,10 @@ class VibeRequestPreview {
       tilerUserId: json['tilerUserId'] as String?,
       creationTimeInMs: json['creationTimeInMs'] as int?,
       previewActions: json['previewActions'] != null &&
-          (json['previewActions'] as List).isNotEmpty
+              (json['previewActions'] as List).isNotEmpty
           ? (json['previewActions'] as List)
-          .map((e) => VibePreviewAction.fromJson(e as Map<String, dynamic>))
-          .toList()
+              .map((e) => VibePreviewAction.fromJson(e as Map<String, dynamic>))
+              .toList()
           : null,
       state: PreviewState.fromString(json['state'] as String?),
       isStale: json['isStale'] as bool? ?? false,

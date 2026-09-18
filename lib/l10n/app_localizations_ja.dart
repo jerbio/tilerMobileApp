@@ -2929,6 +2929,641 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiConsentLinkError => 'リンクを開けませんでした。';
 
   @override
+  String get addTileScreenTitleFlexible => 'タイルを追加';
+
+  @override
+  String get addTileScreenTitleFixed => 'ブロックを追加';
+
+  @override
+  String get addTileTypeFlexible => 'フレキシブルタイル';
+
+  @override
+  String get addTileTypeFixed => '固定ブロック';
+
+  @override
+  String get addTileTypeSelectorLabel => 'タイルの種類';
+
+  @override
+  String addTileExplanationFlexible(String emphasis) {
+    return 'Tiler がこれに$emphasisを探します。';
+  }
+
+  @override
+  String addTileExplanationFixed(String emphasis) {
+    return 'ブロックは$emphasisに行われます。';
+  }
+
+  @override
+  String get addTileFindTime => '時間を検討';
+
+  @override
+  String get addTileSubmitting => '送信中';
+
+  @override
+  String get addTileNameRequired => '名前は必須です';
+
+  @override
+  String get addTileTitleRequired => 'タイトルは必須です';
+
+  @override
+  String get addTileFieldTaskName => 'タスク名';
+
+  @override
+  String get addTileFieldTitle => 'タイトル';
+
+  @override
+  String get addTileFieldDuration => '時間';
+
+  @override
+  String get addTileFieldCompleteBy => '完了期限';
+
+  @override
+  String get addTileFieldPreferredTime => '希望時間';
+
+  @override
+  String get addTileFieldDate => '日付';
+
+  @override
+  String get addTileFieldStarts => '開始';
+
+  @override
+  String get addTileFieldEnds => '終了';
+
+  @override
+  String get addTileFieldLocation => '場所';
+
+  @override
+  String get addTileTaskNameHint => '何をしますか？';
+
+  @override
+  String get addTileBlockTitleHint => 'このブロックは何ですか？';
+
+  @override
+  String get addTileValueNotSet => '未設定';
+
+  @override
+  String get addTileAutoCalculated => '自動計算';
+
+  @override
+  String addTileEndsSemantics(String time) {
+    return '開始と時間から計算して$timeに終了';
+  }
+
+  @override
+  String addTileTodayDate(String date) {
+    return '今日, $date';
+  }
+
+  @override
+  String get addTileMoreOptions => 'その他のオプション';
+
+  @override
+  String get addTilePriority => '優先度';
+
+  @override
+  String get addTilePriorityLow => '低';
+
+  @override
+  String get addTilePriorityMedium => '中';
+
+  @override
+  String get addTilePriorityHigh => '高';
+
+  @override
+  String get addTilePriorityLowMeaning => 'できるといい';
+
+  @override
+  String get addTilePriorityMediumMeaning => '重要';
+
+  @override
+  String get addTilePriorityHighMeaning => '必ずやる';
+
+  @override
+  String get addTilePriorityHelper => '優先度は、Tiler が最初に守るべきタスクを決める手助けをします。';
+
+  @override
+  String get addTileColorAutomatic => '自動';
+
+  @override
+  String get addTileColorCustom => 'カスタム';
+
+  @override
+  String get addTileSplitIntoSessions => 'セッションに分割';
+
+  @override
+  String get addTileSplitHelper => '別の作業時間に分けてください。';
+
+  @override
+  String addTileSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countセッション',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get addTileFewerSessions => 'セッションを減らす';
+
+  @override
+  String get addTileMoreSessions => 'セッションを増やす';
+
+  @override
+  String get addTileFlexibleCompletion => '柔軟な完了日';
+
+  @override
+  String get addTileFlexibleCompletionHelper =>
+      '必要に応じて、Tiler がこの日付をわずかに移動できます。';
+
+  @override
+  String get addTilePreferredTimeCustom => 'カスタム';
+
+  @override
+  String addTileDurationMinutes(int minutes) {
+    return '$minutes分';
+  }
+
+  @override
+  String addTileDurationHours(int hours) {
+    return '$hours時間';
+  }
+
+  @override
+  String addTileDurationHoursMinutes(int hours, int minutes) {
+    return '$hours時間$minutes分';
+  }
+
+  @override
+  String get addTileRepeat => '繰り返し';
+
+  @override
+  String get addTileRepeatNever => '繰り返しなし';
+
+  @override
+  String get addTileRepeatDays => '曜日';
+
+  @override
+  String get addTileRepeatsUntil => '繰り返す終了';
+
+  @override
+  String get addTileRepeatHelper => '繰り返しは、Tiler が定期タスクを予定する手助けをします。';
+
+  @override
+  String get addTileLocationSearchHint => '場所を検索';
+
+  @override
+  String get addTileLocationYourPlaces => 'あなたの場所';
+
+  @override
+  String get addTileLocationSuggestions => '候補';
+
+  @override
+  String get addTileLocationHelper => '場所により、Tiler が移動時間やスケジュールを最適化できます。';
+
+  @override
+  String get addTileLocationNoneSaved => 'まだ保存された場所はありません';
+
+  @override
+  String get addTileLocationNoneSavedHelper =>
+      '場所を検索するか、「自転車店」のような名前を入力して保存してください。';
+
+  @override
+  String get addTileLocationNoResults => '場所が見つかりません';
+
+  @override
+  String get addTileLocationNoResultsHelper => '入力した内容をそのまま場所名として保存できます。';
+
+  @override
+  String get addTileLocationSearchFailed => '検索できません';
+
+  @override
+  String get addTileLocationSearchFailedHelper =>
+      '接続を確認して再試行するか、入力した内容を場所名として保存してください。';
+
+  @override
+  String addTileLocationUseTyped(String query) {
+    return '「$query」を使用';
+  }
+
+  @override
+  String get addTileLocationUseTypedHelper => '名前と住所を設定';
+
+  @override
+  String get addTileLocationFallbackName => '場所';
+
+  @override
+  String get addTilePlaceAdd => '場所を追加';
+
+  @override
+  String get addTilePlaceEdit => '場所を編集';
+
+  @override
+  String get addTilePlaceName => '名前';
+
+  @override
+  String get addTilePlaceAddress => '住所';
+
+  @override
+  String get addTilePlaceNameHint => '例: 職場の近くのウォルマート';
+
+  @override
+  String get addTilePlaceAddressHint => '番地、市区町村、都道府県';
+
+  @override
+  String get addTilePlaceSave => '場所を保存';
+
+  @override
+  String get addTilePlaceNameThis => 'この場所の名前を付ける';
+
+  @override
+  String get addTilePlaceNameHelper =>
+      '名前は、この場所を後に探すためのものです。同じ名前の場所が2つあると、新しい住所だけが残ります。';
+
+  @override
+  String addTilePlaceNameTaken(String name, String address) {
+    return '「$name」という名の場所が既に$addressにあります。保存すると、この名前は新しい住所に移動されます。';
+  }
+
+  @override
+  String addTilePlaceNameTakenNoAddress(String name) {
+    return '「$name」という名の場所が既にあります。保存すると、この名前は新しい住所に移動されます。';
+  }
+
+  @override
+  String get addTileFieldPriority => '優先度';
+
+  @override
+  String get addTileFieldColor => '色';
+
+  @override
+  String get addTileColorPresets => 'プリセット';
+
+  @override
+  String get addTileColorAutomaticHelper => 'Tiler があなたのために色を選びます';
+
+  @override
+  String get addTileColorCustomHelper => '好きな色を選べます';
+
+  @override
+  String get addTileColorHelper => '色は、スケジュールの表示の見た目のみが変わります。';
+
+  @override
+  String get addTileColorShuffle => '別の色にシャッフル';
+
+  @override
+  String addTileColorSwatch(int index) {
+    return '色 $index';
+  }
+
+  @override
+  String get addTileExplanationFlexibleEmphasis => '最適な時間';
+
+  @override
+  String get addTileExplanationFixedEmphasis => '固定の時間';
+
+  @override
+  String get addTileFieldRepeat => '繰り返し';
+
+  @override
+  String get addTileDurationQuick => 'クイック';
+
+  @override
+  String get addTileDurationCustom => 'カスタム';
+
+  @override
+  String get addTileDurationHourLabel => '時間';
+
+  @override
+  String get addTileDurationMinuteLabel => '分';
+
+  @override
+  String addTileDurationEndsFromStart(String start) {
+    return '$startから';
+  }
+
+  @override
+  String addTileDurationEndsNextDay(String time) {
+    return '$time, 翌日';
+  }
+
+  @override
+  String addTileDurationEndsSemantics(String end, String start) {
+    return '$startから開始して$endに終了。終了時間を変更';
+  }
+
+  @override
+  String get editTileTitleTile => 'タイルを編集';
+
+  @override
+  String get editTileTitleBlock => 'ブロックを編集';
+
+  @override
+  String get editTileSave => '変更を保存';
+
+  @override
+  String get editTileSaving => '保存中…';
+
+  @override
+  String get editTileSectionTiming => '時間';
+
+  @override
+  String get editTileReasonNameRequired => '保存するには、このタイルにタイトルを付けてください';
+
+  @override
+  String get editTileReasonSplitRequired => 'セッションは最低1つにしてください';
+
+  @override
+  String get editTileReasonEndNotAfterStart => '終了は開始の後に設定してください';
+
+  @override
+  String get editTileDiscardTitle => '変更を破棄しますか？';
+
+  @override
+  String get editTileDiscardBody => 'このタイルの変更が失われます。';
+
+  @override
+  String get editTileDiscard => '破棄';
+
+  @override
+  String get editTileKeepEditing => '編集を続ける';
+
+  @override
+  String get editTileLoadFailed => 'このタイルを読み込めませんでした。';
+
+  @override
+  String get editTileSaveFailed => '現在保存できません。変更は保持されています。';
+
+  @override
+  String get editTileSectionActions => 'アクション';
+
+  @override
+  String get editTileSectionSessions => 'セッション';
+
+  @override
+  String get editTileFieldSessions => 'セッションに分割';
+
+  @override
+  String get editTileFieldDeadline => '期限';
+
+  @override
+  String get editTileSectionAdditional => '追加の詳細';
+
+  @override
+  String get editTileSectionSuggestions => '候補';
+
+  @override
+  String get editTileCreateAsNewTile => '新しいタイルとして作成';
+
+  @override
+  String get editTileSectionProgress => '進捗';
+
+  @override
+  String editTileProgressComplete(int done, int total) {
+    return '$total中$done完了';
+  }
+
+  @override
+  String editTileProgressRemaining(int remaining, int deleted) {
+    return '$remaining件残り · $deleted件削除';
+  }
+
+  @override
+  String get editTileActionComplete => '完了';
+
+  @override
+  String get editTileActionCompleteCaption => '完了としてマーク';
+
+  @override
+  String get editTileActionStartNow => '今すぐ開始';
+
+  @override
+  String get editTileActionStartNowCaption => '今に移動';
+
+  @override
+  String get editTileActionDefer => '先延ばし';
+
+  @override
+  String get editTileActionDeferCaption => '別の時間を選ぶ';
+
+  @override
+  String get editTileActionDelete => '削除';
+
+  @override
+  String get editTileActionDeleteCaption => '取り除く';
+
+  @override
+  String editTileActionConfirmComplete(String title) {
+    return '「$title」を完了としてマークしますか？';
+  }
+
+  @override
+  String editTileActionConfirmStartNow(String title) {
+    return '「$title」を今に移動しますか？';
+  }
+
+  @override
+  String editTileActionConfirmDefer(String title) {
+    return '「$title」を先延ばしにしますか？';
+  }
+
+  @override
+  String editTileActionConfirmDelete(String title) {
+    return '「$title」を削除しますか？';
+  }
+
+  @override
+  String get editTileActionDeleteBody => 'これにより、このタイルがスケジュールから削除されます。';
+
+  @override
+  String get editTileActionDiscardsEdits => '保存されていない変更が破棄されます。';
+
+  @override
+  String get editTileActionFailed => '現在実行できません。';
+
+  @override
+  String editTileActionSemantics(String label, String caption) {
+    return '$label、$caption';
+  }
+
+  @override
+  String get editTileSectionRepetition => '繰り返し';
+
+  @override
+  String get editTileSectionPriority => '優先度';
+
+  @override
+  String get editTileSectionLocation => '場所';
+
+  @override
+  String get editTileLocationRemove => '場所を削除';
+
+  @override
+  String get addTileDeadlineClear => '期限を削除';
+
+  @override
+  String get editTileMenuTileDetails => 'タイルの詳細';
+
+  @override
+  String get editTileMoreMenu => 'その他';
+
+  @override
+  String get editTileRepeatEveryDay => '毎日';
+
+  @override
+  String get editTileRepeatEveryWeek => '毎週';
+
+  @override
+  String editTileRepeatEveryWeekOn(String days) {
+    return '毎週 $days';
+  }
+
+  @override
+  String get editTileRepeatEveryMonth => '毎月';
+
+  @override
+  String get editTileRepeatEveryYear => '毎年';
+
+  @override
+  String editTileRepeatUntil(String cadence, String date) {
+    return '$cadence · $dateまで';
+  }
+
+  @override
+  String editTileRepeatUntilDate(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.MMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
+
+  @override
+  String editTileRepeatNeverEnds(String cadence) {
+    return '$cadence · 終了しない';
+  }
+
+  @override
+  String get editTileRepeatCalloutTitle => '複数のインスタンスが作成されます';
+
+  @override
+  String get editTileRepeatCalloutBody => 'Tiler が、設定と空き時間に基づいて各回を予定します。';
+
+  @override
+  String get editTileNotesTitle => 'メモ';
+
+  @override
+  String get editTileModeReadOnly => 'このタイルは完了済みで編集できません。削除することはできます。';
+
+  @override
+  String get editTileModeProcrastinate =>
+      'ブロックされた時間です。移動するか、完了にマークするか、削除してください。';
+
+  @override
+  String editTileModeThirdParty(String provider) {
+    return '$provider が管理しています。招待への返信またはここで削除してください。イベントの編集は$providerで行ってください。';
+  }
+
+  @override
+  String get editTileProviderGoogle => 'Google カレンダー';
+
+  @override
+  String get editTileProviderOutlook => 'Outlook';
+
+  @override
+  String get editTileRsvpFailed => '現在、返信を送信できません。';
+
+  @override
+  String get editTileWhatIfChecking => 'この変更の影響を確認中…';
+
+  @override
+  String editTileWhatIfSummary(int late, int overflow) {
+    return '他のタイルに影響: $late件が遅延, $overflow件がオーバーフロー';
+  }
+
+  @override
+  String get editTileWhatIfSheetTitle => 'この変更の影響';
+
+  @override
+  String get editTileWhatIfLate => '遅延';
+
+  @override
+  String get editTileWhatIfOverflow => 'オーバーフロー';
+
+  @override
+  String get editTileWhatIfClean => '他のタイルには影響しません。';
+
+  @override
+  String get editTileWhatIfFailed => 'スケジュールへの影響を確認できませんでした。';
+
+  @override
+  String get editTileWhatIfRetry => '再試行';
+
+  @override
+  String get editTileEditTitle => 'タイトルを編集';
+
+  @override
+  String get tileDetailTitle => 'タイルの詳細';
+
+  @override
+  String get tileDetailLoadFailed => 'このタイルの詳細を読み込めませんでした。';
+
+  @override
+  String get tileDetailSaveFailed => '現在保存できません。変更は保持されています。';
+
+  @override
+  String get tileDetailDeleteSeries => 'タイルを削除';
+
+  @override
+  String tileDetailDeleteConfirm(String title) {
+    return '「$title」を削除しますか？';
+  }
+
+  @override
+  String get tileDetailDeleteBody => 'このタイルのすべての回がスケジュールから削除されます。';
+
+  @override
+  String get tileDetailDeleteFailed => '現在削除できません。';
+
+  @override
+  String get tileDetailSectionOccurrences => '回';
+
+  @override
+  String get tileDetailOccurrencesEmpty => 'まだ予定されている回はありません。';
+
+  @override
+  String get tileDetailOccurrencesFailed => '回を読み込めませんでした。';
+
+  @override
+  String get tileDetailOccurrencesEarlier => '前の表示';
+
+  @override
+  String get tileDetailOccurrencesLater => '後の表示';
+
+  @override
+  String get tileDetailOccurrenceDone => '完了';
+
+  @override
+  String tileDetailOccurrenceSemantics(String day, String span, String done) {
+    return '$day, $span$done';
+  }
+
+  @override
+  String editTileTimeChipSemantics(String field, String value) {
+    return '$fieldの時間, $value';
+  }
+
+  @override
+  String editTileDateChipSemantics(String field, String value) {
+    return '$fieldの日付, $value';
+  }
+
+  @override
+  String get addTileSubmitFailed => '現在追加できません。内容は保存されています。';
+
+  @override
+  String get addTileRetry => '再試行';
+
+  @override
   String searchResultsForQuery(int count, String query) {
     return '\"$query\" の結果: $count 件';
   }

@@ -32,16 +32,17 @@ class _MessageInputState extends State<MessageInput> {
               color: colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
-                color: isRecording ? colorScheme.error : colorScheme.outlineVariant,
+                color: isRecording
+                    ? colorScheme.error
+                    : colorScheme.outlineVariant,
                 width: isRecording ? 2 : 1,
               ),
             ),
             child: isRecording
-                ? AudioRecordingInput(
-            )
+                ? AudioRecordingInput()
                 : TextMessageInput(
-              controller: widget.controller,
-            ),
+                    controller: widget.controller,
+                  ),
           ),
         );
       },

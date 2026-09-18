@@ -1,21 +1,21 @@
 part of 'vibe_chat_bloc.dart';
 
-
 abstract class VibeChatEvent {}
 
 class OpenChatEvent extends VibeChatEvent {}
+
 class CloseChatEvent extends VibeChatEvent {}
 
 class LoadMoreMessagesEvent extends VibeChatEvent {}
 
-class SendAMessageEvent extends VibeChatEvent{
+class SendAMessageEvent extends VibeChatEvent {
   String message;
   SendAMessageEvent(this.message);
   List<Object?> get props => [message];
 }
 
 class StartRecordingEvent extends VibeChatEvent {
-   StartRecordingEvent();
+  StartRecordingEvent();
 
   @override
   List<Object?> get props => [];
@@ -41,7 +41,6 @@ class SelectSessionEvent extends VibeChatEvent {
   List<Object?> get props => [session];
 }
 
-
 class CreateNewChatEvent extends VibeChatEvent {}
 
 class AcceptChangesEvent extends VibeChatEvent {
@@ -53,7 +52,6 @@ class LogOutVibeChatEvent extends VibeChatEvent {
   Function getContextCallBack;
   LogOutVibeChatEvent(this.getContextCallBack);
 }
-
 
 class PreviewActionEvent extends VibeChatEvent {
   final String vibeRequestId;
@@ -96,4 +94,3 @@ class TrackTileCastReadinessEvent extends VibeChatEvent {
   TrackTileCastReadinessEvent(this.vibeRequestId);
   List<Object?> get props => [vibeRequestId];
 }
-

@@ -48,15 +48,14 @@ class NotificationPreferencesLoaded extends NotificationPreferencesState {
 
   @override
   List<Object?> get props => [
-    userSettings,
-    tileReminders,
-    appUpdates,
-    marketingUpdates,
-    emailNotifications,
-    hasChanges,
-  ];
+        userSettings,
+        tileReminders,
+        appUpdates,
+        marketingUpdates,
+        emailNotifications,
+        hasChanges,
+      ];
 }
-
 
 class NotificationPreferencesSaved extends NotificationPreferencesState {}
 
