@@ -175,6 +175,16 @@ class AddTileAnalytics {
     _emit('ADD_ITEM_ADVANCED_OPENED', _envelope(type, step: 'more_options'));
   }
 
+  /// `ADD_ITEM_PREFERRED_TIME_CHOSEN` — the Time restrictions screen
+  /// confirmed a choice (Phase 6). [choice] is the row's category only
+  /// (anytime / work / personal / custom); the hours never travel.
+  void preferredTimeChosen(AddTileType type, {required String choice}) {
+    _emit('ADD_ITEM_PREFERRED_TIME_CHOSEN', <String, Object?>{
+      ..._envelope(type, step: 'preferred_time'),
+      'choice': choice,
+    });
+  }
+
   /// `ADD_ITEM_SUBMIT_TAPPED` — the CTA was tapped, valid or not.
   ///
   /// [missingFieldIds] must already be enumerated ids; it is derived from the

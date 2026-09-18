@@ -19,17 +19,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Configurar restricciones personalizadas';
 
   @override
-  String get customRestrictionTitle => 'Restricciones personalizadas';
-
-  @override
-  String get customRestrictionHeader =>
-      'Configurar restricciones personalizadas';
-
-  @override
-  String get customRestrictionHeaderDescription =>
-      'Selecciona cuándo quieres completar esta tarea.';
-
-  @override
   String get day => 'Día';
 
   @override
@@ -3660,6 +3649,150 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get addTileRetry => 'Reintentar';
+
+  @override
+  String get addTileTimeRestrictionTitle => 'Restricciones de tiempo';
+
+  @override
+  String get addTileTimeRestrictionHeading =>
+      '¿Cuándo puede Tiler programar esto?';
+
+  @override
+  String get addTileTimeRestrictionSubtitle =>
+      'Define cuándo puede aparecer este bloque en tu calendario.';
+
+  @override
+  String get addTileRestrictionAnytimeHelper =>
+      'Tiler puede ubicarlo cuando estés disponible.';
+
+  @override
+  String get addTileRestrictionWork => 'Horario laboral';
+
+  @override
+  String get addTileRestrictionWorkHelper =>
+      'Solo programar durante tu perfil de Trabajo.';
+
+  @override
+  String get addTileRestrictionPersonal => 'Horario personal';
+
+  @override
+  String get addTileRestrictionPersonalHelper =>
+      'Solo programar durante tu perfil Personal.';
+
+  @override
+  String get addTileRestrictionCustom => 'Horario personalizado';
+
+  @override
+  String get addTileRestrictionCustomHelper =>
+      'Elige días y horas específicos.';
+
+  @override
+  String get addTileRestrictionNotSetUp =>
+      'Sin configurar: usa la flecha para definir horas';
+
+  @override
+  String addTileRestrictionEdit(String name) {
+    return 'Editar $name';
+  }
+
+  @override
+  String get addTileRestrictionTip =>
+      'Tiler respetará estas restricciones al programar, reoptimizar o sugerir horas para este bloque.';
+
+  @override
+  String get addTileRestrictionLoadFailed =>
+      'No se pudieron cargar tus horarios laboral y personal.';
+
+  @override
+  String addTileRestrictionDayRange(String first, String last) {
+    return '$first – $last';
+  }
+
+  @override
+  String addTileRestrictionWindow(String days, String start, String end) {
+    return '$days · $start – $end';
+  }
+
+  @override
+  String get addTileCustomHoursTitle => 'Horario personalizado';
+
+  @override
+  String get addTileCustomHoursSubtitle =>
+      'Elige los días y las franjas horarias en que este bloque puede programarse.';
+
+  @override
+  String addTileCustomHoursProfileSubtitle(String name) {
+    return 'Elige los días y las franjas horarias de tu $name.';
+  }
+
+  @override
+  String get addTileCustomHoursPresets => 'Ajustes rápidos';
+
+  @override
+  String get addTileHoursPresetWeekdays => 'Entre semana';
+
+  @override
+  String get addTileHoursPresetEvenings => 'Noches';
+
+  @override
+  String get addTileHoursPresetWeekends => 'Fines de semana';
+
+  @override
+  String addTileHoursPresetWindow(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get addTileHoursEndBeforeStart =>
+      'El fin no puede ser antes del inicio';
+
+  @override
+  String get addTileRestrictionAllDay => 'Todo el día';
+
+  @override
+  String addTileRestrictionAllDayWindow(String days, String label) {
+    return '$days · $label';
+  }
+
+  @override
+  String get addTileCustomHoursFooter =>
+      'Los días desactivados quedarán fuera al programar este bloque.';
+
+  @override
+  String addTileCustomHoursProfileFooter(String name) {
+    return 'Se aplica a todos los bloques que usan $name.';
+  }
+
+  @override
+  String addTileHoursCopy(String day) {
+    return 'Copiar el horario de $day';
+  }
+
+  @override
+  String addTileHoursPaste(String day) {
+    return 'Pegar horario en $day';
+  }
+
+  @override
+  String get addTileHoursClearCopy => 'Borrar horario copiado';
+
+  @override
+  String addTileHoursStartSemantics(String day, String time) {
+    return 'Inicio de $day, $time';
+  }
+
+  @override
+  String addTileHoursEndSemantics(String day, String time) {
+    return 'Fin de $day, $time';
+  }
+
+  @override
+  String addTileHoursSaveFailed(String name) {
+    return 'No se pudo guardar tu $name.';
+  }
+
+  @override
+  String get addTileHoursSaving => 'Guardando…';
 
   @override
   String searchResultsForQuery(int count, String query) {

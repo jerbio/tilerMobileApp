@@ -29,8 +29,6 @@ import 'package:tiler_app/routes/authenticatedUser/forecast/procrastinateAll.dar
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRedesignScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/account%20info/accountInfo.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/connetions.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
@@ -224,10 +222,6 @@ class _TilerAppState extends State<TilerApp> {
                   },
                   '/SearchTile': (BuildContext context) =>
                       new EventNameSearchWidget(context: context),
-                  '/CustomRestrictionsRoute': (BuildContext context) =>
-                      new CustomTimeRestrictionRoute(),
-                  '/TimeRestrictionRoute': (BuildContext context) =>
-                      new TimeRestrictionRoute(),
                   '/ForecastPreview': (ctx) => ForecastPreview(),
                   '/ForecastDuration': (ctx) => ForecastDuration(),
                   '/Procrastinate': (ctx) => ProcrastinateAll(),

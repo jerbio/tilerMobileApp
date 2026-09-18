@@ -21,6 +21,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileTimeRestrictionScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
 import 'package:tiler_app/theme/theme_data.dart';
@@ -402,25 +403,17 @@ void main() {
       // opened this same route under a second name. The chip replaced it —
       // it sits where the decision is made, and unlike that row it can show
       // that an advanced profile is already in effect.
+      // Phase 6: the destination is the redesigned Time restrictions screen
+      // (Anytime / Work / Personal / Custom), pushed directly — no named
+      // route.
       final draft = AddTileDraft.flexible(now: now);
-      final List<String> pushed = <String>[];
-      await pumpScreen(
-        tester,
-        AddTileRedesignScreen(draft: draft, now: now),
-        onGenerateRoute: (settings) {
-          pushed.add(settings.name ?? '');
-          return MaterialPageRoute<void>(
-            builder: (_) => const SizedBox.shrink(),
-            settings: settings,
-          );
-        },
-      );
+      await pumpScreen(tester, AddTileRedesignScreen(draft: draft, now: now));
       await tester.pump();
 
       await tester.tap(find.byKey(const ValueKey('preferredTimeCustom')));
       await tester.pumpAndSettle();
 
-      expect(pushed, contains('/TimeRestrictionRoute'));
+      expect(find.byType(AddTileTimeRestrictionScreen), findsOneWidget);
     });
   });
 

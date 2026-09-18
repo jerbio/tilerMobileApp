@@ -63,6 +63,7 @@ class FlexibleTileForm extends StatelessWidget {
     this.onDeadlineClear,
     this.onPreferredTimeSelected,
     this.onAdvancedPreferredTimeTap,
+    this.preferredTimeCustomLabel,
     this.onLocationTap,
     this.onNameLocationTap,
     this.onRepeatTap,
@@ -92,6 +93,10 @@ class FlexibleTileForm extends StatelessWidget {
   /// destination as More options' "Advanced preferred time" row — one editor,
   /// two entry points, so the chip is a shortcut rather than a second flow.
   final VoidCallback? onAdvancedPreferredTimeTap;
+
+  /// Replaces the Custom chip's label while a NAMED profile is in effect
+  /// ("Work hours" / "Personal hours", D72). Null reads "Custom".
+  final String? preferredTimeCustomLabel;
   final VoidCallback? onLocationTap;
 
   /// Opens the "name this place" affordance. Null when there is no location
@@ -180,6 +185,7 @@ class FlexibleTileForm extends StatelessWidget {
           profile: draft.restrictionProfile,
           onSelected: onPreferredTimeSelected,
           onCustomTap: onAdvancedPreferredTimeTap,
+          customLabel: preferredTimeCustomLabel,
         ),
         const SizedBox(height: 14),
 
@@ -276,9 +282,13 @@ class PreferredTimeControl extends StatelessWidget {
     required this.profile,
     this.onSelected,
     this.onCustomTap,
+    this.customLabel,
   });
 
   final RestrictionProfile? profile;
+
+  /// The Custom chip's label when a named profile is in effect (D72).
+  final String? customLabel;
   final ValueChanged<PreferredTimeOfDay>? onSelected;
 
   /// Opens the advanced profile editor. Null leaves the Custom chip inert.
@@ -331,7 +341,7 @@ class PreferredTimeControl extends StatelessWidget {
                   if (option == null)
                     _PreferredTimeChip(
                       key: const ValueKey('preferredTimeCustom'),
-                      label: l10n.addTilePreferredTimeCustom,
+                      label: customLabel ?? l10n.addTilePreferredTimeCustom,
                       icon: Icons.tune,
                       selected: customSelected,
                       onTap: onCustomTap,

@@ -38,7 +38,8 @@
 // straight off the `ColorScheme`.
 //
 // Presentation only — every mutation is delegated to [AddTileDraft], and the
-// pickers are reached through the typed adapters in tileRouteAdapters.dart.
+// pickers are pushed directly with typed results (the legacy map-argument
+// adapters went with the last legacy screen, Phase 6 Step 6.7).
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/tilerEvent.dart';

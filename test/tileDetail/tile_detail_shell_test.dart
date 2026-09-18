@@ -20,7 +20,7 @@ import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileColorScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRepeatScreen.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/tileRouteAdapters.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileTimeRestrictionScreen.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileSubmission.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
@@ -148,8 +148,9 @@ Location? placeAnswer;
 Color? colorSeed;
 ColorChoice? colorAnswer;
 RestrictionProfile? restrictionSeed;
-AdvancedRestrictionResult restrictionAnswer =
-    const AdvancedRestrictionResult.unchanged();
+
+/// Null = the screen was backed out of.
+TimeRestrictionResult? restrictionAnswer;
 final List<String> openedNotes = <String>[];
 String? notesPersistAnswer;
 
@@ -173,7 +174,7 @@ Future<void> pumpDetail(
   colorSeed = null;
   colorAnswer = null;
   restrictionSeed = null;
-  restrictionAnswer = const AdvancedRestrictionResult.unchanged();
+  restrictionAnswer = null;
   openedNotes.clear();
   notesPersistAnswer = null;
   occurrences = occurrencesSource ?? FakeOccurrences();

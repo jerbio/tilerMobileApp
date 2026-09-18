@@ -85,20 +85,42 @@ void main() {
     expect(offenders, isEmpty);
   });
 
-  test('the dead route adapters are gone; the live one stays', () {
-    final String adapters = _code(
-        File('lib/routes/authenticatedUser/newTile/tileRouteAdapters.dart'));
-    for (final String dead in <String>[
-      'openLocationRoute',
-      'openRepeatRoute',
-      'openColorRoute',
-      'resolveRepeatRouteResult',
+  test(
+      'the legacy time-restriction screens and the route adapters are gone '
+      '(Phase 6, Step 6.7)', () {
+    for (final String gone in <String>[
+      'lib/routes/authenticatedUser/newTile/tileRouteAdapters.dart',
+      'lib/routes/authenticatedUser/newTile/timeRestrictionRoute.dart',
+      'lib/routes/authenticatedUser/newTile/customTimeRestrictions.dart',
     ]) {
-      expect(adapters.contains(dead), isFalse, reason: dead);
+      expect(File(gone).existsSync(), isFalse, reason: gone);
     }
-    expect(adapters.contains('openAdvancedRestrictionRoute'), isTrue,
-        reason: 'the advanced preferred-time adapter is still in use by the '
-            'Add Tile shell and Tile Details');
+    final List<String> offenders = <String>[];
+    for (final FileSystemEntity e
+        in Directory('lib').listSync(recursive: true)) {
+      if (e is! File || !e.path.endsWith('.dart')) continue;
+      final String code = _code(e);
+      if (code.contains('/TimeRestrictionRoute') ||
+          code.contains('/CustomRestrictionsRoute') ||
+          code.contains('openAdvancedRestrictionRoute') ||
+          code.contains('AdvancedRestrictionResult') ||
+          code.contains('tileRouteAdapters.dart') ||
+          code.contains('timeRestrictionRoute.dart') ||
+          code.contains('customTimeRestrictions.dart')) {
+        offenders.add(e.path.replaceAll('\\', '/'));
+      }
+    }
+    expect(offenders, isEmpty);
+    // The strings only those screens spoke.
+    for (final String arb in Directory('lib/l10n')
+        .listSync()
+        .whereType<File>()
+        .map((File f) => f.path)
+        .where((String p) => p.endsWith('.arb'))) {
+      final String text = File(arb).readAsStringSync();
+      expect(text.contains('"customRestrictionTitle"'), isFalse, reason: arb);
+      expect(text.contains('"customRestrictionHeader"'), isFalse, reason: arb);
+    }
   });
 
   test('every former /LocationRoute caller uses the shared picker (P5-1)', () {

@@ -10,6 +10,9 @@ import 'package:tiler_app/data/executionEnums.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileCustomHoursScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRestrictionProfileSource.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/restrictionHoursDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/bloc/tile_preferences_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/scheduleFullnessSlider.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -165,43 +168,33 @@ class TilePreferencesScreen extends StatelessWidget {
     );
   }
 
-  void _handleProfileUpdate(
-      BuildContext context, RestrictionProfile? profile, bool isWorkProfile) {
+  /// Opens the Phase 6 Custom hours editor in profile mode WITHOUT
+  /// persisting: this page keeps its own Save, so the editor hands the
+  /// edited profile back (id kept; disabled when every day is off — what
+  /// the legacy `isAnyTime` path produced) and the bloc persists it on
+  /// Proceed exactly as before. Back returns nothing.
+  Future<void> _handleProfileUpdate(BuildContext context,
+      RestrictionProfile? profile, bool isWorkProfile) async {
     final bloc = context.read<TilePreferencesBloc>();
     AnalysticsSignal.send(
         'SETTINGS_OPEN_RESTRICTION_PROFILE_${isWorkProfile ? "WORK" : "PERSONAL"}');
-
-    Map<String, dynamic> restrictionParams = {
-      'routeRestrictionProfile': profile,
-      'stackRouteHistory': [TilePreferencesScreen.routeName]
-    };
-
-    Navigator.pushNamed(context, '/TimeRestrictionRoute',
-            arguments: restrictionParams)
-        .whenComplete(() {
-      if (restrictionParams.containsKey('routeRestrictionProfile')) {
-        RestrictionProfile? updatedProfile =
-            restrictionParams['routeRestrictionProfile'] as RestrictionProfile?;
-
-        if (updatedProfile != null && profile != null) {
-          updatedProfile.id = profile.id;
-        }
-
-        if (profile != null &&
-            (updatedProfile == null ||
-                (restrictionParams.containsKey('isAnyTime') &&
-                    restrictionParams['isAnyTime'] != null))) {
-          profile.isEnabled = !restrictionParams['isAnyTime'];
-          updatedProfile = profile;
-        }
-
-        if (isWorkProfile) {
-          bloc.add(UpdateWorkProfile(updatedProfile));
-        } else {
-          bloc.add(UpdatePersonalProfile(updatedProfile));
-        }
-      }
-    });
+    final NamedRestrictionProfileType type = isWorkProfile
+        ? NamedRestrictionProfileType.work
+        : NamedRestrictionProfileType.personal;
+    final HoursEditorResult? result = await Navigator.of(context)
+        .push<HoursEditorResult>(MaterialPageRoute<HoursEditorResult>(
+            builder: (BuildContext _) => AddTileCustomHoursScreen(
+                request: HoursEditorRequest(seed: profile, profileType: type),
+                source: ApiAddTileRestrictionProfileSource(
+                    settingsApi:
+                        SettingsApi(getContextCallBack: () => context)),
+                persist: false)));
+    if (result == null) return;
+    if (isWorkProfile) {
+      bloc.add(UpdateWorkProfile(result.profile));
+    } else {
+      bloc.add(UpdatePersonalProfile(result.profile));
+    }
   }
 
   Widget _buildRestrictionButton(

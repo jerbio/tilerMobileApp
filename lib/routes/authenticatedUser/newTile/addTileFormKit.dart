@@ -599,6 +599,58 @@ class AddTilePrimaryButton extends StatelessWidget {
 /// A tinted note with a leading icon — the mockups' hint panels under
 /// Priority ("Priority helps Tiler…") and Repeat ("This will create multiple
 /// instances"). One node for assistive tech, so the icon is decoration.
+/// The pinned confirm button of a secondary screen that has something to
+/// confirm (Time restrictions, Custom hours). [enabled] false is a real
+/// disabled control — announced as such, not merely dimmed — for the
+/// invalid states those screens can be in (D70).
+class AddTileDoneButton extends StatelessWidget {
+  const AddTileDoneButton(
+      {super.key, required this.onTap, this.enabled = true, this.label});
+
+  final VoidCallback onTap;
+  final bool enabled;
+
+  /// Defaults to the localized "Done".
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final tokens = TodayStatusTokens.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final scheme = Theme.of(context).colorScheme;
+    final String text = label ?? l10n.done;
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: text,
+      onTap: enabled ? onTap : null,
+      child: ExcludeSemantics(
+        child: Material(
+          color: enabled ? tokens.brand : tokens.surfaceSubtle,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: enabled ? onTap : null,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 52),
+              child: Center(
+                child: Text(
+                  text,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: enabled ? scheme.onPrimary : tokens.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// An inline text button at the foot of an [AddTileCallout] ("Retry").
 class AddTileCalloutAction {
   const AddTileCalloutAction(

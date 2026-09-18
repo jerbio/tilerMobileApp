@@ -20,7 +20,8 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/tileFormSec
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileColorScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRepeatScreen.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/tileRouteAdapters.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileTimeRestrictionScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/restrictionHoursDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailDraft.dart';
 
 import '../addTile/l10n_fixture.dart';
@@ -362,7 +363,7 @@ void main() {
               matching: find.text(testL10n.anytime)),
           findsOneWidget);
       shell.restrictionAnswer =
-          AdvancedRestrictionResult.written(customProfile());
+          TimeRestrictionResult(TimeRestrictionChoice.custom, customProfile());
       await tester.tap(key('detailRestrictionRow'));
       await tester.pumpAndSettle();
       expect(shell.restrictionSeed, isNull);
@@ -383,11 +384,12 @@ void main() {
       d.setRestrictionProfile(customProfile());
       await tester.pump();
       await reveal(tester, key('detailRestrictionRow'));
-      shell.restrictionAnswer = const AdvancedRestrictionResult.unchanged();
+      shell.restrictionAnswer = null;
       await tester.tap(key('detailRestrictionRow'));
       await tester.pumpAndSettle();
       expect(d.restrictionProfile?.id, 'rp-7');
-      shell.restrictionAnswer = const AdvancedRestrictionResult.written(null);
+      shell.restrictionAnswer =
+          const TimeRestrictionResult(TimeRestrictionChoice.anytime, null);
       await tester.tap(key('detailRestrictionRow'));
       await tester.pumpAndSettle();
       expect(d.restrictionProfile, isNull);

@@ -14,9 +14,11 @@ import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePredictionSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRestrictionProfileSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileSubmission.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
+import 'package:tiler_app/services/api/settingsApi.dart';
 
 /// What a push site handed over, in one shape.
 ///
@@ -82,6 +84,10 @@ Widget buildAddTileRedesign(BuildContext context, AddTileRouteArgs args) {
     ),
     predictionSource: ApiAddTilePredictionSource(scheduleApi: scheduleApi),
     submission: ApiAddTileSubmission(scheduleApi: scheduleApi),
+    // Phase 6: the user's Work / Personal hours, loaded once per session.
+    restrictionProfileSource: CachedRestrictionProfileSource(
+        ApiAddTileRestrictionProfileSource(
+            settingsApi: SettingsApi(getContextCallBack: () => context))),
     newTileParams: args.newTileParams,
   );
 }

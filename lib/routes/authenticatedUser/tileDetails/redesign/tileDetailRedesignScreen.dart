@@ -36,8 +36,10 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationScreen
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePlaceEditor.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRepeatScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRestrictionProfileSource.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileTimeRestrictionScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/tileRouteAdapters.dart';
+import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailSubmission.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/subEventPaging.dart';
@@ -80,7 +82,10 @@ typedef TileDetailPickLocation = Future<Location?> Function(
     BuildContext context, Location? seed);
 typedef TileDetailPickColor = Future<ColorChoice?> Function(
     BuildContext context, Color? seed);
-typedef TileDetailPickRestriction = Future<AdvancedRestrictionResult> Function(
+
+/// Null = the screen was backed out of; a result with a null profile is a
+/// confirmed Anytime.
+typedef TileDetailPickRestriction = Future<TimeRestrictionResult?> Function(
     BuildContext context, RestrictionProfile? seed);
 typedef TileDetailOpenNotes = Future<void> Function(
     BuildContext context, TileDetailNotesRequest request);
@@ -138,9 +143,19 @@ class TileDetailPickers {
         ),
       );
 
-  static Future<AdvancedRestrictionResult> _restrictionRoute(
+  /// Phase 6: the same Time restrictions screen as Add Tile (one editor,
+  /// D25's rule), over the user's named profiles. Back returns null;
+  /// Done — including a confirmed Anytime — returns a result.
+  static Future<TimeRestrictionResult?> _restrictionRoute(
           BuildContext context, RestrictionProfile? seed) =>
-      openAdvancedRestrictionRoute(context, current: seed);
+      Navigator.of(context).push<TimeRestrictionResult>(
+          MaterialPageRoute<TimeRestrictionResult>(
+              builder: (BuildContext _) => AddTileTimeRestrictionScreen(
+                  initial: seed,
+                  source: CachedRestrictionProfileSource(
+                      ApiAddTileRestrictionProfileSource(
+                          settingsApi: SettingsApi(
+                              getContextCallBack: () => context))))));
 
   static Future<void> _notesPage(
           BuildContext context, TileDetailNotesRequest r) =>
@@ -460,12 +475,13 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
     d.setColor(choice.color);
   }
 
-  /// A dismissed route changes nothing; a written null is Anytime.
+  /// A dismissed screen changes nothing; a confirmed Anytime is a null
+  /// profile.
   Future<void> _editRestriction() async {
     final TileDetailDraft d = draft!;
-    final AdvancedRestrictionResult result =
+    final TimeRestrictionResult? result =
         await widget.pickers.pickRestriction(context, d.restrictionProfile);
-    if (!result.didWrite || !mounted) return;
+    if (result == null || !mounted) return;
     d.setRestrictionProfile(result.profile);
   }
 

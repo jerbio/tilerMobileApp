@@ -19,7 +19,7 @@
 // WHY A [ColorChoice] AND NOT A `Color?`. `null` is a real, choosable answer
 // here — it means Automatic — so a nullable return could not tell "the user
 // chose Automatic" from "the user backed out". Same shape problem, and same
-// resolution, as `openAdvancedRestrictionRoute`: report whether a choice was
+// resolution, as the Time restrictions screen: report whether a choice was
 // made separately from what it was.
 //
 // This screen speaks plain `Color` values and knows nothing about

@@ -80,6 +80,18 @@ void main() {
     expect(screen.designatedTileTemplateId, 'tpl-9');
   });
 
+  test(
+      'the Time restriction row lands on the Phase 6 screen, never the '
+      'legacy route (one editor)', () {
+    final String screen = _code(File(
+        'lib/routes/authenticatedUser/tileDetails/redesign/tileDetailRedesignScreen.dart'));
+    expect(screen.contains('openAdvancedRestrictionRoute('), isFalse,
+        reason: 'the legacy /TimeRestrictionRoute hop is gone');
+    expect(screen.contains('AddTileTimeRestrictionScreen('), isTrue);
+    expect(screen.contains('ApiAddTileRestrictionProfileSource('), isTrue,
+        reason: 'the named profiles come from the same seam as Add Tile');
+  });
+
   test('no production file constructs a TileDetail directly', () {
     // Every push site goes through TileDetailRoute — the one API.
     final List<String> offenders = <String>[];

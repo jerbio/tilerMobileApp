@@ -32,6 +32,12 @@ const List<String> _sharedPickerFiles = <String>[
   'addTileLocationSource.dart',
   'locationOwnership.dart',
   'addTileFormKit.dart',
+  // Time restrictions (Phase 6): reused by Tile details and Tile
+  // Preferences, so they speak RestrictionProfile, never draft state.
+  'restrictionHoursDraft.dart',
+  'addTileRestrictionProfileSource.dart',
+  'addTileTimeRestrictionScreen.dart',
+  'addTileCustomHoursScreen.dart',
 ];
 
 /// Modules that belong to the Add Tile flow specifically. A shared picker
@@ -110,10 +116,7 @@ void main() {
         'flexibleTileForm.dart',
         'fixedBlockForm.dart',
         'preferredTimeOfDay.dart',
-        'tileRouteAdapters.dart',
         'autoAddTile.dart',
-        'customTimeRestrictions.dart',
-        'timeRestrictionRoute.dart',
       };
 
       final Set<String> onDisk = Directory(_dir)

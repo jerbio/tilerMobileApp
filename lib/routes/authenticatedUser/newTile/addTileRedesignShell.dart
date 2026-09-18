@@ -27,6 +27,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
@@ -47,6 +48,9 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationScreen
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePlaceEditor.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePredictionSource.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRestrictionProfileSource.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileTimeRestrictionScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/restrictionHoursDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePriorityScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileMoreOptions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRepeatScreen.dart';
@@ -54,7 +58,6 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/fixedBlockForm.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/newTileRequestMapper.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/tileRouteAdapters.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
 /// Non-swipeable segmented type selector. One control for the
@@ -376,6 +379,7 @@ class AddTileRedesignScreen extends StatefulWidget {
     this.analytics,
     this.locationSource,
     this.predictionSource,
+    this.restrictionProfileSource,
   });
 
   final PreTile? preTile;
@@ -410,6 +414,11 @@ class AddTileRedesignScreen extends StatefulWidget {
   /// Null disables prediction entirely, which is what most widget tests want.
   final AddTilePredictionSource? predictionSource;
 
+  /// The user's Work / Personal hours for the Time restrictions screen
+  /// (Phase 6). Null in bare widget tests: the screen then offers Anytime
+  /// and Custom only.
+  final AddTileRestrictionProfileSource? restrictionProfileSource;
+
   @override
   State<AddTileRedesignScreen> createState() => _AddTileRedesignScreenState();
 }
@@ -421,6 +430,10 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
   late final TextEditingController _nameController;
   late final AddTileAnalytics _analytics;
   final _nameFocus = FocusNode();
+
+  /// One load of the named profiles per Add Tile session (6.2); `current`
+  /// also labels the Custom chip after a choice (D72).
+  late final CachedRestrictionProfileSource _profiles;
 
   /// Set when a submit attempt (CTA or keyboard) finds an invalid draft; the
   /// first invalid field's inline error is shown until addressed.
@@ -441,6 +454,11 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     }
     _nameController = TextEditingController(text: _draft.name);
     _draft.addListener(_onDraftChanged);
+    final AddTileRestrictionProfileSource? profiles =
+        widget.restrictionProfileSource;
+    _profiles = profiles is CachedRestrictionProfileSource
+        ? profiles
+        : CachedRestrictionProfileSource(profiles ?? const _NoNamedProfiles());
     _analytics = widget.analytics ?? AddTileAnalytics();
     _analytics.opened(_draft.type, hasPrefill: draftHasPrefill(_draft));
   }
@@ -736,15 +754,33 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     _draft.setColor(choice.color);
   }
 
-  /// Opens the advanced preferred-time profile editor. A confirmed `null` is
-  /// meaningful here — it means Anytime — so the result carries `didWrite`
-  /// rather than relying on nullability.
+  /// Opens the Time restrictions screen (Phase 6) — the ONE entry behind
+  /// the Custom chip (D34, D72). Back returns nothing; Done returns the
+  /// choice, whose profile (null for Anytime, the named object with its id,
+  /// or the tile's own hours) goes into the draft as a USER edit, so a
+  /// later prediction cannot overwrite it.
   Future<void> _openAdvancedPreferredTime() async {
-    final AdvancedRestrictionResult result = await openAdvancedRestrictionRoute(
-        context,
-        current: _draft.restrictionProfile);
-    if (!result.didWrite || !mounted) return;
+    final TimeRestrictionResult? result = await Navigator.of(context)
+        .push<TimeRestrictionResult>(MaterialPageRoute<TimeRestrictionResult>(
+            builder: (_) => AddTileTimeRestrictionScreen(
+                initial: _draft.restrictionProfile, source: _profiles)));
+    if (result == null || !mounted) return;
     _draft.setRestrictionProfile(result.profile);
+    _analytics.preferredTimeChosen(_draft.type, choice: result.choice.name);
+  }
+
+  /// The Custom chip's label once a NAMED profile is in effect (D72):
+  /// "Work hours" / "Personal hours"; null keeps "Custom". Read from the
+  /// session cache, so it costs no request.
+  String? _customChipLabel(AppLocalizations l10n) {
+    final NamedRestrictionProfiles? named = _profiles.current;
+    if (named == null) return null;
+    return switch (TimeRestrictionChoice.of(_draft.restrictionProfile,
+        work: named.work, personal: named.personal)) {
+      TimeRestrictionChoice.work => l10n.addTileRestrictionWork,
+      TimeRestrictionChoice.personal => l10n.addTileRestrictionPersonal,
+      _ => null,
+    };
   }
 
   /// Tells the rest of the app about a tile the server just created.
@@ -1012,6 +1048,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         onDeadlineClear: () => _draft.endTime = null,
         onPreferredTimeSelected: _onPreferredTimeSelected,
         onAdvancedPreferredTimeTap: _openAdvancedPreferredTime,
+        preferredTimeCustomLabel: _customChipLabel(l10n),
         onLocationTap: _openLocationPicker,
         onNameLocationTap: _draft.location != null ? _nameLocation : null,
         onRepeatTap: _openRepeatPicker,
@@ -1037,4 +1074,19 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       onRepeatTap: _openRepeatPicker,
     );
   }
+}
+
+/// The source a bare shell (widget tests) uses: no named profiles, and a
+/// save that cannot happen because there is nothing to edit.
+class _NoNamedProfiles implements AddTileRestrictionProfileSource {
+  const _NoNamedProfiles();
+
+  @override
+  Future<NamedRestrictionProfiles> load() async =>
+      const NamedRestrictionProfiles();
+
+  @override
+  Future<RestrictionProfile> save(
+          RestrictionProfile profile, NamedRestrictionProfileType type) =>
+      throw StateError('no named profiles to save');
 }

@@ -130,24 +130,6 @@ abstract class AppLocalizations {
   /// **'Set up Custom restrictions'**
   String get setupCustomRestrictions;
 
-  /// No description provided for @customRestrictionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Custom restrictions'**
-  String get customRestrictionTitle;
-
-  /// No description provided for @customRestrictionHeader.
-  ///
-  /// In en, this message translates to:
-  /// **'Set up Custom restrictions'**
-  String get customRestrictionHeader;
-
-  /// No description provided for @customRestrictionHeaderDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Select when you would like to complete this task.'**
-  String get customRestrictionHeaderDescription;
-
   /// No description provided for @day.
   ///
   /// In en, this message translates to:
@@ -6421,6 +6403,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get addTileRetry;
+
+  /// No description provided for @addTileTimeRestrictionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time restrictions'**
+  String get addTileTimeRestrictionTitle;
+
+  /// No description provided for @addTileTimeRestrictionHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'When can Tiler schedule this?'**
+  String get addTileTimeRestrictionHeading;
+
+  /// No description provided for @addTileTimeRestrictionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set when this tile is allowed to appear on your calendar.'**
+  String get addTileTimeRestrictionSubtitle;
+
+  /// No description provided for @addTileRestrictionAnytimeHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler can place this whenever you\'re available.'**
+  String get addTileRestrictionAnytimeHelper;
+
+  /// No description provided for @addTileRestrictionWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Work hours'**
+  String get addTileRestrictionWork;
+
+  /// No description provided for @addTileRestrictionWorkHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Only schedule during your Work profile.'**
+  String get addTileRestrictionWorkHelper;
+
+  /// No description provided for @addTileRestrictionPersonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal hours'**
+  String get addTileRestrictionPersonal;
+
+  /// No description provided for @addTileRestrictionPersonalHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Only schedule during your Personal profile.'**
+  String get addTileRestrictionPersonalHelper;
+
+  /// No description provided for @addTileRestrictionCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom hours'**
+  String get addTileRestrictionCustom;
+
+  /// No description provided for @addTileRestrictionCustomHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose specific days and times.'**
+  String get addTileRestrictionCustomHelper;
+
+  /// No description provided for @addTileRestrictionNotSetUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set up — use the arrow to set hours'**
+  String get addTileRestrictionNotSetUp;
+
+  /// Screen-reader label of the arrow that opens the hours editor for a row.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit {name}'**
+  String addTileRestrictionEdit(String name);
+
+  /// No description provided for @addTileRestrictionTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler will respect these restrictions when auto-scheduling, re-optimizing, or suggesting times for this tile.'**
+  String get addTileRestrictionTip;
+
+  /// No description provided for @addTileRestrictionLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your Work and Personal hours.'**
+  String get addTileRestrictionLoadFailed;
+
+  /// A run of consecutive days in an hours summary.
+  ///
+  /// In en, this message translates to:
+  /// **'{first} – {last}'**
+  String addTileRestrictionDayRange(String first, String last);
+
+  /// One group of an hours summary: the days and their window.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} · {start} – {end}'**
+  String addTileRestrictionWindow(String days, String start, String end);
+
+  /// No description provided for @addTileCustomHoursTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom hours'**
+  String get addTileCustomHoursTitle;
+
+  /// No description provided for @addTileCustomHoursSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the days and time windows when this tile can be scheduled.'**
+  String get addTileCustomHoursSubtitle;
+
+  /// No description provided for @addTileCustomHoursProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the days and time windows for your {name}.'**
+  String addTileCustomHoursProfileSubtitle(String name);
+
+  /// No description provided for @addTileCustomHoursPresets.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick presets'**
+  String get addTileCustomHoursPresets;
+
+  /// No description provided for @addTileHoursPresetWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekdays'**
+  String get addTileHoursPresetWeekdays;
+
+  /// No description provided for @addTileHoursPresetEvenings.
+  ///
+  /// In en, this message translates to:
+  /// **'Evenings'**
+  String get addTileHoursPresetEvenings;
+
+  /// No description provided for @addTileHoursPresetWeekends.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekends'**
+  String get addTileHoursPresetWeekends;
+
+  /// No description provided for @addTileHoursPresetWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String addTileHoursPresetWindow(String start, String end);
+
+  /// No description provided for @addTileHoursEndBeforeStart.
+  ///
+  /// In en, this message translates to:
+  /// **'End cannot be before start'**
+  String get addTileHoursEndBeforeStart;
+
+  /// No description provided for @addTileRestrictionAllDay.
+  ///
+  /// In en, this message translates to:
+  /// **'All day'**
+  String get addTileRestrictionAllDay;
+
+  /// An hours-summary group whose window is the whole day.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} · {label}'**
+  String addTileRestrictionAllDayWindow(String days, String label);
+
+  /// No description provided for @addTileCustomHoursFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled days will be excluded from scheduling this tile.'**
+  String get addTileCustomHoursFooter;
+
+  /// No description provided for @addTileCustomHoursProfileFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to every tile that uses {name}.'**
+  String addTileCustomHoursProfileFooter(String name);
+
+  /// No description provided for @addTileHoursCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy {day}\'s hours'**
+  String addTileHoursCopy(String day);
+
+  /// No description provided for @addTileHoursPaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste hours to {day}'**
+  String addTileHoursPaste(String day);
+
+  /// No description provided for @addTileHoursClearCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear copied hours'**
+  String get addTileHoursClearCopy;
+
+  /// No description provided for @addTileHoursStartSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} start, {time}'**
+  String addTileHoursStartSemantics(String day, String time);
+
+  /// No description provided for @addTileHoursEndSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} end, {time}'**
+  String addTileHoursEndSemantics(String day, String time);
+
+  /// No description provided for @addTileHoursSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save your {name}.'**
+  String addTileHoursSaveFailed(String name);
+
+  /// No description provided for @addTileHoursSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get addTileHoursSaving;
 
   /// Result count header shown above tile name search results.
   ///

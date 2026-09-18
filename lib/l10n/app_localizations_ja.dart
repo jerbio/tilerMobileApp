@@ -18,16 +18,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get setupCustomRestrictions => 'カスタム制約の設定';
 
   @override
-  String get customRestrictionTitle => 'カスタム制約';
-
-  @override
-  String get customRestrictionHeader => 'カスタム制約の設定';
-
-  @override
-  String get customRestrictionHeaderDescription =>
-      'このタスクを完了させたいタイミングを選択してください。';
-
-  @override
   String get day => '日';
 
   @override
@@ -3562,6 +3552,148 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get addTileRetry => '再試行';
+
+  @override
+  String get addTileTimeRestrictionTitle => 'Time restrictions';
+
+  @override
+  String get addTileTimeRestrictionHeading => 'When can Tiler schedule this?';
+
+  @override
+  String get addTileTimeRestrictionSubtitle =>
+      'Set when this tile is allowed to appear on your calendar.';
+
+  @override
+  String get addTileRestrictionAnytimeHelper =>
+      'Tiler can place this whenever you\'re available.';
+
+  @override
+  String get addTileRestrictionWork => 'Work hours';
+
+  @override
+  String get addTileRestrictionWorkHelper =>
+      'Only schedule during your Work profile.';
+
+  @override
+  String get addTileRestrictionPersonal => 'Personal hours';
+
+  @override
+  String get addTileRestrictionPersonalHelper =>
+      'Only schedule during your Personal profile.';
+
+  @override
+  String get addTileRestrictionCustom => 'Custom hours';
+
+  @override
+  String get addTileRestrictionCustomHelper =>
+      'Choose specific days and times.';
+
+  @override
+  String get addTileRestrictionNotSetUp =>
+      'Not set up — use the arrow to set hours';
+
+  @override
+  String addTileRestrictionEdit(String name) {
+    return 'Edit $name';
+  }
+
+  @override
+  String get addTileRestrictionTip =>
+      'Tiler will respect these restrictions when auto-scheduling, re-optimizing, or suggesting times for this tile.';
+
+  @override
+  String get addTileRestrictionLoadFailed =>
+      'Couldn\'t load your Work and Personal hours.';
+
+  @override
+  String addTileRestrictionDayRange(String first, String last) {
+    return '$first – $last';
+  }
+
+  @override
+  String addTileRestrictionWindow(String days, String start, String end) {
+    return '$days · $start – $end';
+  }
+
+  @override
+  String get addTileCustomHoursTitle => 'Custom hours';
+
+  @override
+  String get addTileCustomHoursSubtitle =>
+      'Select the days and time windows when this tile can be scheduled.';
+
+  @override
+  String addTileCustomHoursProfileSubtitle(String name) {
+    return 'Select the days and time windows for your $name.';
+  }
+
+  @override
+  String get addTileCustomHoursPresets => 'Quick presets';
+
+  @override
+  String get addTileHoursPresetWeekdays => 'Weekdays';
+
+  @override
+  String get addTileHoursPresetEvenings => 'Evenings';
+
+  @override
+  String get addTileHoursPresetWeekends => 'Weekends';
+
+  @override
+  String addTileHoursPresetWindow(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get addTileHoursEndBeforeStart => 'End cannot be before start';
+
+  @override
+  String get addTileRestrictionAllDay => 'All day';
+
+  @override
+  String addTileRestrictionAllDayWindow(String days, String label) {
+    return '$days · $label';
+  }
+
+  @override
+  String get addTileCustomHoursFooter =>
+      'Disabled days will be excluded from scheduling this tile.';
+
+  @override
+  String addTileCustomHoursProfileFooter(String name) {
+    return 'Applies to every tile that uses $name.';
+  }
+
+  @override
+  String addTileHoursCopy(String day) {
+    return 'Copy $day\'s hours';
+  }
+
+  @override
+  String addTileHoursPaste(String day) {
+    return 'Paste hours to $day';
+  }
+
+  @override
+  String get addTileHoursClearCopy => 'Clear copied hours';
+
+  @override
+  String addTileHoursStartSemantics(String day, String time) {
+    return '$day start, $time';
+  }
+
+  @override
+  String addTileHoursEndSemantics(String day, String time) {
+    return '$day end, $time';
+  }
+
+  @override
+  String addTileHoursSaveFailed(String name) {
+    return 'Couldn\'t save your $name.';
+  }
+
+  @override
+  String get addTileHoursSaving => 'Saving…';
 
   @override
   String searchResultsForQuery(int count, String query) {
