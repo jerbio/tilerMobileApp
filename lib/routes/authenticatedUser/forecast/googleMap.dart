@@ -180,8 +180,6 @@
 //   }
 // }
 
-// String APIKEY = "AIzaSyC05Am_he9ZlvzseciQYN65WDnIMxRE138";
-
 // Future<Position> _determinePosition() async {
 //   bool serviceEnabled;
 //   LocationPermission permission;
