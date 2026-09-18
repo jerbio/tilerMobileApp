@@ -352,7 +352,7 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditTile(
+                    builder: (context) => EditTileRoute(
                       tileId: (subEvent.isFromTiler
                               ? subEvent.id
                               : subEvent.thirdpartyId) ??

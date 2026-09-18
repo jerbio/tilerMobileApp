@@ -9,7 +9,7 @@ import 'package:tiler_app/components/tileUI/tileAccentBar.dart';
 
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/gridPositionableWidgetWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileCardStyle.dart';
 import 'package:tiler_app/constants.dart' as constant;
@@ -456,7 +456,7 @@ class TileGridWidgetState extends GridPositionableState {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditTile(
+        builder: (context) => EditTileRoute(
           tileId: tileId,
           tileSource: tile.thirdpartyType,
           thirdPartyUserId: subEvent?.thirdPartyUserId,

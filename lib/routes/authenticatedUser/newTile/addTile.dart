@@ -14,6 +14,7 @@ import 'package:toggle_switch/toggle_switch.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/components/durationInputWidget.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
@@ -1396,10 +1397,24 @@ class AddTileState extends State<AddTile> {
     Widget deadlinePicker = this.generateDeadline();
     Widget splitCountWidget = this.getSplitCountWidget();
 
-    StartEndDurationTimeline startAndEndTime = StartEndDurationTimeline(
-      start: this._startTime ?? Utility.currentTime(),
-      duration: this._duration ?? Duration(),
-      onChange: onTimeLineChange,
+    // Appointment start/duration/end — the new picker-based fields (matching
+    // the tile tab) replace the legacy inline `StartEndDurationTimeline`.
+    // Duration opens the house `DurationInputWidget` (-> `pushDurationPicker`);
+    // the end date reuses the shared deadline picker. For appointments the end
+    // is derived from `start + duration` at submit time, so setting the
+    // duration here keeps `_endTime` in sync.
+    Widget appointmentDuration = DurationInputWidget(
+      duration: this._duration,
+      onDurationChange: (Duration? newDuration) {
+        setState(() {
+          _duration = newDuration;
+          _isDurationManuallySet = true;
+          if (_startTime != null && newDuration != null) {
+            _endTime = _startTime!.add(newDuration);
+          }
+        });
+        isSubmissionReady();
+      },
     );
     Widget extraConfigCollection = this.generateExtraConfigSelection();
     tileWidgets.add(tileNameWidget);
@@ -1411,9 +1426,11 @@ class AddTileState extends State<AddTile> {
     tileWidgets.add(splitCountWidget);
 
     appointmentWidgets.add(tileNameWidget);
-    appointmentWidgets.add(FractionallySizedBox(
-        widthFactor: TileDimensions.widthRatio,
-        child: Container(child: startAndEndTime)));
+    appointmentWidgets.add(appointmentDuration);
+    appointmentWidgets.add(deadlinePicker);
+    if (this._repetitionData != null) {
+      appointmentWidgets.remove(deadlinePicker);
+    }
 
     Widget tileWidgetWrapper = generateNewTileWidget(tileWidgets);
     Widget appointmentWidget = generateAppointmentWidget(appointmentWidgets);

@@ -4,7 +4,7 @@ import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
@@ -59,7 +59,7 @@ class TileDetailBottomSheet extends StatelessWidget {
     navigator.pop();
     navigator.push(
       MaterialPageRoute(
-        builder: (context) => EditTile(
+        builder: (context) => EditTileRoute(
           tileId:
               (subEvent.isFromTiler ? subEvent.id : subEvent.thirdpartyId) ??
                   "",
