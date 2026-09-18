@@ -1941,18 +1941,18 @@ class AppLocalizationsEl extends AppLocalizations {
   String get extendedEventsTitle => 'Επεκταμένα γεγονότα';
 
   @override
-  String get dayGridAllDay => '??? ? ????';
+  String get dayGridAllDay => 'Ολοήμερο';
 
   @override
-  String get dayGridHeaderAllClear => '??? ?? ????';
+  String get dayGridHeaderAllClear => 'Όλα καλά';
 
   @override
   String dayGridHeaderConflictCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count ???????????',
-      one: '1 ?????????',
+      other: '$count συγκρούσεις',
+      one: '1 σύγκρουση',
     );
     return '$_temp0';
   }
@@ -1962,26 +1962,26 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$summary ??????????? ???????',
-      one: '$summary ?????????? ???????',
+      other: '$summary χρειάζονται προσοχή',
+      one: '$summary χρειάζεται προσοχή',
     );
     return '$_temp0';
   }
 
   @override
-  String get dayGridHeaderReview => '???????';
+  String get dayGridHeaderReview => 'Επανεξέταση';
 
   @override
-  String get dayGridDaySummary => '?????? ??????';
+  String get dayGridDaySummary => 'Σύνοψη ημέρας';
 
   @override
-  String get bottomNavToday => '??????';
+  String get bottomNavToday => 'Σήμερα';
 
   @override
   String get bottomNavTiler => 'Tiler';
 
   @override
-  String get dayGridHeaderRespond => '????????';
+  String get dayGridHeaderRespond => 'Απάντηση';
 
   @override
   String extendedEventsSubtitle(int count) {
@@ -2934,10 +2934,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String get switchCalendarView => 'Εναλλαγή προβολής ατζέντας';
 
   @override
-  String get switchDayGridLayout => '???????? ???????? ??????';
+  String get switchDayGridLayout => 'Αλλαγή διάταξης ημέρας';
 
   @override
-  String get openDayRibbon => '???????? ??????';
+  String get openDayRibbon => 'Προβολή ημερών';
 
   @override
   String get previewSundialGreeting => 'Γεια.';
