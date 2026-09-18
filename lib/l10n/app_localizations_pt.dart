@@ -1783,42 +1783,42 @@ class AppLocalizationsPt extends AppLocalizations {
   String get reOptimizeChip => 'Reotimizar';
 
   @override
-  String get dayFilterAll => 'All';
+  String get dayFilterAll => 'Tudo';
 
   @override
-  String get dayFilterBlocks => 'Blocks';
+  String get dayFilterBlocks => 'Blocos';
 
   @override
-  String get dayFilterTiles => 'Tiles';
+  String get dayFilterTiles => 'Tilhas';
 
   @override
-  String get dayFilterTooltip => 'Show all, blocks only, or tiles only';
+  String get dayFilterTooltip => 'Mostrar tudo, apenas blocos ou apenas tilhas';
 
   @override
   String dayFilterShowingBlocks(int shown, int total) {
-    return 'Showing blocks only · $shown of $total';
+    return 'Mostrando apenas blocos · $shown de $total';
   }
 
   @override
   String dayFilterShowingTiles(int shown, int total) {
-    return 'Showing tiles only · $shown of $total';
+    return 'Mostrando apenas tilhas · $shown de $total';
   }
 
   @override
   String dayFilterEmptyBlocks(String day) {
-    return 'No blocks on $day';
+    return 'Nenhum bloco no $day';
   }
 
   @override
   String dayFilterEmptyTiles(String day) {
-    return 'No tiles on $day';
+    return 'Nenhuma tilha no $day';
   }
 
   @override
-  String get dayFilterShowAll => 'Show all';
+  String get dayFilterShowAll => 'Mostrar tudo';
 
   @override
-  String get dayFilterAutoCleared => 'Showing all — filter cleared';
+  String get dayFilterAutoCleared => 'Mostrando tudo — filtro limpo';
 
   @override
   String get todayColon => 'Hoje:';
@@ -3744,56 +3744,57 @@ class AppLocalizationsPt extends AppLocalizations {
   String get addTileRetry => 'Tentar novamente';
 
   @override
-  String get addTileTimeRestrictionTitle => 'Time restrictions';
+  String get addTileTimeRestrictionTitle => 'Restrições de horário';
 
   @override
-  String get addTileTimeRestrictionHeading => 'When can Tiler schedule this?';
+  String get addTileTimeRestrictionHeading =>
+      'Quando o Tiler pode agendar isto?';
 
   @override
   String get addTileTimeRestrictionSubtitle =>
-      'Set when this tile is allowed to appear on your calendar.';
+      'Defina quando esta tilha pode aparecer no seu calendário.';
 
   @override
   String get addTileRestrictionAnytimeHelper =>
-      'Tiler can place this whenever you\'re available.';
+      'O Tiler pode colocá-la quando estiver disponível.';
 
   @override
-  String get addTileRestrictionWork => 'Work hours';
+  String get addTileRestrictionWork => 'Horário de trabalho';
 
   @override
   String get addTileRestrictionWorkHelper =>
-      'Only schedule during your Work profile.';
+      'Agendar apenas no seu perfil Trabalho.';
 
   @override
-  String get addTileRestrictionPersonal => 'Personal hours';
+  String get addTileRestrictionPersonal => 'Horário pessoal';
 
   @override
   String get addTileRestrictionPersonalHelper =>
-      'Only schedule during your Personal profile.';
+      'Agendar apenas no seu perfil Pessoal.';
 
   @override
-  String get addTileRestrictionCustom => 'Custom hours';
+  String get addTileRestrictionCustom => 'Horário personalizado';
 
   @override
   String get addTileRestrictionCustomHelper =>
-      'Choose specific days and times.';
+      'Escolha dias e horários específicos.';
 
   @override
   String get addTileRestrictionNotSetUp =>
-      'Not set up — use the arrow to set hours';
+      'Não configurado — use a seta para definir horários';
 
   @override
   String addTileRestrictionEdit(String name) {
-    return 'Edit $name';
+    return 'Editar $name';
   }
 
   @override
   String get addTileRestrictionTip =>
-      'Tiler will respect these restrictions when auto-scheduling, re-optimizing, or suggesting times for this tile.';
+      'O Tiler respeitará estas restrições ao agendar automaticamente, reotimizar ou sugerir horários para esta tilha.';
 
   @override
   String get addTileRestrictionLoadFailed =>
-      'Couldn\'t load your Work and Personal hours.';
+      'Não foi possível carregar seus horários de Trabalho e Pessoal.';
 
   @override
   String addTileRestrictionDayRange(String first, String last) {
@@ -3806,28 +3807,28 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get addTileCustomHoursTitle => 'Custom hours';
+  String get addTileCustomHoursTitle => 'Horário personalizado';
 
   @override
   String get addTileCustomHoursSubtitle =>
-      'Select the days and time windows when this tile can be scheduled.';
+      'Selecione os dias e janelas de horário em que esta tilha pode ser agendada.';
 
   @override
   String addTileCustomHoursProfileSubtitle(String name) {
-    return 'Select the days and time windows for your $name.';
+    return 'Selecione os dias e janelas de horário para $name.';
   }
 
   @override
-  String get addTileCustomHoursPresets => 'Quick presets';
+  String get addTileCustomHoursPresets => 'Predefinições rápidas';
 
   @override
-  String get addTileHoursPresetWeekdays => 'Weekdays';
+  String get addTileHoursPresetWeekdays => 'Dias úteis';
 
   @override
-  String get addTileHoursPresetEvenings => 'Evenings';
+  String get addTileHoursPresetEvenings => 'Noites';
 
   @override
-  String get addTileHoursPresetWeekends => 'Weekends';
+  String get addTileHoursPresetWeekends => 'Fins de semana';
 
   @override
   String addTileHoursPresetWindow(String start, String end) {
@@ -3835,10 +3836,10 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get addTileHoursEndBeforeStart => 'End cannot be before start';
+  String get addTileHoursEndBeforeStart => 'O fim não pode ser antes do início';
 
   @override
-  String get addTileRestrictionAllDay => 'All day';
+  String get addTileRestrictionAllDay => 'Dia inteiro';
 
   @override
   String addTileRestrictionAllDayWindow(String days, String label) {
@@ -3847,43 +3848,43 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get addTileCustomHoursFooter =>
-      'Disabled days will be excluded from scheduling this tile.';
+      'Dias desativados serão excluídos do agendamento desta tilha.';
 
   @override
   String addTileCustomHoursProfileFooter(String name) {
-    return 'Applies to every tile that uses $name.';
+    return 'Aplica-se a cada tilha que usa $name.';
   }
 
   @override
   String addTileHoursCopy(String day) {
-    return 'Copy $day\'s hours';
+    return 'Copiar horários de $day';
   }
 
   @override
   String addTileHoursPaste(String day) {
-    return 'Paste hours to $day';
+    return 'Colar horários em $day';
   }
 
   @override
-  String get addTileHoursClearCopy => 'Clear copied hours';
+  String get addTileHoursClearCopy => 'Limpar horários copiados';
 
   @override
   String addTileHoursStartSemantics(String day, String time) {
-    return '$day start, $time';
+    return 'Início de $day, $time';
   }
 
   @override
   String addTileHoursEndSemantics(String day, String time) {
-    return '$day end, $time';
+    return 'Fim de $day, $time';
   }
 
   @override
   String addTileHoursSaveFailed(String name) {
-    return 'Couldn\'t save your $name.';
+    return 'Não foi possível salvar $name.';
   }
 
   @override
-  String get addTileHoursSaving => 'Saving…';
+  String get addTileHoursSaving => 'Salvando…';
 
   @override
   String searchResultsForQuery(int count, String query) {

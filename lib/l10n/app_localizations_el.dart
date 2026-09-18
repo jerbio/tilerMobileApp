@@ -1780,42 +1780,42 @@ class AppLocalizationsEl extends AppLocalizations {
   String get reOptimizeChip => 'Επανα-βελτιστοποίηση';
 
   @override
-  String get dayFilterAll => 'All';
+  String get dayFilterAll => 'Όλα';
 
   @override
-  String get dayFilterBlocks => 'Blocks';
+  String get dayFilterBlocks => 'Μπλοκ';
 
   @override
-  String get dayFilterTiles => 'Tiles';
+  String get dayFilterTiles => 'Πλακίδια';
 
   @override
-  String get dayFilterTooltip => 'Show all, blocks only, or tiles only';
+  String get dayFilterTooltip => 'Εμφάνιση όλων, μόνο μπλοκ ή μόνο πλακίδια';
 
   @override
   String dayFilterShowingBlocks(int shown, int total) {
-    return 'Showing blocks only · $shown of $total';
+    return 'Εμφάνιση μόνο μπλοκ · $shown από $total';
   }
 
   @override
   String dayFilterShowingTiles(int shown, int total) {
-    return 'Showing tiles only · $shown of $total';
+    return 'Εμφάνιση μόνο πλακιδίων · $shown από $total';
   }
 
   @override
   String dayFilterEmptyBlocks(String day) {
-    return 'No blocks on $day';
+    return 'Κανένα μπλοκ στο $day';
   }
 
   @override
   String dayFilterEmptyTiles(String day) {
-    return 'No tiles on $day';
+    return 'Κανένα πλακίδιο στο $day';
   }
 
   @override
-  String get dayFilterShowAll => 'Show all';
+  String get dayFilterShowAll => 'Εμφάνιση όλων';
 
   @override
-  String get dayFilterAutoCleared => 'Showing all — filter cleared';
+  String get dayFilterAutoCleared => 'Εμφάνιση όλων — καθαρίστηκε το φίλτρο';
 
   @override
   String get todayColon => 'Σήμερα:';
@@ -3755,56 +3755,57 @@ class AppLocalizationsEl extends AppLocalizations {
   String get addTileRetry => 'Νέα απόπειρα';
 
   @override
-  String get addTileTimeRestrictionTitle => 'Time restrictions';
+  String get addTileTimeRestrictionTitle => 'Περιορισμοί ώρας';
 
   @override
-  String get addTileTimeRestrictionHeading => 'When can Tiler schedule this?';
+  String get addTileTimeRestrictionHeading =>
+      'Πότε μπορεί ο Tiler να το προγραμματίσει;';
 
   @override
   String get addTileTimeRestrictionSubtitle =>
-      'Set when this tile is allowed to appear on your calendar.';
+      'Ορίστε πότε αυτό το πλακίδιο μπορεί να εμφανιστεί στο ημερολόγιό σας.';
 
   @override
   String get addTileRestrictionAnytimeHelper =>
-      'Tiler can place this whenever you\'re available.';
+      'Ο Tiler μπορεί να το τοποθετήσει οποτεδήποτε είστε διαθέσιμος.';
 
   @override
-  String get addTileRestrictionWork => 'Work hours';
+  String get addTileRestrictionWork => 'Εργατικές ώρες';
 
   @override
   String get addTileRestrictionWorkHelper =>
-      'Only schedule during your Work profile.';
+      'Προγραμματισμός μόνο στο προφίλ Εργασίας.';
 
   @override
-  String get addTileRestrictionPersonal => 'Personal hours';
+  String get addTileRestrictionPersonal => 'Προσωπικές ώρες';
 
   @override
   String get addTileRestrictionPersonalHelper =>
-      'Only schedule during your Personal profile.';
+      'Προγραμματισμός μόνο στο προσωπικό σας προφίλ.';
 
   @override
-  String get addTileRestrictionCustom => 'Custom hours';
+  String get addTileRestrictionCustom => 'Προσαρμοσμένες ώρες';
 
   @override
   String get addTileRestrictionCustomHelper =>
-      'Choose specific days and times.';
+      'Επιλέξτε συγκεκριμένες ημέρες και ώρες.';
 
   @override
   String get addTileRestrictionNotSetUp =>
-      'Not set up — use the arrow to set hours';
+      'Δεν έχει ρυθμιστεί — χρησιμοποιήστε το βέλος για να ορίσετε ώρες';
 
   @override
   String addTileRestrictionEdit(String name) {
-    return 'Edit $name';
+    return 'Επεξεργασία $name';
   }
 
   @override
   String get addTileRestrictionTip =>
-      'Tiler will respect these restrictions when auto-scheduling, re-optimizing, or suggesting times for this tile.';
+      'Ο Tiler θα σέβεται αυτούς τους περιορισμούς κατά τον αυτόματο προγραμματισμό, την αναβελτιστοποίηση ή τις προτάσεις ωρών για αυτό το πλακίδιο.';
 
   @override
   String get addTileRestrictionLoadFailed =>
-      'Couldn\'t load your Work and Personal hours.';
+      'Δεν ήταν δυνατή η φόρτωση των ωρών Εργασίας και Προσωπικού σας.';
 
   @override
   String addTileRestrictionDayRange(String first, String last) {
@@ -3817,28 +3818,28 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String get addTileCustomHoursTitle => 'Custom hours';
+  String get addTileCustomHoursTitle => 'Προσαρμοσμένες ώρες';
 
   @override
   String get addTileCustomHoursSubtitle =>
-      'Select the days and time windows when this tile can be scheduled.';
+      'Επιλέξτε τις ημέρες και τα χρονικά πλαίσια κατά τα οποία αυτό το πλακίδιο μπορεί να προγραμματιστεί.';
 
   @override
   String addTileCustomHoursProfileSubtitle(String name) {
-    return 'Select the days and time windows for your $name.';
+    return 'Επιλέξτε τις ημέρες και τα χρονικά πλαίσια για το $name.';
   }
 
   @override
-  String get addTileCustomHoursPresets => 'Quick presets';
+  String get addTileCustomHoursPresets => 'Γρήγορες προεπιλογές';
 
   @override
-  String get addTileHoursPresetWeekdays => 'Weekdays';
+  String get addTileHoursPresetWeekdays => 'Καθημερινές';
 
   @override
-  String get addTileHoursPresetEvenings => 'Evenings';
+  String get addTileHoursPresetEvenings => 'Βραδινές ώρες';
 
   @override
-  String get addTileHoursPresetWeekends => 'Weekends';
+  String get addTileHoursPresetWeekends => 'Σαββατοκύριακο';
 
   @override
   String addTileHoursPresetWindow(String start, String end) {
@@ -3846,10 +3847,11 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String get addTileHoursEndBeforeStart => 'End cannot be before start';
+  String get addTileHoursEndBeforeStart =>
+      'Το τέλος δεν μπορεί να είναι πριν την αρχή';
 
   @override
-  String get addTileRestrictionAllDay => 'All day';
+  String get addTileRestrictionAllDay => 'Ολοήμερο';
 
   @override
   String addTileRestrictionAllDayWindow(String days, String label) {
@@ -3858,43 +3860,43 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get addTileCustomHoursFooter =>
-      'Disabled days will be excluded from scheduling this tile.';
+      'Οι απενεργοποιημένες ημέρες θα αποκλείονται από τον προγραμματισμό αυτού του πλακιδίου.';
 
   @override
   String addTileCustomHoursProfileFooter(String name) {
-    return 'Applies to every tile that uses $name.';
+    return 'Ισχύει για κάθε πλακίδιο που χρησιμοποιεί το $name.';
   }
 
   @override
   String addTileHoursCopy(String day) {
-    return 'Copy $day\'s hours';
+    return 'Αντιγραφή ωρών $day';
   }
 
   @override
   String addTileHoursPaste(String day) {
-    return 'Paste hours to $day';
+    return 'Επικόλληση ωρών στο $day';
   }
 
   @override
-  String get addTileHoursClearCopy => 'Clear copied hours';
+  String get addTileHoursClearCopy => 'Διαγραφή αντιγραμμένων ωρών';
 
   @override
   String addTileHoursStartSemantics(String day, String time) {
-    return '$day start, $time';
+    return 'Έναρξη $day, $time';
   }
 
   @override
   String addTileHoursEndSemantics(String day, String time) {
-    return '$day end, $time';
+    return 'Τέλος $day, $time';
   }
 
   @override
   String addTileHoursSaveFailed(String name) {
-    return 'Couldn\'t save your $name.';
+    return 'Δεν ήταν δυνατή η αποθήκευση του $name.';
   }
 
   @override
-  String get addTileHoursSaving => 'Saving…';
+  String get addTileHoursSaving => 'Αποθήκευση…';
 
   @override
   String searchResultsForQuery(int count, String query) {
