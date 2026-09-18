@@ -1358,5 +1358,6 @@
       }
     },
     "noResultsForProvider": "No hay resultados de este calendario",
-    "readOnly": "Solo lectura"
+    "readOnly": "Solo lectura",
+  "productTourStarting": "Tu recorrido por la app está a punto de comenzar."
 }

@@ -47,7 +47,7 @@ matching commit — re-run that stage's tests to locate the break.
 | Tile Preferences tour | New; 3 steps (transport, work/personal hours, block-out hours); first visit to `/tilePreferences`. This is the tour that teaches how to update AI preferences |
 | Tour frequency | **Once per Tiler device** (SharedPreferences; survives logout; replays on reinstall/new device) |
 | Existing-user seeding | None — everyone gets the settings tour once per device |
-| Manual replay | Settings › "How to use Tiler" resets tours per device |
+| Manual replay | Settings › "How to use Tiler" resets all tours, announces replay with a toast, and starts the Settings tour immediately |
 
 ## 2. Current state (references)
 
@@ -486,3 +486,13 @@ completion persistence, unfinished dismissal/retry, Skip, replay and existing
 Home/Settings/Tile Preferences behavior. Targeted analysis reports only the
 pre-existing unused `_linkSubscription` field. Physical-device visual validation
 remains pending; the phone's account and app state were not changed.
+
+### Immediate replay announcement
+
+The Settings replay action now awaits resetting every registered tour, shows
+an English/Spanish informational toast announcing the tour, and starts the
+current Settings tour in place through its existing bloc and coordinator.
+Other tours remain reset for their next surface visit. The action checks that
+the page is still mounted after resetting preferences. Validation: all 15
+Settings tour tests pass, including immediate activation and toast visibility;
+targeted analysis reports no issues. Changes are uncommitted for review.

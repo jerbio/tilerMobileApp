@@ -92,7 +92,7 @@ class _OnboardingViewState extends State<OnboardingView> {
   /// refresh is issued.
   void _buzzThenRefreshSchedule() {
     final ScheduleBloc? scheduleBloc = _scheduleBlocOrNull();
-    scheduleApi.buzzSchedule().then((_) {
+    scheduleApi.buzzSchedule(includeLocationParams: false).then((_) {
       scheduleBloc?.add(GetScheduleEvent()
         ..forceRefresh = true
         ..emitOnlyLoadedStated = true);
@@ -163,7 +163,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           // cut from the essentials flow). The optional seam lets tests
           // substitute the destination builder. Navigation never waits on
           // the buzz; the schedule refreshes once it completes (3.5).
-          // _buzzThenRefreshSchedule();
+          _buzzThenRefreshSchedule();
           final Widget Function(BuildContext) submitBuilder =
               widget.submitDestinationBuilder ??
                   ((context) => AuthorizedRoute());

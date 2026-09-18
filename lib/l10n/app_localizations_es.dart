@@ -3035,4 +3035,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get readOnly => 'Solo lectura';
+
+  @override
+  String get productTourStarting =>
+      'Tu recorrido por la app está a punto de comenzar.';
 }

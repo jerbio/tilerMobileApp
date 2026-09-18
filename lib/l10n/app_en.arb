@@ -2036,5 +2036,6 @@
       }
     },
     "noResultsForProvider": "No results from this calendar",
-    "readOnly": "Read-only"
+    "readOnly": "Read-only",
+  "productTourStarting": "Your product tour is about to begin."
 }
