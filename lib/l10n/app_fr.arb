@@ -884,5 +884,22 @@
   "scheduleFullnessValue": "Charge cible de {percentage} %",
   "balanced": "Équilibré",
   "fuller": "Plus chargé",
-  "lighter": "Plus léger"
+  "lighter": "Plus léger",
+  "searchSourceBadgeTiler": "Tiler",
+  "searchSourceBadgeGoogle": "Google",
+  "searchSourceBadgeMicrosoft": "Microsoft",
+  "searchConnectedAccount": "via {account}",
+  "searchPartialFailureWarning": "Certains calendriers n'ont pas pu être recherchés.",
+  "searchUnavailableMessage": "La recherche est temporairement indisponible. Veuillez réessayer.",
+  "searchRetry": "Réessayer",
+  "searchResultsForQuery": "{count} résultats pour \"{query}\"",
+  "searchFilterAll": "Tous",
+  "searchFilterTiler": "Tiler",
+  "searchFilterGoogle": "Google",
+  "searchFilterOutlook": "Outlook",
+  "startNow": "Commencer maintenant",
+  "dueOnDate": "Échéance {date}",
+  "noResultsForProvider": "Aucun résultat dans ce calendrier",
+  "readOnly": "Lecture seule",
+  "productTourStarting": "Votre visite guidée de l'application va commencer."
 }

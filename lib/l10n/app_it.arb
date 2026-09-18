@@ -884,5 +884,22 @@
   "scheduleFullnessValue": "Piena target del {percentage}%",
   "balanced": "Equilibrata",
   "fuller": "Più piena",
-  "lighter": "Più leggera"
+  "lighter": "Più leggera",
+  "searchSourceBadgeTiler": "Tiler",
+  "searchSourceBadgeGoogle": "Google",
+  "searchSourceBadgeMicrosoft": "Microsoft",
+  "searchConnectedAccount": "tramite {account}",
+  "searchPartialFailureWarning": "Non è stato possibile cercare alcuni calendari.",
+  "searchUnavailableMessage": "La ricerca è temporaneamente non disponibile. Riprova.",
+  "searchRetry": "Riprova",
+  "searchResultsForQuery": "{count} risultati per \"{query}\"",
+  "searchFilterAll": "Tutti",
+  "searchFilterTiler": "Tiler",
+  "searchFilterGoogle": "Google",
+  "searchFilterOutlook": "Outlook",
+  "startNow": "Inizia ora",
+  "dueOnDate": "Scadenza {date}",
+  "noResultsForProvider": "Nessun risultato da questo calendario",
+  "readOnly": "Sola lettura",
+  "productTourStarting": "Il tour dell'app sta per iniziare."
 }

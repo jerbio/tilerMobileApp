@@ -884,5 +884,22 @@
   "scheduleFullnessValue": "Preenchimento alvo de {percentage}%",
   "balanced": "Equilibrado",
   "fuller": "Mais cheio",
-  "lighter": "Mais leve"
+  "lighter": "Mais leve",
+  "searchSourceBadgeTiler": "Tiler",
+  "searchSourceBadgeGoogle": "Google",
+  "searchSourceBadgeMicrosoft": "Microsoft",
+  "searchConnectedAccount": "via {account}",
+  "searchPartialFailureWarning": "Não foi possível pesquisar alguns calendários.",
+  "searchUnavailableMessage": "A pesquisa está temporariamente indisponível. Tente novamente.",
+  "searchRetry": "Tentar novamente",
+  "searchResultsForQuery": "{count} resultados para \"{query}\"",
+  "searchFilterAll": "Todos",
+  "searchFilterTiler": "Tiler",
+  "searchFilterGoogle": "Google",
+  "searchFilterOutlook": "Outlook",
+  "startNow": "Começar agora",
+  "dueOnDate": "Vence {date}",
+  "noResultsForProvider": "Sem resultados deste calendário",
+  "readOnly": "Somente leitura",
+  "productTourStarting": "O tour da app está prestes a começar."
 }

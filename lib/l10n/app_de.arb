@@ -884,5 +884,22 @@
   "scheduleFullnessValue": "{percentage} % Ziel-Auslastung",
   "balanced": "Ausgewogen",
   "fuller": "Volller",
-  "lighter": "Leichter"
+  "lighter": "Leichter",
+  "searchSourceBadgeTiler": "Tiler",
+  "searchSourceBadgeGoogle": "Google",
+  "searchSourceBadgeMicrosoft": "Microsoft",
+  "searchConnectedAccount": "über {account}",
+  "searchPartialFailureWarning": "Einige Kalender konnten nicht durchsucht werden.",
+  "searchUnavailableMessage": "Die Suche ist vorübergehend nicht verfügbar. Bitte versuche es erneut.",
+  "searchRetry": "Erneut versuchen",
+  "searchResultsForQuery": "{count} Ergebnisse für \"{query}\"",
+  "searchFilterAll": "Alle",
+  "searchFilterTiler": "Tiler",
+  "searchFilterGoogle": "Google",
+  "searchFilterOutlook": "Outlook",
+  "startNow": "Jetzt starten",
+  "dueOnDate": "Fällig am {date}",
+  "noResultsForProvider": "Keine Ergebnisse aus diesem Kalender",
+  "readOnly": "Nur Lesezugriff",
+  "productTourStarting": "Deine Produktführung beginnt gleich."
 }

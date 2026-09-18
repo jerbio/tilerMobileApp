@@ -885,5 +885,22 @@
   "scheduleFullnessValue": "目標充実度{percentage}%",
   "balanced": "バランス",
   "fuller": "充実",
-  "lighter": "軽め"
+  "lighter": "軽め",
+  "searchSourceBadgeTiler": "Tiler",
+  "searchSourceBadgeGoogle": "Google",
+  "searchSourceBadgeMicrosoft": "Microsoft",
+  "searchConnectedAccount": "{account} 経由",
+  "searchPartialFailureWarning": "一部の予定を検索できませんでした。",
+  "searchUnavailableMessage": "検索は一時的に利用できません。もう一度お試しください。",
+  "searchRetry": "再試行",
+  "searchResultsForQuery": "\"{query}\" の結果: {count} 件",
+  "searchFilterAll": "すべて",
+  "searchFilterTiler": "Tiler",
+  "searchFilterGoogle": "Google",
+  "searchFilterOutlook": "Outlook",
+  "startNow": "今すぐ開始",
+  "dueOnDate": "期限: {date}",
+  "noResultsForProvider": "このカレンダーに結果はありません",
+  "readOnly": "読み取り専用",
+  "productTourStarting": "アプリのツアーがまもなく始まります。"
 }
