@@ -259,19 +259,17 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String searchConnectedAccount(String account) {
-    return 'via $account';
+    return '$account 経由';
   }
 
   @override
-  String get searchPartialFailureWarning =>
-      'Some calendars couldn\'t be searched.';
+  String get searchPartialFailureWarning => '一部の予定を検索できませんでした。';
 
   @override
-  String get searchUnavailableMessage =>
-      'Search is temporarily unavailable. Please try again.';
+  String get searchUnavailableMessage => '検索は一時的に利用できません。もう一度お試しください。';
 
   @override
-  String get searchRetry => 'Retry';
+  String get searchRetry => '再試行';
 
   @override
   String get noLocationMatchWasFound => '一致する場所が見つかりません';
@@ -3584,11 +3582,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String searchResultsForQuery(int count, String query) {
-    return '$count results for \"$query\"';
+    return '\"$query\" の結果: $count 件';
   }
 
   @override
-  String get searchFilterAll => 'All';
+  String get searchFilterAll => 'すべて';
 
   @override
   String get searchFilterTiler => 'Tiler';
@@ -3600,16 +3598,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get searchFilterOutlook => 'Outlook';
 
   @override
-  String get startNow => 'Start now';
+  String get startNow => '今すぐ開始';
 
   @override
   String dueOnDate(String date) {
-    return 'Due $date';
+    return '期限: $date';
   }
 
   @override
-  String get noResultsForProvider => 'No results from this calendar';
+  String get noResultsForProvider => 'このカレンダーに結果はありません';
 
   @override
-  String get readOnly => 'Read-only';
+  String get readOnly => '読み取り専用';
+
+  @override
+  String get productTourStarting => 'アプリのツアーがまもなく始まります。';
 }

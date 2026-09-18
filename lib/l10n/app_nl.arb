@@ -884,5 +884,22 @@
   "scheduleFullnessValue": "Doelvolledigheid {percentage} %",
   "balanced": "Gebalanceerd",
   "fuller": "Voller",
-  "lighter": "Lichter"
+  "lighter": "Lichter",
+  "searchSourceBadgeTiler": "Tiler",
+  "searchSourceBadgeGoogle": "Google",
+  "searchSourceBadgeMicrosoft": "Microsoft",
+  "searchConnectedAccount": "via {account}",
+  "searchPartialFailureWarning": "In sommige agenda's kon niet gezocht worden.",
+  "searchUnavailableMessage": "Zoeken is tijdelijk niet beschikbaar. Probeer het opnieuw.",
+  "searchRetry": "Opnieuw proberen",
+  "searchResultsForQuery": "{count} resultaten voor \"{query}\"",
+  "searchFilterAll": "Alles",
+  "searchFilterTiler": "Tiler",
+  "searchFilterGoogle": "Google",
+  "searchFilterOutlook": "Outlook",
+  "startNow": "Nu starten",
+  "dueOnDate": "Verloopt op {date}",
+  "noResultsForProvider": "Geen resultaten uit deze agenda",
+  "readOnly": "Alleen-lezen",
+  "productTourStarting": "Je rondleiding door de app staat op het punt te beginnen."
 }

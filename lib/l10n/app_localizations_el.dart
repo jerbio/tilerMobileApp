@@ -269,19 +269,19 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String searchConnectedAccount(String account) {
-    return 'via $account';
+    return 'μέσω $account';
   }
 
   @override
   String get searchPartialFailureWarning =>
-      'Some calendars couldn\'t be searched.';
+      'Δεν ήταν δυνατή η αναζήτηση σε ορισμένα ημερολόγια.';
 
   @override
   String get searchUnavailableMessage =>
-      'Search is temporarily unavailable. Please try again.';
+      'Η αναζήτηση δεν είναι διαθέσιμη προσωρινά. Παρακαλώ δοκίμασε ξανά.';
 
   @override
-  String get searchRetry => 'Retry';
+  String get searchRetry => 'Νέα προσπάθεια';
 
   @override
   String get noLocationMatchWasFound => 'Δεν βρέθηκε τοποθεσία';
@@ -3663,11 +3663,11 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String searchResultsForQuery(int count, String query) {
-    return '$count results for \"$query\"';
+    return '$count αποτελέσματα για \"$query\"';
   }
 
   @override
-  String get searchFilterAll => 'All';
+  String get searchFilterAll => 'Όλα';
 
   @override
   String get searchFilterTiler => 'Tiler';
@@ -3679,16 +3679,21 @@ class AppLocalizationsEl extends AppLocalizations {
   String get searchFilterOutlook => 'Outlook';
 
   @override
-  String get startNow => 'Start now';
+  String get startNow => 'Έναρξη τώρα';
 
   @override
   String dueOnDate(String date) {
-    return 'Due $date';
+    return 'Λήξη $date';
   }
 
   @override
-  String get noResultsForProvider => 'No results from this calendar';
+  String get noResultsForProvider =>
+      'Δεν υπάρχουν αποτελέσματα από αυτό το ημερολόγιο';
 
   @override
-  String get readOnly => 'Read-only';
+  String get readOnly => 'Μόνο ανάγνωση';
+
+  @override
+  String get productTourStarting =>
+      'Η περιήγηση στην εφαρμογή σου πρόκειται να αρχίσει.';
 }

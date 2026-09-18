@@ -269,19 +269,19 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String searchConnectedAccount(String account) {
-    return 'via $account';
+    return 'tramite $account';
   }
 
   @override
   String get searchPartialFailureWarning =>
-      'Some calendars couldn\'t be searched.';
+      'Non è stato possibile cercare alcuni calendari.';
 
   @override
   String get searchUnavailableMessage =>
-      'Search is temporarily unavailable. Please try again.';
+      'La ricerca è temporaneamente non disponibile. Riprova.';
 
   @override
-  String get searchRetry => 'Retry';
+  String get searchRetry => 'Riprova';
 
   @override
   String get noLocationMatchWasFound =>
@@ -3666,11 +3666,11 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String searchResultsForQuery(int count, String query) {
-    return '$count results for \"$query\"';
+    return '$count risultati per \"$query\"';
   }
 
   @override
-  String get searchFilterAll => 'All';
+  String get searchFilterAll => 'Tutti';
 
   @override
   String get searchFilterTiler => 'Tiler';
@@ -3682,16 +3682,19 @@ class AppLocalizationsIt extends AppLocalizations {
   String get searchFilterOutlook => 'Outlook';
 
   @override
-  String get startNow => 'Start now';
+  String get startNow => 'Inizia ora';
 
   @override
   String dueOnDate(String date) {
-    return 'Due $date';
+    return 'Scadenza $date';
   }
 
   @override
-  String get noResultsForProvider => 'No results from this calendar';
+  String get noResultsForProvider => 'Nessun risultato da questo calendario';
 
   @override
-  String get readOnly => 'Read-only';
+  String get readOnly => 'Sola lettura';
+
+  @override
+  String get productTourStarting => 'Il tour dell\'app sta per iniziare.';
 }

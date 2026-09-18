@@ -884,5 +884,22 @@
   "scheduleFullnessValue": "Στόχος πλήρωσης {percentage}%",
   "balanced": "Ισορροπημένο",
   "fuller": "Πιο γεμάτο",
-  "lighter": "Πιο ελαφρύ"
+  "lighter": "Πιο ελαφρύ",
+  "searchSourceBadgeTiler": "Tiler",
+  "searchSourceBadgeGoogle": "Google",
+  "searchSourceBadgeMicrosoft": "Microsoft",
+  "searchConnectedAccount": "μέσω {account}",
+  "searchPartialFailureWarning": "Δεν ήταν δυνατή η αναζήτηση σε ορισμένα ημερολόγια.",
+  "searchUnavailableMessage": "Η αναζήτηση δεν είναι διαθέσιμη προσωρινά. Παρακαλώ δοκίμασε ξανά.",
+  "searchRetry": "Νέα προσπάθεια",
+  "searchResultsForQuery": "{count} αποτελέσματα για \"{query}\"",
+  "searchFilterAll": "Όλα",
+  "searchFilterTiler": "Tiler",
+  "searchFilterGoogle": "Google",
+  "searchFilterOutlook": "Outlook",
+  "startNow": "Έναρξη τώρα",
+  "dueOnDate": "Λήξη {date}",
+  "noResultsForProvider": "Δεν υπάρχουν αποτελέσματα από αυτό το ημερολόγιο",
+  "readOnly": "Μόνο ανάγνωση",
+  "productTourStarting": "Η περιήγηση στην εφαρμογή σου πρόκειται να αρχίσει."
 }

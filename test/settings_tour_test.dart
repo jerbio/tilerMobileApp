@@ -511,10 +511,14 @@ void main() {
               'The multi-tour path must never write the legacy flag (1.2).');
       expect(find.byType(Settings), findsOneWidget,
           reason: 'The row acts in place; tapping it must not navigate away.');
+      expect(capturedBloc.state.isActive, isTrue);
+      expect(find.text(l10n.productTourStarting), findsOneWidget);
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(milliseconds: 600));
     });
 
     testWidgets(
-        'after tapping the row the next settings visit replays the tour and '
+        'tapping the row announces and immediately starts the settings tour and '
         'the home tour is primed to replay as well', (tester) async {
       SharedPreferences.setMockInitialValues({
         'hasCompletedTour_home': true,
@@ -534,26 +538,20 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      // Leave the settings surface.
-      await tester.pumpWidget(const SizedBox.shrink());
-
-      // Visit 2: the settings tour replays from step 1.
-      await tester.pumpWidget(settingsHarness(
-        key: const Key('second'),
-        stepsBuilder: buildSettingsTourSteps,
-      ));
-      await tester.pump(_settle);
-      await tester.pump(); // post-frame key resolution
+      expect(find.text(l10n.productTourStarting), findsOneWidget);
       await tester.pump(_fade);
 
       expect(capturedBloc.state.isActive, isTrue,
-          reason: '"How to use Tiler" must replay the tour on the next visit.');
+          reason:
+              '"How to use Tiler" must start the tour without leaving Settings.');
       expect(capturedBloc.state.currentStepIndex, 0);
 
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool('hasCompletedTour_home'), isFalse,
           reason:
               'The home tour must be primed for replay on the next home visit.');
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pump(const Duration(milliseconds: 600));
     });
   });
 }
