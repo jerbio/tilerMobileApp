@@ -6,7 +6,6 @@ class WeeklyUiDateManagerState extends Equatable {
   final DateTime tempDate;
   final List<DateTime> tempSelectedWeek;
 
-
   const WeeklyUiDateManagerState({
     required this.selectedDate,
     required this.selectedWeek,
@@ -15,21 +14,20 @@ class WeeklyUiDateManagerState extends Equatable {
   });
 
   @override
-  List<Object?> get props => [selectedDate, selectedWeek, tempDate,  tempSelectedWeek];
-
+  List<Object?> get props =>
+      [selectedDate, selectedWeek, tempDate, tempSelectedWeek];
 
   WeeklyUiDateManagerState copyWith({
     DateTime? selectedDate,
     List<DateTime>? selectedWeek,
     DateTime? tempDate,
     List<DateTime>? tempSelectedWeek,
-
   }) {
     return WeeklyUiDateManagerState(
       selectedDate: selectedDate ?? this.selectedDate,
       selectedWeek: selectedWeek ?? this.selectedWeek,
       tempDate: tempDate ?? this.tempDate,
-      tempSelectedWeek: tempSelectedWeek ??this.tempSelectedWeek,
+      tempSelectedWeek: tempSelectedWeek ?? this.tempSelectedWeek,
     );
   }
 }

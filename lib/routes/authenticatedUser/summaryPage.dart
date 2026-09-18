@@ -10,7 +10,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
@@ -352,7 +352,7 @@ class _SummaryPage extends State<SummaryPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditTile(
+        builder: (context) => EditTileRoute(
           tileId: (subCalendarEventTile.isFromTiler
                   ? subCalendarEventTile.id
                   : subCalendarEventTile.thirdpartyId) ??

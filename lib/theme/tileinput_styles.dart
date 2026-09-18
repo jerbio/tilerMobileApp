@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+
 class TileInputStyles {
   TileInputStyles._();
 
-  static InputDecoration generateTextInputDecoration(
-       {
-         String? inputHint,
-        Icon? prefixIcon,
-        required fillColor,
-        required borderColor,
-        required hintTextColor,
-      }) {
+  static InputDecoration generateTextInputDecoration({
+    String? inputHint,
+    Icon? prefixIcon,
+    required fillColor,
+    required borderColor,
+    required hintTextColor,
+  }) {
     return InputDecoration(
       hintText: inputHint,
       filled: true,

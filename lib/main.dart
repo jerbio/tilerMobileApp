@@ -23,16 +23,12 @@ import 'package:tiler_app/components/tutorial/tours/settingsTour.dart';
 import 'package:tiler_app/components/tutorial/tours/tilePreferencesTour.dart';
 import 'package:tiler_app/components/vibeChat/vibeChat.dart';
 // import 'package:tiler_app/firebase_options.dart';
-import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/procrastinateAll.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/repetitionRoute.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
-import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRedesignScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/account%20info/accountInfo.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/connetions.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
@@ -215,26 +211,25 @@ class _TilerAppState extends State<TilerApp> {
                   '/AuthorizedUser': (BuildContext context) =>
                       new AuthorizedRoute(),
                   '/LoggedOut': (BuildContext context) => new SignInRoute(),
-                  '/AddTile': (BuildContext context) => new AddTile(),
+                  // Add Tile: ONE entry for every push site (D65, D66).
+                  '/AddTile': (BuildContext context) => const AddTileEntry(),
+                  // Edit Tile redesign shell (Phase 1, Step 1.4). Its own
+                  // route so it can be reviewed independently of the legacy
+                  // EditTile screen, which every production entry point still
+                  // pushes directly. Arguments: EditTileRedesignRouteArgs or a
+                  // {tileId, source?, thirdPartyUserId?} map.
+                  '/EditTileRedesign': (BuildContext context) {
+                    final EditTileRedesignRouteArgs? args =
+                        EditTileRedesignRouteArgs.from(
+                            ModalRoute.of(context)?.settings.arguments);
+                    return buildEditTileRedesign(context,
+                        args ?? const EditTileRedesignRouteArgs(tileId: ''));
+                  },
                   '/SearchTile': (BuildContext context) =>
                       new EventNameSearchWidget(context: context),
-                  '/LocationRoute': (BuildContext context) =>
-                      new LocationRoute(),
-                  '/CustomRestrictionsRoute': (BuildContext context) =>
-                      new CustomTimeRestrictionRoute(),
-                  '/TimeRestrictionRoute': (BuildContext context) =>
-                      new TimeRestrictionRoute(),
                   '/ForecastPreview': (ctx) => ForecastPreview(),
                   '/ForecastDuration': (ctx) => ForecastDuration(),
                   '/Procrastinate': (ctx) => ProcrastinateAll(),
-                  '/DurationDial': (ctx) => DurationDial(
-                        presetDurations: [
-                          Duration(minutes: 30),
-                          Duration(hours: 1),
-                        ],
-                      ),
-                  '/RepetitionRoute': (ctx) => RepetitionRoute(),
-                  '/PickColor': (ctx) => PickColor(),
                   '/Setting': buildSettingsRoute,
                   '/Integrations': (ctx) => IntegrationWidgetRoute(),
                   '/OnBoarding': (ctx) => OnboardingView(),

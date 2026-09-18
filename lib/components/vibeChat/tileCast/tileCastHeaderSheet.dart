@@ -164,9 +164,8 @@ class _TileCastHeaderSheetState extends State<TileCastHeaderSheet>
   void _onDragEnd(DragEndDetails details) {
     _dragging = false;
     final velocity = details.primaryVelocity ?? 0;
-    final bool open = velocity.abs() > 250
-        ? velocity > 0
-        : _controller.value >= 0.5;
+    final bool open =
+        velocity.abs() > 250 ? velocity > 0 : _controller.value >= 0.5;
     _pinned = open;
     if (_reduceMotion) {
       _controller.value = open ? 1 : 0;
@@ -190,7 +189,8 @@ class _TileCastHeaderSheetState extends State<TileCastHeaderSheet>
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final tileTheme = Theme.of(context).extension<TileThemeExtension>();
-    final stripColor = tileTheme?.primaryContainerLow ?? colorScheme.primaryContainer;
+    final stripColor =
+        tileTheme?.primaryContainerLow ?? colorScheme.primaryContainer;
     final localization = AppLocalizations.of(context)!;
     final bool hasWarning = widget.isNonViable || widget.isStale;
 
@@ -217,7 +217,8 @@ class _TileCastHeaderSheetState extends State<TileCastHeaderSheet>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildStrip(context, colorScheme, localization, hasWarning, stripColor),
+            _buildStrip(
+                context, colorScheme, localization, hasWarning, stripColor),
             _buildSlidingTitle(context, colorScheme, localization, stripColor),
           ],
         ),
@@ -360,8 +361,8 @@ class _TileCastHeaderSheetState extends State<TileCastHeaderSheet>
                 alignment: Alignment.center,
                 child: Container(
                   key: TileCastHeaderSheet.nonViableKey,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: colorScheme.errorContainer,
                     borderRadius: BorderRadius.circular(12),

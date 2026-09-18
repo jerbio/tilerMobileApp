@@ -81,7 +81,7 @@ class HelperClass {
               polylineId: PolylineId('route'),
               points: _convertToLatLng(_decodePoly(points)),
               width: 4,
-              color:  TileColors.bluePolyline,
+              color: TileColors.bluePolyline,
             ),
           },
           markers: {

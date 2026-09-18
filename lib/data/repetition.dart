@@ -90,8 +90,11 @@ class Repetition extends TilerObj {
           frequency: this.frequency ?? RepetitionFrequency.none,
           repetitionStart: this.repetitionTimeline?.startTime,
           repetitionEnd: this.repetitionTimeline?.endTime,
-          weeklyRepetition: Set.from(
-              (this.weekday ?? []).map((e) => Utility.weekdays.indexOf(e))),
+          // Case-insensitive, and an unknown name is dropped rather than
+          // indexed as -1 (which read as "the day before Sunday").
+          weeklyRepetition: Set.from((this.weekday ?? [])
+              .map((e) => Utility.weekdays.indexOf(e.toLowerCase()))
+              .where((int i) => i >= 0)),
           isEnabled: this.isEnabled ?? false);
       retValue.isForever = this.isForever ?? false;
     }

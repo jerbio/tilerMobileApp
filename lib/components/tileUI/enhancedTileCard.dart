@@ -7,7 +7,7 @@ import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
@@ -487,8 +487,8 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                             if (location != null) ...[
                               const SizedBox(width: 8),
                               GestureDetector(
-                                key: const ValueKey(
-                                    'compactTileLocationButton'),
+                                key:
+                                    const ValueKey('compactTileLocationButton'),
                                 behavior: HitTestBehavior.opaque,
                                 onTap: _onLocationTap,
                                 child: ConstrainedBox(
@@ -503,8 +503,7 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                                       color: rsvpStyle.useOutlineStyle
                                           ? tileColor.withOpacity(0.1)
                                           : Colors.white.withOpacity(0.15),
-                                      borderRadius:
-                                          BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -516,9 +515,8 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                                         ),
                                         const SizedBox(width: 6),
                                         ConstrainedBox(
-                                          constraints:
-                                              const BoxConstraints(
-                                                  maxWidth: 104),
+                                          constraints: const BoxConstraints(
+                                              maxWidth: 104),
                                           child: Text(
                                             location,
                                             maxLines: 1,
@@ -653,7 +651,7 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditTile(
+                    builder: (context) => EditTileRoute(
                       tileId: (widget.subEvent.isFromTiler
                               ? widget.subEvent.id
                               : widget.subEvent.thirdpartyId) ??
@@ -1378,7 +1376,7 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EditTile(
+                      builder: (context) => EditTileRoute(
                         tileId: widget.subEvent.id ?? "",
                         tileSource: widget.subEvent.thirdpartyType,
                         thirdPartyUserId: widget.subEvent.thirdPartyUserId,

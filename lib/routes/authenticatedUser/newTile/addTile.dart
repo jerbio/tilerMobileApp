@@ -27,7 +27,6 @@ import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/singleChoice.dart';
 
-import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -417,9 +416,8 @@ class AddTileState extends State<AddTile> {
       // directly-cancellable Timer (not Future.delayed(...).asStream().listen)
       // so dispose() can cancel the underlying timer instead of leaving it
       // pending after teardown.
-      pendingSendTextTimer =
-          Timer(const Duration(milliseconds: Constants.onTextChangeDelayInMs),
-              () {
+      pendingSendTextTimer = Timer(
+          const Duration(milliseconds: Constants.onTextChangeDelayInMs), () {
         if (!mounted) {
           return;
         }

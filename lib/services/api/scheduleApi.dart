@@ -514,12 +514,14 @@ class ScheduleApi extends AppApi {
     });
   }
 
-  Future buzzSchedule() async {
+  Future buzzSchedule({bool includeLocationParams = true}) async {
     TilerError error = new TilerError();
     error.Message =
         LocalizationService.instance.translations.failedToBuzzSchedule;
 
-    return sendPostRequest('api/Schedule/Buzz', {}).then((response) {
+    return sendPostRequest('api/Schedule/Buzz', {},
+            injectLocation: includeLocationParams)
+        .then((response) {
       var jsonResult = jsonDecode(response.body);
       error.Message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {

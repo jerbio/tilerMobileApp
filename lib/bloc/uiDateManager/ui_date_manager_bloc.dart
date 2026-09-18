@@ -7,13 +7,12 @@ import 'package:tiler_app/data/timeline.dart';
 import '../../services/analyticsSignal.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
-
-
 part 'ui_date_manager_event.dart';
 part 'ui_date_manager_state.dart';
 
 class UiDateManagerBloc extends Bloc<UiDateManagerEvent, UiDateManagerState> {
-  final CarouselSliderController dayRibbonCarouselController = CarouselSliderController();
+  final CarouselSliderController dayRibbonCarouselController =
+      CarouselSliderController();
   final Map<int, Tuple2<int, Timeline>> universalIndexToBatch = {};
 
   UiDateManagerBloc()

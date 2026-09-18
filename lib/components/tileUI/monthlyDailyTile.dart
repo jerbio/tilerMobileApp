@@ -6,7 +6,6 @@ import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 
-
 class MonthlyDailyTile extends StatelessWidget {
   late SubCalendarEvent subEvent;
 
@@ -17,21 +16,21 @@ class MonthlyDailyTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>();
     int redColor = subEvent.colorRed ?? 127;
     int blueColor = subEvent.colorBlue ?? 127;
     int greenColor = subEvent.colorGreen ?? 127;
-    var tileBackGroundColor = Color.fromRGBO(
-        redColor, greenColor, blueColor, 0.2);
+    var tileBackGroundColor =
+        Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
     return FractionallySizedBox(
       widthFactor: TileDimensions.tileWidthRatio,
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 10),
-        padding:  EdgeInsets.symmetric(vertical: 15),
+        padding: EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
-          color:tileBackGroundColor,
+          color: tileBackGroundColor,
           borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
           boxShadow: [
             BoxShadow(
@@ -49,13 +48,18 @@ class MonthlyDailyTile extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: TileName(subEvent),
             ),
-            if (subEvent.address != null && subEvent.address!.isNotEmpty||subEvent.searchdDescription !=null && subEvent.searchdDescription!.isNotEmpty)
+            if (subEvent.address != null && subEvent.address!.isNotEmpty ||
+                subEvent.searchdDescription != null &&
+                    subEvent.searchdDescription!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: TileAddress(subEvent,isMonthlyView: true,),
+                child: TileAddress(
+                  subEvent,
+                  isMonthlyView: true,
+                ),
               ),
             Padding(
-              padding: const EdgeInsets.only(left:18.0,top: 8,bottom: 8),
+              padding: const EdgeInsets.only(left: 18.0, top: 8, bottom: 8),
               child: Row(
                 children: [
                   Container(

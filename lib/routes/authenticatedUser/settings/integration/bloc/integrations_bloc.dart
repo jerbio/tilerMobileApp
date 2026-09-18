@@ -90,19 +90,17 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
     Future<String> Function(String provider)? startCalendarConnect,
     Future<void> Function(Uri url)? launchAuthorizationUrl,
   }) {
-    final api =
-        integrationApi ?? IntegrationApi(getContextCallBack: getContextCallBack);
+    final api = integrationApi ??
+        IntegrationApi(getContextCallBack: getContextCallBack);
     return IntegrationsBloc._(
       integrationApi: api,
       integrationType: integrationType,
-      startCalendarConnect:
-          startCalendarConnect ?? (provider) => _defaultStartCalendarConnect(api, provider),
+      startCalendarConnect: startCalendarConnect ??
+          (provider) => _defaultStartCalendarConnect(api, provider),
       launchAuthorizationUrl:
           launchAuthorizationUrl ?? _launchInExternalBrowser,
     );
   }
-
-  
 
   static Future<void> _launchInExternalBrowser(Uri authorizationUrl) async {
     final bool launched =
@@ -127,7 +125,7 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
       final integrationsForProvider = (integrations ?? [])
           .where((integration) =>
               IntegrationType.fromProviderName(integration.calendarType) ==
-                  integrationType)
+              integrationType)
           .toList();
       emit(IntegrationsLoaded(integrations: integrationsForProvider));
     } catch (e) {
@@ -149,8 +147,8 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
         // TilerError carrying the server's message on failure.
         await _integrationApi.deleteIntegration(event.integration);
 
-        final index = currentIntegrations
-            .indexWhere((integration) => integration.id == event.integration.id);
+        final index = currentIntegrations.indexWhere(
+            (integration) => integration.id == event.integration.id);
         if (index == -1) {
           emit(IntegrationsError(
             errorMessage: "Failed to delete integration",

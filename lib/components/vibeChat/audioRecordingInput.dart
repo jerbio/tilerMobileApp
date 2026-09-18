@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
@@ -13,8 +12,8 @@ class AudioRecordingInput extends StatefulWidget {
   State<AudioRecordingInput> createState() => _AudioRecordingInputState();
 }
 
-class _AudioRecordingInputState extends State<AudioRecordingInput>  with TickerProviderStateMixin {
-
+class _AudioRecordingInputState extends State<AudioRecordingInput>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   StreamSubscription<double>? _amplitudeSubscription;
   double _currentAmplitude = 0.2;
@@ -29,11 +28,10 @@ class _AudioRecordingInputState extends State<AudioRecordingInput>  with TickerP
 
     _subscribeToAmplitude();
   }
+
   void _subscribeToAmplitude() {
-    _amplitudeSubscription = context
-        .read<VibeChatBloc>()
-        .amplitudeStream
-        .listen((amplitude) {
+    _amplitudeSubscription =
+        context.read<VibeChatBloc>().amplitudeStream.listen((amplitude) {
       if (mounted) {
         setState(() {
           _currentAmplitude = amplitude.clamp(0.1, 1.0);
@@ -52,14 +50,16 @@ class _AudioRecordingInputState extends State<AudioRecordingInput>  with TickerP
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final tileThemeExtension = Theme.of(context).extension<TileThemeExtension>()!;
+    final tileThemeExtension =
+        Theme.of(context).extension<TileThemeExtension>()!;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(width: 4),
         IconButton(
-          onPressed: () => context.read<VibeChatBloc>().add(CancelRecordingEvent()),
+          onPressed: () =>
+              context.read<VibeChatBloc>().add(CancelRecordingEvent()),
           icon: Icon(Icons.close),
           iconSize: 20,
           style: IconButton.styleFrom(
@@ -71,7 +71,6 @@ class _AudioRecordingInputState extends State<AudioRecordingInput>  with TickerP
           ),
         ),
         SizedBox(width: 4),
-
         Expanded(
           child: Container(
             height: 60,
@@ -95,7 +94,9 @@ class _AudioRecordingInputState extends State<AudioRecordingInput>  with TickerP
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
           child: IconButton(
-            onPressed: () => context.read<VibeChatBloc>().add(StopRecordingAndTranscribeEvent()),
+            onPressed: () => context
+                .read<VibeChatBloc>()
+                .add(StopRecordingAndTranscribeEvent()),
             icon: Icon(Icons.stop),
             iconSize: 20,
             style: IconButton.styleFrom(

@@ -43,12 +43,13 @@ class WhatIfApi extends AppApi {
     }
   }
 
-  // Update SubEvent
-  Future<Tuple2<Preview, Preview>?> updateSubEvent(
-      EditTilerEvent subEvent) async {
-    TilerError error = new TilerError();
-    error.Message = "Did not update tile";
-    var queryParameters = {
+  /// The query map the preview sends, built without sending it.
+  ///
+  /// The update map minus `RsvpStatusUpdate` — a preview never carries an
+  /// RSVP change. Static so `edit_tile_payload_baseline_test.dart` can pin
+  /// it (Edit Tile redesign, Step 0.1).
+  static Map<String, dynamic> subEventEditParams(EditTilerEvent subEvent) {
+    return <String, dynamic>{
       'EventID': subEvent.id,
       'EventName': subEvent.name,
       'Start': subEvent.startTime!.toUtc().millisecondsSinceEpoch.toString(),
@@ -62,6 +63,14 @@ class WhatIfApi extends AppApi {
       'ThirdPartyType': subEvent.thirdPartyType.toString(),
       'Notes': subEvent.note.toString(),
     };
+  }
+
+  // Update SubEvent
+  Future<Tuple2<Preview, Preview>?> updateSubEvent(
+      EditTilerEvent subEvent) async {
+    TilerError error = new TilerError();
+    error.Message = "Did not update tile";
+    final Map<String, dynamic> queryParameters = subEventEditParams(subEvent);
     Future<Tuple2<Preview, Preview>?> retValue = sendPostRequest(
             'api/WhatIf/SubeventEdit', queryParameters,
             analyze: false)

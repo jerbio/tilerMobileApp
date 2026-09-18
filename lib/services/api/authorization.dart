@@ -113,7 +113,8 @@ class AuthorizationApi extends AppApi {
 
       final String? identityToken = credential.identityToken;
       if (identityToken == null || identityToken.isEmpty) {
-        throw TilerError(Message: 'Apple sign-in did not return an identity token');
+        throw TilerError(
+            Message: 'Apple sign-in did not return an identity token');
       }
 
       final String firstName = credential.givenName ?? '';

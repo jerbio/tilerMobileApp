@@ -111,12 +111,12 @@ class RedirectHandler {
         }
         // Navigate to the integrations page for the provider that owns the
         // new integration; the fresh bloc triggers the list refresh.
-        _navigateToConnectedIntegration(
-            context, calendarReturn.integrationId);
+        _navigateToConnectedIntegration(context, calendarReturn.integrationId);
         break;
       case CalendarConnectOutcome.declined:
         if (localization != null) {
-          notification.showToast(context,
+          notification.showToast(
+              context,
               localization.calendarConnectionDeclined,
               NotificationOverlayMessageType.warning);
         }
@@ -131,8 +131,7 @@ class RedirectHandler {
               'Calendar connect failed: reason=${calendarReturn.reason}');
         }
         if (localization != null) {
-          notification.showToast(context,
-              localization.calendarConnectionError,
+          notification.showToast(context, localization.calendarConnectionError,
               NotificationOverlayMessageType.error);
         }
         break;
@@ -180,7 +179,14 @@ class RedirectHandler {
       Navigator.pushNamed(context, Connections.routeName);
       return;
     }
-    Navigator.push(
+    // P4-2 fix: use pushReplacement instead of push. On a hot resume the
+    // stale per-provider IntegrationWidgetRoute the user launched auth from
+    // is still the top route of the stack. A plain push left a duplicate
+    // "prior state" page beneath the refreshed one, forcing the user to back
+    // through the stale page before reaching Settings. Replacing the top
+    // route swaps the stale page for the refreshed one so a single Back
+    // lands on Connections.
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => BlocProvider(
@@ -193,8 +199,6 @@ class RedirectHandler {
       ),
     );
   }
-
-  
 
   static void _routeToTileShare(BuildContext context, String uriString) {
     var decodedString = Uri.decodeFull(uriString);

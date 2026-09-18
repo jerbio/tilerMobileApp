@@ -48,11 +48,11 @@ class _GoogleMapSingleRouteState extends State<GoogleMapSingleRoute> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final tileThemeExtension=theme.extension<TileThemeExtension>();
+    final theme = Theme.of(context);
+    final tileThemeExtension = theme.extension<TileThemeExtension>();
     return Scaffold(
         body: GoogleMap(
-          style:tileThemeExtension?.mapStyle ,
+      style: tileThemeExtension?.mapStyle,
       polylines: _polyLines,
       onMapCreated: (controller) {
         _controllerMap = controller;
@@ -103,7 +103,7 @@ class _GoogleMapSingleRouteState extends State<GoogleMapSingleRoute> {
       polylineId: PolylineId("id"),
       consumeTapEvents: true,
       points: polylineCoordinates,
-      color:  TileColors.redPolyline,
+      color: TileColors.redPolyline,
       width: 4,
     );
 
@@ -123,7 +123,7 @@ class _GoogleMapSingleRouteState extends State<GoogleMapSingleRoute> {
       polylineId: PolylineId("123"),
       consumeTapEvents: true,
       points: widget.polylineCoordinates,
-      color:  TileColors.redPolyline,
+      color: TileColors.redPolyline,
       width: 4,
     ));
   }

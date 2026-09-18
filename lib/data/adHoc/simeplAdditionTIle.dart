@@ -6,5 +6,6 @@ class SimpleAdditionTile with PreTile {
   Duration? duration;
   DateTime? endTime;
   Location? location;
-  SimpleAdditionTile({this.description, this.duration, this.endTime, this.location});
+  SimpleAdditionTile(
+      {this.description, this.duration, this.endTime, this.location});
 }

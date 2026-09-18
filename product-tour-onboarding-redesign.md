@@ -7,7 +7,7 @@ minutes earlier; learning happens in context.
 Development follows TDD: write failing test -> implement -> pass ->
 analyze -> refactor. Update the tracker after every red-green-refactor cycle.
 
-Last updated: 2026-09-12
+Last updated: 2026-09-16
 
 **Resume point (pause/error recovery):** Phases 1–3 complete (commits
 `711af31` phase 1, `a10302e` phase 2, `aec0f74` stage 2.4, `70d643c` phase 3).
@@ -16,8 +16,12 @@ to the **Tile Preferences** page (section 3.4); stage 2.5 landed it, and
 stage 3.5 (schedule prefetch during onboarding) followed (`ecf5ab9`). Stage
 4.1 + 5.2 + the overlay remount fix landed in `59f771e`; the day-carousel
 remount fix (3.5 cycle 2) in `a4bd471`; 4.2 in `07686ef`. Stage 4.4
-(welcome explainer) landed. Next: **4.3 — kill-switch flag**
-(`constants.dart`), then 5.1 analytics and 5.3 manual QA.
+(explainer) landed in `ee758ab`; demo relocation, badges and decommission
+landed in `04b808a8`, with documentation in `a369cf22`. Stage 5.1 is
+committed in `625f6f08` (shared analytics consolidation included).
+Stage 5.3 automated display checks are green; accessibility layout fixes are
+uncommitted for review. Next: Android/iOS manual QA and production analytics
+delivery verification.
 Resume protocol: (1) read this block, (2) the section 9 tracker row for
 the next stage, (3) the newest section 10 cycle entry. The tracker and
 cycle log are updated in the same commit as the code, so a mid-stage
@@ -34,15 +38,16 @@ matching commit — re-run that stage's tests to locate the break.
 | Essentials pages & order | 1. Profession (job description) → 2. Location |
 | Skip | One **global Skip** on both pages; terminal; discards unsubmitted data |
 | Submit | Single atomic submit on final page only |
-| Intro slider (`OnBoardingDescriptionSlider`) | Cut — replaced by a single animated **Tiles vs Blocks** explainer on the welcome screen (stage 4.4), shown only to devices that still need the essentials flow; the home tour covers the rest |
+| Intro slider (`OnBoardingDescriptionSlider`) | Deleted (stage 4.3) — replaced by a single animated **Tiles vs Blocks** demo shown right after the essentials pages, on Submit and on Skip (stage 4.4); the home tour covers the rest |
 | Onboarding gate | Local flag only (`essentialsOnboardingDone`); no blocking server round-trip |
 | Sign-in tour | None |
-| Home tour | Existing 8-step tour, unchanged content |
+| Home tour | Six Home UI steps; does not open or close the add-tile sheet |
+| Add-tile tour | Quick Add and Smart Scheduling, triggered by tapping the center Tiler button in HomeBottomNav; independent completion and replay |
 | Settings-list pointer | 1 step; first visit to `/Setting`; points at the Tile Preferences row (discovery only) |
 | Tile Preferences tour | New; 3 steps (transport, work/personal hours, block-out hours); first visit to `/tilePreferences`. This is the tour that teaches how to update AI preferences |
 | Tour frequency | **Once per Tiler device** (SharedPreferences; survives logout; replays on reinstall/new device) |
 | Existing-user seeding | None — everyone gets the settings tour once per device |
-| Manual replay | Settings › "How to use Tiler" resets tours per device |
+| Manual replay | Settings › "How to use Tiler" resets all tours, announces replay with a toast, and starts the Settings tour immediately |
 
 ## 2. Current state (references)
 
@@ -120,8 +125,8 @@ flowchart TD
   check -> post-frame settle delay -> `StartTutorialEvent`.
 - One-tour-at-a-time guard (in-memory coordinator). A tour blocked from
   starting is not marked complete; it retries on next surface visit.
-- `TutorialOverlay` generalized to render any tour's steps; home-specific
-  add-tile-sheet choreography stays scoped to the `home` tour definition.
+- `TutorialOverlay` generalized to render any tour's steps;
+  the add-tile sheet owns a separate `add_tile` tour started on user entry.
 
 ### 3.4 Tour steps
 
@@ -173,13 +178,16 @@ Info / Tile Preferences / Notifications / Connections). Reviewed 2026-09-12
 and cut to the 1-step pointer above: the list rows are self-explanatory,
 and the learning users actually need is on the Tile Preferences page.
 
-### 3.4b Welcome explainer (stage 4.4)
+### 3.4b Tiles vs Blocks demo (stage 4.4)
 
-`WelcomeScreen` runs the local gate immediately. A device that is done
-keeps the 800ms brand beat and routes itself (4.2). A device that still
-needs the essentials flow shows the greeting plus `TilesVsBlocksExplainer`
-(`lib/components/welcome/`) and a "Let's Go!" button — no auto-route; the
-user reads at their own pace.
+Every exit from the essentials pages — Submit and Skip alike — replaces
+the onboarding route with `OnboardingExplainerScreen`
+(`lib/routes/authentication/onboardingExplainerRoute.dart`): headline,
+`TilesVsBlocksExplainer` (`lib/components/welcome/`) and a "Let's Go!"
+button that replaces the whole stack with `AuthorizedRoute`. No auto-route;
+the user reads at their own pace. `WelcomeScreen` is untouched (the 4.2
+beat for everyone). Submit's post-buzz schedule refresh (3.5) is unaffected:
+the schedule bloc is captured before navigation.
 
 The explainer is built in Flutter (no Lottie asset) so captions and card
 labels are localised and colours follow the theme. A mini day timeline
@@ -189,7 +197,7 @@ labels are localised and colours follow the theme. A mini day timeline
 | --- | --- | --- |
 | blocks | "Team standup" 9:00 and "Dentist" 14:00 drop in with a pin | Blocks are fixed. They happen at a set time. |
 | tiles | "Workout", "Write report" (2h), "Groceries" slide into the gaps | Tiles are flexible. Tiler fits them around your blocks. |
-| replan | Dentist jumps to 11:00; the report and groceries tiles re-seat around it | Change a block and Tiler re-plans your tiles. |
+| replan | Dentist card first announces the change ("Moved" badge + highlight, first 20% of the beat), then jumps to 11:00; the report and groceries tiles re-seat around it, each picking up a Tiler mark ("Re-planned" + the app's `auto_awesome` AI glyph) as it moves — the untouched workout tile gets none | Dentist moved to 11:00 — Tiler re-plans your tiles around it. (time in the device format) |
 
 `MediaQuery.disableAnimations` shows the final frame immediately.
 
@@ -236,11 +244,16 @@ labels are localised and colours follow the theme. A mini day timeline
 1. `checkOnboardingStatus()` local-only; update all 8 call sites; shorten or
    remove the 3s `WelcomeScreen` delay.
 2. Set `essentialsOnboardingDone` on submit and on skip.
-3. Keep `OnboardingView` full flow reachable behind a debug flag (kill
-   switch, `constants.dart`); delete unused sub-widgets in a later cleanup pass.
+3. ~~Keep `OnboardingView` full flow reachable behind a debug flag~~ —
+   decided 2026-09-14: Phase 3 removed the bloc logic behind the legacy
+   pages, so a runtime flag would render questions whose answers go
+   nowhere. The legacy flow is recoverable from git (`70d643c^`); 4.3 is
+   the decommission instead: delete the dead sub-widgets, the intro
+   slider, its video player, the dead `/onBoardingWorkProfile` route and
+   the orphaned l10n strings.
 4. Optional background server reconcile.
-5. Welcome explainer: animated Tiles vs Blocks on the welcome screen for
-   devices that still need the essentials flow (section 3.4b).
+5. Tiles vs Blocks demo: animated explainer right after the essentials
+   pages, on Submit and Skip (section 3.4b).
 
 ### Phase 5 — Instrumentation, QA & rollout
 1. Analytics signals (section 6) + error logging (section 7).
@@ -267,7 +280,7 @@ patterns (`test/ai_consent_gate_test.dart` for injectable seams,
 | 3 | `test/essentials_onboarding_schedule_prefetch_test.dart` | `primeScheduleAfterLogin` dispatch order + payload; refresh exactly once and only after buzz completes; failed buzz → no refresh, no crash; Skip → no refresh; missing bloc tolerated |
 | 4 | `test/onboarding_gate_test.dart` | Gate is local-only (no API call); legacy `skipOnboarding` honored; new flag honored; fresh device → essentials |
 | 4 | `test/welcome_screen_navigation_test.dart` | Existing tests updated: delay removed/shortened, routes to essentials vs AuthorizedRoute by local flag |
-| 4 | `test/welcome_explainer_test.dart` | Three beats: captions per beat, tiles absent before beat 2, no overlap at rest, the replan moves the block and re-seats ≥2 tiles, final state holds (no loop), reduced motion → final frame; WelcomeScreen: new device shows the explainer and never auto-routes, "Let's Go!" → essentials with the stack cleared; done device keeps the beat |
+| 4 | `test/welcome_explainer_test.dart` | Three beats: captions per beat, tiles absent before beat 2, no overlap at rest, the replan moves the block and re-seats ≥2 tiles, final state holds (no loop), reduced motion → final frame; `OnboardingExplainerScreen`: headline + demo + "Let's Go!", never auto-routes, "Let's Go!" replaces the stack with the destination. Skip/submit/prefetch suites tap through the demo on every exit |
 
 Gate checks per stage before marking Done:
 
@@ -286,6 +299,8 @@ New `AnalysticsSignal` events (naming matches existing `SETTING_PRESSED` style):
 | `ESSENTIALS_ONBOARDING_PAGE` (+page id) | Page transition |
 | `ESSENTIALS_ONBOARDING_SKIPPED` (+page id) | Global Skip tapped |
 | `ESSENTIALS_ONBOARDING_SUBMITTED` | Successful submit |
+| `ESSENTIALS_ONBOARDING_SUBMIT_FAILED` | Submit request or completion persistence failed; no error body |
+| `EXPLAINER_SHOWN` / `EXPLAINER_CONTINUED` | Post-essentials demo shown / user continues |
 | `TOUR_STARTED` / `TOUR_STEP` / `TOUR_COMPLETED` / `TOUR_SKIPPED` (+tourId, +stepId) | Tour lifecycle |
 | `TOUR_TARGET_MISSING` (+tourId, +stepId) | Spotlight anchor failed to resolve |
 
@@ -328,24 +343,22 @@ User-validated feedback log (newest first):
 
 ## 8. Manual QA checklist
 
-- [ ] Fresh install: sign in → profession page appears first
-- [ ] Global Skip on page 1 and page 2 both land on schedule; flow never
-      re-triggers on relaunch
-- [ ] Fill profession, skip on location page → no API submit; nothing saved
-- [ ] Full submit → schedule directly (no intro slider); data visible
-      server-side
-- [ ] Swiping pages never triggers a location permission prompt; only the
-      in-page button does
-- [ ] Home tour auto-starts once on fresh device; not after completion
-- [ ] First visit to Settings starts settings tour; anchors align with tiles
-      in light + dark themes, small + large screens
-- [ ] Settings tour never re-shows after complete/skip; survives logout;
-      replays after reinstall
-- [ ] "How to use Tiler" replays tours
-- [ ] Legacy user (old `hasCompletedAppTutorial` / `skipOnboarding` flags):
-      no home tour replay, no essentials flow, settings tour shows once
-- [ ] en + es strings render; no overflow on smallest supported device
-- [ ] Offline sign-in: gate resolves locally, no hang
+Run on Android and iOS; these checks are not implied by passing widget tests.
+
+- [ ] Fresh install: sign in -> profession -> location. Swiping never requests location permission; only the consent button does.
+- [ ] Submit -> Tiles vs Blocks demo -> Let's Go -> schedule; no questions remain on the navigation stack.
+- [ ] Skip on either page -> demo -> schedule without submitting answers. Relaunch does not repeat essentials.
+- [ ] Failed submit stays on Location with Skip available; retry succeeds. Verify scheduling defaults when no onboarding record exists.
+- [ ] Slow schedule/settings loads do not leave a stuck loader. Tile Preferences waits for the loaded page before its tour starts.
+- [ ] Dentist change is announced before it moves; re-planned marks appear on affected tiles. Reduced motion shows the final frame.
+- [ ] Demo back/exit and relaunch behave acceptably with completion flags already saved.
+- [ ] Home, Settings pointer and Tile Preferences tours run once, survive logout and replay through How to use Tiler.
+- [ ] Home tour never opens the add-tile sheet. Tapping HomeBottomNav's center Tiler button opens the sheet and starts its two-step tour once. Completion/Skip leaves the sheet open; closing it unfinished allows retry next visit; replay resets it.
+- [ ] Missing anchors retry briefly, log identifiers and advance. Intentional full-screen/sheet steps remain intact.
+- [ ] Check English/Spanish, dark/light themes, 360dp and large screens, landscape and large text.
+- [ ] Verify legacy completion/skip flags and local gate behavior when the network is unavailable.
+- [ ] In a production-configured build, verify Firebase receives onboarding, tour and demo events with pageId/tourId/stepId where applicable, plus the existing shared sender metadata (name, sessionId, sequnceNumber, tag, time). No profession, address, coordinates or error bodies.
+- [ ] Confirm each page/step visit emits once across rebuilds, revisits emit another view, and analytics delivery failure never blocks the UI.
 
 ## 9. Implementation tracker
 
@@ -369,11 +382,11 @@ Status legend: `Not started` | `Red (test failing)` | `Green (test passing)` | `
 | 3.5 | Schedule prefetch during essentials onboarding | `test/essentials_onboarding_schedule_prefetch_test.dart`, `test/daily_carousel_remount_test.dart` | `services/schedulePrimer.dart`, `main.dart`, `onBoarding.dart`, `dailyTileList.dart` | Done | 5 tests. Cold start (`main.dart`) previously only reset the bloc (`LogInScheduleEvent`) and never fetched until the home list mounted; it now calls `primeScheduleAfterLogin` (parity with the sign-in path, which still inlines the same three dispatches — 4.1 should switch it over). `OnboardingView` gained an optional `scheduleBloc` seam; without it the view reads the ancestor bloc and, if none, skips the refresh (best-effort). Buzz errors were previously unhandled fire-and-forget; now logged |
 | 4.1 | Local-only gate + call sites | `test/onboarding_gate_test.dart` | `util.dart`, `signInComponent.dart`, `on_boarding_bloc.dart` | Done | `59f771e`. 5 tests: gate resolves from microtasks alone (fake-async, zero pending timers), legacy `skipOnboarding` honoured, `essentialsOnboardingDone` honoured, fresh device → essentials, Skip writes the canonical flag. The 6 `signInComponent` sites discarded the gate result and then `WelcomeScreen` ran it again — all 6 replaced by `primeScheduleAfterLogin(context)` (3.5), which also removed their inline schedule dispatches; `main.dart` keeps its `FutureBuilder` (now resolves in one microtask). 5.2 folded in |
 | 4.2 | WelcomeScreen delay + routing | `test/welcome_screen_navigation_test.dart` | `welcomeScreen.dart` | Done | 8 tests (2 pre-existing stack-clearing tests kept). The 3s sleep is a named `WelcomeScreen.displayDuration` = 800ms brand beat; the gate check runs concurrently with the beat (`Future.wait`), so the wait is `max(beat, check)`, never `beat + check`. Routing by the real local gate is pinned without a checker override (done flag / legacy skip → authorized; neither → essentials) |
-| 4.4 | Welcome explainer (Tiles vs Blocks) | `test/welcome_explainer_test.dart` (+ 2 tests in `welcome_screen_navigation_test.dart` updated) | `components/welcome/tilesVsBlocksExplainer.dart`, `welcomeScreen.dart`, l10n | Done | 7 new tests; 11 EN + 11 ES strings; reuses `tutorialNavLetsGo` for the CTA. Shown only when the gate says the device still needs onboarding — not replayable from "How to use Tiler" (could add a per-device flag later) |
-| 4.3 | Kill-switch flag for legacy flow | (manual) | `constants.dart` | Not started | `executionConstants.dart` holds one unrelated constant; `constants.dart` already owns `isDebug` |
-| 5.1 | Analytics signals | (unit-light; verify names) | tour engine + onboarding files | Not started | |
+| 4.4 | Tiles vs Blocks demo | `test/welcome_explainer_test.dart` (+ skip/submit/prefetch suites tap through) | `components/welcome/tilesVsBlocksExplainer.dart`, `routes/authentication/onboardingExplainerRoute.dart`, `onBoarding.dart`, l10n | Done (`04b808a8`) | Cycle 1 (`ee758ab`) put the demo on the welcome screen; cycle 2 moves it to after the essentials pages (Submit and Skip) via `OnboardingExplainerScreen`, and `WelcomeScreen` reverts to the 4.2 beat. 12 EN + 12 ES strings; CTA reuses `tutorialNavLetsGo`. Not replayable from "How to use Tiler" (could add later) |
+| 4.3 | Decommission legacy flow (was: kill-switch flag) | (analyze + full suite) | 12 files deleted under `components/onBoarding/`, `main.dart`, `app_en.arb` | Done (`04b808a8`) | Kill switch dropped (Phase 4 item 3 note). Deleted: 9 legacy sub-widgets + `onBoardingPillTag`, `onBoardingSlider` (+ `IntroSlideData`), `videoPlayer`; the dead `/onBoardingWorkProfile` route; 28 orphaned EN strings (keys referenced only from the deleted files). Kept: `onBoardingSubWidget` (used by the two live pages), the bloc's tile-suggestion / recurring-task handlers (event/state surgery — follow-up), and the now-unused `video_player` dependency (dropping a plugin is a deliberate step) |
+| 5.1 | Analytics + missing-target recovery | `product_tour_analytics_test.dart`, submit/skip suites | analytics sender, tour overlay, onboarding/demo | Done | `625f6f08`; shared analytics sender and session metadata; bounded anchor retries |
 | 5.2 | Logging hardening (remove header/body prints) | (analyze pass) | `onBoardingApi.dart` | Done | Folded into 4.1 (`59f771e`): the `Request headers:` print (auth token) removed outright; response-body prints → `Utility.debugPrint` with the HTTP status only; exception prints → `Utility.debugPrint` |
-| 5.3 | Manual QA (section 8) | — | — | Not started | Android + iOS |
+| 5.3 | Manual QA (section 8) | `onboarding_explainer_layout_test.dart` | explainer caption and accessible layout | In progress | 36 automated display cases pass; device flows and production Firebase verification pending |
 
 ## 10. TDD cycle log
 
@@ -381,6 +394,10 @@ Record each meaningful cycle. Newest first.
 
 | Date | Stage | Cycle | Result | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-09-14 | 4.3 | 1 | Green (uncommitted, awaiting review) | Decommission instead of a kill switch (see Phase 4 item 3). Reference scan: every legacy sub-widget except `ProfessionWidget`/`PrimaryLocationWidget` had zero references; `/onBoardingWorkProfile` was registered but never navigated to; the slider and video player only referenced each other. 12 files `git rm`'d, the route and its import removed from `main.dart`, 28 l10n keys referenced only by the deleted files stripped from `app_en.arb` (the ES file never had them); the submit test's "no intro slider" assertion became "exits through the demo". `flutter gen-l10n` ok; analyze 493 (below the 502 baseline — dead code gone, zero new issues); full suite 523 pass / 5 pre-existing fails. |
+| 2026-09-14 | 4.4 | 4 | Green (uncommitted, awaiting review) | Review feedback: express that *Tiler* readjusts the other tiles. Red: beat-3 assertions that each re-seated tile carries a "Re-planned" mark with the app's `auto_awesome` glyph (one glyph per re-seated tile), the untouched workout tile carries none, no marks in beat 2 or before the block has moved, and the final frame shows exactly two. Green: `_readjustFor` fades the mark in over the first half of each tile's own move (mark and motion read as one act); shared `_pill` helper draws both the block's "Moved" badge (brand colour) and the inverted Tiler mark (surface colour on the brand-coloured tile). EN "Re-planned" / ES "Replanificado". 8/8; full suite 524 pass / 5 pre-existing fails; analyze 493. |
+| 2026-09-14 | 4.4 | 3 | Green (uncommitted, awaiting review) | Review feedback: the demo moved the dentist without saying so. Red: beat-3 assertions for a "Moved" badge inside the dentist card, none in beat 2, badge visible *before* the card starts moving, and a caption that names the block and its new time (`welcomeExplainerReplanCaption(time)` placeholder). Green: `_announceFor` drives a badge + border highlight over the first 20% of the re-plan beat; move windows pushed later (dentist 0.3–0.6, report 0.55–0.85, groceries 0.65–0.95) so cause precedes effect; caption formatted with `MaterialLocalizations.formatTimeOfDay`. Two things the tests caught: (1) the badge initially went on every moving card, tiles included — restricted to moving *blocks* (the tiles are the effect); (2) the longer two-line caption stole height from the timeline and shifted every card 14px mid-beat — the caption row is now a fixed two-line box. EN + ES (`Moved` / `Cambió`). 8/8; full suite 524 pass / 5 pre-existing fails; analyze 493. |
+| 2026-09-14 | 4.4 | 2 | Green (uncommitted, awaiting review) | Demo moved from the welcome screen to after the essentials pages. New `OnboardingExplainerScreen` route (headline, subtitle, `TilesVsBlocksExplainer`, "Let's Go!" → `pushAndRemoveUntil(destination)`); `OnboardingView._exitThroughExplainer` replaces the onboarding route with it on both Skip and Submit, keeping the existing destination seams as the *final* destination; `WelcomeScreen` and its tests revert to `07686ef` (4.2 beat for everyone). Red: the skip/submit/prefetch suites asserted the destination right after `pumpAndSettle` — now they assert the demo is showing and the destination is *not* built until "Let's Go!" (`_tapThroughExplainer` helper); the explainer file's WelcomeScreen group became an `OnboardingExplainerScreen` group (never auto-routes; stack cleared). `welcomeExplainerSubtitle` added (EN + ES). Final: 40/40 across the welcome + onboarding suites; full suite 523 pass / 5 pre-existing fails. |
 | 2026-09-12 | 4.4 | 1 | Green | Welcome explainer. Red: `test/welcome_explainer_test.dart` (7 tests) failed to compile — `TilesVsBlocksExplainer`/`TilesVsBlocksExplainerKeys` and the `welcomeExplainer*` l10n keys were missing. Green: (a) `lib/components/welcome/tilesVsBlocksExplainer.dart` — an `AnimationController` over 3 × 2s beats drives a `Stack` of hour rows and `Positioned` cards; per-card entry windows (blocks drop from above, tiles slide from the right) and re-plan move windows are declared as data (`_TimelineCard`), so the choreography is one table; caption cross-fades via `AnimatedSwitcher`; `onFinished` callback; reduced motion jumps to value 1. (b) `WelcomeScreen`: the gate runs first; done → 4.2 beat → authorized; not done → `_showExplainer` layout (greeting, headline, explainer, "Let's Go!" CTA; portrait and landscape) and `_continueToOnboarding` → `pushAndRemoveUntil`. (c) l10n 11 EN + 11 ES. Two 4.2 tests updated to tap through the explainer. Test mechanics: pumping exactly `n × beat` lands on the first frame of beat n+1, and the caption's `AnimatedSwitcher` only notices a beat change on a built frame, so the helper stops 450ms short, pumps 350ms for the cross-fade and 50ms to clear the outgoing child; beat advances are relative so they compose. Final: 15/15 across both welcome files; full suite 523 pass / 5 pre-existing fails; `flutter analyze` 502 (baseline). |
 | 2026-09-12 | 4.2 | 1 | Green | WelcomeScreen beat. Red: the two existing navigation tests pumped a literal 3s and the new tests asserted routing at `displayDuration` (≤ 1s) and a slow checker overlapping the beat — failed against the 3s sleep + sequential await. Green: `displayDuration` (800ms) + `Future.wait([beat, checker()])`; the stack-clearing `pushAndRemoveUntil` behavior is unchanged. 8/8. |
 | 2026-09-12 | 3.5 | 2 | Green (`a4bd471`) | On-device: after onboarding, the home tour ran over a stuck "Loading upcoming days..." page (screenshot at step 5/8, no spotlight). Cause: the real schedule renders a 7-day window (today = carousel page 4); `injectDummyTiles` reloads a single-day window with a bare `ScheduleStatus()` (no `evaluationId`), so `DailyTileList` kept the same carousel key; `carousel_slider.didUpdateWidget` re-creates its PageController at the *current* page and ignores `initialPage`, so page 4 of 3 clamped to the last page — the future-edge placeholder — and the "Control Your Tiles" step could not find the current tile. Newly reachable because 3.5's prefetch (+ 4.1 removing ~4s of gate delays) now reliably renders the 7-day carousel before the tour starts. Red: `test/daily_carousel_remount_test.dart` (5 unit tests on the extracted rule) — `carouselDaySpanId` / `shouldRemountCarousel` undefined. Green: `DailyTileList` re-creates the carousel (new key) whenever the rendered day span changes, not only on a new evaluation id, and drops the stale `carouselSliderIndex` on a span change so the carousel opens on today; same-span status-less refreshes keep the carousel (no scroll reset). No widget harness exists for `DailyTileList` (needs ~6 blocs), hence the pure-helper extraction (same pattern as `endOfDayDateTimeFor`). Final: 5/5; full suite 509 pass / 5 pre-existing fails; analyze 502. |
@@ -398,3 +415,84 @@ Record each meaningful cycle. Newest first.
 | 2026-08-26 | 1.3 | 1 | Green | Implemented `TourCoordinator` (in-memory singleton; one active tour at a time; re-entry replay; owner-only release) and `TourHost` (owns the per-tour `TutorialBloc`, applies the per-tour completion check via `TourPreferencesHelper`, waits a settle delay, starts only when the coordinator allows, releases on complete/skip). Generalized `TutorialOverlay` with `tourId` + `stepsBuilder`, scoped dummy-tile injection to the home tour, and rewired `AuthorizedRoute` to host the home tour via `TourHost` (removed `_TutorialWrapper` + the root `TutorialBloc` provider). Red: `TourHost` undefined. Green: 7 tests in `tour_host_test.dart`. Bug found + fixed during the cycle: the skip test hung to the 10-minute timeout — a bare `Future.delayed` never completes under `testWidgets`' fake-async clock; replaced with `tester.pump()` to flush the skip state. Also fixed an import regression (accidentally dropped `tutorialOverlay.dart`, which defines `kTutorialStepCount` used by the legacy sheet dialogs). Final verification: full suite 439 pass / 6 pre-existing fails (same 6: home_layout chat icon, onboarding_tour_sync chat_fab icon, enhanced_tile_batch ×2, preview_sentence load, widget_test smoke); `flutter analyze` 542 (baseline; no new issues). |
 | 2026-08-26 | 1.2 | 1 | Green | `TutorialBloc` is now parameterized by `tourId` (defaults to `home` so the existing `AuthorizedRoute` wiring keeps working during the 1.2/1.3 transition). `_onSkip`/`_onComplete` persist `hasCompletedTour_<tourId>` and `_onReset` writes `false` for that key only — the legacy `hasCompletedAppTutorial` flag is never written by the multi-tour path. 8 tests green in `tutorial_bloc_multi_tour_test.dart` (per-tour persistence isolation, reset never pollutes the legacy key, step navigation start/next/previous/reset unchanged). Full suite: no new failures (same 6 pre-existing). |
 | 2026-08-26 | 1.1 | 1 | Green | Baseline first: upgraded local Flutter 3.38.5 → 3.47.1 (lockfile needs Dart ≥3.12). Baseline: 412 pass / 6 pre-existing fails; analyze 542 (1E/294W/247I). Red: `TourPreferencesHelper` undefined. Green: 12 tests — per-tour key independence, `hasCompletedTour_<tourId>` key format, legacy `hasCompletedAppTutorial` → `home` one-time persisted migration, reset beats legacy, per-tour reset isolation. Full suite 424 pass / same 6 pre-existing fails; analyze 542 (no new issues). No refactor changes needed. |
+
+### Stage 5.1 implementation notes (2026-09-16, committed in `625f6f08`)
+
+All events reuse `AnalysticsSignal.send()` in `analyticsSignal.dart`.
+The shared sender accepts structured `parameters` alongside existing
+`additionalInfo`, retains session metadata and the debug guard, and contains
+transport failures. Tests inject its `testSink`; no separate onboarding sender
+remains. Production Firebase delivery still requires device verification.
+
+Essentials events: ESSENTIALS_ONBOARDING_STARTED/PAGE/SKIPPED/SUBMITTED/
+SUBMIT_FAILED. Submit failures originate in the submit handler, not generic
+permission/load errors. Demo: EXPLAINER_SHOWN and EXPLAINER_CONTINUED.
+Tours: TOUR_STARTED/STEP/COMPLETED/SKIPPED, with stable tour/step IDs.
+
+Anchored steps get five 100ms retries after layout. Missing targets emit
+TOUR_TARGET_MISSING and advance; a missing final target completes the tour.
+Step changes and disposal cancel old retries. Null targets and sheet-owned
+steps are intentional exceptions. The existing pre-start host timeout still
+leaves completion unset for retry on the next visit.
+
+Validation: six new regression tests plus analytics assertions in the existing
+submit/skip suites; focused run 20/20. Full suite 530 passed, with the same five
+pre-existing failures. Analyzer: 493 existing issues, no new diagnostics in touched files. Device QA and Firebase delivery remain pending.
+
+Shared analytics consolidation (2026-09-16): removed the separate onboarding
+sender and migrated all stage-5.1 calls/tests to `AnalysticsSignal.send`.
+Preserved the working-tree production/debug behavior, session metadata and
+legacy `additionalInfo`; added structured parameters and failure containment.
+Focused regression run: 29/29, including legacy payload compatibility.
+
+### Stage 5.3 automated display checks (2026-09-16, uncommitted)
+
+Added 16 real-Rubik layout cases: 360x640 and 640x360, English/Spanish,
+light/dark themes, and 100%/200% text with reduced motion. Eight large-text
+cases initially failed. Captions now reserve the measured height of the
+longest beat, preserving full text without shifting the timeline between
+beats. Larger text uses a scrollable screen with an accessible continue
+button. All 16 cases and the 29 existing onboarding/analytics regressions
+pass; targeted analysis reports no issues. Changes remain uncommitted.
+
+A Pixel 7 Pro is available, but physical-device flows have not been run.
+No iOS target is available on this Windows host. Section 8's manual checks
+and production Firebase delivery remain pending; widget tests do not replace
+those checks.
+
+Follow-up QA (2026-09-16): expanded display coverage to 36 cases by adding
+800x1280, 130% text, and top/bottom safe-area padding. All pass. The combined
+onboarding and tour run passes 155 tests, including consent, schedule prefetch,
+slow-load coordination, persisted completion, and manual replay regressions.
+The user requested that the connected phone's current account and app state
+remain intact, so fresh-onboarding device checks were not performed. The
+current configuration has `isProduction = false`, which suppresses analytics
+delivery; production Firebase receipt remains unverified. No code committed.
+
+### Contextual add-tile tour (uncommitted)
+
+Moved `quick_add` and `smart_scheduling` out of the automatic Home walkthrough.
+Home now has six steps and only points at the center Tiler button. Its actual
+HomeBottomNav tap opens the real sheet, whose TourHost starts a separate two-step
+`add_tile` tour after the normal settle delay. Both steps use the shared overlay,
+removing the old automatic modal opening, nested dialogs and forced dismissal.
+Completion or Skip leaves the sheet available for tile creation. Closing it
+unfinished releases the coordinator without marking completion, allowing retry
+on the next visit. The replay registry includes `add_tile`; analytics uses the
+existing sender with this tour ID. Existing Home completion remains independent.
+
+Validation: 74 targeted tests pass, including tap entry, both sheet steps,
+completion persistence, unfinished dismissal/retry, Skip, replay and existing
+Home/Settings/Tile Preferences behavior. Targeted analysis reports only the
+pre-existing unused `_linkSubscription` field. Physical-device visual validation
+remains pending; the phone's account and app state were not changed.
+
+### Immediate replay announcement
+
+The Settings replay action now awaits resetting every registered tour, shows
+an English/Spanish informational toast announcing the tour, and starts the
+current Settings tour in place through its existing bloc and coordinator.
+Other tours remain reset for their next surface visit. The action checks that
+the page is still mounted after resetting preferences. Validation: all 15
+Settings tour tests pass, including immediate activation and toast visibility;
+targeted analysis reports no issues. Changes are uncommitted for review.

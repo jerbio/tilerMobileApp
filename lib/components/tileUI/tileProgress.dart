@@ -103,7 +103,8 @@ class _TileProgressState extends State<TileProgress> {
               radius: 45,
               titlePositionPercentageOffset: 0.55,
               borderSide: isTouched
-                  ? BorderSide(color: tileThemeExtension.statusSuccess, width: 6)
+                  ? BorderSide(
+                      color: tileThemeExtension.statusSuccess, width: 6)
                   : BorderSide(
                       color: tileThemeExtension.statusSuccess
                           .withValues(alpha: 0)),
@@ -129,8 +130,8 @@ class _TileProgressState extends State<TileProgress> {
               borderSide: isTouched
                   ? BorderSide(color: tileThemeExtension.statusDanger, width: 6)
                   : BorderSide(
-                      color: tileThemeExtension.statusDanger
-                          .withValues(alpha: 0)),
+                      color:
+                          tileThemeExtension.statusDanger.withValues(alpha: 0)),
             );
           default:
             throw Error();

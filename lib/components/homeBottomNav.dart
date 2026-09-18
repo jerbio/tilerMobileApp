@@ -16,6 +16,11 @@ class HomeBottomNav extends StatelessWidget {
   final VoidCallback onShare;
   final VoidCallback onAddTile;
 
+  /// Optional long-press hook on the centre add button.
+  ///
+  /// Used only for the debug-only Add Tile redesign entry point. Null in all
+  /// production paths, so behaviour is unchanged when not provided.
+
   /// The currently active calendar view — drives the switcher icon and which
   /// two views the pop-out offers.
   final AuthorizedRouteTileListPage currentView;
@@ -84,7 +89,6 @@ class HomeBottomNav extends StatelessWidget {
       onSelectView(selected);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

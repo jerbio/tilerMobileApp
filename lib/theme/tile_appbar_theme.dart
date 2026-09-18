@@ -5,7 +5,7 @@ import 'tile_colors.dart';
 class TileAppBarTheme {
   TileAppBarTheme._();
 
-  static const AppBarTheme  theme = AppBarTheme(
+  static const AppBarTheme theme = AppBarTheme(
     backgroundColor: TileColors.primary,
     iconTheme: IconThemeData(color: TileColors.lightContent),
     actionsIconTheme: IconThemeData(color: TileColors.lightContent),

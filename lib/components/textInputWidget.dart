@@ -34,15 +34,16 @@ class _TextInputWidgetState extends State<TextInputWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     Widget tileNameContainer = Container(
         height: TileDimensions.inputHeight,
         decoration: BoxDecoration(
           borderRadius: TileDimensions.inputFieldBorderRadius,
           boxShadow: [
-            TileBoxShadows.inputFieldBoxShadow(tileThemeExtension.shadowMainInputContainer)
+            TileBoxShadows.inputFieldBoxShadow(
+                tileThemeExtension.shadowMainInputContainer)
           ],
         ),
         child: TextField(
@@ -55,8 +56,7 @@ class _TextInputWidgetState extends State<TextInputWidget> {
           decoration: InputDecoration(
             hintText: this.widget.placeHolder,
             hintStyle: TextStyle(
-                color: colorScheme.onSurface,
-                fontWeight: FontWeight.w100),
+                color: colorScheme.onSurface, fontWeight: FontWeight.w100),
             filled: true,
             isDense: true,
             contentPadding: TileSpacing.inputFieldPadding,
@@ -66,7 +66,8 @@ class _TextInputWidgetState extends State<TextInputWidget> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: TileDimensions.inputFieldBorderRadius,
-              borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 2),
+              borderSide:
+                  BorderSide(color: colorScheme.onInverseSurface, width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: TileDimensions.inputFieldBorderRadius,

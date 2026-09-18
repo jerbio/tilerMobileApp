@@ -22,7 +22,7 @@ class DayButton extends StatefulWidget {
     this.onTapped,
     this.showMonth = false,
     this.isSelected = false,
-    this.preview=false,
+    this.preview = false,
     this.compact = false,
   }) : super(
             key: ValueKey(
@@ -62,7 +62,8 @@ class _DayButtonState extends State<DayButton> {
             height: size,
             width: size,
             decoration: BoxDecoration(
-              color: selected ? colorScheme.primary : colorScheme.surfaceContainer,
+              color:
+                  selected ? colorScheme.primary : colorScheme.surfaceContainer,
               shape: BoxShape.circle,
             ),
             child: Text(
@@ -72,7 +73,9 @@ class _DayButtonState extends State<DayButton> {
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 color: selected
                     ? colorScheme.onPrimary
-                    : (today ? colorScheme.primary : colorScheme.onSurfaceVariant),
+                    : (today
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant),
               ),
             ),
           ),
@@ -83,7 +86,9 @@ class _DayButtonState extends State<DayButton> {
               fontFamily: TileTextStyles.rubikFontName,
               fontSize: 11,
               fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-              color: selected ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+              color: selected
+                  ? colorScheme.onSurface
+                  : colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -96,57 +101,65 @@ class _DayButtonState extends State<DayButton> {
     if (widget.compact) {
       return _buildCompact(context);
     }
-    final theme= Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
-    var decoration = this.widget.isSelected ? TileDecorations.ribbonsButtonSelectedDecoration(colorScheme.primary) : TileDecorations.ribbonsButtonDefaultDecoration(colorScheme.surfaceContainer);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
+    var decoration = this.widget.isSelected
+        ? TileDecorations.ribbonsButtonSelectedDecoration(colorScheme.primary)
+        : TileDecorations.ribbonsButtonDefaultDecoration(
+            colorScheme.surfaceContainer);
     double buttonHeight = 40 * (this.widget.isSelected ? 1.3 : 1);
     double buttonWidth = 40 * (this.widget.isSelected ? 1.3 : 1);
     List<Widget> childWidgets = [
       Container(
-        margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-        alignment: Alignment.center,
-        height: buttonHeight,
-        width: buttonWidth,
-        decoration: decoration,
-        child: Text(
-          DateFormat(DateFormat.DAY).format(this.dateTime),
-          style: TextStyle(
-              fontSize: 20,
-              fontWeight: this.widget.isSelected ? FontWeight.w500 : null,
-              color: this.widget.isSelected
-                  ? colorScheme.onPrimary
-                  : tileThemeExtension.onSurfaceVariantSecondary
-          ),
-        )
-      ),
+          margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+          alignment: Alignment.center,
+          height: buttonHeight,
+          width: buttonWidth,
+          decoration: decoration,
+          child: Text(
+            DateFormat(DateFormat.DAY).format(this.dateTime),
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: this.widget.isSelected ? FontWeight.w500 : null,
+                color: this.widget.isSelected
+                    ? colorScheme.onPrimary
+                    : tileThemeExtension.onSurfaceVariantSecondary),
+          )),
       Container(
-          padding:
-              this.widget.isSelected ? EdgeInsets.all(11) : EdgeInsets.all(17),
-          child: Text(DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
-              style: TextStyle(
-                  fontFamily: TileTextStyles.rubikFontName,
-                  color: this.widget.isSelected ? colorScheme.onSurface: tileThemeExtension.onSurfaceVariantSecondary,
-              ),
-          )
-      ,)
+        padding:
+            this.widget.isSelected ? EdgeInsets.all(11) : EdgeInsets.all(17),
+        child: Text(
+          DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
+          style: TextStyle(
+            fontFamily: TileTextStyles.rubikFontName,
+            color: this.widget.isSelected
+                ? colorScheme.onSurface
+                : tileThemeExtension.onSurfaceVariantSecondary,
+          ),
+        ),
+      )
     ];
     if (this.widget.showMonth) {
       childWidgets.add(Container(
         child: Text(
           DateFormat(DateFormat.ABBR_MONTH).format(this.dateTime),
           style: TextStyle(
-              color: this.widget.isSelected ? colorScheme.onSurface :  tileThemeExtension.onSurfaceVariantSecondary),
+              color: this.widget.isSelected
+                  ? colorScheme.onSurface
+                  : tileThemeExtension.onSurfaceVariantSecondary),
         ),
       ));
     }
 
     return GestureDetector(
-      onTap: widget.preview?null:() {
-        if (this.widget.onTapped != null) {
-          this.widget.onTapped!(this.dateTime);
-        }
-      },
+      onTap: widget.preview
+          ? null
+          : () {
+              if (this.widget.onTapped != null) {
+                this.widget.onTapped!(this.dateTime);
+              }
+            },
       child: Container(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,

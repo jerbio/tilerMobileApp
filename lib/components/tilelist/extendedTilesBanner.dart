@@ -3,7 +3,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
@@ -14,7 +14,7 @@ class ExtendedTilesBanner extends StatelessWidget {
   const ExtendedTilesBanner({
     Key? key,
     required this.extendedTiles,
-    this.preview=false,
+    this.preview = false,
   }) : super(key: key);
 
   /// Detect all-day or extended tiles (over 16 hours duration)
@@ -33,7 +33,10 @@ class ExtendedTilesBanner extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ExtendedTilesModal(extendedTiles: extendedTiles,preview: preview,),
+      builder: (context) => ExtendedTilesModal(
+        extendedTiles: extendedTiles,
+        preview: preview,
+      ),
     );
   }
 
@@ -136,7 +139,7 @@ class ExtendedTilesModal extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditTile(
+        builder: (context) => EditTileRoute(
           tileId: (tile.isFromTiler ? tile.id : tile.thirdpartyId) ?? "",
           tileSource: tile.thirdpartyType,
           thirdPartyUserId: tile.thirdPartyUserId,
@@ -236,7 +239,8 @@ class ExtendedTilesModal extends StatelessWidget {
                 final endTime = tile.endTime;
 
                 return InkWell(
-                  onTap: preview?null:() => _navigateToEditTile(context, tile),
+                  onTap:
+                      preview ? null : () => _navigateToEditTile(context, tile),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -307,7 +311,9 @@ class ExtendedTilesModal extends StatelessWidget {
                         ColorFiltered(
                           colorFilter: ColorFilter.mode(
                             preview
-                                ? tileThemeExtension!.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
+                                ? tileThemeExtension!
+                                    .vibeChatPreviewDisableColor
+                                    .withValues(alpha: 0.6)
                                 : Colors.transparent,
                             BlendMode.srcATop,
                           ),

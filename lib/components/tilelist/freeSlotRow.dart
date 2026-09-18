@@ -6,7 +6,7 @@ import 'package:tiler_app/components/tileUI/timeScrubGeometry.dart';
 import 'package:tiler_app/components/tilelist/dailyView/models/freeSlot.dart';
 import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -36,7 +36,7 @@ class FreeSlotRow extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddTile(
+        builder: (context) => AddTileEntry(
           preTile: preTile,
           autoDeadline: slot.endTime,
         ),

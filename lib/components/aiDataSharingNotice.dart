@@ -98,4 +98,3 @@ class _AiDataSharingNoticeState extends State<AiDataSharingNotice> {
     );
   }
 }
-

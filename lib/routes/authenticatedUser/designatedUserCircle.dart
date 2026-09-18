@@ -7,7 +7,6 @@ import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
-
 class DesignatedUserCircle extends StatefulWidget {
   final BoxDecoration? decoration;
   final Color? color;
@@ -33,9 +32,9 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
   }
 
@@ -55,15 +54,13 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
           height: 14,
           width: 25,
           decoration: BoxDecoration(
-            border: Border.all(
-                color: colorScheme.surfaceContainerLowest,
-                width: 1
-            ),
+            border:
+                Border.all(color: colorScheme.surfaceContainerLowest, width: 1),
             borderRadius: BorderRadius.circular(5),
             color: pct > 66.66
                 ? TileColors.highCompletionTileShare
                 : pct > 33.33
-                    ?  TileColors.lowCompletionTileShare
+                    ? TileColors.lowCompletionTileShare
                     : colorScheme.primary,
           ),
           child: Text(

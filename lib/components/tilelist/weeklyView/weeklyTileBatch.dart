@@ -16,10 +16,10 @@ class WeeklyTileBatch extends TileBatch {
     int? dayIndex,
     Key? key,
   }) : super(
-    tiles: tiles,
-    dayIndex: dayIndex,
-    key: key,
-  );
+          tiles: tiles,
+          dayIndex: dayIndex,
+          key: key,
+        );
 
   @override
   WeeklyTileBatchState createState() => WeeklyTileBatchState();
@@ -32,7 +32,6 @@ class WeeklyTileBatchState extends TileBatchState {
   late ThemeData theme;
   late ColorScheme colorScheme;
 
-
   @override
   void initState() {
     super.initState();
@@ -41,8 +40,8 @@ class WeeklyTileBatchState extends TileBatchState {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
 
@@ -50,7 +49,9 @@ class WeeklyTileBatchState extends TileBatchState {
       TilerEvent item, BuildContext context, Animation<double> animation) {
     return SizeTransition(
       sizeFactor: animation,
-      child: Align(alignment: Alignment.topCenter, child: WeeklyTileWidget(subEvent: item)),
+      child: Align(
+          alignment: Alignment.topCenter,
+          child: WeeklyTileWidget(subEvent: item)),
     );
   }
 
@@ -59,21 +60,27 @@ class WeeklyTileBatchState extends TileBatchState {
     return SizeTransition(
       sizeFactor: animation,
       child: Align(
-          alignment: Alignment.topCenter, child: WeeklyTileWidget(subEvent: _list![index],onTap: () {
-        if(_list![index].name == null || _list![index].name!.isEmpty) return;
-        _showBottomSheet(context, _list![index]);
-      },)),
+          alignment: Alignment.topCenter,
+          child: WeeklyTileWidget(
+            subEvent: _list![index],
+            onTap: () {
+              if (_list![index].name == null || _list![index].name!.isEmpty)
+                return;
+              _showBottomSheet(context, _list![index]);
+            },
+          )),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double calculatedWidth = (screenWidth-10)/7;
+    double calculatedWidth = (screenWidth - 10) / 7;
     renderedTiles.clear();
     if (widget.tiles != null) {
       for (var tile in widget.tiles!) {
-        if (tile.id != null && ((tile as SubCalendarEvent?)?.isViable ?? true)) {
+        if (tile.id != null &&
+            ((tile as SubCalendarEvent?)?.isViable ?? true)) {
           renderedTiles[tile.uniqueId] = tile;
         }
       }
@@ -85,7 +92,9 @@ class WeeklyTileBatchState extends TileBatchState {
       if (animatedList == null || pendingRenderedTiles == null) {
         bool onlyNewEntriesPopulated = isAllNewEntries(orderedTiles!);
         var initialItems = orderedTiles!.values.where((element) {
-          return onlyNewEntriesPopulated ? element.item3 != null : element.item2 != null;
+          return onlyNewEntriesPopulated
+              ? element.item3 != null
+              : element.item2 != null;
         }).toList();
 
         initialItems.sort((tupleA, tupleB) {
@@ -108,23 +117,20 @@ class WeeklyTileBatchState extends TileBatchState {
 
         _list = ListModel<TilerEvent>(
           listKey: _listKey,
-          initialItems: Utility.orderTiles(initialItems.map<TilerEvent>((e) => e.item1).toList()),
+          initialItems: Utility.orderTiles(
+              initialItems.map<TilerEvent>((e) => e.item1).toList()),
           removedItemBuilder: _buildRemovedItem,
         );
       }
       dayContent = Container(
         width: calculatedWidth,
         child: Column(
-          children: [
-            animatedList!
-          ],
+          children: [animatedList!],
         ),
       );
     } else {
       dayContent = SizedBox(width: calculatedWidth);
     }
-
-
 
     bool beforeProcessingPendingRenderingFlag = _pendingRendering;
 
@@ -158,9 +164,9 @@ class WeeklyTileBatchState extends TileBatchState {
       bool pendingRendering) {
     if (timeSectionTiles != null && !pendingRendering) {
       List<Tuple3<TilerEvent, int?, int?>> changeInTilerEventOrdering =
-      timeSectionTiles.values
-          .where((element) => element.item2 != element.item3)
-          .toList();
+          timeSectionTiles.values
+              .where((element) => element.item2 != element.item3)
+              .toList();
 
       bool allNewEntries = isAllNewEntries(timeSectionTiles);
       if (allNewEntries) {
@@ -258,16 +264,18 @@ class WeeklyTileBatchState extends TileBatchState {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor:colorScheme.surfaceContainerLowest,
+      backgroundColor: colorScheme.surfaceContainerLowest,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(TileDimensions.borderRadius)),
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(TileDimensions.borderRadius)),
       ),
       builder: (BuildContext context) {
         return Container(
           width: MediaQuery.of(context).size.width,
           child: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
               child: WeeklyDetailsTile(event as SubCalendarEvent),
             ),
           ),

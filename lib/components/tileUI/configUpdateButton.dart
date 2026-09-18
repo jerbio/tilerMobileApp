@@ -17,7 +17,6 @@ class ConfigUpdateButton extends StatefulWidget {
   final EdgeInsets? iconPadding;
   final BoxConstraints? constraints;
 
-
   ConfigUpdateButton(
       {required this.text,
       this.decoration,
@@ -45,6 +44,7 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
   }
+
   Widget build(BuildContext context) {
     List<Widget> childWidgets = [];
     if (this.widget.prefixIcon != null) {
@@ -63,7 +63,7 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
               fontSize: 20,
               fontWeight: FontWeight.w500,
             ),
-        foregroundColor: this.widget.textColor??colorScheme.onSurface,
+        foregroundColor: this.widget.textColor ?? colorScheme.onSurface,
       ),
       onPressed: () async {
         if (this.widget.onPress != null) {

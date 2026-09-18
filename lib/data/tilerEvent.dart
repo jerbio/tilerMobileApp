@@ -96,9 +96,14 @@ class TilerEvent extends TilerObj with TimeRange {
     if (json.containsKey('addressDescription')) {
       addressDescription = json['description'];
     }
-    if (json.containsKey('thirdPartyType') && json['thirdPartyType'] != null) {
+    // Wire-name compat (S5-1/S5-2): the canonical search/schedule spelling is
+    // `thirdpartyType`; the legacy mobile wire used `thirdPartyType`. Accept
+    // both — canonical first — so every payload maps to the same field.
+    String? thirdpartyTypeRaw =
+        json['thirdpartyType'] ?? json['thirdPartyType'];
+    if (thirdpartyTypeRaw != null) {
       try {
-        thirdpartyType = TileSource.values.byName(json['thirdPartyType']);
+        thirdpartyType = TileSource.values.byName(thirdpartyTypeRaw);
       } catch (e) {
         thirdpartyType = null;
       }

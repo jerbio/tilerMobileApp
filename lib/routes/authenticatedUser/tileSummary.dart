@@ -3,7 +3,7 @@ import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -92,7 +92,7 @@ class _TileSummaryState extends State<TileSummary> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => EditTile(
+                            builder: (context) => EditTileRoute(
                                   tileId: (subEvent.isFromTiler
                                           ? subEvent.id
                                           : subEvent.thirdpartyId) ??

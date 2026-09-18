@@ -6,7 +6,8 @@ import 'package:tiler_app/services/api/settingsApi.dart';
 part 'notifications_event.dart';
 part 'notifications_state.dart';
 
-class NotificationPreferencesBloc extends Bloc<NotificationPreferencesEvent, NotificationPreferencesState> {
+class NotificationPreferencesBloc
+    extends Bloc<NotificationPreferencesEvent, NotificationPreferencesState> {
   final SettingsApi settingsApi;
 
   NotificationPreferencesBloc({required this.settingsApi})
@@ -20,18 +21,22 @@ class NotificationPreferencesBloc extends Bloc<NotificationPreferencesEvent, Not
   }
 
   Future<void> _onFetchNotificationPreferences(
-      FetchNotificationPreferences event,
-      Emitter<NotificationPreferencesState> emit,
-      ) async {
+    FetchNotificationPreferences event,
+    Emitter<NotificationPreferencesState> emit,
+  ) async {
     emit(NotificationPreferencesLoading());
     try {
       final userSettings = await settingsApi.getUserSettings();
       emit(NotificationPreferencesLoaded(
         userSettings: userSettings,
-        tileReminders: userSettings.userPreference?.notificationEnabled ?? false,
-        appUpdates: userSettings.userPreference?.textNotificationEnabled ?? false,
-        marketingUpdates: !(userSettings.marketingPreference?.disableAll ?? false),
-        emailNotifications: userSettings.userPreference?.emailNotificationEnabled ?? false,
+        tileReminders:
+            userSettings.userPreference?.notificationEnabled ?? false,
+        appUpdates:
+            userSettings.userPreference?.textNotificationEnabled ?? false,
+        marketingUpdates:
+            !(userSettings.marketingPreference?.disableAll ?? false),
+        emailNotifications:
+            userSettings.userPreference?.emailNotificationEnabled ?? false,
         hasChanges: false,
       ));
     } catch (e) {
@@ -40,16 +45,20 @@ class NotificationPreferencesBloc extends Bloc<NotificationPreferencesEvent, Not
   }
 
   void _onUpdateTileReminders(
-      UpdateTileReminders event,
-      Emitter<NotificationPreferencesState> emit,
-      ) {
+    UpdateTileReminders event,
+    Emitter<NotificationPreferencesState> emit,
+  ) {
     if (state is NotificationPreferencesLoaded) {
       final currentState = state as NotificationPreferencesLoaded;
       final updatedUserPreference = UserPreference(
         notificationEnabled: event.value,
-        notificationEnabledMs: currentState.userSettings.userPreference?.notificationEnabledMs ?? 0,
-        emailNotificationEnabled: currentState.userSettings.userPreference?.emailNotificationEnabled,
-        textNotificationEnabled: currentState.userSettings.userPreference?.textNotificationEnabled,
+        notificationEnabledMs:
+            currentState.userSettings.userPreference?.notificationEnabledMs ??
+                0,
+        emailNotificationEnabled:
+            currentState.userSettings.userPreference?.emailNotificationEnabled,
+        textNotificationEnabled:
+            currentState.userSettings.userPreference?.textNotificationEnabled,
       );
 
       final updatedUserSettings = UserSettings(
@@ -67,16 +76,20 @@ class NotificationPreferencesBloc extends Bloc<NotificationPreferencesEvent, Not
   }
 
   void _onUpdateAppUpdates(
-      UpdateAppUpdates event,
-      Emitter<NotificationPreferencesState> emit,
-      ) {
+    UpdateAppUpdates event,
+    Emitter<NotificationPreferencesState> emit,
+  ) {
     if (state is NotificationPreferencesLoaded) {
       final currentState = state as NotificationPreferencesLoaded;
 
       final updatedUserPreference = UserPreference(
-        notificationEnabled: currentState.userSettings.userPreference?.notificationEnabled,
-        notificationEnabledMs: currentState.userSettings.userPreference?.notificationEnabledMs ?? 0,
-        emailNotificationEnabled: currentState.userSettings.userPreference?.emailNotificationEnabled,
+        notificationEnabled:
+            currentState.userSettings.userPreference?.notificationEnabled,
+        notificationEnabledMs:
+            currentState.userSettings.userPreference?.notificationEnabledMs ??
+                0,
+        emailNotificationEnabled:
+            currentState.userSettings.userPreference?.emailNotificationEnabled,
         textNotificationEnabled: event.value,
       );
 
@@ -95,16 +108,18 @@ class NotificationPreferencesBloc extends Bloc<NotificationPreferencesEvent, Not
   }
 
   void _onUpdateMarketingUpdates(
-      UpdateMarketingUpdates event,
-      Emitter<NotificationPreferencesState> emit,
-      ) {
+    UpdateMarketingUpdates event,
+    Emitter<NotificationPreferencesState> emit,
+  ) {
     if (state is NotificationPreferencesLoaded) {
       final currentState = state as NotificationPreferencesLoaded;
 
       final updatedMarketingPreference = MarketingPreference(
         disableAll: !event.value,
-        disableEmail: currentState.userSettings.marketingPreference?.disableEmail,
-        disableTextMsg: currentState.userSettings.marketingPreference?.disableTextMsg,
+        disableEmail:
+            currentState.userSettings.marketingPreference?.disableEmail,
+        disableTextMsg:
+            currentState.userSettings.marketingPreference?.disableTextMsg,
       );
 
       final updatedUserSettings = UserSettings(
@@ -122,17 +137,21 @@ class NotificationPreferencesBloc extends Bloc<NotificationPreferencesEvent, Not
   }
 
   void _onUpdateEmailNotifications(
-      UpdateEmailNotifications event,
-      Emitter<NotificationPreferencesState> emit,
-      ) {
+    UpdateEmailNotifications event,
+    Emitter<NotificationPreferencesState> emit,
+  ) {
     if (state is NotificationPreferencesLoaded) {
       final currentState = state as NotificationPreferencesLoaded;
 
       final updatedUserPreference = UserPreference(
-        notificationEnabled: currentState.userSettings.userPreference?.notificationEnabled,
-        notificationEnabledMs: currentState.userSettings.userPreference?.notificationEnabledMs ?? 0,
+        notificationEnabled:
+            currentState.userSettings.userPreference?.notificationEnabled,
+        notificationEnabledMs:
+            currentState.userSettings.userPreference?.notificationEnabledMs ??
+                0,
         emailNotificationEnabled: event.value,
-        textNotificationEnabled: currentState.userSettings.userPreference?.textNotificationEnabled,
+        textNotificationEnabled:
+            currentState.userSettings.userPreference?.textNotificationEnabled,
       );
 
       final updatedUserSettings = UserSettings(
@@ -150,9 +169,9 @@ class NotificationPreferencesBloc extends Bloc<NotificationPreferencesEvent, Not
   }
 
   Future<void> _onSaveNotificationPreferences(
-      SaveNotificationPreferences event,
-      Emitter<NotificationPreferencesState> emit,
-      ) async {
+    SaveNotificationPreferences event,
+    Emitter<NotificationPreferencesState> emit,
+  ) async {
     if (state is NotificationPreferencesLoaded) {
       final currentState = state as NotificationPreferencesLoaded;
       try {

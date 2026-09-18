@@ -257,8 +257,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     add(LoadAutoSuggestionsEvent());
   }
 
-  Future<List<VibeMessage>> _getMessagesWithActions(
-      String sessionId,
+  Future<List<VibeMessage>> _getMessagesWithActions(String sessionId,
       {int? batchSize, int? index}) async {
     final messages = await chatApi.getMessages(
       sessionId: sessionId,
@@ -324,8 +323,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
   }
 
   Future<List<VibeAction>> _fetchActionsWithBatching(
-      List<String> actionIds,
-      ) async {
+    List<String> actionIds,
+  ) async {
     const batchSize = 10;
     final allActions = <VibeAction>[];
 
@@ -337,7 +336,6 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
         final batch = actionIds.sublist(i, end);
         final batchActions = await chatApi.getActions(batch);
         allActions.addAll(batchActions);
-
       }
     } else {
       final actions = await chatApi.getActions(actionIds);
@@ -885,9 +883,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
 
     final delay = tileCastReadinessDelayOverride ?? Future.delayed;
     try {
-      for (var attempt = 0;
-          attempt < tileCastReadinessMaxAttempts;
-          attempt++) {
+      for (var attempt = 0; attempt < tileCastReadinessMaxAttempts; attempt++) {
         List<VibeRequestPreview> previews;
         try {
           previews = await chatApi.getVibeRequestPreviews(requestId);

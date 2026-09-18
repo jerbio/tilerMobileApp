@@ -107,8 +107,7 @@ class TileCastActionHeader extends StatelessWidget {
                   key: nextKey,
                   icon: const Icon(Icons.chevron_right_rounded),
                   onPressed: canGoNext ? onNext : null,
-                  tooltip:
-                      MaterialLocalizations.of(context).nextPageTooltip,
+                  tooltip: MaterialLocalizations.of(context).nextPageTooltip,
                 ),
                 IconButton(
                   key: listKey,
@@ -118,8 +117,7 @@ class TileCastActionHeader extends StatelessWidget {
                 ),
               ],
             ),
-            if (isNonViable || isStale)
-              const SizedBox(height: 6),
+            if (isNonViable || isStale) const SizedBox(height: 6),
             if (isNonViable)
               Align(
                 alignment: Alignment.center,

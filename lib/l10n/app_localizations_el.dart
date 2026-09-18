@@ -18,16 +18,6 @@ class AppLocalizationsEl extends AppLocalizations {
   String get setupCustomRestrictions => 'Ρύθμιση προσαρμοσμένων περιορισμών';
 
   @override
-  String get customRestrictionTitle => 'Προσαρμοσμένοι περιορισμοί';
-
-  @override
-  String get customRestrictionHeader => 'Ρύθμιση προσαρμοσμένων περιορισμών';
-
-  @override
-  String get customRestrictionHeaderDescription =>
-      'Επιλέξτε πότε θέλετε να ολοκληρώσετε αυτό το καθήκον.';
-
-  @override
   String get day => 'Ημέρα';
 
   @override
@@ -257,6 +247,31 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get atLeastThreeLettersForLookup =>
       '...Ο Tiler χρειάζεται τρεις χαρακτήρες για αναζήτηση';
+
+  @override
+  String get searchSourceBadgeTiler => 'Tiler';
+
+  @override
+  String get searchSourceBadgeGoogle => 'Google';
+
+  @override
+  String get searchSourceBadgeMicrosoft => 'Microsoft';
+
+  @override
+  String searchConnectedAccount(String account) {
+    return 'μέσω $account';
+  }
+
+  @override
+  String get searchPartialFailureWarning =>
+      'Δεν ήταν δυνατή η αναζήτηση σε ορισμένα ημερολόγια.';
+
+  @override
+  String get searchUnavailableMessage =>
+      'Η αναζήτηση δεν είναι διαθέσιμη προσωρινά. Παρακαλώ δοκίμασε ξανά.';
+
+  @override
+  String get searchRetry => 'Νέα προσπάθεια';
 
   @override
   String get noLocationMatchWasFound => 'Δεν βρέθηκε τοποθεσία';
@@ -3070,4 +3085,850 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get aiConsentLinkError => 'Δεν ήταν δυνατή η άνοιξη του συνδέσμου.';
+
+  @override
+  String get addTileScreenTitleFlexible => 'Προσθήκη πλακιδίου';
+
+  @override
+  String get addTileScreenTitleFixed => 'Προσθήκη μπλοκ';
+
+  @override
+  String get addTileTypeFlexible => 'Ευέλικτο πλακίδιο';
+
+  @override
+  String get addTileTypeFixed => 'Σταθερό μπλοκ';
+
+  @override
+  String get addTileTypeSelectorLabel => 'Τύπος πλακιδίου';
+
+  @override
+  String addTileExplanationFlexible(String emphasis) {
+    return 'Ο Tiler θα βρει την $emphasis για αυτό.';
+  }
+
+  @override
+  String addTileExplanationFixed(String emphasis) {
+    return 'Τα μπλοκ γίνονται σε $emphasis.';
+  }
+
+  @override
+  String get addTileFindTime => 'Εύρεση ώρας';
+
+  @override
+  String get addTileSubmitting => 'Αποστολή';
+
+  @override
+  String get addTileNameRequired => 'Το όνομα είναι υποχρεωτικό';
+
+  @override
+  String get addTileTitleRequired => 'Ο τίτλος είναι υποχρεωτικός';
+
+  @override
+  String get addTileFieldTaskName => 'ΟΝΟΜΑ ΕΡΓΑΣΙΑΣ';
+
+  @override
+  String get addTileFieldTitle => 'ΤΙΤΛΟΣ';
+
+  @override
+  String get addTileFieldDuration => 'ΔΙΑΡΚΕΙΑ';
+
+  @override
+  String get addTileFieldCompleteBy => 'ΟΛΟΚΛΗΡΩΣΗ ΜΕΧΡΙ';
+
+  @override
+  String get addTileFieldPreferredTime => 'ΠΡΟΤΙΘΕΜΕΝΗ ΩΡΑ';
+
+  @override
+  String get addTileFieldDate => 'ΗΜΕΡΟΜΗΝΙΑ';
+
+  @override
+  String get addTileFieldStarts => 'ΕΝΑΡΞΗ';
+
+  @override
+  String get addTileFieldEnds => 'ΤΕΛΟΣ';
+
+  @override
+  String get addTileFieldLocation => 'ΤΟΠΟΣ';
+
+  @override
+  String get addTileTaskNameHint => 'Τι θέλετε να κάνετε;';
+
+  @override
+  String get addTileBlockTitleHint => 'Τι είναι αυτό το μπλοκ;';
+
+  @override
+  String get addTileValueNotSet => 'Δεν ορίζεται';
+
+  @override
+  String get addTileAutoCalculated => 'Αυτοματολογισμένο';
+
+  @override
+  String addTileEndsSemantics(String time) {
+    return 'Λήγει στις $time, υπολογισμένο από την έναρξη και τη διάρκεια';
+  }
+
+  @override
+  String addTileTodayDate(String date) {
+    return 'Σήμερα, $date';
+  }
+
+  @override
+  String get addTileMoreOptions => 'Περισσότερες επιλογές';
+
+  @override
+  String get addTilePriority => 'Προτεραιότητα';
+
+  @override
+  String get addTilePriorityLow => 'Χαμηλή';
+
+  @override
+  String get addTilePriorityMedium => 'Μέτρια';
+
+  @override
+  String get addTilePriorityHigh => 'Υψηλή';
+
+  @override
+  String get addTilePriorityLowMeaning => 'Καλό αν γίνει';
+
+  @override
+  String get addTilePriorityMediumMeaning => 'Σημαντικό';
+
+  @override
+  String get addTilePriorityHighMeaning => 'Πρέπει να γίνει';
+
+  @override
+  String get addTilePriorityHelper =>
+      'Η προτεραιότητα βοηθά τον Tiler να αποφασίσει τι να προστατεύσει πρώτα.';
+
+  @override
+  String get addTileColorAutomatic => 'Αυτόματο';
+
+  @override
+  String get addTileColorCustom => 'Προσαρμοσμένο';
+
+  @override
+  String get addTileSplitIntoSessions => 'Διάσπαση σε συνεδρίες';
+
+  @override
+  String get addTileSplitHelper =>
+      'Διαχωρίστε αυτό σε ξεχωριστές ώρες εργασίας.';
+
+  @override
+  String addTileSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count συνεδρίες',
+      one: '1 συνεδρία',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get addTileFewerSessions => 'Λιγότερες συνεδρίες';
+
+  @override
+  String get addTileMoreSessions => 'Περισσότερες συνεδρίες';
+
+  @override
+  String get addTileFlexibleCompletion => 'Ευέλικτη ημερομηνία ολοκλήρωσης';
+
+  @override
+  String get addTileFlexibleCompletionHelper =>
+      'Ο Tiler μπορεί να μετακινήσει ελαφρώς αυτή την ημερομηνία αν χρειαστεί.';
+
+  @override
+  String get addTilePreferredTimeCustom => 'Προσαρμοσμένο';
+
+  @override
+  String addTileDurationMinutes(int minutes) {
+    return '$minutes λεπτά';
+  }
+
+  @override
+  String addTileDurationHours(int hours) {
+    return '$hours ω';
+  }
+
+  @override
+  String addTileDurationHoursMinutes(int hours, int minutes) {
+    return '$hours ω $minutes λεπτά';
+  }
+
+  @override
+  String get addTileRepeat => 'Επανάληψη';
+
+  @override
+  String get addTileRepeatNever => 'Δεν επαναλαμβάνεται';
+
+  @override
+  String get addTileRepeatDays => 'ΗΜΕΡΕΣ';
+
+  @override
+  String get addTileRepeatsUntil => 'ΕΠΑΝΑΛΑΜΒΑΝΕΤΑΙ ΜΕΧΡΙ';
+
+  @override
+  String get addTileRepeatHelper =>
+      'Η επανάληψη βοηθά τον Tiler να προγραμματίσει επαναλαμβανόμενες εργασίες.';
+
+  @override
+  String get addTileLocationSearchHint => 'Αναζήτηση τοποθεσιών';
+
+  @override
+  String get addTileLocationYourPlaces => 'ΟΙ ΤΟΠΟΘΕΣΙΕΣ ΣΑΣ';
+
+  @override
+  String get addTileLocationSuggestions => 'ΠΡΟΤΑΣΕΙΣ';
+
+  @override
+  String get addTileLocationHelper =>
+      'Ο τόπος βοηθά τον Tiler να βελτιστοποιήσει τα ταξίδια και τις ώρες.';
+
+  @override
+  String get addTileLocationNoneSaved =>
+      'Κανένας τόπος δεν έχει αποθηκευτεί ακόμα';
+
+  @override
+  String get addTileLocationNoneSavedHelper =>
+      'Αναζητήστε έναν τόπο ή πληκτρολογήστε ένα όνομα όπως «καταστήμα ποδηλάτων» για αποθήκευση.';
+
+  @override
+  String get addTileLocationNoResults => 'Δεν βρέθηκαν τοποθεσίες';
+
+  @override
+  String get addTileLocationNoResultsHelper =>
+      'Μπορείτε ακόμα να αποθηκεύσετε ό,τι πληκτρολογήσατε ως όνομα τοποθεσίας.';
+
+  @override
+  String get addTileLocationSearchFailed =>
+      'Η αναζήτηση δεν είναι δυνατή αυτή τη στιγμή';
+
+  @override
+  String get addTileLocationSearchFailedHelper =>
+      'Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά, ή αποθηκεύστε ό,τι πληκτρολογήσατε ως όνομα τοποθεσίας.';
+
+  @override
+  String addTileLocationUseTyped(String query) {
+    return 'Χρήψη «$query»';
+  }
+
+  @override
+  String get addTileLocationUseTypedHelper =>
+      'Δώστε του ένα όνομα και μια διεύθυνση';
+
+  @override
+  String get addTileLocationFallbackName => 'Τόπος';
+
+  @override
+  String get addTilePlaceAdd => 'Προσθήκη τοποθεσίας';
+
+  @override
+  String get addTilePlaceEdit => 'Επεξεργασία τοποθεσίας';
+
+  @override
+  String get addTilePlaceName => 'ΟΝΟΜΑ';
+
+  @override
+  String get addTilePlaceAddress => 'ΔΙΕΥΘΥΝΣΗ';
+
+  @override
+  String get addTilePlaceNameHint => 'π.χ. Walmart κοντά στη δουλειά';
+
+  @override
+  String get addTilePlaceAddressHint => 'Οδός, πόλη, πολιτεία';
+
+  @override
+  String get addTilePlaceSave => 'Αποθήκευση τοποθεσίας';
+
+  @override
+  String get addTilePlaceNameThis => 'Ονομάστε αυτή την τοποθεσία';
+
+  @override
+  String get addTilePlaceNameHelper =>
+      'Το όνομα είναι ο τρόπος που θα βρείτε ξανά αυτήν την τοποθεσία. Αν δύο τοποθεσίες έχουν το ίδιο όνομα, παραμένει μόνο η νεότερη διεύθυνση.';
+
+  @override
+  String addTilePlaceNameTaken(String name, String address) {
+    return 'Έχετε ήδη μια τοποθεσία με όνομα «$name» στη διεύθυνση $address. Με την αποθήκευση, το όνομα αυτό θα μεταφερθεί σε αυτή τη διεύθυνση.';
+  }
+
+  @override
+  String addTilePlaceNameTakenNoAddress(String name) {
+    return 'Έχετε ήδη μια τοποθεσία με όνομα «$name». Με την αποθήκευση, το όνομα αυτό θα μεταφερθεί σε αυτή τη διεύθυνση.';
+  }
+
+  @override
+  String get addTileFieldPriority => 'ΠΡΟΤΕΡΑΙΟΤΗΤΑ';
+
+  @override
+  String get addTileFieldColor => 'ΧΡΩΜΑ';
+
+  @override
+  String get addTileColorPresets => 'ΠΡΟΕΠΙΛΟΓΕΣ';
+
+  @override
+  String get addTileColorAutomaticHelper =>
+      'Ο Tiler επιλέγει ένα χρώμα για εσάς';
+
+  @override
+  String get addTileColorCustomHelper => 'Επιλέξτε οποιοδήποτε χρώμα';
+
+  @override
+  String get addTileColorHelper =>
+      'Το χρώμα αλλάζει μόνο την εμφάνιση στο πρόγραμμα σας.';
+
+  @override
+  String get addTileColorShuffle => 'Αναμείξετε άλλο χρώμα';
+
+  @override
+  String addTileColorSwatch(int index) {
+    return 'Χρώμα $index';
+  }
+
+  @override
+  String get addTileExplanationFlexibleEmphasis => 'καλύτερη ώρα';
+
+  @override
+  String get addTileExplanationFixedEmphasis => 'σταθερή ώρα';
+
+  @override
+  String get addTileFieldRepeat => 'ΕΠΑΝΑΛΗΨΗ';
+
+  @override
+  String get addTileDurationQuick => 'ΓΡΗΓΟΡΗ';
+
+  @override
+  String get addTileDurationCustom => 'ΠΡΟΣΑΡΜΟΣΜΕΝΗ';
+
+  @override
+  String get addTileDurationHourLabel => 'Ώρα';
+
+  @override
+  String get addTileDurationMinuteLabel => 'Λεπτά';
+
+  @override
+  String addTileDurationEndsFromStart(String start) {
+    return 'ΑΠΟ $start';
+  }
+
+  @override
+  String addTileDurationEndsNextDay(String time) {
+    return '$time, επόμενη μέρα';
+  }
+
+  @override
+  String addTileDurationEndsSemantics(String end, String start) {
+    return 'Λήγει στις $end, από έναρξη στις $start. Αλλαγή ώρας λήξης';
+  }
+
+  @override
+  String get editTileTitleTile => 'Επεξεργασία πλακιδίου';
+
+  @override
+  String get editTileTitleBlock => 'Επεξεργασία μπλοκ';
+
+  @override
+  String get editTileSave => 'Αποθήκευση αλλαγών';
+
+  @override
+  String get editTileSaving => 'Αποθήκευση…';
+
+  @override
+  String get editTileSectionTiming => 'ΧΡΟΝΟΔΙΑΓΡΑΜΜΑ';
+
+  @override
+  String get editTileReasonNameRequired =>
+      'Δώστε τίτλο σε αυτό το πλακίδιο για αποθήκευση';
+
+  @override
+  String get editTileReasonSplitRequired =>
+      'Οι συνεδρίες πρέπει να είναι τουλάχιστον 1';
+
+  @override
+  String get editTileReasonEndNotAfterStart =>
+      'Το τέλος πρέπει να είναι μετά την έναρξη';
+
+  @override
+  String get editTileDiscardTitle => 'Απόρριψη αλλαγών;';
+
+  @override
+  String get editTileDiscardBody =>
+      'Οι αλλαγές σας σε αυτό το πλακίδιο θα χαθούν.';
+
+  @override
+  String get editTileDiscard => 'Απόρριψη';
+
+  @override
+  String get editTileKeepEditing => 'Συνέχεια επεξεργασίας';
+
+  @override
+  String get editTileLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση αυτού του πλακιδίου.';
+
+  @override
+  String get editTileSaveFailed =>
+      'Η αποθήκευση δεν είναι δυνατή αυτή τη στιγμή. Οι αλλαγές σας διατηρούνται.';
+
+  @override
+  String get editTileSectionActions => 'ΕΝΕΡΓΕΙΕΣ';
+
+  @override
+  String get editTileSectionSessions => 'ΣΥΝΕΔΡΙΕΣ';
+
+  @override
+  String get editTileFieldSessions => 'Διάσπαση σε συνεδρίες';
+
+  @override
+  String get editTileFieldDeadline => 'ΠΡΟΘΕΣΜΙΑ';
+
+  @override
+  String get editTileSectionAdditional => 'ΠΡΟΣΘΕΤΙΚΑ ΣΤΟΙΧΕΙΑ';
+
+  @override
+  String get editTileSectionSuggestions => 'ΠΡΟΤΑΣΕΙΣ';
+
+  @override
+  String get editTileCreateAsNewTile => 'Δημιουργία ως νέο πλακίδιο';
+
+  @override
+  String get editTileSectionProgress => 'ΠΡΟΟΔΟΣ';
+
+  @override
+  String editTileProgressComplete(int done, int total) {
+    return '$done από $total ολοκληρωμένα';
+  }
+
+  @override
+  String editTileProgressRemaining(int remaining, int deleted) {
+    return '$remaining απομένουν · $deleted διαγράφηκαν';
+  }
+
+  @override
+  String get editTileActionComplete => 'Ολοκλήρωση';
+
+  @override
+  String get editTileActionCompleteCaption => 'Σήμανση ως ολοκληρωμένο';
+
+  @override
+  String get editTileActionStartNow => 'Έναρξη τώρα';
+
+  @override
+  String get editTileActionStartNowCaption => 'Μετακίνηση στο τώρα';
+
+  @override
+  String get editTileActionDefer => 'Αναβολή';
+
+  @override
+  String get editTileActionDeferCaption => 'Επιλογή άλλης ώρας';
+
+  @override
+  String get editTileActionDelete => 'Διαγραφή';
+
+  @override
+  String get editTileActionDeleteCaption => 'Αφαίρεση';
+
+  @override
+  String editTileActionConfirmComplete(String title) {
+    return 'Σήμανση του «$title» ως ολοκληρωμένο;';
+  }
+
+  @override
+  String editTileActionConfirmStartNow(String title) {
+    return 'Μετακίνηση του «$title» στο τώρα;';
+  }
+
+  @override
+  String editTileActionConfirmDefer(String title) {
+    return 'Αναβολή του «$title»;';
+  }
+
+  @override
+  String editTileActionConfirmDelete(String title) {
+    return 'Διαγραφή του «$title»;';
+  }
+
+  @override
+  String get editTileActionDeleteBody =>
+      'Αυτό αφαιρεί το πλακίδιο από το πρόγραμμα σας.';
+
+  @override
+  String get editTileActionDiscardsEdits =>
+      'Οι μη αποθηκευμένες αλλαγές σας θα απορριφθούν.';
+
+  @override
+  String get editTileActionFailed =>
+      'Η ενέργεια δεν είναι δυνατή αυτή τη στιγμή.';
+
+  @override
+  String editTileActionSemantics(String label, String caption) {
+    return '$label, $caption';
+  }
+
+  @override
+  String get editTileSectionRepetition => 'ΕΠΑΝΑΛΗΨΗ';
+
+  @override
+  String get editTileSectionPriority => 'ΠΡΟΤΕΡΑΙΟΤΗΤΑ';
+
+  @override
+  String get editTileSectionLocation => 'ΤΟΠΟΣ';
+
+  @override
+  String get editTileLocationRemove => 'Αφαίρεση τοποθεσίας';
+
+  @override
+  String get addTileDeadlineClear => 'Αφαίρεση προθεσμίας';
+
+  @override
+  String get editTileMenuTileDetails => 'Λεπτομέρειες πλακιδίου';
+
+  @override
+  String get editTileMoreMenu => 'Περισσότερα';
+
+  @override
+  String get editTileRepeatEveryDay => 'Κάθε μέρα';
+
+  @override
+  String get editTileRepeatEveryWeek => 'Κάθε εβδομάδα';
+
+  @override
+  String editTileRepeatEveryWeekOn(String days) {
+    return 'Κάθε εβδομάδα το $days';
+  }
+
+  @override
+  String get editTileRepeatEveryMonth => 'Κάθε μήνα';
+
+  @override
+  String get editTileRepeatEveryYear => 'Κάθε χρόνο';
+
+  @override
+  String editTileRepeatUntil(String cadence, String date) {
+    return '$cadence · μέχρι $date';
+  }
+
+  @override
+  String editTileRepeatUntilDate(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.MMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
+
+  @override
+  String editTileRepeatNeverEnds(String cadence) {
+    return '$cadence · δεν τελειώνει ποτέ';
+  }
+
+  @override
+  String get editTileRepeatCalloutTitle =>
+      'Θα δημιουργηθούν πολλαπλές περιπτώσεις';
+
+  @override
+  String get editTileRepeatCalloutBody =>
+      'Ο Tiler θα προγραμματίσει κάθε περίπτωση βάσει των προτιμήσεων και της διαθεσιμότητάς σας.';
+
+  @override
+  String get editTileNotesTitle => 'Σημειώσεις';
+
+  @override
+  String get editTileModeReadOnly =>
+      'Αυτό το πλακίδιο έχει ολοκληρωθεί και δεν μπορεί να επεξεργαστεί. Μπορείτε πάντως να το διαγράψετε.';
+
+  @override
+  String get editTileModeProcrastinate =>
+      'Μπλοκαρισμένος χρόνος. Μετακινήστε τον, σημάδεψτε τον ως ολοκληρωμένο ή αφαιρέστε τον.';
+
+  @override
+  String editTileModeThirdParty(String provider) {
+    return 'Διαχειρίζεται από $provider. Απαντήστε στη πρόσκληση ή διαγράψτε τον εδώ · επεξεργαστείτε το γεγονός στο $provider.';
+  }
+
+  @override
+  String get editTileProviderGoogle => 'Google Ημερολόγιο';
+
+  @override
+  String get editTileProviderOutlook => 'Outlook';
+
+  @override
+  String get editTileRsvpFailed =>
+      'Η απάντησή σας δεν στάλθηκε αυτή τη στιγμή.';
+
+  @override
+  String get editTileWhatIfChecking =>
+      'Έλεγχος του τι επηρεάζει αυτή η αλλαγή…';
+
+  @override
+  String editTileWhatIfSummary(int late, int overflow) {
+    return 'Επηρεάζει άλλα πλακίδια: $late σε καθυστέρηση, $overflow υπέρβαση';
+  }
+
+  @override
+  String get editTileWhatIfSheetTitle => 'Τι επηρεάζει αυτή η αλλαγή';
+
+  @override
+  String get editTileWhatIfLate => 'Καθυστέρηση';
+
+  @override
+  String get editTileWhatIfOverflow => 'Υπέρβαση';
+
+  @override
+  String get editTileWhatIfClean => 'Κανένα άλλο πλακίδιο δεν επηρεάζεται.';
+
+  @override
+  String get editTileWhatIfFailed =>
+      'Δεν ήταν δυνατός ο έλεγχος της επίπτωσης στο πρόγραμμα σας.';
+
+  @override
+  String get editTileWhatIfRetry => 'Νέα απόπειρα';
+
+  @override
+  String get editTileEditTitle => 'Επεξεργασία τίτλου';
+
+  @override
+  String get tileDetailTitle => 'Λεπτομέρειες πλακιδίου';
+
+  @override
+  String get tileDetailLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση των λεπτομερειών αυτού του πλακιδίου.';
+
+  @override
+  String get tileDetailSaveFailed =>
+      'Η αποθήκευση δεν είναι δυνατή αυτή τη στιγμή. Οι αλλαγές σας διατηρούνται.';
+
+  @override
+  String get tileDetailDeleteSeries => 'Διαγραφή πλακιδίου';
+
+  @override
+  String tileDetailDeleteConfirm(String title) {
+    return 'Διαγραφή του «$title»;';
+  }
+
+  @override
+  String get tileDetailDeleteBody =>
+      'Κάθε περίπτωση αυτού του πλακιδίου θα αφαιρεθεί από το πρόγραμμα σας.';
+
+  @override
+  String get tileDetailDeleteFailed =>
+      'Η διαγραφή δεν είναι δυνατή αυτή τη στιγμή.';
+
+  @override
+  String get tileDetailSectionOccurrences => 'ΠΕΡΙΠΤΩΣΕΙΣ';
+
+  @override
+  String get tileDetailOccurrencesEmpty =>
+      'Καμία περίπτωση δεν έχει προγραμματιστεί ακόμα.';
+
+  @override
+  String get tileDetailOccurrencesFailed =>
+      'Δεν ήταν δυνατή η φόρτωση των περιπτώσεων.';
+
+  @override
+  String get tileDetailOccurrencesEarlier => 'Εμφάνιση πιο παλιών';
+
+  @override
+  String get tileDetailOccurrencesLater => 'Εμφάνιση πιο νέων';
+
+  @override
+  String get tileDetailOccurrenceDone => 'Ολοκληρώθηκε';
+
+  @override
+  String tileDetailOccurrenceSemantics(String day, String span, String done) {
+    return '$day, $span$done';
+  }
+
+  @override
+  String editTileTimeChipSemantics(String field, String value) {
+    return 'Ώρα $field, $value';
+  }
+
+  @override
+  String editTileDateChipSemantics(String field, String value) {
+    return 'Ημερομηνία $field, $value';
+  }
+
+  @override
+  String get addTileSubmitFailed =>
+      'Δεν ήταν δυνατό να προστεθεί τώρα. Τα στοιχεία σας είναι αποθηκευμένα.';
+
+  @override
+  String get addTileRetry => 'Νέα απόπειρα';
+
+  @override
+  String get addTileTimeRestrictionTitle => 'Time restrictions';
+
+  @override
+  String get addTileTimeRestrictionHeading => 'When can Tiler schedule this?';
+
+  @override
+  String get addTileTimeRestrictionSubtitle =>
+      'Set when this tile is allowed to appear on your calendar.';
+
+  @override
+  String get addTileRestrictionAnytimeHelper =>
+      'Tiler can place this whenever you\'re available.';
+
+  @override
+  String get addTileRestrictionWork => 'Work hours';
+
+  @override
+  String get addTileRestrictionWorkHelper =>
+      'Only schedule during your Work profile.';
+
+  @override
+  String get addTileRestrictionPersonal => 'Personal hours';
+
+  @override
+  String get addTileRestrictionPersonalHelper =>
+      'Only schedule during your Personal profile.';
+
+  @override
+  String get addTileRestrictionCustom => 'Custom hours';
+
+  @override
+  String get addTileRestrictionCustomHelper =>
+      'Choose specific days and times.';
+
+  @override
+  String get addTileRestrictionNotSetUp =>
+      'Not set up — use the arrow to set hours';
+
+  @override
+  String addTileRestrictionEdit(String name) {
+    return 'Edit $name';
+  }
+
+  @override
+  String get addTileRestrictionTip =>
+      'Tiler will respect these restrictions when auto-scheduling, re-optimizing, or suggesting times for this tile.';
+
+  @override
+  String get addTileRestrictionLoadFailed =>
+      'Couldn\'t load your Work and Personal hours.';
+
+  @override
+  String addTileRestrictionDayRange(String first, String last) {
+    return '$first – $last';
+  }
+
+  @override
+  String addTileRestrictionWindow(String days, String start, String end) {
+    return '$days · $start – $end';
+  }
+
+  @override
+  String get addTileCustomHoursTitle => 'Custom hours';
+
+  @override
+  String get addTileCustomHoursSubtitle =>
+      'Select the days and time windows when this tile can be scheduled.';
+
+  @override
+  String addTileCustomHoursProfileSubtitle(String name) {
+    return 'Select the days and time windows for your $name.';
+  }
+
+  @override
+  String get addTileCustomHoursPresets => 'Quick presets';
+
+  @override
+  String get addTileHoursPresetWeekdays => 'Weekdays';
+
+  @override
+  String get addTileHoursPresetEvenings => 'Evenings';
+
+  @override
+  String get addTileHoursPresetWeekends => 'Weekends';
+
+  @override
+  String addTileHoursPresetWindow(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get addTileHoursEndBeforeStart => 'End cannot be before start';
+
+  @override
+  String get addTileRestrictionAllDay => 'All day';
+
+  @override
+  String addTileRestrictionAllDayWindow(String days, String label) {
+    return '$days · $label';
+  }
+
+  @override
+  String get addTileCustomHoursFooter =>
+      'Disabled days will be excluded from scheduling this tile.';
+
+  @override
+  String addTileCustomHoursProfileFooter(String name) {
+    return 'Applies to every tile that uses $name.';
+  }
+
+  @override
+  String addTileHoursCopy(String day) {
+    return 'Copy $day\'s hours';
+  }
+
+  @override
+  String addTileHoursPaste(String day) {
+    return 'Paste hours to $day';
+  }
+
+  @override
+  String get addTileHoursClearCopy => 'Clear copied hours';
+
+  @override
+  String addTileHoursStartSemantics(String day, String time) {
+    return '$day start, $time';
+  }
+
+  @override
+  String addTileHoursEndSemantics(String day, String time) {
+    return '$day end, $time';
+  }
+
+  @override
+  String addTileHoursSaveFailed(String name) {
+    return 'Couldn\'t save your $name.';
+  }
+
+  @override
+  String get addTileHoursSaving => 'Saving…';
+
+  @override
+  String searchResultsForQuery(int count, String query) {
+    return '$count αποτελέσματα για \"$query\"';
+  }
+
+  @override
+  String get searchFilterAll => 'Όλα';
+
+  @override
+  String get searchFilterTiler => 'Tiler';
+
+  @override
+  String get searchFilterGoogle => 'Google';
+
+  @override
+  String get searchFilterOutlook => 'Outlook';
+
+  @override
+  String get startNow => 'Έναρξη τώρα';
+
+  @override
+  String dueOnDate(String date) {
+    return 'Λήξη $date';
+  }
+
+  @override
+  String get noResultsForProvider =>
+      'Δεν υπάρχουν αποτελέσματα από αυτό το ημερολόγιο';
+
+  @override
+  String get readOnly => 'Μόνο ανάγνωση';
+
+  @override
+  String get productTourStarting =>
+      'Η περιήγηση στην εφαρμογή σου πρόκειται να αρχίσει.';
 }

@@ -20,8 +20,8 @@ class TravelTimeBeforeState extends State<TravelTimeBefore> {
   @override
   Widget build(BuildContext context) {
     String durationString = Utility.toHuman(this.widget.travelTimeDuration);
-    final theme= Theme.of(context);
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
@@ -32,7 +32,8 @@ class TravelTimeBeforeState extends State<TravelTimeBefore> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-                color: TileColors.travel, borderRadius: BorderRadius.circular(8)),
+                color: TileColors.travel,
+                borderRadius: BorderRadius.circular(8)),
             child: Icon(
               Icons.directions_walk,
               color: TileColors.lightContent,
@@ -44,10 +45,8 @@ class TravelTimeBeforeState extends State<TravelTimeBefore> {
               Text(
                 'You need to leave in ',
                 overflow: TextOverflow.ellipsis,
-                style:  TextStyle(
-                    fontSize: 15,
-                    fontFamily: TileTextStyles.rubikFontName
-                ),
+                style: TextStyle(
+                    fontSize: 15, fontFamily: TileTextStyles.rubikFontName),
               ),
               Text(
                 '$durationString',
@@ -56,8 +55,7 @@ class TravelTimeBeforeState extends State<TravelTimeBefore> {
                     fontSize: 15,
                     fontFamily: TileTextStyles.rubikFontName,
                     fontWeight: FontWeight.w600,
-                    color: TileColors.travel
-                ),
+                    color: TileColors.travel),
               )
             ],
           )

@@ -1,3 +1,4 @@
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -451,6 +452,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       await OnBoardingSharedPreferencesHelper.setEssentialsOnboardingDone(true);
       emit(OnboardingState(step: OnboardingStep.submitted));
     } catch (e) {
+      AnalysticsSignal.send('ESSENTIALS_ONBOARDING_SUBMIT_FAILED');
       // Failed submit: stay in the flow. The view's error branch shows
       // the existing toast and Skip remains available. Restriction
       // profile persistence is no longer part of the onboarding submit

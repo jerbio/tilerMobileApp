@@ -4,7 +4,6 @@ import 'package:tiler_app/services/api/DayStatusApi.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
-
 //ey: not really used
 
 class DayStatusWidget extends StatefulWidget {

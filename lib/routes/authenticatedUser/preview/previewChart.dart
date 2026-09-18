@@ -1,4 +1,4 @@
-﻿import 'package:fl_chart/fl_chart.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/previewGroup.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -24,7 +24,8 @@ class PreviewChart extends StatefulWidget {
     this.icon,
     this.timeline,
     this.header,
-    @Deprecated('Use header; kept for source compatibility') Widget? description,
+    @Deprecated('Use header; kept for source compatibility')
+    Widget? description,
   }) : assert(header == null || description == null,
             'Provide header OR description, not both');
 
@@ -252,4 +253,3 @@ class _PreviewChartState extends State<PreviewChart> {
     );
   }
 }
-

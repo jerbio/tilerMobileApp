@@ -19,17 +19,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Configurer des restrictions personnalisées';
 
   @override
-  String get customRestrictionTitle => 'Restrictions personnalisées';
-
-  @override
-  String get customRestrictionHeader =>
-      'Configurer des restrictions personnalisées';
-
-  @override
-  String get customRestrictionHeaderDescription =>
-      'Sélectionnez les moments où vous souhaitez effectuer cette tâche.';
-
-  @override
   String get day => 'Jour';
 
   @override
@@ -261,6 +250,31 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get atLeastThreeLettersForLookup =>
       '...Tiler a besoin de trois caractères pour la recherche';
+
+  @override
+  String get searchSourceBadgeTiler => 'Tiler';
+
+  @override
+  String get searchSourceBadgeGoogle => 'Google';
+
+  @override
+  String get searchSourceBadgeMicrosoft => 'Microsoft';
+
+  @override
+  String searchConnectedAccount(String account) {
+    return 'via $account';
+  }
+
+  @override
+  String get searchPartialFailureWarning =>
+      'Certains calendriers n\'ont pas pu être recherchés.';
+
+  @override
+  String get searchUnavailableMessage =>
+      'La recherche est temporairement indisponible. Veuillez réessayer.';
+
+  @override
+  String get searchRetry => 'Réessayer';
 
   @override
   String get noLocationMatchWasFound =>
@@ -3087,4 +3101,844 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aiConsentLinkError => 'Impossible d\'ouvrir le lien.';
+
+  @override
+  String get addTileScreenTitleFlexible => 'Ajouter une tuile';
+
+  @override
+  String get addTileScreenTitleFixed => 'Ajouter un bloc';
+
+  @override
+  String get addTileTypeFlexible => 'Tuile flexible';
+
+  @override
+  String get addTileTypeFixed => 'Bloc fixe';
+
+  @override
+  String get addTileTypeSelectorLabel => 'Type de tuile';
+
+  @override
+  String addTileExplanationFlexible(String emphasis) {
+    return 'Tiler trouvera $emphasis pour cela.';
+  }
+
+  @override
+  String addTileExplanationFixed(String emphasis) {
+    return 'Les blocs ont lieu à $emphasis.';
+  }
+
+  @override
+  String get addTileFindTime => 'Trouver un horaire';
+
+  @override
+  String get addTileSubmitting => 'Envoi en cours';
+
+  @override
+  String get addTileNameRequired => 'Le nom est obligatoire';
+
+  @override
+  String get addTileTitleRequired => 'Le titre est obligatoire';
+
+  @override
+  String get addTileFieldTaskName => 'NOM DE LA TÂCHE';
+
+  @override
+  String get addTileFieldTitle => 'TITRE';
+
+  @override
+  String get addTileFieldDuration => 'DURÉE';
+
+  @override
+  String get addTileFieldCompleteBy => 'À TERMINER AVANT';
+
+  @override
+  String get addTileFieldPreferredTime => 'HORAIRE PREFERÉ';
+
+  @override
+  String get addTileFieldDate => 'DATE';
+
+  @override
+  String get addTileFieldStarts => 'DÉBUT';
+
+  @override
+  String get addTileFieldEnds => 'FIN';
+
+  @override
+  String get addTileFieldLocation => 'EMPLACEMENT';
+
+  @override
+  String get addTileTaskNameHint => 'Que souhaitez-vous faire ?';
+
+  @override
+  String get addTileBlockTitleHint => 'De quoi s\'agit-il ?';
+
+  @override
+  String get addTileValueNotSet => 'Non défini';
+
+  @override
+  String get addTileAutoCalculated => 'Calculé automatiquement';
+
+  @override
+  String addTileEndsSemantics(String time) {
+    return 'Termine à $time, calculé à partir du début et de la durée';
+  }
+
+  @override
+  String addTileTodayDate(String date) {
+    return 'Aujourd\'hui, $date';
+  }
+
+  @override
+  String get addTileMoreOptions => 'Plus d\'options';
+
+  @override
+  String get addTilePriority => 'Priorité';
+
+  @override
+  String get addTilePriorityLow => 'Basse';
+
+  @override
+  String get addTilePriorityMedium => 'Moyenne';
+
+  @override
+  String get addTilePriorityHigh => 'Haute';
+
+  @override
+  String get addTilePriorityLowMeaning => 'Bonne à avoir';
+
+  @override
+  String get addTilePriorityMediumMeaning => 'Important';
+
+  @override
+  String get addTilePriorityHighMeaning => 'À faire absolument';
+
+  @override
+  String get addTilePriorityHelper =>
+      'La priorité aide Tiler à décider quoi protéger en premier.';
+
+  @override
+  String get addTileColorAutomatic => 'Automatique';
+
+  @override
+  String get addTileColorCustom => 'Personnalisé';
+
+  @override
+  String get addTileSplitIntoSessions => 'Diviser en sessions';
+
+  @override
+  String get addTileSplitHelper =>
+      'Découpez ceci en sessions de travail séparées.';
+
+  @override
+  String addTileSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions',
+      one: '1 session',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get addTileFewerSessions => 'Moins de sessions';
+
+  @override
+  String get addTileMoreSessions => 'Plus de sessions';
+
+  @override
+  String get addTileFlexibleCompletion => 'Date de fin flexible';
+
+  @override
+  String get addTileFlexibleCompletionHelper =>
+      'Tiler peut déplacer légèrement cette date si nécessaire.';
+
+  @override
+  String get addTilePreferredTimeCustom => 'Personnalisé';
+
+  @override
+  String addTileDurationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String addTileDurationHours(int hours) {
+    return '$hours h';
+  }
+
+  @override
+  String addTileDurationHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String get addTileRepeat => 'Répéter';
+
+  @override
+  String get addTileRepeatNever => 'Ne se répète pas';
+
+  @override
+  String get addTileRepeatDays => 'JOURS';
+
+  @override
+  String get addTileRepeatsUntil => 'RÉPÉTÉ JUSQU\'À';
+
+  @override
+  String get addTileRepeatHelper =>
+      'La répétition aide Tiler à planifier les tâches récurrentes.';
+
+  @override
+  String get addTileLocationSearchHint => 'Rechercher des lieux';
+
+  @override
+  String get addTileLocationYourPlaces => 'VOS LIEUX';
+
+  @override
+  String get addTileLocationSuggestions => 'SUGGESTIONS';
+
+  @override
+  String get addTileLocationHelper =>
+      'L\'emplacement aide Tiler à optimiser les trajets et les horaires.';
+
+  @override
+  String get addTileLocationNoneSaved => 'Aucun lieu enregistré pour le moment';
+
+  @override
+  String get addTileLocationNoneSavedHelper =>
+      'Recherchez un lieu ou tapez un nom comme « atelier de vélo » pour l\'enregistrer.';
+
+  @override
+  String get addTileLocationNoResults => 'Aucun lieu trouvé';
+
+  @override
+  String get addTileLocationNoResultsHelper =>
+      'Vous pouvez toujours enregistrer ce que vous avez tapé comme nom de lieu.';
+
+  @override
+  String get addTileLocationSearchFailed =>
+      'Impossible de rechercher pour le moment';
+
+  @override
+  String get addTileLocationSearchFailedHelper =>
+      'Vérifiez votre connexion et réessayez, ou enregistrez ce que vous avez tapé comme nom de lieu.';
+
+  @override
+  String addTileLocationUseTyped(String query) {
+    return 'Utiliser « $query »';
+  }
+
+  @override
+  String get addTileLocationUseTypedHelper =>
+      'Donnez-lui un nom et une adresse';
+
+  @override
+  String get addTileLocationFallbackName => 'Lieu';
+
+  @override
+  String get addTilePlaceAdd => 'Ajouter un lieu';
+
+  @override
+  String get addTilePlaceEdit => 'Modifier le lieu';
+
+  @override
+  String get addTilePlaceName => 'NOM';
+
+  @override
+  String get addTilePlaceAddress => 'ADRESSE';
+
+  @override
+  String get addTilePlaceNameHint => 'p. ex. Walmart près du travail';
+
+  @override
+  String get addTilePlaceAddressHint => 'Rue, ville, état';
+
+  @override
+  String get addTilePlaceSave => 'Enregistrer le lieu';
+
+  @override
+  String get addTilePlaceNameThis => 'Nommer ce lieu';
+
+  @override
+  String get addTilePlaceNameHelper =>
+      'Le nom permet de retrouver ce lieu. Si deux lieux portent le même nom, seule l\'adresse la plus récente est conservée.';
+
+  @override
+  String addTilePlaceNameTaken(String name, String address) {
+    return 'Vous avez déjà un lieu nommé « $name » à l\'adresse $address. En enregistrant, ce nom sera déplacé vers cette adresse.';
+  }
+
+  @override
+  String addTilePlaceNameTakenNoAddress(String name) {
+    return 'Vous avez déjà un lieu nommé « $name ». En enregistrant, ce nom sera déplacé vers cette adresse.';
+  }
+
+  @override
+  String get addTileFieldPriority => 'PRIORITÉ';
+
+  @override
+  String get addTileFieldColor => 'COULEUR';
+
+  @override
+  String get addTileColorPresets => 'PRÉDÉFINIS';
+
+  @override
+  String get addTileColorAutomaticHelper =>
+      'Tiler choisit une couleur pour vous';
+
+  @override
+  String get addTileColorCustomHelper => 'Choisissez n\'importe quelle couleur';
+
+  @override
+  String get addTileColorHelper =>
+      'La couleur ne change que l\'apparence dans votre planning.';
+
+  @override
+  String get addTileColorShuffle => 'Mélanger une autre couleur';
+
+  @override
+  String addTileColorSwatch(int index) {
+    return 'Couleur $index';
+  }
+
+  @override
+  String get addTileExplanationFlexibleEmphasis => 'le meilleur moment';
+
+  @override
+  String get addTileExplanationFixedEmphasis => 'un moment fixe';
+
+  @override
+  String get addTileFieldRepeat => 'RÉPÉTITION';
+
+  @override
+  String get addTileDurationQuick => 'RAPIDE';
+
+  @override
+  String get addTileDurationCustom => 'PERSONNALISÉ';
+
+  @override
+  String get addTileDurationHourLabel => 'Heure';
+
+  @override
+  String get addTileDurationMinuteLabel => 'Min';
+
+  @override
+  String addTileDurationEndsFromStart(String start) {
+    return 'À PARTIR DE $start';
+  }
+
+  @override
+  String addTileDurationEndsNextDay(String time) {
+    return '$time, jour suivant';
+  }
+
+  @override
+  String addTileDurationEndsSemantics(String end, String start) {
+    return 'Termine à $end, à partir d\'un début à $start. Modifier l\'heure de fin';
+  }
+
+  @override
+  String get editTileTitleTile => 'Modifier la tuile';
+
+  @override
+  String get editTileTitleBlock => 'Modifier le bloc';
+
+  @override
+  String get editTileSave => 'Enregistrer les modifications';
+
+  @override
+  String get editTileSaving => 'Enregistrement…';
+
+  @override
+  String get editTileSectionTiming => 'HORAIRE';
+
+  @override
+  String get editTileReasonNameRequired =>
+      'Donnez un titre à cette tuile pour l\'enregistrer';
+
+  @override
+  String get editTileReasonSplitRequired =>
+      'Les sessions doivent être au moins 1';
+
+  @override
+  String get editTileReasonEndNotAfterStart =>
+      'La fin doit être après le début';
+
+  @override
+  String get editTileDiscardTitle => 'Annuler les modifications ?';
+
+  @override
+  String get editTileDiscardBody =>
+      'Vos modifications de cette tuile seront perdues.';
+
+  @override
+  String get editTileDiscard => 'Annuler';
+
+  @override
+  String get editTileKeepEditing => 'Continuer à modifier';
+
+  @override
+  String get editTileLoadFailed => 'Impossible de charger cette tuile.';
+
+  @override
+  String get editTileSaveFailed =>
+      'Enregistrement impossible pour le moment. Vos modifications sont conservées.';
+
+  @override
+  String get editTileSectionActions => 'ACTIONS';
+
+  @override
+  String get editTileSectionSessions => 'SESSIONS';
+
+  @override
+  String get editTileFieldSessions => 'Diviser en sessions';
+
+  @override
+  String get editTileFieldDeadline => 'DATE LIMITE';
+
+  @override
+  String get editTileSectionAdditional => 'DÉTAILS SUPPLÉMENTAIRES';
+
+  @override
+  String get editTileSectionSuggestions => 'SUGGESTIONS';
+
+  @override
+  String get editTileCreateAsNewTile => 'Créer comme nouvelle tuile';
+
+  @override
+  String get editTileSectionProgress => 'PROGRÈS';
+
+  @override
+  String editTileProgressComplete(int done, int total) {
+    return '$done sur $total terminés';
+  }
+
+  @override
+  String editTileProgressRemaining(int remaining, int deleted) {
+    return '$remaining restants · $deleted supprimés';
+  }
+
+  @override
+  String get editTileActionComplete => 'Terminer';
+
+  @override
+  String get editTileActionCompleteCaption => 'Marquer comme fait';
+
+  @override
+  String get editTileActionStartNow => 'Commencer maintenant';
+
+  @override
+  String get editTileActionStartNowCaption => 'Déplacer à maintenant';
+
+  @override
+  String get editTileActionDefer => 'Différer';
+
+  @override
+  String get editTileActionDeferCaption => 'Choisir un autre horaire';
+
+  @override
+  String get editTileActionDelete => 'Supprimer';
+
+  @override
+  String get editTileActionDeleteCaption => 'Retirer';
+
+  @override
+  String editTileActionConfirmComplete(String title) {
+    return 'Marquer « $title » comme fait ?';
+  }
+
+  @override
+  String editTileActionConfirmStartNow(String title) {
+    return 'Déplacer « $title » à maintenant ?';
+  }
+
+  @override
+  String editTileActionConfirmDefer(String title) {
+    return 'Différer « $title » ?';
+  }
+
+  @override
+  String editTileActionConfirmDelete(String title) {
+    return 'Supprimer « $title » ?';
+  }
+
+  @override
+  String get editTileActionDeleteBody =>
+      'Cela retire la tuile de votre planning.';
+
+  @override
+  String get editTileActionDiscardsEdits =>
+      'Vos modifications non enregistrées seront annulées.';
+
+  @override
+  String get editTileActionFailed => 'Action impossible pour le moment.';
+
+  @override
+  String editTileActionSemantics(String label, String caption) {
+    return '$label, $caption';
+  }
+
+  @override
+  String get editTileSectionRepetition => 'RÉPÉTITION';
+
+  @override
+  String get editTileSectionPriority => 'PRIORITÉ';
+
+  @override
+  String get editTileSectionLocation => 'EMPLACEMENT';
+
+  @override
+  String get editTileLocationRemove => 'Supprimer l\'emplacement';
+
+  @override
+  String get addTileDeadlineClear => 'Supprimer la date limite';
+
+  @override
+  String get editTileMenuTileDetails => 'Détails de la tuile';
+
+  @override
+  String get editTileMoreMenu => 'Plus';
+
+  @override
+  String get editTileRepeatEveryDay => 'Chaque jour';
+
+  @override
+  String get editTileRepeatEveryWeek => 'Chaque semaine';
+
+  @override
+  String editTileRepeatEveryWeekOn(String days) {
+    return 'Chaque semaine le $days';
+  }
+
+  @override
+  String get editTileRepeatEveryMonth => 'Chaque mois';
+
+  @override
+  String get editTileRepeatEveryYear => 'Chaque année';
+
+  @override
+  String editTileRepeatUntil(String cadence, String date) {
+    return '$cadence · jusqu\'au $date';
+  }
+
+  @override
+  String editTileRepeatUntilDate(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.MMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
+
+  @override
+  String editTileRepeatNeverEnds(String cadence) {
+    return '$cadence · ne prend jamais fin';
+  }
+
+  @override
+  String get editTileRepeatCalloutTitle => 'Cela va créer plusieurs instances';
+
+  @override
+  String get editTileRepeatCalloutBody =>
+      'Tiler planifiera chaque occurrence selon vos préférences et votre disponibilité.';
+
+  @override
+  String get editTileNotesTitle => 'Notes';
+
+  @override
+  String get editTileModeReadOnly =>
+      'Cette tuile est terminée et ne peut pas être modifiée. Vous pouvez toujours la supprimer.';
+
+  @override
+  String get editTileModeProcrastinate =>
+      'Temps bloqué. Déplacez-le, marquez-le terminé ou supprimez-le.';
+
+  @override
+  String editTileModeThirdParty(String provider) {
+    return 'Géré par $provider. Répondez à l\'invitation ou supprimez-la ici ; modifiez l\'événement dans $provider.';
+  }
+
+  @override
+  String get editTileProviderGoogle => 'Google Agenda';
+
+  @override
+  String get editTileProviderOutlook => 'Outlook';
+
+  @override
+  String get editTileRsvpFailed =>
+      'Impossible d\'envoyer votre réponse pour le moment.';
+
+  @override
+  String get editTileWhatIfChecking =>
+      'Vérification des effets de cette modification…';
+
+  @override
+  String editTileWhatIfSummary(int late, int overflow) {
+    return 'Affecte d\'autres tuiles : $late en retard, $overflow débordement';
+  }
+
+  @override
+  String get editTileWhatIfSheetTitle => 'Ce que cette modification affecte';
+
+  @override
+  String get editTileWhatIfLate => 'En retard';
+
+  @override
+  String get editTileWhatIfOverflow => 'Débordement';
+
+  @override
+  String get editTileWhatIfClean => 'Aucune autre tuile n\'est affectée.';
+
+  @override
+  String get editTileWhatIfFailed =>
+      'Impossible de vérifier l\'effet sur votre planning.';
+
+  @override
+  String get editTileWhatIfRetry => 'Réessayer';
+
+  @override
+  String get editTileEditTitle => 'Modifier le titre';
+
+  @override
+  String get tileDetailTitle => 'Détails de la tuile';
+
+  @override
+  String get tileDetailLoadFailed =>
+      'Impossible de charger les détails de cette tuile.';
+
+  @override
+  String get tileDetailSaveFailed =>
+      'Enregistrement impossible pour le moment. Vos modifications sont conservées.';
+
+  @override
+  String get tileDetailDeleteSeries => 'Supprimer la tuile';
+
+  @override
+  String tileDetailDeleteConfirm(String title) {
+    return 'Supprimer « $title » ?';
+  }
+
+  @override
+  String get tileDetailDeleteBody =>
+      'Toutes les occurrences de cette tuile seront retirées de votre planning.';
+
+  @override
+  String get tileDetailDeleteFailed => 'Suppression impossible pour le moment.';
+
+  @override
+  String get tileDetailSectionOccurrences => 'OCCURRENCES';
+
+  @override
+  String get tileDetailOccurrencesEmpty =>
+      'Aucune occurrence planifiée pour le moment.';
+
+  @override
+  String get tileDetailOccurrencesFailed =>
+      'Impossible de charger les occurrences.';
+
+  @override
+  String get tileDetailOccurrencesEarlier => 'Afficher les précédentes';
+
+  @override
+  String get tileDetailOccurrencesLater => 'Afficher les suivantes';
+
+  @override
+  String get tileDetailOccurrenceDone => 'Terminé';
+
+  @override
+  String tileDetailOccurrenceSemantics(String day, String span, String done) {
+    return '$day, $span$done';
+  }
+
+  @override
+  String editTileTimeChipSemantics(String field, String value) {
+    return 'Heure $field, $value';
+  }
+
+  @override
+  String editTileDateChipSemantics(String field, String value) {
+    return 'Date $field, $value';
+  }
+
+  @override
+  String get addTileSubmitFailed =>
+      'Impossible de l\'ajouter pour le moment. Vos détails sont enregistrés.';
+
+  @override
+  String get addTileRetry => 'Réessayer';
+
+  @override
+  String get addTileTimeRestrictionTitle => 'Time restrictions';
+
+  @override
+  String get addTileTimeRestrictionHeading => 'When can Tiler schedule this?';
+
+  @override
+  String get addTileTimeRestrictionSubtitle =>
+      'Set when this tile is allowed to appear on your calendar.';
+
+  @override
+  String get addTileRestrictionAnytimeHelper =>
+      'Tiler can place this whenever you\'re available.';
+
+  @override
+  String get addTileRestrictionWork => 'Work hours';
+
+  @override
+  String get addTileRestrictionWorkHelper =>
+      'Only schedule during your Work profile.';
+
+  @override
+  String get addTileRestrictionPersonal => 'Personal hours';
+
+  @override
+  String get addTileRestrictionPersonalHelper =>
+      'Only schedule during your Personal profile.';
+
+  @override
+  String get addTileRestrictionCustom => 'Custom hours';
+
+  @override
+  String get addTileRestrictionCustomHelper =>
+      'Choose specific days and times.';
+
+  @override
+  String get addTileRestrictionNotSetUp =>
+      'Not set up — use the arrow to set hours';
+
+  @override
+  String addTileRestrictionEdit(String name) {
+    return 'Edit $name';
+  }
+
+  @override
+  String get addTileRestrictionTip =>
+      'Tiler will respect these restrictions when auto-scheduling, re-optimizing, or suggesting times for this tile.';
+
+  @override
+  String get addTileRestrictionLoadFailed =>
+      'Couldn\'t load your Work and Personal hours.';
+
+  @override
+  String addTileRestrictionDayRange(String first, String last) {
+    return '$first – $last';
+  }
+
+  @override
+  String addTileRestrictionWindow(String days, String start, String end) {
+    return '$days · $start – $end';
+  }
+
+  @override
+  String get addTileCustomHoursTitle => 'Custom hours';
+
+  @override
+  String get addTileCustomHoursSubtitle =>
+      'Select the days and time windows when this tile can be scheduled.';
+
+  @override
+  String addTileCustomHoursProfileSubtitle(String name) {
+    return 'Select the days and time windows for your $name.';
+  }
+
+  @override
+  String get addTileCustomHoursPresets => 'Quick presets';
+
+  @override
+  String get addTileHoursPresetWeekdays => 'Weekdays';
+
+  @override
+  String get addTileHoursPresetEvenings => 'Evenings';
+
+  @override
+  String get addTileHoursPresetWeekends => 'Weekends';
+
+  @override
+  String addTileHoursPresetWindow(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get addTileHoursEndBeforeStart => 'End cannot be before start';
+
+  @override
+  String get addTileRestrictionAllDay => 'All day';
+
+  @override
+  String addTileRestrictionAllDayWindow(String days, String label) {
+    return '$days · $label';
+  }
+
+  @override
+  String get addTileCustomHoursFooter =>
+      'Disabled days will be excluded from scheduling this tile.';
+
+  @override
+  String addTileCustomHoursProfileFooter(String name) {
+    return 'Applies to every tile that uses $name.';
+  }
+
+  @override
+  String addTileHoursCopy(String day) {
+    return 'Copy $day\'s hours';
+  }
+
+  @override
+  String addTileHoursPaste(String day) {
+    return 'Paste hours to $day';
+  }
+
+  @override
+  String get addTileHoursClearCopy => 'Clear copied hours';
+
+  @override
+  String addTileHoursStartSemantics(String day, String time) {
+    return '$day start, $time';
+  }
+
+  @override
+  String addTileHoursEndSemantics(String day, String time) {
+    return '$day end, $time';
+  }
+
+  @override
+  String addTileHoursSaveFailed(String name) {
+    return 'Couldn\'t save your $name.';
+  }
+
+  @override
+  String get addTileHoursSaving => 'Saving…';
+
+  @override
+  String searchResultsForQuery(int count, String query) {
+    return '$count résultats pour \"$query\"';
+  }
+
+  @override
+  String get searchFilterAll => 'Tous';
+
+  @override
+  String get searchFilterTiler => 'Tiler';
+
+  @override
+  String get searchFilterGoogle => 'Google';
+
+  @override
+  String get searchFilterOutlook => 'Outlook';
+
+  @override
+  String get startNow => 'Commencer maintenant';
+
+  @override
+  String dueOnDate(String date) {
+    return 'Échéance $date';
+  }
+
+  @override
+  String get noResultsForProvider => 'Aucun résultat dans ce calendrier';
+
+  @override
+  String get readOnly => 'Lecture seule';
+
+  @override
+  String get productTourStarting =>
+      'Votre visite guidée de l\'application va commencer.';
 }
