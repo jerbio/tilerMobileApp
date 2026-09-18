@@ -23,7 +23,6 @@ import 'package:tiler_app/components/tutorial/tours/settingsTour.dart';
 import 'package:tiler_app/components/tutorial/tours/tilePreferencesTour.dart';
 import 'package:tiler_app/components/vibeChat/vibeChat.dart';
 // import 'package:tiler_app/firebase_options.dart';
-import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/procrastinateAll.dart';
@@ -232,12 +231,6 @@ class _TilerAppState extends State<TilerApp> {
                   '/ForecastPreview': (ctx) => ForecastPreview(),
                   '/ForecastDuration': (ctx) => ForecastDuration(),
                   '/Procrastinate': (ctx) => ProcrastinateAll(),
-                  '/DurationDial': (ctx) => DurationDial(
-                        presetDurations: [
-                          Duration(minutes: 30),
-                          Duration(hours: 1),
-                        ],
-                      ),
                   '/Setting': buildSettingsRoute,
                   '/Integrations': (ctx) => IntegrationWidgetRoute(),
                   '/OnBoarding': (ctx) => OnboardingView(),

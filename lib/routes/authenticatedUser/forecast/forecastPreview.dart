@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/components/forecastTemplate/analysisCheckState.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
@@ -229,14 +230,10 @@ class ForecastView extends StatelessWidget {
     final duration = state.duration ?? Duration(minutes: 0);
 
     final void Function()? setDuration = () async {
-      Map<String, dynamic> durationParams = {'duration': duration};
-      Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
-          .whenComplete(() {
-        Duration? populatedDuration = durationParams['duration'] as Duration?;
-        if (populatedDuration != null) {
-          context.read<ForecastBloc>().add(UpdateDuration(populatedDuration));
-        }
-      });
+      final Duration? picked =
+          await pushDurationPicker(context, initialDuration: duration);
+      if (picked == null || !context.mounted) return;
+      context.read<ForecastBloc>().add(UpdateDuration(picked));
     };
     String textButtonString = AppLocalizations.of(context)!.duration;
     if (duration.inMinutes > 1) {

@@ -143,6 +143,29 @@ Future<TimeOfDay?> _showPlatformTimePicker(
         BuildContext context, TimeOfDay initialTime) =>
     showTimePicker(context: context, initialTime: initialTime);
 
+/// Opens [AddTileDurationScreen] and resolves with the committed duration,
+/// or null when the user goes Back.
+///
+/// The one adapter every duration entry in the app goes through — the
+/// add-tile and tile-share sheets, forecast, auto-add, the sleep-duration
+/// setting — so the same gesture opens the same picker everywhere. It
+/// replaced the legacy `/DurationDial` route, which mutated a params map
+/// instead of returning a value and had drifted into a second, older look.
+Future<Duration?> pushDurationPicker(
+  BuildContext context, {
+  required Duration initialDuration,
+  DateTime? startTime,
+}) {
+  return Navigator.of(context).push<Duration>(
+    MaterialPageRoute<Duration>(
+      builder: (_) => AddTileDurationScreen(
+        initialDuration: initialDuration,
+        startTime: startTime,
+      ),
+    ),
+  );
+}
+
 class AddTileDurationScreen extends StatefulWidget {
   const AddTileDurationScreen({
     super.key,
@@ -150,6 +173,8 @@ class AddTileDurationScreen extends StatefulWidget {
     this.startTime,
     this.onSelected,
     this.pickEndTime = _showPlatformTimePicker,
+    this.title,
+    this.busy = false,
   });
 
   /// The duration in effect. An unset (zero) draft opens on the smallest
@@ -172,6 +197,19 @@ class AddTileDurationScreen extends StatefulWidget {
   /// Opens the time picker for the Ends row. The platform picker by
   /// default (D42); a test seam otherwise.
   final PickTimeOfDay pickEndTime;
+
+  /// App bar title. Defaults to "Duration"; the defer screens pass
+  /// "Defer", since there the picked length is how long to push work
+  /// back, not how long a tile lasts.
+  final String? title;
+
+  /// While true the committed value is being sent and the screen will
+  /// leave on its own: input is absorbed, the page shows the redesign's
+  /// pending sweep, and the Done button carries the spinner — the same
+  /// treatment as the Add Tile CTA while submitting, not a dimmed spinner
+  /// overlay. Used by the defer screens, whose commit is a network request
+  /// rather than a value handed back to a form.
+  final bool busy;
 
   @override
   State<AddTileDurationScreen> createState() => _AddTileDurationScreenState();
@@ -271,136 +309,149 @@ class _AddTileDurationScreenState extends State<AddTileDurationScreen> {
     return Scaffold(
       backgroundColor: tokens.background,
       appBar: AppBar(
-        title: Text(l10n.duration),
+        title: Text(widget.title ?? l10n.duration),
         // D12: secondary screens go Back to the preserved draft.
         leading: BackButton(onPressed: () => Navigator.of(context).maybePop()),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              // See [_wheelHeld]. Suppressed rather than merely un-bounced:
-              // clamping the physics would stop the rubber-band but leave
-              // the list free to claim the drag and scroll away under the
-              // finger whenever the content did overflow.
-              physics: _wheelHeld ? const NeverScrollableScrollPhysics() : null,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              children: [
-                Text(
-                  l10n.addTileDurationQuick,
-                  style: textTheme.labelSmall?.copyWith(
-                      color: tokens.textSecondary, letterSpacing: 0.6),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: tokens.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: tokens.cardBorder),
-                  ),
-                  child: Wrap(
-                    // Centred, not the default `start`. The chips size to
-                    // their own text and "1 hr" is far narrower than
-                    // "15 min", so left-aligned they left all the slack
-                    // collected on the right and the row read as unfinished.
-                    //
-                    // Centring rather than stretching them to equal widths:
-                    // at 320pt with large text the four already reflow onto
-                    // two rows, and four forced columns would have to
-                    // ellipsize "15 min" to fit. Centre stays tidy in both
-                    // cases.
-                    alignment: WrapAlignment.center,
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: [
-                      for (final (int index, Duration preset)
-                          in addTileDurationPresets.indexed)
-                        DurationPresetChip(
-                          key: ValueKey('durationPreset_$index'),
-                          label: formatDurationSummary(l10n, preset) ?? '',
-                          // Tracks the PENDING value, not the committed one, so
-                          // turning the wheel clears the highlight and the screen
-                          // never shows two different current durations at once.
-                          // Landing back on a preset re-selects it.
-                          selected: preset == _custom,
-                          onTap: () => _commit(preset),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  l10n.addTileDurationCustom,
-                  style: textTheme.labelSmall?.copyWith(
-                      color: tokens.textSecondary, letterSpacing: 0.6),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
-                  decoration: BoxDecoration(
-                    color: tokens.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: tokens.cardBorder),
-                  ),
-                  // A `Listener`, not a `GestureDetector`: raw pointer
-                  // callbacks do not enter the gesture arena, so this can
-                  // lock the list WITHOUT competing with the dial's own pan
-                  // for the very gesture it is trying to protect.
-                  child: Listener(
-                    onPointerDown: (_) => _setWheelHeld(true),
-                    onPointerUp: (_) => _setWheelHeld(false),
-                    onPointerCancel: (_) => _setWheelHeld(false),
-                    child: DurationWheel(
-                      key: const ValueKey('durationWheel'),
-                      value: _custom,
-                      onChanged: _onWheelChanged,
+      body: Stack(children: [
+        // Under the surface, the way the Add Tile shell shows a pending
+        // fetch: only the highlight is visible between the cards.
+        if (widget.busy)
+          const Positioned.fill(
+            child: AddTilePendingSweep(key: ValueKey('durationPendingSweep')),
+          ),
+        AbsorbPointer(
+          absorbing: widget.busy,
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  // See [_wheelHeld]. Suppressed rather than merely un-bounced:
+                  // clamping the physics would stop the rubber-band but leave
+                  // the list free to claim the drag and scroll away under the
+                  // finger whenever the content did overflow.
+                  physics:
+                      _wheelHeld ? const NeverScrollableScrollPhysics() : null,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                  children: [
+                    Text(
+                      l10n.addTileDurationQuick,
+                      style: textTheme.labelSmall?.copyWith(
+                          color: tokens.textSecondary, letterSpacing: 0.6),
                     ),
-                  ),
-                ),
-                // Only when the duration is a block's length: where it
-                // ends, measured from the start named in the heading, and
-                // editable in its own right (D61).
-                if (widget.startTime != null) ...[
-                  const SizedBox(height: 18),
-                  Text(
-                    l10n.addTileDurationEndsFromStart(
-                        formatClockTime(widget.startTime!)),
-                    style: textTheme.labelSmall?.copyWith(
-                        color: tokens.textSecondary, letterSpacing: 0.6),
-                  ),
-                  const SizedBox(height: 8),
-                  AddTileSection(
-                    children: [
-                      AddTileFieldRow(
-                        key: const ValueKey('durationEndRow'),
-                        icon: Icons.outlined_flag,
-                        label: l10n.addTileFieldEnds,
-                        value: _endLabel(l10n),
-                        onTap: _pickEnd,
-                        semanticLabel: l10n.addTileDurationEndsSemantics(
-                            _endLabel(l10n),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: tokens.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: tokens.cardBorder),
+                      ),
+                      child: Wrap(
+                        // Centred, not the default `start`. The chips size to
+                        // their own text and "1 hr" is far narrower than
+                        // "15 min", so left-aligned they left all the slack
+                        // collected on the right and the row read as unfinished.
+                        //
+                        // Centring rather than stretching them to equal widths:
+                        // at 320pt with large text the four already reflow onto
+                        // two rows, and four forced columns would have to
+                        // ellipsize "15 min" to fit. Centre stays tidy in both
+                        // cases.
+                        alignment: WrapAlignment.center,
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          for (final (int index, Duration preset)
+                              in addTileDurationPresets.indexed)
+                            DurationPresetChip(
+                              key: ValueKey('durationPreset_$index'),
+                              label: formatDurationSummary(l10n, preset) ?? '',
+                              // Tracks the PENDING value, not the committed one, so
+                              // turning the wheel clears the highlight and the screen
+                              // never shows two different current durations at once.
+                              // Landing back on a preset re-selects it.
+                              selected: preset == _custom,
+                              onTap: () => _commit(preset),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      l10n.addTileDurationCustom,
+                      style: textTheme.labelSmall?.copyWith(
+                          color: tokens.textSecondary, letterSpacing: 0.6),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
+                      decoration: BoxDecoration(
+                        color: tokens.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: tokens.cardBorder),
+                      ),
+                      // A `Listener`, not a `GestureDetector`: raw pointer
+                      // callbacks do not enter the gesture arena, so this can
+                      // lock the list WITHOUT competing with the dial's own pan
+                      // for the very gesture it is trying to protect.
+                      child: Listener(
+                        onPointerDown: (_) => _setWheelHeld(true),
+                        onPointerUp: (_) => _setWheelHeld(false),
+                        onPointerCancel: (_) => _setWheelHeld(false),
+                        child: DurationWheel(
+                          key: const ValueKey('durationWheel'),
+                          value: _custom,
+                          onChanged: _onWheelChanged,
+                        ),
+                      ),
+                    ),
+                    // Only when the duration is a block's length: where it
+                    // ends, measured from the start named in the heading, and
+                    // editable in its own right (D61).
+                    if (widget.startTime != null) ...[
+                      const SizedBox(height: 18),
+                      Text(
+                        l10n.addTileDurationEndsFromStart(
                             formatClockTime(widget.startTime!)),
+                        style: textTheme.labelSmall?.copyWith(
+                            color: tokens.textSecondary, letterSpacing: 0.6),
+                      ),
+                      const SizedBox(height: 8),
+                      AddTileSection(
+                        children: [
+                          AddTileFieldRow(
+                            key: const ValueKey('durationEndRow'),
+                            icon: Icons.outlined_flag,
+                            label: l10n.addTileFieldEnds,
+                            value: _endLabel(l10n),
+                            onTap: _pickEnd,
+                            semanticLabel: l10n.addTileDurationEndsSemantics(
+                                _endLabel(l10n),
+                                formatClockTime(widget.startTime!)),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                ],
-              ],
-            ),
+                  ],
+                ),
+              ),
+              // Pinned, like the shell's own CTA: Done commits whatever the
+              // screen currently holds, so it belongs to the screen rather than
+              // to the wheel it used to sit inside.
+              SafeArea(
+                top: false,
+                minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: DurationDoneButton(
+                  key: const ValueKey('durationDone'),
+                  busy: widget.busy,
+                  onTap: () => _commit(_custom),
+                ),
+              ),
+            ],
           ),
-          // Pinned, like the shell's own CTA: Done commits whatever the
-          // screen currently holds, so it belongs to the screen rather than
-          // to the wheel it used to sit inside.
-          SafeArea(
-            top: false,
-            minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-            child: DurationDoneButton(
-              key: const ValueKey('durationDone'),
-              onTap: () => _commit(_custom),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ]),
     );
   }
 }
@@ -569,9 +620,14 @@ class DurationWheel extends StatelessWidget {
 /// Confirms the custom value. The presets commit on tap; only the stepped
 /// value needs an explicit "I am done adjusting".
 class DurationDoneButton extends StatelessWidget {
-  const DurationDoneButton({super.key, required this.onTap});
+  const DurationDoneButton({super.key, required this.onTap, this.busy = false});
 
   final VoidCallback onTap;
+
+  /// Shows the in-flight state the Add Tile CTA uses while submitting: the
+  /// brand fill stays, the label gives way to a small `onPrimary` spinner,
+  /// and taps are guarded.
+  final bool busy;
 
   @override
   Widget build(BuildContext context) {
@@ -581,24 +637,33 @@ class DurationDoneButton extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
-      label: l10n.done,
+      label: busy ? l10n.addTileSubmitting : l10n.done,
       child: ExcludeSemantics(
         child: Material(
           color: tokens.brand,
           borderRadius: BorderRadius.circular(12),
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
-            onTap: onTap,
+            onTap: busy ? null : onTap,
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 48),
               child: Center(
-                child: Text(
-                  l10n.done,
-                  style: textTheme.titleMedium?.copyWith(
-                    color: scheme.onPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: busy
+                    ? SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: scheme.onPrimary,
+                        ),
+                      )
+                    : Text(
+                        l10n.done,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: scheme.onPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
           ),

@@ -1,42 +1,40 @@
-import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
-
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
-
-import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/util.dart';
 
+/// "Defer all": push everything back by a chosen duration.
+///
+/// The screen IS the redesigned duration picker ([AddTileDurationScreen],
+/// titled "Defer"); it used to embed the raw package `DurationPicker` inside
+/// the old Cancel/Proceed template, the last of the pre-redesign duration
+/// looks. Committing a value runs the defer and pops; Back defers nothing.
 class ProcrastinateAll extends StatefulWidget {
+  /// Optional API seam (tests). Production creates its own.
+  final ScheduleApi? scheduleApi;
+
+  const ProcrastinateAll({Key? key, this.scheduleApi}) : super(key: key);
+
   @override
   _ProcrastinateAllState createState() => _ProcrastinateAllState();
 }
 
 class _ProcrastinateAllState extends State<ProcrastinateAll> {
-  Duration _duration = Duration();
   late ScheduleApi _scheduleApi;
-  late ThemeData theme;
-  late ColorScheme colorScheme;
+  bool _submitting = false;
 
   @override
   void initState() {
     super.initState();
-    _scheduleApi = ScheduleApi(getContextCallBack: () => context);
+    _scheduleApi =
+        widget.scheduleApi ?? ScheduleApi(getContextCallBack: () => context);
   }
-
-  @override
-  void didChangeDependencies() {
-    theme = Theme.of(context);
-    colorScheme = theme.colorScheme;
-    super.didChangeDependencies();
-  }
-
-  static final String procrastinateAllCancelAndProceedRouteName =
-      "procrastinateAllCancelAndProceed";
 
   void showMessage(String message) {
+    final colorScheme = Theme.of(context).colorScheme;
     Fluttertoast.showToast(
         msg: message,
         toastLength: Toast.LENGTH_SHORT,
@@ -58,34 +56,35 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
     );
   }
 
+  /// Defers everything by [duration], then leaves the screen. The request is
+  /// awaited before popping so a caller refreshing on return (the preview
+  /// sheet does) sees the deferred schedule, not the old one.
+  Future<void> _deferAll(Duration duration) async {
+    if (_submitting || duration.inMilliseconds <= 0) return;
+    // Busy from the first frame: the picker dims and shows a spinner so the
+    // tap is visibly acknowledged while the request is in flight.
+    setState(() => _submitting = true);
+    try {
+      await _scheduleApi.procrastinateAll(duration);
+      AnalysticsSignal.send('PROCRASTINATE_ALL_SUCCESS');
+      if (!mounted) return;
+      showMessage(
+          AppLocalizations.of(context)!.clearedColon + duration.toHuman);
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      showErrorMessage(AppLocalizations.of(context)!.errorOccurred);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    Function? callBackOnProcrastinate;
-    if (_duration.inMilliseconds > 0) {
-      callBackOnProcrastinate = () {
-        return _scheduleApi.procrastinateAll(_duration).then((value) {
-          AnalysticsSignal.send('PROCRASTINATE_ALL_SUCCESS');
-          showMessage(
-              AppLocalizations.of(context)!.clearedColon + _duration.toHuman);
-        });
-      };
-    }
-    return CancelAndProceedTemplateWidget(
-      routeName: procrastinateAllCancelAndProceedRouteName,
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.defer),
-        automaticallyImplyLeading: false,
-      ),
-      child: Container(
-          margin: EdgeInsets.fromLTRB(
-              0, MediaQuery.of(context).size.height / 4, 0, 0),
-          alignment: Alignment.topCenter,
-          child: DurationPicker(
-              duration: _duration,
-              onChange: (val) {
-                setState(() => _duration = val);
-              })),
-      onProceed: callBackOnProcrastinate,
+    return AddTileDurationScreen(
+      title: AppLocalizations.of(context)!.defer,
+      initialDuration: Duration.zero,
+      onSelected: _deferAll,
+      busy: _submitting,
     );
   }
 }

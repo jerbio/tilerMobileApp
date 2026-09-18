@@ -12,6 +12,7 @@ import 'package:tiler_app/theme/tileinput_styles.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
@@ -128,20 +129,12 @@ class AutoAddTileState extends State<AutoAddTile> {
         decoration: TileDecorations.populatedDecoration(
             colorScheme.surfaceContainerLowest),
         textColor: colorScheme.onInverseSurface,
-        onPress: () {
-          Map<String, dynamic> durationParams = {'duration': _duration};
-          Navigator.pushNamed(context, '/DurationDial',
-                  arguments: durationParams)
-              .whenComplete(() {
-            print('done with pop');
-            print(durationParams['duration']);
-            Duration? populatedDuration =
-                durationParams['duration'] as Duration?;
-            setState(() {
-              if (populatedDuration != null) {
-                _duration = populatedDuration;
-              }
-            });
+        onPress: () async {
+          final Duration? picked = await pushDurationPicker(context,
+              initialDuration: _duration ?? Duration.zero);
+          if (picked == null || !mounted) return;
+          setState(() {
+            _duration = picked;
           });
         },
       );
