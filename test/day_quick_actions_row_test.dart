@@ -167,8 +167,9 @@ void main() {
     expect(page.tiles.map((t) => t.id), ['a']);
   });
 
-  group('content filter segmented control (P7 Step 17.2)', () {
-    testWidgets('renders All · Blocks · Tiles, right of the chips, All selected',
+  group('content filter (P7) — collapsible, expand to select', () {
+    testWidgets(
+        'collapsed by default; tapping expands to All · Blocks · Tiles (All selected)',
         (tester) async {
       final bloc = _RecordingScheduleBloc();
       final filter = DayContentFilterCubit();
@@ -177,17 +178,15 @@ void main() {
       await tester.pumpWidget(_app(bloc, day, filter: filter));
       await tester.pump();
 
-      expect(find.byKey(DayQuickActionsRow.filterAllKey), findsOneWidget);
-      expect(find.byKey(DayQuickActionsRow.filterBlocksKey), findsOneWidget);
-      expect(find.byKey(DayQuickActionsRow.filterTilesKey), findsOneWidget);
-      expect(_selectedSegment(tester), DayContentFilter.all);
-      // The Blocks segment carries the lock glyph — the control is the
-      // legend for the lock on block cards.
-      expect(
-          find.descendant(
-              of: find.byKey(DayQuickActionsRow.filterBlocksKey),
-              matching: find.byIcon(Icons.lock_outline)),
-          findsOneWidget);
+      // Collapsed by default: only the toggle chip, not the three segments.
+      expect(find.byKey(DayQuickActionsRow.filterToggleKey), findsOneWidget);
+      expect(find.byKey(DayQuickActionsRow.filterAllKey), findsNothing);
+      expect(find.byKey(DayQuickActionsRow.filterBlocksKey), findsNothing);
+      expect(find.byKey(DayQuickActionsRow.filterTilesKey), findsNothing);
+      // The collapsed chip names the current selection (All) with the expand
+      // affordance.
+      expect(find.text('All'), findsOneWidget);
+      expect(find.byIcon(Icons.expand_more), findsOneWidget);
       // Right of the action chips; the row keeps its fixed height.
       expect(
           tester.getTopLeft(find.byKey(DayQuickActionsRow.filterKey)).dx,
@@ -197,9 +196,24 @@ void main() {
       expect(tester.getSize(find.byType(DayQuickActionsRow)).height,
           DayQuickActionsRow.height);
       expect(tester.takeException(), isNull);
+
+      // Tap the chip: the three segments appear, All selected, and the Blocks
+      // segment carries the lock glyph (the legend for block cards).
+      await tester.tap(find.byKey(DayQuickActionsRow.filterToggleKey));
+      await tester.pump();
+      expect(find.byKey(DayQuickActionsRow.filterToggleKey), findsNothing);
+      expect(find.byKey(DayQuickActionsRow.filterAllKey), findsOneWidget);
+      expect(find.byKey(DayQuickActionsRow.filterBlocksKey), findsOneWidget);
+      expect(find.byKey(DayQuickActionsRow.filterTilesKey), findsOneWidget);
+      expect(_selectedSegment(tester), DayContentFilter.all);
+      expect(
+          find.descendant(
+              of: find.byKey(DayQuickActionsRow.filterBlocksKey),
+              matching: find.byIcon(Icons.lock_outline)),
+          findsOneWidget);
     });
 
-    testWidgets('tapping Blocks / Tiles / All drives the cubit',
+    testWidgets('tapping a segment selects it and collapses again',
         (tester) async {
       final bloc = _RecordingScheduleBloc();
       final filter = DayContentFilterCubit();
@@ -208,18 +222,39 @@ void main() {
       await tester.pumpWidget(_app(bloc, day, filter: filter));
       await tester.pump();
 
+      await tester.tap(find.byKey(DayQuickActionsRow.filterToggleKey));
+      await tester.pump();
+      // Let the expand animation settle so the segments sit at their final
+      // (right-aligned) positions before we tap one.
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(find.byKey(DayQuickActionsRow.filterBlocksKey));
       await tester.pump();
       expect(filter.state, DayContentFilter.blocks);
-      await tester.tap(find.byKey(DayQuickActionsRow.filterTilesKey));
-      await tester.pump();
-      expect(filter.state, DayContentFilter.tiles);
-      await tester.tap(find.byKey(DayQuickActionsRow.filterAllKey));
-      await tester.pump();
-      expect(filter.state, DayContentFilter.all);
+      // Collapsed again, now naming the active (Blocks) filter.
+      expect(find.byKey(DayQuickActionsRow.filterBlocksKey), findsNothing);
+      expect(find.byKey(DayQuickActionsRow.filterToggleKey), findsOneWidget);
+      expect(find.text('Blocks'), findsOneWidget);
     });
 
-    testWidgets('the control follows the cubit (external changes)',
+    testWidgets('auto-collapses after 5s if left expanded', (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final filter = DayContentFilterCubit();
+      addTearDown(bloc.close);
+      addTearDown(filter.close);
+      await tester.pumpWidget(_app(bloc, day, filter: filter));
+      await tester.pump();
+
+      await tester.tap(find.byKey(DayQuickActionsRow.filterToggleKey));
+      await tester.pump();
+      expect(find.byKey(DayQuickActionsRow.filterAllKey), findsOneWidget);
+      expect(find.byKey(DayQuickActionsRow.filterToggleKey), findsNothing);
+
+      await tester.pump(const Duration(seconds: 5));
+      expect(find.byKey(DayQuickActionsRow.filterAllKey), findsNothing);
+      expect(find.byKey(DayQuickActionsRow.filterToggleKey), findsOneWidget);
+    });
+
+    testWidgets('the collapsed chip follows the cubit (external changes)',
         (tester) async {
       final bloc = _RecordingScheduleBloc();
       final filter = DayContentFilterCubit();
@@ -230,7 +265,7 @@ void main() {
       filter.set(DayContentFilter.tiles);
       await tester.pump();
       await tester.pump();
-      expect(_selectedSegment(tester), DayContentFilter.tiles);
+      expect(find.text('Tiles'), findsOneWidget);
     });
 
     testWidgets('hidden in preview (read-only surfaces)', (tester) async {
@@ -239,6 +274,7 @@ void main() {
       await tester.pumpWidget(_app(bloc, day, preview: true));
       await tester.pump();
       expect(find.byKey(DayQuickActionsRow.filterKey), findsNothing);
+      expect(find.byKey(DayQuickActionsRow.filterToggleKey), findsNothing);
       expect(find.byKey(DayQuickActionsRow.showRouteKey), findsOneWidget);
     });
   });

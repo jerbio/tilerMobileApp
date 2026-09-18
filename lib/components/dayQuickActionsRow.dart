@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -30,6 +32,10 @@ class DayQuickActionsRow extends StatelessWidget {
   static const Key filterAllKey = ValueKey('dayQuickActions_filter_all');
   static const Key filterBlocksKey = ValueKey('dayQuickActions_filter_blocks');
   static const Key filterTilesKey = ValueKey('dayQuickActions_filter_tiles');
+
+  /// The collapsed filter chip (shown by default; tap to expand).
+  static const Key filterToggleKey =
+      ValueKey('dayQuickActions_filter_toggle');
 
   /// The whole filter pill.
   static const Key filterKey = ValueKey('dayQuickActions_filter');
@@ -137,16 +143,38 @@ class DayQuickActionsRow extends StatelessWidget {
       state is ScheduleLoadingState || state is ScheduleEvaluationState;
 }
 
-/// All / Blocks / Tiles as a segmented pill bound to [DayContentFilterCubit]
-/// (C33), styled like [TilerActionChip] (same surface, radius, outline and
-/// type) so it reads as part of the chips row: the selected segment is
-/// filled in `primary`. One tap switches; the active filter is always
-/// visible without interaction.
-class _FilterSegments extends StatelessWidget {
+/// All / Blocks / Tiles as a **collapsible** segmented pill bound to
+/// [DayContentFilterCubit] (C33). It is collapsed by default to a single
+/// filter chip (showing the active selection) so the Show route / Re-optimize
+/// chips on the left have full room. Tapping the chip expands the three
+/// segments; picking one applies it and collapses again, and the pill
+/// auto-collapses after [_FilterSegmentsState._collapseAfter] if left open.
+///
+/// Styled like [TilerActionChip] (same surface, radius, outline and type) so
+/// it reads as part of the chips row; the selected segment is filled in
+/// `primary`.
+class _FilterSegments extends StatefulWidget {
   final DateTime currentDate;
   const _FilterSegments({required this.currentDate});
 
   static const double _radius = 20;
+
+  @override
+  State<_FilterSegments> createState() => _FilterSegmentsState();
+}
+
+class _FilterSegmentsState extends State<_FilterSegments> {
+  /// How long the pill stays expanded before it reverts to the collapsed chip.
+  static const Duration _collapseAfter = Duration(seconds: 5);
+
+  bool _expanded = false;
+  Timer? _collapseTimer;
+
+  @override
+  void dispose() {
+    _collapseTimer?.cancel();
+    super.dispose();
+  }
 
   void _select(BuildContext context, DayContentFilter next) {
     DailyViewLayout? layout;
@@ -157,9 +185,27 @@ class _FilterSegments extends StatelessWidget {
     }
     context.read<DayContentFilterCubit>().set(
           next,
-          dayIndex: currentDate.universalDayIndex,
+          dayIndex: widget.currentDate.universalDayIndex,
           layout: layout?.name,
         );
+    _collapse();
+  }
+
+  void _expand() {
+    _scheduleCollapse();
+    setState(() => _expanded = true);
+  }
+
+  void _collapse() {
+    _collapseTimer?.cancel();
+    _collapseTimer = null;
+    if (!_expanded) return;
+    setState(() => _expanded = false);
+  }
+
+  void _scheduleCollapse() {
+    _collapseTimer?.cancel();
+    _collapseTimer = Timer(_collapseAfter, _collapse);
   }
 
   @override
@@ -193,30 +239,52 @@ class _FilterSegments extends StatelessWidget {
       child: Semantics(
         container: true,
         label: l10n.dayFilterTooltip,
-        child: Container(
-          key: DayQuickActionsRow.filterKey,
-          padding: const EdgeInsets.all(2),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(_radius),
-            border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final (filter, label, key, icon) in segments)
-                _Segment(
-                  key: key,
-                  label: label,
-                  icon: icon,
-                  selected: filter == selected,
-                  onTap: () => _select(context, filter),
-                ),
-            ],
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          alignment: Alignment.centerRight,
+          child: Container(
+            key: DayQuickActionsRow.filterKey,
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(_FilterSegments._radius),
+              border: Border.all(
+                  color: colorScheme.outline.withValues(alpha: 0.2)),
+            ),
+            child: _expanded
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final (filter, label, key, icon) in segments)
+                        _Segment(
+                          key: key,
+                          label: label,
+                          icon: icon,
+                          selected: filter == selected,
+                          onTap: () => _select(context, filter),
+                        ),
+                    ],
+                  )
+                : _FilterToggle(
+                    key: DayQuickActionsRow.filterToggleKey,
+                    label: _labelFor(selected, segments),
+                    active: selected != DayContentFilter.all,
+                    onTap: _expand,
+                  ),
           ),
         ),
       ),
     );
+  }
+
+  String _labelFor(
+      DayContentFilter selected,
+      List<(DayContentFilter, String, Key, IconData?)> segments) {
+    for (final (filter, label, _, _) in segments) {
+      if (filter == selected) return label;
+    }
+    return segments.first.$2;
   }
 }
 
@@ -274,6 +342,65 @@ class _Segment extends StatelessWidget {
                       selected ? colorScheme.onPrimary : colorScheme.onSurface,
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The collapsed form of [_FilterSegments]: a single filter chip showing the
+/// active selection. Tapping it expands the three segments. When a
+/// non-default filter (Blocks / Tiles) is active the chip is filled in
+/// `primary` so the applied filter is visible at a glance.
+class _FilterToggle extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  /// A non-default (Blocks / Tiles) filter is active.
+  final bool active;
+
+  const _FilterToggle({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.active = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final color = active ? colorScheme.onPrimary : colorScheme.onSurface;
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: active ? colorScheme.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(_FilterSegments._radius - 2),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.tune, size: 14, color: color),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: TileTextStyles.rubikFontName,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: color,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.expand_more, size: 14, color: color),
             ],
           ),
         ),
