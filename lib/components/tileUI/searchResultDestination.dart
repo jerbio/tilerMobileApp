@@ -14,7 +14,7 @@
 //
 // Pure — the search widget itself is not pumpable in a test, so the decision
 // lives here where it can be.
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:tiler_app/data/calendarSearch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
@@ -46,5 +46,38 @@ TileSource tileSourceOfSearchItem(CalendarSearchItem item) {
       return TileSource.outlook;
     default:
       return TileSource.tiler;
+  }
+}
+
+/// The tappable body of a search result card (2026-09-19).
+///
+/// The results list sits inside a GestureDetector whose tap HIDES the list.
+/// A card body with no handler of its own let a tap fall through to it, so
+/// tapping a result closed the search instead of opening the tile. This
+/// surface claims the tap — a child wins the gesture arena — and shows the
+/// standard ink response, so the user sees the row react. A null [onOpen]
+/// (a row with no usable id) still claims the tap: the results stay put.
+class SearchResultTapTarget extends StatelessWidget {
+  const SearchResultTapTarget(
+      {super.key, required this.onOpen, required this.child});
+
+  final VoidCallback? onOpen;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onOpen,
+        // A dead row absorbs the tap rather than letting the list's
+        // dismisser have it.
+        child: onOpen == null
+            ? GestureDetector(
+                behavior: HitTestBehavior.opaque, onTap: () {}, child: child)
+            : child,
+      ),
+    );
   }
 }

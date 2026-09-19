@@ -1,4 +1,5 @@
 import 'package:tiler_app/components/tileUI/searchResultDestination.dart';
+import 'package:tiler_app/components/tileUI/searchResultsPane.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -81,20 +82,30 @@ class EventNameSearchState extends SearchWidgetState {
   // from the chip strip until a later search reports them healthy.
   Set<TileSource> _failedProviders = {};
 
-  // Rebuilds resultViewContainer (inherited from SearchWidgetState) from cached
-  // results, e.g. when the deletion confirmation toggles.
+  // True once a completed search produced `nameSearchResult`; the build
+  // then renders the pinned-header pane from that list instead of the
+  // base class's `resultViewContainer` (its shimmer / hint placeholders).
+  bool _resultsReady = false;
+
+  // Rebuilds the cached results, e.g. when the deletion confirmation
+  // toggles or a provider chip re-queries.
   void _refreshResultView() {
     final widgets = _buildResultWidgets();
     setState(() {
       nameSearchResult = widgets;
-      resultViewContainer = GestureDetector(
-        onTap: () => setState(() => showResponseContainer = false),
-        child: Container(
-          decoration: this.widget.resultBoxDecoration,
-          child: ListView(children: widgets),
-        ),
-      );
+      _resultsReady = true;
     });
+  }
+
+  /// The results with the count + filter header PINNED above them: the
+  /// header used to be the list's first item and scrolled away (2026-09-19).
+  Widget _resultsPane() {
+    return SearchResultsPane(
+      header: _buildResultsHeader(),
+      results: nameSearchResult,
+      onDismiss: () => setState(() => showResponseContainer = false),
+      decoration: this.widget.resultBoxDecoration,
+    );
   }
 
   @override
@@ -835,68 +846,77 @@ class EventNameSearchState extends SearchWidgetState {
     }
     final bool hasActionRow = actions.isNotEmpty || moreMenu != null;
 
+    // The whole card opens the tile (Tile details for a Tiler row, Edit
+    // Tile for a provider row) and claims the tap, so the results stay
+    // open — the list's outer GestureDetector used to swallow it and hide
+    // them (2026-09-19).
+    final bool canOpen = searchResultEditorFor(item) != null;
     return _cardShell(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(16, 16, 12, hasActionRow ? 8 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    item.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: TileTextStyles.rubikFontName,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-                if (item.isReadOnly) ...[
-                  SizedBox(width: 8),
-                  _readOnlyBadge(),
-                ],
-              ],
-            ),
-            if (metaRow.isNotEmpty) ...[
-              SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(children: metaRow),
-              ),
-            ],
-            if (item.thirdPartyUserId != null &&
-                item.thirdPartyUserId!.isNotEmpty) ...[
-              SizedBox(height: 4),
-              Text(
-                localization.searchConnectedAccount(item.thirdPartyUserId!),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontFamily: TileTextStyles.rubikFontName,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-            if (hasActionRow) ...[
-              Padding(
-                padding: EdgeInsets.only(top: 12, bottom: 4, right: 4),
-                child: Divider(height: 1, color: colorScheme.outlineVariant),
-              ),
+      child: SearchResultTapTarget(
+        key: ValueKey('searchResult_${item.id}'),
+        onOpen: canOpen ? () => _openEditTile(item) : null,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16, 16, 12, hasActionRow ? 8 : 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Row(
                 children: [
-                  ...actions,
-                  Spacer(),
-                  if (moreMenu != null) moreMenu,
+                  Expanded(
+                    child: Text(
+                      item.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: TileTextStyles.rubikFontName,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  if (item.isReadOnly) ...[
+                    SizedBox(width: 8),
+                    _readOnlyBadge(),
+                  ],
                 ],
               ),
+              if (metaRow.isNotEmpty) ...[
+                SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: metaRow),
+                ),
+              ],
+              if (item.thirdPartyUserId != null &&
+                  item.thirdPartyUserId!.isNotEmpty) ...[
+                SizedBox(height: 4),
+                Text(
+                  localization.searchConnectedAccount(item.thirdPartyUserId!),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontFamily: TileTextStyles.rubikFontName,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              if (hasActionRow) ...[
+                Padding(
+                  padding: EdgeInsets.only(top: 12, bottom: 4, right: 4),
+                  child: Divider(height: 1, color: colorScheme.outlineVariant),
+                ),
+                Row(
+                  children: [
+                    ...actions,
+                    Spacer(),
+                    if (moreMenu != null) moreMenu,
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -930,9 +950,11 @@ class EventNameSearchState extends SearchWidgetState {
     );
   }
 
+  /// The scrolling part of the results — cards, banners, messages. The
+  /// header is pinned above them by [_resultsPane].
   List<Widget> _buildResultWidgets() {
     final localization = AppLocalizations.of(context)!;
-    List<Widget> retValue = [_buildResultsHeader()];
+    List<Widget> retValue = [];
 
     // Total failure (502): a service issue, never rendered as "no matches".
     if (_searchUnavailable != null) {
@@ -1053,14 +1075,18 @@ class EventNameSearchState extends SearchWidgetState {
       )
     ];
 
+    bool ready = false;
     if (name.length > Constants.autoCompleteMinCharLength) {
       AnalysticsSignal.send('NAME_SEARCH_REQUEST_RECEIVED');
+      if (mounted) setState(() => _resultsReady = false);
       await _runSearch(name);
       retValue = _buildResultWidgets();
+      ready = true;
     }
 
     setState(() {
       nameSearchResult = retValue;
+      _resultsReady = ready;
     });
 
     return retValue;
@@ -1182,10 +1208,12 @@ class EventNameSearchState extends SearchWidgetState {
                       ),
                       Expanded(
                         child: showResponseContainer &&
-                                resultViewContainer != null
+                                (_resultsReady || resultViewContainer != null)
                             ? Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 16),
-                                child: resultViewContainer!,
+                                child: _resultsReady
+                                    ? _resultsPane()
+                                    : resultViewContainer!,
                               )
                             : SizedBox.shrink(),
                       ),
