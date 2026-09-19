@@ -21,7 +21,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.d
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileTimeCell.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/travelBandWidget.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
@@ -908,7 +908,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
       ..duration = seed.duration;
     Navigator.push(
       context,
-      MaterialPageRoute<void>(builder: (_) => AddTile(preTile: preTile)),
+      MaterialPageRoute<void>(builder: (_) => AddTileEntry(preTile: preTile)),
     );
   }
 

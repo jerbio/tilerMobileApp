@@ -25,9 +25,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -184,8 +185,7 @@ void main() {
           '11:00 AM – 12:30 PM');
     });
     test('leaves 24h strings (no period token) intact', () {
-      expect(TileCardStyle.compactTimeRange('16:00', '17:00'),
-          '16:00 – 17:00');
+      expect(TileCardStyle.compactTimeRange('16:00', '17:00'), '16:00 – 17:00');
     });
   });
 
@@ -216,8 +216,8 @@ void main() {
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: DayGridPinnedHeader(tiles: [
-            _tile('Labor Day', dayStart,
-                dayStart.add(const Duration(hours: 24))),
+            _tile(
+                'Labor Day', dayStart, dayStart.add(const Duration(hours: 24))),
           ]),
         ),
       ));
@@ -347,13 +347,18 @@ void main() {
     Widget sheetApp(ScheduleBloc bloc, DayGridController controller,
         List<SubCalendarEvent> tiles,
         {required DateTime? day, bool preview = false}) {
-      // Providers ABOVE MaterialApp so the pushed EditTile route sees them.
+      // Providers ABOVE MaterialApp so the pushed EditTileRoute route sees them.
       return MultiBlocProvider(
         providers: [
           BlocProvider<ScheduleBloc>.value(value: bloc),
           BlocProvider(
               create: (_) =>
                   SubCalendarTileBloc(getContextCallBack: () => null)),
+          // The redesigned Edit Tile entry wires its schedule refresher from
+          // the summary bloc as well.
+          BlocProvider(
+              create: (_) =>
+                  ScheduleSummaryBloc(getContextCallBack: () => null)),
         ],
         child: MaterialApp(
           theme: TileThemeData.lightTheme,
@@ -386,7 +391,7 @@ void main() {
     }
 
     testWidgets(
-        'on the live grid, tapping anywhere on the detail sheet opens EditTile',
+        'on the live grid, tapping anywhere on the detail sheet opens EditTileRoute',
         (tester) async {
       _setSurface(tester);
       final bloc = _RecordingScheduleBloc();
@@ -395,7 +400,8 @@ void main() {
       final tile = _tile('editable', dayStart.add(const Duration(hours: 4)),
           dayStart.add(const Duration(hours: 6)))
         ..thirdpartyType = TileSource.tiler;
-      await tester.pumpWidget(sheetApp(bloc, controller, [tile], day: dayStart));
+      await tester
+          .pumpWidget(sheetApp(bloc, controller, [tile], day: dayStart));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
@@ -407,13 +413,14 @@ void main() {
 
       // Tap the details body (not a dedicated button).
       await tester.tap(find.byType(PreviewDetailsTileWidget));
-      await tester.pump(); // sheet pops + EditTile route pushes
+      await tester.pump(); // sheet pops + EditTileRoute route pushes
       await tester.pump(const Duration(milliseconds: 400));
 
       expect(find.byType(PreviewDetailsTileWidget), findsNothing,
           reason: 'the sheet closes before the edit flow opens');
-      expect(find.byType(EditTile), findsOneWidget);
-      final EditTile edit = tester.widget<EditTile>(find.byType(EditTile));
+      expect(find.byType(EditTileRoute), findsOneWidget);
+      final EditTileRoute edit =
+          tester.widget<EditTileRoute>(find.byType(EditTileRoute));
       expect(edit.tileId, 'editable');
       expect(edit.tileSource, TileSource.tiler);
 
@@ -440,7 +447,7 @@ void main() {
       await tester.tap(find.byType(PreviewDetailsTileWidget));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.byType(EditTile), findsNothing);
+      expect(find.byType(EditTileRoute), findsNothing);
       expect(find.byType(PreviewDetailsTileWidget), findsOneWidget,
           reason: 'a read-only sheet stays open');
       await _closeBloc(tester, bloc);
@@ -464,26 +471,23 @@ void main() {
       await tester.tap(find.byType(PreviewDetailsTileWidget));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.byType(EditTile), findsNothing);
+      expect(find.byType(EditTileRoute), findsNothing);
       await _closeBloc(tester, bloc);
     });
   });
 
   group('gutter restyle', () {
-    testWidgets(
-        'hour guide lines and labels use neutral tokens, not primary',
+    testWidgets('hour guide lines and labels use neutral tokens, not primary',
         (tester) async {
       _setSurface(tester);
       final bloc = _RecordingScheduleBloc();
       final controller = DayGridController();
       addTearDown(controller.dispose);
-      await tester.pumpWidget(_buildApp(
-          bloc: bloc,
-          controller: controller,
-          tiles: [
-            _tile('t', dayStart.add(const Duration(hours: 4)),
-                dayStart.add(const Duration(hours: 5))),
-          ]));
+      await tester
+          .pumpWidget(_buildApp(bloc: bloc, controller: controller, tiles: [
+        _tile('t', dayStart.add(const Duration(hours: 4)),
+            dayStart.add(const Duration(hours: 5))),
+      ]));
       await tester.pump();
 
       final lineContainer = tester.widget<Container>(
@@ -494,8 +498,8 @@ void main() {
             )
             .first,
       );
-      final border = (lineContainer.decoration as BoxDecoration).border
-          as Border;
+      final border =
+          (lineContainer.decoration as BoxDecoration).border as Border;
       expect(border.top.color, scheme.outlineVariant);
       expect(border.top.color, isNot(scheme.primary));
 

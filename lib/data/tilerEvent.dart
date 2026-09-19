@@ -14,6 +14,26 @@ enum TilePriority { low, medium, high }
 
 enum TileSource { tiler, google, outlook }
 
+/// The server's spelling of a provider. The enum says `outlook`; every
+/// Tiler endpoint (search, integrations, sign-in, sub-events) says
+/// `microsoft`. Send [wireName], never [TileSource.name].
+extension TileSourceWire on TileSource {
+  String get wireName => switch (this) {
+        TileSource.tiler => 'tiler',
+        TileSource.google => 'google',
+        TileSource.outlook => 'microsoft',
+      };
+}
+
+/// Normalises a source string a caller may have built from
+/// [TileSource.name] (`outlook`) to the wire spelling (`microsoft`). Any
+/// other value — already wire vocabulary, or empty — passes through
+/// lower-cased.
+String tileSourceWireName(String raw) {
+  final String lower = raw.trim().toLowerCase();
+  return lower == TileSource.outlook.name ? TileSource.outlook.wireName : lower;
+}
+
 class TilerEvent extends TilerObj with TimeRange {
   String? name;
   String? address;

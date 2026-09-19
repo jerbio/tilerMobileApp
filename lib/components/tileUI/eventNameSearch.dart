@@ -1,4 +1,4 @@
-import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
+import 'package:tiler_app/components/tileUI/searchResultDestination.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -224,11 +224,8 @@ class EventNameSearchState extends SearchWidgetState {
       // (provider id + account + type), the same call the timeline tile and
       // the web client make; native Tiler events use the CalendarEvent route.
       final Future<dynamic> deletion = item.isFromProvider
-          ? this.subCalendarEventApi.delete(
-              item.id,
-              item.thirdPartyEventId,
-              item.thirdPartyUserId,
-              _wireSource(_tileSourceOf(item)))
+          ? this.subCalendarEventApi.delete(item.id, item.thirdPartyEventId,
+              item.thirdPartyUserId, _wireSource(_tileSourceOf(item)))
           : this.calendarEventApi.delete(item.id, item.thirdPartyEventId ?? "");
       return deletion.then((value) {
         this.context.read<ScheduleBloc>().add(GetScheduleEvent());
@@ -343,8 +340,7 @@ class EventNameSearchState extends SearchWidgetState {
       final integrations = await integrationApi.getIntegrations();
       final Set<TileSource> connected = {};
       for (final integration in integrations ?? const []) {
-        final String provider =
-            (integration.calendarType ?? '').toLowerCase();
+        final String provider = (integration.calendarType ?? '').toLowerCase();
         if (provider == 'google') connected.add(TileSource.google);
         if (provider == 'microsoft' || provider == 'outlook') {
           connected.add(TileSource.outlook);
@@ -393,16 +389,8 @@ class EventNameSearchState extends SearchWidgetState {
     }
   }
 
-  static TileSource _tileSourceOf(CalendarSearchItem item) {
-    switch (item.sourceKind) {
-      case CalendarSearchSource.google:
-        return TileSource.google;
-      case CalendarSearchSource.microsoft:
-        return TileSource.outlook;
-      default:
-        return TileSource.tiler;
-    }
-  }
+  static TileSource _tileSourceOf(CalendarSearchItem item) =>
+      tileSourceOfSearchItem(item);
 
   /// Adapts a legacy name-search result so both code paths render the same.
   static CalendarSearchItem _itemFromTilerEvent(TilerEvent tile) {
@@ -656,19 +644,14 @@ class EventNameSearchState extends SearchWidgetState {
 
   /// Opens the edit flow the same way the timeline tile does: third-party
   /// rows are addressed by their provider event id + source + account.
+  /// A Tiler row is a CALENDAR EVENT and opens Tile details; a provider
+  /// row is a SUB-EVENT and opens Edit Tile (searchResultDestination.dart).
   void _openEditTile(CalendarSearchItem item) {
+    final Widget? destination = searchResultEditorFor(item);
+    if (destination == null) return;
     AnalysticsSignal.send('NAME_SEARCH_EDIT_OPENED');
-    final String tileId =
-        (item.isFromTiler ? item.id : item.thirdPartyEventId) ?? "";
-    if (tileId.isEmpty) return;
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => EditTileRoute(
-                  tileId: tileId,
-                  tileSource: _tileSourceOf(item),
-                  thirdPartyUserId: item.thirdPartyUserId,
-                )));
+        context, MaterialPageRoute(builder: (context) => destination));
   }
 
   Widget? _buildMoreMenu(CalendarSearchItem item) {
@@ -810,7 +793,8 @@ class EventNameSearchState extends SearchWidgetState {
           height: 28,
           decoration: BoxDecoration(
             color: TileColors.completedGreen.withValues(alpha: 0.18),
-            shape: BoxShape.circle,          ),
+            shape: BoxShape.circle,
+          ),
           child: Icon(Icons.check, size: 16, color: TileColors.completedGreen),
         ),
         label: localization.complete,
@@ -832,8 +816,8 @@ class EventNameSearchState extends SearchWidgetState {
     if (!item.isReadOnly && actions.isEmpty) {
       if (caps.canEdit) {
         actions.add(_cardAction(
-          icon: Icon(Icons.edit_outlined,
-              size: 22, color: colorScheme.onSurface),
+          icon:
+              Icon(Icons.edit_outlined, size: 22, color: colorScheme.onSurface),
           label: localization.edit,
           onTap: () => _openEditTile(item),
         ));
@@ -843,8 +827,7 @@ class EventNameSearchState extends SearchWidgetState {
         actions.add(_cardAction(
           icon: Icon(Icons.delete_outline, size: 22, color: colorScheme.error),
           label: localization.delete,
-          onTap: () =>
-              createDeletionCallBack(item)!(),
+          onTap: () => createDeletionCallBack(item)!(),
         ));
       }
     } else if (!item.isReadOnly) {
@@ -992,9 +975,8 @@ class EventNameSearchState extends SearchWidgetState {
     _tileIdPendingDeletion = null;
     _searchUnavailable = null;
 
-    List<String>? sources = _selectedProvider == null
-        ? null
-        : [_wireSource(_selectedProvider!)];
+    List<String>? sources =
+        _selectedProvider == null ? null : [_wireSource(_selectedProvider!)];
 
     try {
       List<CalendarSearchItem> items;
@@ -1121,8 +1103,8 @@ class EventNameSearchState extends SearchWidgetState {
                   color: colorScheme.surfaceContainerHigh,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.close,
-                    size: 16, color: colorScheme.onSurface),
+                child:
+                    Icon(Icons.close, size: 16, color: colorScheme.onSurface),
               ),
               onPressed: () {
                 ++_searchSeq; // invalidate any in-flight request

@@ -6,6 +6,7 @@ import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
@@ -25,7 +26,10 @@ class SubCalendarEventApi extends AppApi {
       String url = tilerDomain;
       final queryParameters = {
         'EventID': id,
-        "ThirdPartyType": calendarSource,
+        // The server says `microsoft`; callers historically passed the
+        // enum name (`outlook`), and a Microsoft sub-event could not be
+        // found (2026-09-19). Normalised here so every caller is covered.
+        "ThirdPartyType": tileSourceWireName(calendarSource),
         "ThirdPartyUserID": thirdPartyUserId
       };
       Map<String, dynamic> updatedParams = await injectRequestParams(
