@@ -22,9 +22,10 @@ const TimeOfDay sixPm = TimeOfDay(hour: 18, minute: 0);
 const TimeOfDay tenPm = TimeOfDay(hour: 22, minute: 0);
 
 RestrictionDay day(int weekday, TimeOfDay start, TimeOfDay end) {
-  // Equal start and end is the whole day (D74).
+  // Equal start and end is the whole day (D74); an earlier end wraps to the
+  // next day (D75).
   int minutes = (end.hour * 60 + end.minute) - (start.hour * 60 + start.minute);
-  if (minutes == 0) minutes = 24 * 60;
+  if (minutes <= 0) minutes += 24 * 60;
   return RestrictionDay(
       weekday: weekday,
       restrictionTimeLine: RestrictionTimeLine(
@@ -238,7 +239,6 @@ void main() {
       final RestrictionHoursDraft d = RestrictionHoursDraft.fromProfile(null);
       d.setEnabled(1, true);
       d.setEnd(1, nine);
-      expect(d.invalidDays, isEmpty);
       expect(d.days[1].isAllDay, isTrue);
       expect(d.days[2].isAllDay, isFalse, reason: 'disabled day');
       final RestrictionProfile out = d.toProfile()!;
@@ -276,34 +276,113 @@ void main() {
     });
   });
 
-  group('Validity (D70, amended by D74)', () {
-    test('an end BEFORE its start marks that day invalid', () {
+  group(
+      'Overnight windows (D75): an end before its start wraps to the next day',
+      () {
+    test('nothing is invalid; the window is (end - start) mod 24 h', () {
       final RestrictionHoursDraft d = RestrictionHoursDraft.fromProfile(null);
       d.setEnabled(1, true);
-      d.setEnabled(2, true);
-      d.setEnd(1, const TimeOfDay(hour: 8, minute: 59));
-      expect(d.invalidDays, <int>{1});
-      expect(d.isValid, isFalse);
-      d.setEnd(1, const TimeOfDay(hour: 9, minute: 30));
-      expect(d.invalidDays, isEmpty);
-      expect(d.isValid, isTrue);
+      d.setStart(1, const TimeOfDay(hour: 21, minute: 0));
+      d.setEnd(1, const TimeOfDay(hour: 2, minute: 0));
+      expect(d.days[1].wrapsToNextDay, isTrue);
+      expect(d.days[1].isAllDay, isFalse);
+      expect(d.days[1].window, const Duration(hours: 5));
+      final RestrictionProfile out = d.toProfile()!;
+      final RestrictionTimeLine line =
+          out.daySelection[1]!.restrictionTimeLine!;
+      expect(line.start, const TimeOfDay(hour: 21, minute: 0));
+      expect(line.duration, const Duration(hours: 5),
+          reason: 'never negative — the legacy editor sent -19h here');
     });
 
-    test('a disabled day is never invalid', () {
+    test('a same-day window does not wrap; all day is 24 h', () {
       final RestrictionHoursDraft d = RestrictionHoursDraft.fromProfile(null);
       d.setEnabled(1, true);
-      d.setStart(1, six);
+      expect(d.days[1].wrapsToNextDay, isFalse);
+      expect(d.days[1].window, const Duration(hours: 9));
       d.setEnd(1, nine);
-      d.setEnabled(1, false);
-      expect(d.invalidDays, isEmpty);
-      expect(d.isValid, isTrue);
+      expect(d.days[1].wrapsToNextDay, isFalse);
+      expect(d.days[1].window, const Duration(hours: 24));
     });
 
-    test('toProfile refuses an invalid draft', () {
-      final RestrictionHoursDraft d = RestrictionHoursDraft.fromProfile(null)
-        ..setEnabled(1, true)
-        ..setEnd(1, const TimeOfDay(hour: 8, minute: 0));
-      expect(() => d.toProfile(), throwsStateError);
+    test('a window can never cover more than one day', () {
+      final RestrictionHoursDraft d = RestrictionHoursDraft.fromProfile(null);
+      d.setEnabled(1, true);
+      d.setStart(1, const TimeOfDay(hour: 9, minute: 0));
+      d.setEnd(1, const TimeOfDay(hour: 8, minute: 59));
+      expect(d.days[1].window, const Duration(hours: 23, minutes: 59));
+    });
+
+    test('a legacy NEGATIVE duration on the wire loads as the same clocks', () {
+      // The legacy editor computed end - start without wrapping, so 9 PM –
+      // 2 AM was stored as -19 h. The clocks are what the user meant.
+      final RestrictionProfile p =
+          RestrictionProfile(daySelection: <RestrictionDay?>[
+        RestrictionDay(
+            weekday: 0,
+            restrictionTimeLine: RestrictionTimeLine(
+                start: const TimeOfDay(hour: 21, minute: 0),
+                duration: const Duration(hours: -19),
+                weekDay: 0)),
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ]);
+      final RestrictionHoursDraft d = RestrictionHoursDraft.fromProfile(p);
+      expect(d.days[0].start, const TimeOfDay(hour: 21, minute: 0));
+      expect(d.days[0].end, const TimeOfDay(hour: 2, minute: 0));
+      expect(d.days[0].window, const Duration(hours: 5));
+      expect(d.toProfile()!.daySelection[0]!.restrictionTimeLine!.duration,
+          const Duration(hours: 5),
+          reason: 'saving normalises the duration');
+    });
+
+    test('describeRestrictionProfile marks a wrapping group', () {
+      final RestrictionProfile p = weekdays(
+          start: const TimeOfDay(hour: 21, minute: 0),
+          end: const TimeOfDay(hour: 2, minute: 0));
+      expect(describeRestrictionProfile(p).single.wrapsToNextDay, isTrue);
+      expect(describeRestrictionProfile(weekdays()).single.wrapsToNextDay,
+          isFalse);
+    });
+
+    test('sameRestrictionHours compares clocks, not durations', () {
+      // A legacy -19 h profile and the same hours saved by the new editor
+      // (+5 h) must still be recognised as the same Work profile.
+      final RestrictionProfile legacy =
+          RestrictionProfile(daySelection: <RestrictionDay?>[
+        null,
+        RestrictionDay(
+            weekday: 1,
+            restrictionTimeLine: RestrictionTimeLine(
+                start: const TimeOfDay(hour: 21, minute: 0),
+                duration: const Duration(hours: -19),
+                weekDay: 1)),
+        null,
+        null,
+        null,
+        null,
+        null,
+      ]);
+      final RestrictionProfile fresh =
+          RestrictionProfile(daySelection: <RestrictionDay?>[
+        null,
+        day(1, const TimeOfDay(hour: 21, minute: 0),
+            const TimeOfDay(hour: 2, minute: 0)),
+        null,
+        null,
+        null,
+        null,
+        null,
+      ]);
+      expect(legacy.isEquivalent(fresh), isFalse, reason: 'the old comparison');
+      expect(sameRestrictionHours(legacy, fresh), isTrue);
+      expect(sameRestrictionHours(legacy, weekdays()), isFalse);
+      expect(TimeRestrictionChoice.of(legacy, work: fresh, personal: null),
+          TimeRestrictionChoice.work);
     });
   });
 
