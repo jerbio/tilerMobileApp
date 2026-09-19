@@ -3844,7 +3844,15 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String get addTileHoursEndBeforeStart => 'La fine non può precedere l’inizio';
+  String addTileHoursEndsNextDay(String day, String time) {
+    return 'Ends $day at $time';
+  }
+
+  @override
+  String addTileRestrictionWindowNextDay(
+      String days, String start, String end) {
+    return '$days · $start – $end (next day)';
+  }
 
   @override
   String get addTileRestrictionAllDay => 'Tutto il giorno';

@@ -164,6 +164,18 @@ void main() {
       expect(find.text('Mon – Fri · All day'), findsOneWidget);
     });
 
+    testWidgets('an overnight profile reads "(next day)" (D75)',
+        (tester) async {
+      final FakeProfileSource source = FakeProfileSource();
+      await pumpScreen(tester, source: source);
+      await loaded(tester, source,
+          work: fx.weekdays(
+              start: const TimeOfDay(hour: 21, minute: 0),
+              end: const TimeOfDay(hour: 2, minute: 0)));
+      expect(find.text('Mon – Fri · 9:00 PM – 2:00 AM (next day)'),
+          findsOneWidget);
+    });
+
     testWidgets('a tile already on Work hours (by id) preselects Work',
         (tester) async {
       final FakeProfileSource source = FakeProfileSource();

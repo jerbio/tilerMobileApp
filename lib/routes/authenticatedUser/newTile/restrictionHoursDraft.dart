@@ -9,9 +9,13 @@
 //   * [RestrictionHoursDraft] — the Custom hours editor's seven rows, with
 //     the legacy editor's semantics where the product kept them (D69: 9:00 AM
 //     – 6:00 PM on enable, a disabled day is `null`, all disabled is no
-//     profile) and one departure (D70: an end must not be before its start;
-//     the legacy editor shipped negative windows). An end EQUAL to its start
-//     is the whole day (D74) — a 24-hour window on the wire.
+//     profile). No window is invalid (D75): an end BEFORE its start wraps
+//     into the next day — Monday 9 PM – 2 AM ends Tuesday 2 AM — so night
+//     shifts are expressible; a window never covers more than one day. An
+//     end EQUAL to its start is the whole day (D74) — 24 hours on the wire.
+//     Durations are always kept in (0, 24 h]; the legacy editor stored the
+//     raw end - start, so an overnight window arrived as a NEGATIVE
+//     duration, which the reader normalises.
 //
 // The hours editor's request/result contract lives here too, so the Time
 // restrictions screen and the editor depend on this file, not on each other.
@@ -50,8 +54,22 @@ enum TimeRestrictionChoice {
     if (!isUsableRestrictionProfile(named)) return false;
     final String? id = named!.id;
     if (id != null && id.isNotEmpty && id == profile.id) return true;
-    return profile.isEquivalent(named);
+    return sameRestrictionHours(profile, named);
   }
+}
+
+/// Whether two profiles spell the same hours — by CLOCKS, not by stored
+/// duration. `RestrictionProfile.isEquivalent` compares durations, and the
+/// legacy editor stored an overnight window as a negative one (9 PM – 2 AM
+/// as -19 h) where this model stores +5 h; both mean the same hours (D75).
+bool sameRestrictionHours(RestrictionProfile? a, RestrictionProfile? b) {
+  final List<RestrictionHoursDay> x = RestrictionHoursDraft.fromProfile(a).days;
+  final List<RestrictionHoursDay> y = RestrictionHoursDraft.fromProfile(b).days;
+  for (int i = 0; i < 7; i++) {
+    if (x[i].enabled != y[i].enabled) return false;
+    if (x[i].enabled && x[i] != y[i]) return false;
+  }
+  return true;
 }
 
 /// What the screen asks of the hours editor: the hours to start from and,
@@ -96,6 +114,10 @@ class RestrictionHoursGroup {
 
   /// D74: equal start and end is the whole day.
   bool get isAllDay => start == end;
+
+  /// D75: the end is on the following day.
+  bool get wrapsToNextDay =>
+      RestrictionHoursDay._minutes(end) < RestrictionHoursDay._minutes(start);
 }
 
 /// Groups a profile's enabled days by window, in weekday order. Empty for a
@@ -189,12 +211,19 @@ class RestrictionHoursDay {
           start: start ?? this.start,
           end: end ?? this.end);
 
-  /// D70, amended by D74: the end may not be BEFORE the start; equal is
-  /// the whole day.
-  bool get isWindowValid => _minutes(end) >= _minutes(start);
-
   /// D74: equal start and end means all day — a 24-hour window.
   bool get isAllDay => start == end;
+
+  /// D75: an end before its start is on the FOLLOWING day (Monday 9 PM –
+  /// 2 AM ends Tuesday 2 AM). Never more than one day.
+  bool get wrapsToNextDay => _minutes(end) < _minutes(start);
+
+  /// The window's length, always in (0, 24 h]: (end - start) mod 24 h, with
+  /// equal times as the whole day (D74).
+  Duration get window {
+    final int minutes = (_minutes(end) - _minutes(start)) % _dayMinutes;
+    return Duration(minutes: minutes == 0 ? _dayMinutes : minutes);
+  }
 
   static const int _dayMinutes = 24 * 60;
 
@@ -207,22 +236,21 @@ class RestrictionHoursDay {
     final TimeOfDay? start = line?.start;
     final Duration? duration = line?.duration;
     if (day == null || start == null || duration == null) return null;
-    // A 24-hour window comes back as an end equal to its start (D74).
-    final int endMinutes = _minutes(start) + duration.inMinutes;
+    // Clock arithmetic mod 24 h on the TOTAL, so a 24-hour window comes
+    // back as an end equal to its start (D74) and a legacy NEGATIVE
+    // duration (-19 h for 9 PM – 2 AM) lands on the clock the user meant
+    // (D75). Dart's `%` is non-negative for a positive modulus.
+    final int endMinutes = (_minutes(start) + duration.inMinutes) % _dayMinutes;
     return RestrictionHoursDay(
         enabled: true,
         start: start,
-        end: TimeOfDay(hour: (endMinutes ~/ 60) % 24, minute: endMinutes % 60));
+        end: TimeOfDay(hour: endMinutes ~/ 60, minute: endMinutes % 60));
   }
 
   RestrictionDay _toRestrictionDay(int weekday) => RestrictionDay(
       weekday: weekday,
       restrictionTimeLine: RestrictionTimeLine(
-          start: start,
-          duration: Duration(
-              minutes:
-                  isAllDay ? _dayMinutes : _minutes(end) - _minutes(start)),
-          weekDay: weekday));
+          start: start, duration: window, weekDay: weekday));
 
   @override
   bool operator ==(Object other) =>
@@ -266,14 +294,6 @@ class RestrictionHoursDraft extends ChangeNotifier {
       List<RestrictionHoursDay>.unmodifiable(_days);
 
   bool get hasEnabledDay => _days.any((RestrictionHoursDay d) => d.enabled);
-
-  /// Days whose window is not valid (D70). Disabled days never are.
-  Set<int> get invalidDays => <int>{
-        for (int i = 0; i < 7; i++)
-          if (_days[i].enabled && !_days[i].isWindowValid) i,
-      };
-
-  bool get isValid => invalidDays.isEmpty;
 
   bool get isDirty {
     for (int i = 0; i < 7; i++) {
@@ -348,12 +368,9 @@ class RestrictionHoursDraft extends ChangeNotifier {
 
   /// The profile these rows spell: null when no day is enabled (Anytime);
   /// otherwise a NEW object carrying the seed's id and time zone — the seed
-  /// itself is never mutated — with `isEnabled` true. Throws when a window
-  /// is invalid; callers gate on [isValid].
+  /// itself is never mutated — with `isEnabled` true. No window is invalid
+  /// (D75), so this always succeeds.
   RestrictionProfile? toProfile() {
-    if (!isValid) {
-      throw StateError('invalid windows on days $invalidDays');
-    }
     if (!hasEnabledDay) return null;
     final RestrictionProfile out =
         RestrictionProfile(daySelection: <RestrictionDay?>[

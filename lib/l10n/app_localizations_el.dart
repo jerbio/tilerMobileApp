@@ -3847,8 +3847,15 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String get addTileHoursEndBeforeStart =>
-      'Το τέλος δεν μπορεί να είναι πριν την αρχή';
+  String addTileHoursEndsNextDay(String day, String time) {
+    return 'Ends $day at $time';
+  }
+
+  @override
+  String addTileRestrictionWindowNextDay(
+      String days, String start, String end) {
+    return '$days · $start – $end (next day)';
+  }
 
   @override
   String get addTileRestrictionAllDay => 'Ολοήμερο';

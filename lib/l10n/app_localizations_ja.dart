@@ -3724,7 +3724,15 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get addTileHoursEndBeforeStart => '終了は開始より後にしてください';
+  String addTileHoursEndsNextDay(String day, String time) {
+    return 'Ends $day at $time';
+  }
+
+  @override
+  String addTileRestrictionWindowNextDay(
+      String days, String start, String end) {
+    return '$days · $start – $end (next day)';
+  }
 
   @override
   String get addTileRestrictionAllDay => '終日';
