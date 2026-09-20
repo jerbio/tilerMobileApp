@@ -167,17 +167,20 @@ TileConnectorLayoutResult buildTileListWithConnectors({
     }
   }
 
-  // Emits the end-of-day ReturnConnector exactly once. It is called mid-loop
-  // as soon as a tile starts after the configured end-of-day time (so the
-  // marker lands in chronological order, above any overflow tiles) and once
-  // more after the loop for the common case where the day ends after the last
-  // tile.
+  // Emits the end-of-day ReturnConnector exactly once, strictly in
+  // chronological order. It is called mid-loop as soon as a tile starts
+  // after the configured end-of-day time (so the marker lands above that
+  // tile — including ABOVE THE FIRST tile when the end of day is an
+  // early-morning clock, 2026-09-19) and once more after the loop for the
+  // common case where the day ends after the last tile. With no tile above
+  // it the marker has no return-home leg; the post-loop emission still
+  // needs a tile, so an empty day gets no marker (as before).
   bool returnConnectorEmitted = false;
   void emitReturnConnector({bool hasSubsequentTiles = false}) {
     if (returnConnectorEmitted) return;
     if (!showTravelConnectors) return;
     final last = prevRenderedTile;
-    if (last == null) return;
+    if (last == null && !hasSubsequentTiles) return;
     returnConnectorEmitted = true;
     widgets.add(wrapConnector(
       ReturnConnector(

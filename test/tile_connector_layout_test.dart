@@ -44,13 +44,14 @@ TileConnectorLayoutResult _build(
   List<SubCalendarEvent> tiles, {
   DateTime? endOfDayTime,
   bool showTravelConnectors = true,
+  DateTime? now,
 }) {
   return buildTileListWithConnectors(
     orderedTiles: tiles,
     showTravelConnectors: showTravelConnectors,
     showConflictAlerts: false,
     excludeDeclinedFromConflicts: false,
-    now: DateTime(2026, 6, 28, 12),
+    now: now ?? DateTime(2026, 6, 28, 12),
     endOfDayTime: endOfDayTime,
     buildTile: (tile,
             {required hour, required showHourMarker, required isCurrentHour}) =>
@@ -338,6 +339,63 @@ void main() {
     });
   });
 
+  group(
+      'buildTileListWithConnectors — End of Day is placed strictly by time, '
+      'even before the first tile (2026-09-19)', () {
+    // Seen on device: End of Day 3:30 AM rendered right AFTER the first tile
+    // of the day (9:59 AM). The marker could only be emitted once a tile had
+    // been rendered — it borrowed that tile for its return-home leg — so an
+    // end of day earlier than every tile fell out after the first one. The
+    // marker is always shown and sits in chronological order; ahead of the
+    // first tile it simply has no travel leg.
+    final tiles = [
+      _tile(
+        id: 'first',
+        start: DateTime(2026, 9, 21, 9, 59),
+        end: DateTime(2026, 9, 21, 10, 19),
+      ),
+      _tile(
+        id: 'second',
+        start: DateTime(2026, 9, 21, 10, 19),
+        end: DateTime(2026, 9, 21, 10, 49),
+      ),
+    ];
+
+    test('an end of day before every tile leads the day', () {
+      final result = _build(tiles, endOfDayTime: DateTime(2026, 9, 21, 3, 30));
+      expect(result.widgets.whereType<ReturnConnector>().length, 1);
+      final int marker = result.widgets.indexWhere((w) => w is ReturnConnector);
+      final int first = result.widgets.indexWhere(
+          (w) => w is SizedBox && (w.key as ValueKey?)?.value == 'first');
+      expect(marker, lessThan(first));
+      final ReturnConnector connector =
+          result.widgets[marker] as ReturnConnector;
+      expect(connector.hasSubsequentTiles, isTrue);
+      expect(connector.lastTile, isNull, reason: 'nothing to return from');
+      expect(connector.endOfDayTime, DateTime(2026, 9, 21, 3, 30),
+          reason: 'the time is taken as given');
+    });
+
+    test('an end of day between two tiles sits between them', () {
+      final result = _build(tiles, endOfDayTime: DateTime(2026, 9, 21, 10, 0));
+      final int marker = result.widgets.indexWhere((w) => w is ReturnConnector);
+      final int first = result.widgets.indexWhere(
+          (w) => w is SizedBox && (w.key as ValueKey?)?.value == 'first');
+      final int second = result.widgets.indexWhere(
+          (w) => w is SizedBox && (w.key as ValueKey?)?.value == 'second');
+      expect(first, lessThan(marker));
+      expect(marker, lessThan(second));
+      expect((result.widgets[marker] as ReturnConnector).lastTile?.id, 'first');
+    });
+
+    test('a past day keeps its marker, in order', () {
+      final result = _build(tiles,
+          endOfDayTime: DateTime(2026, 9, 21, 3, 0),
+          now: DateTime(2026, 9, 26, 12));
+      expect(result.widgets.first, isA<ReturnConnector>());
+    });
+  });
+
   // -------------------------------------------------------------------------
   // Group 3: endOfDayTime threading
   // -------------------------------------------------------------------------
@@ -408,7 +466,7 @@ void main() {
       final result = _build([first, last]);
 
       final connector = result.widgets.last as ReturnConnector;
-      expect(connector.lastTile.id, equals('last'));
+      expect(connector.lastTile?.id, equals('last'));
     });
   });
 

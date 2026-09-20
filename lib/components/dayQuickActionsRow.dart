@@ -34,8 +34,7 @@ class DayQuickActionsRow extends StatelessWidget {
   static const Key filterTilesKey = ValueKey('dayQuickActions_filter_tiles');
 
   /// The collapsed filter chip (shown by default; tap to expand).
-  static const Key filterToggleKey =
-      ValueKey('dayQuickActions_filter_toggle');
+  static const Key filterToggleKey = ValueKey('dayQuickActions_filter_toggle');
 
   /// The whole filter pill.
   static const Key filterKey = ValueKey('dayQuickActions_filter');
@@ -52,7 +51,8 @@ class DayQuickActionsRow extends StatelessWidget {
     this.preview = false,
   });
 
-  /// The chips row (~48) + the 3px loading bar.
+  /// The chips row's resting height (48) + the 3px loading bar. A minimum:
+  /// the row grows with its chips under a larger font scale.
   static const double height = QuickActionChipsRow.height + 3;
 
   /// The shown day's viable tiles from the schedule state (pure so it can
@@ -98,8 +98,8 @@ class DayQuickActionsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return SizedBox(
-      height: height,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: height),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         // Stretch so the chips row spans the width and its chips sit LEFT
@@ -114,7 +114,8 @@ class DayQuickActionsRow extends StatelessWidget {
             onReOptimize: () => _reOptimize(context),
             // The content filter, right-aligned. Hidden on read-only
             // surfaces (C36), where the filter is also forced to `all`.
-            trailing: preview ? null : _FilterSegments(currentDate: currentDate),
+            trailing:
+                preview ? null : _FilterSegments(currentDate: currentDate),
           ),
           BlocBuilder<ScheduleBloc, ScheduleState>(
             buildWhen: (previous, current) =>
@@ -249,8 +250,8 @@ class _FilterSegmentsState extends State<_FilterSegments> {
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(_FilterSegments._radius),
-              border: Border.all(
-                  color: colorScheme.outline.withValues(alpha: 0.2)),
+              border:
+                  Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
             ),
             child: _expanded
                 ? Row(
@@ -278,8 +279,7 @@ class _FilterSegmentsState extends State<_FilterSegments> {
     );
   }
 
-  String _labelFor(
-      DayContentFilter selected,
+  String _labelFor(DayContentFilter selected,
       List<(DayContentFilter, String, Key, IconData?)> segments) {
     for (final (filter, label, _, _) in segments) {
       if (filter == selected) return label;
@@ -328,8 +328,9 @@ class _Segment extends StatelessWidget {
               if (icon != null) ...[
                 Icon(icon,
                     size: 12,
-                    color:
-                        selected ? colorScheme.onPrimary : colorScheme.onSurface),
+                    color: selected
+                        ? colorScheme.onPrimary
+                        : colorScheme.onSurface),
                 const SizedBox(width: 4),
               ],
               Text(

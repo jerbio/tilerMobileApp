@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/bloc/dayContentFilter/day_content_filter_cubit.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/dayQuickActionsRow.dart';
+import 'package:tiler_app/components/tilelist/dailyView/components/quickActionChipsRow.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -87,8 +88,8 @@ DayContentFilter _selectedSegment(WidgetTester tester) {
     (DayContentFilter.blocks, DayQuickActionsRow.filterBlocksKey),
     (DayContentFilter.tiles, DayQuickActionsRow.filterTilesKey),
   ]) {
-    final Text text = tester.widget<Text>(find.descendant(
-        of: find.byKey(key), matching: find.byType(Text)));
+    final Text text = tester.widget<Text>(
+        find.descendant(of: find.byKey(key), matching: find.byType(Text)));
     if (text.style?.color == onPrimary) return filter;
   }
   throw StateError('no selected segment');
@@ -111,27 +112,74 @@ void main() {
     final picked = DayQuickActionsRow.tilesForDay(
         _loaded(tiles, day), day.universalDayIndex);
     expect(picked.map((t) => t.id), ['a']);
-    expect(DayQuickActionsRow.tilesForDay(
-            ScheduleInitialState(currentView: AuthorizedRouteTileListPage.Daily), 1),
+    expect(
+        DayQuickActionsRow.tilesForDay(
+            ScheduleInitialState(
+                currentView: AuthorizedRouteTileListPage.Daily),
+            1),
         isEmpty);
   });
 
-  testWidgets('renders both chips at a constant height', (tester) async {
+  testWidgets('renders both chips at the row\'s resting height',
+      (tester) async {
     final bloc = _RecordingScheduleBloc();
     addTearDown(bloc.close);
     await tester.pumpWidget(_app(bloc, day));
     await tester.pump();
     expect(find.byKey(DayQuickActionsRow.showRouteKey), findsOneWidget);
     expect(find.byKey(DayQuickActionsRow.reOptimizeKey), findsOneWidget);
+    // 48 + the 3px bar is the MINIMUM; the row grows with its content
+    // rather than clamping it (see the centring test below).
+    // (The test font is taller than the app's, so the row may already be
+    // above its resting height here.)
     expect(tester.getSize(find.byType(DayQuickActionsRow)).height,
-        DayQuickActionsRow.height);
+        greaterThanOrEqualTo(DayQuickActionsRow.height));
     // Left-aligned: the first chip starts at the row's left padding, not
     // centred.
-    final double rowLeft = tester.getTopLeft(find.byType(DayQuickActionsRow)).dx;
+    final double rowLeft =
+        tester.getTopLeft(find.byType(DayQuickActionsRow)).dx;
     final double chipLeft =
         tester.getTopLeft(find.byKey(DayQuickActionsRow.showRouteKey)).dx;
     expect(chipLeft - rowLeft, lessThanOrEqualTo(16.0));
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      'the chips and the filter sit on the row\'s vertical centre, at any '
+      'text scale (2026-09-19)', (tester) async {
+    // Seen on device: the chips rode the bottom of the row. The row was a
+    // fixed 48 with 32 for content, so anything taller — a larger font
+    // scale, a taller chip — was clamped and its text spilled downward.
+    for (final double scale in <double>[1.0, 1.5]) {
+      final bloc = _RecordingScheduleBloc();
+      addTearDown(bloc.close);
+      // Through the platform, so MaterialApp's own MediaQuery carries it.
+      tester.platformDispatcher.textScaleFactorTestValue = scale;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.pumpWidget(_app(bloc, day));
+      await tester.pump();
+      final Rect chips = tester.getRect(find.byType(QuickActionChipsRow));
+      final Rect chip =
+          tester.getRect(find.byKey(DayQuickActionsRow.showRouteKey));
+      final Rect text = tester.getRect(find.text('Show Route'));
+      final Rect filter =
+          tester.getRect(find.byKey(DayQuickActionsRow.filterKey));
+      expect(chip.center.dy, closeTo(chips.center.dy, 1.0),
+          reason: 'scale $scale: chip centred in the chips row');
+      expect(filter.center.dy, closeTo(chips.center.dy, 1.0),
+          reason: 'scale $scale: filter centred in the chips row');
+      // The chip is as tall as its label needs (13sp line + 8/8 padding);
+      // a clamped chip paints its glyphs below the box, which is what read
+      // as "bottom aligned" on device.
+      expect(chip.height, greaterThanOrEqualTo(16 + 13 * scale),
+          reason: 'scale $scale: the chip is not clamped');
+      expect(text.height, greaterThanOrEqualTo(13 * scale),
+          reason: 'scale $scale: the label keeps its line height');
+      expect(chips.height, greaterThanOrEqualTo(chip.height + 16),
+          reason: 'scale $scale: the row grows with its chips');
+      expect(chips.height, greaterThanOrEqualTo(QuickActionChipsRow.height));
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('Re-optimize dispatches ReviseScheduleEvent', (tester) async {
@@ -194,7 +242,7 @@ void main() {
               .getBottomRight(find.byKey(DayQuickActionsRow.reOptimizeKey))
               .dx));
       expect(tester.getSize(find.byType(DayQuickActionsRow)).height,
-          DayQuickActionsRow.height);
+          greaterThanOrEqualTo(DayQuickActionsRow.height));
       expect(tester.takeException(), isNull);
 
       // Tap the chip: the three segments appear, All selected, and the Blocks

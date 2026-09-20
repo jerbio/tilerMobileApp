@@ -20,7 +20,10 @@ import 'package:url_launcher/url_launcher.dart';
 ///   2. **End-of-day marker** (always shown) — sunset gradient icon + "End of Day"
 ///      label with optional time. Signals day conclusion rather than just a label.
 class ReturnConnector extends StatelessWidget {
-  final SubCalendarEvent lastTile;
+  /// The tile the return-home leg starts from. Null when the end of day
+  /// falls BEFORE the day's first tile (an early-morning bedtime): the
+  /// marker then stands alone, with no travel section (2026-09-19).
+  final SubCalendarEvent? lastTile;
 
   /// The user's configured end-of-day time.  When provided, the time is shown
   /// below the "End of Day" label in the sunset marker.
@@ -51,12 +54,12 @@ class ReturnConnector extends StatelessWidget {
   // Data helpers
   // ---------------------------------------------------------------------------
 
-  TravelData? get _afterData => lastTile.travelDetail?.after;
+  TravelData? get _afterData => lastTile?.travelDetail?.after;
 
   double? get _durationMs {
     final fromDetail = _afterData?.duration;
     if (fromDetail != null) return fromDetail;
-    return lastTile.travelTimeAfter;
+    return lastTile?.travelTimeAfter;
   }
 
   bool get _isHome {
@@ -71,8 +74,9 @@ class ReturnConnector extends StatelessWidget {
   /// [TravelData] object with no useful fields produces an empty card, so we
   /// suppress it here.
   bool get _hasTravelData {
-    if (lastTile.travelDetail?.after == null &&
-        lastTile.travelTimeAfter == null) {
+    final SubCalendarEvent? from = lastTile;
+    if (from == null) return false;
+    if (from.travelDetail?.after == null && from.travelTimeAfter == null) {
       return false;
     }
     final hasDuration = _durationMs != null && _durationMs! > 0;
@@ -101,7 +105,7 @@ class ReturnConnector extends StatelessWidget {
   Future<void> _launchMaps() async {
     if (!_canOpenMaps) return;
     final dest = _afterData!.endLocation!;
-    final origin = _afterData?.startLocation ?? lastTile.location;
+    final origin = _afterData?.startLocation ?? lastTile?.location;
 
     String destination;
     if (dest.address?.isNotEmpty == true) {
