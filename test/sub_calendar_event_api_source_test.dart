@@ -13,6 +13,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
 import 'package:tiler_app/services/api/retryHttpClient.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -36,6 +37,51 @@ void main() {
       expect(tileSourceWireName('google'), 'google');
       expect(tileSourceWireName('tiler'), 'tiler');
       expect(tileSourceWireName(''), '');
+    });
+  });
+
+  group('wire-name parse (server -> enum)', () {
+    test('tileSourceFromWireName maps the server spelling back to the enum',
+        () {
+      expect(tileSourceFromWireName('microsoft'), TileSource.outlook);
+      expect(tileSourceFromWireName('Microsoft'), TileSource.outlook);
+      expect(tileSourceFromWireName('outlook'), TileSource.outlook);
+      expect(tileSourceFromWireName('google'), TileSource.google);
+      expect(tileSourceFromWireName('tiler'), TileSource.tiler);
+      expect(tileSourceFromWireName(''), isNull);
+      expect(tileSourceFromWireName('something-else'), isNull);
+    });
+
+    test('a Microsoft sub-event parses as outlook, not null', () {
+      final SubCalendarEvent sub = SubCalendarEvent.fromJson(<String, dynamic>{
+        'id': 'sub-1',
+        'name': 'Standup',
+        'start': 1000,
+        'end': 2000,
+        'thirdpartyType': 'microsoft',
+        'thirdPartyId': 'ms-id',
+        'thirdPartyUserId': 'ms-user',
+      });
+      expect(sub.thirdpartyType, TileSource.outlook);
+      expect(sub.isFromTiler, isFalse);
+    });
+
+    test('tiler, google and outlook parse as before; unknown stays null', () {
+      expect(TilerEvent.fromJson(<String, dynamic>{'thirdpartyType': 'tiler'})
+          .thirdpartyType,
+          TileSource.tiler);
+      expect(TilerEvent.fromJson(<String, dynamic>{'thirdpartyType': 'google'})
+          .thirdpartyType,
+          TileSource.google);
+      expect(
+          TilerEvent.fromJson(
+                  <String, dynamic>{'thirdpartyType': 'outlook'})
+              .thirdpartyType,
+          TileSource.outlook);
+      expect(
+          TilerEvent.fromJson(<String, dynamic>{'thirdpartyType': 'something'})
+              .thirdpartyType,
+          isNull);
     });
   });
 
