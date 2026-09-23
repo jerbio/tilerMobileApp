@@ -117,7 +117,14 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
         MaterialPageRoute(
             builder: (context) => TodayStatusScreen(
                   timeline: timeline,
-                )));
+                ))).then((_) {
+      // Today Status can complete/edit tiles for this day; refresh this
+      // header's counts instead of waiting on the next poll.
+      if (!context.mounted) return;
+      context
+          .read<ScheduleSummaryBloc>()
+          .add(GetScheduleDaySummaryEvent(timeline: timeline));
+    });
   }
 
   Widget _buildShimmer(ColorScheme colorScheme) {

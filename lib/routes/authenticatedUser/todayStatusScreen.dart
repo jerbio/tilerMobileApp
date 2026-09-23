@@ -325,7 +325,9 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const AddTileEntry()),
-    );
+    ).then((_) {
+      if (mounted) _load();
+    });
   }
 
   void _openConnections() {
@@ -401,7 +403,11 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
           thirdPartyUserId: source.thirdPartyUserId,
         ),
       ),
-    );
+    ).then((_) {
+      // The edit screen can change or complete this tile; refresh so the
+      // counts and lists here reflect it instead of waiting on the next poll.
+      if (mounted) _load();
+    });
   }
 
   /// Ported from the previous summary page: the API takes parallel

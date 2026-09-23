@@ -24,13 +24,21 @@ abstract class TileList extends StatefulWidget {
 }
 
 abstract class TileListState<T extends TileList> extends State<T>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late Timeline timeLine;
   String incrementalTilerScrollId = "";
   SubCalendarEvent? notificationSubEvent;
   SubCalendarEvent? concludingSubEvent;
   final Duration autoRefreshDuration = const Duration(minutes: 5);
-  StreamSubscription? autoRefreshList;
+
+  /// The pending auto-refresh tick. A real [Timer] (rather than the previous
+  /// `Future.delayed(...).asStream().listen(...)`, whose subscription could
+  /// never actually cancel the underlying timer — `Future.delayed` starts its
+  /// timer immediately on construction, bound directly to
+  /// [callScheduleRefresh], so "cancelling" that subscription was a no-op).
+  /// Holding the real [Timer] lets a resume refresh below supersede it
+  /// instead of racing it.
+  Timer? autoRefreshList;
   // late final LocalNotificationService localNotificationService;
   bool isInitialLoad = true;
   AnimationController? swipingAnimationController;
@@ -46,6 +54,7 @@ abstract class TileListState<T extends TileList> extends State<T>
     super.initState();
     // localNotificationService = LocalNotificationService();
     autoRefreshTileList(autoRefreshDuration);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
@@ -57,8 +66,44 @@ abstract class TileListState<T extends TileList> extends State<T>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    autoRefreshList?.cancel();
     swipingAnimationController?.dispose();
     super.dispose();
+  }
+
+  /// The auto-refresh timer pauses whenever the OS suspends this isolate in
+  /// the background, so a lock/unlock (or a long app-switch) can leave the
+  /// schedule and its summary counts stale with no visible indication.
+  /// Foregrounding re-fetches to close that gap.
+  ///
+  /// Cancels the pending auto-refresh tick FIRST. `GetScheduleEvent` and
+  /// `GetScheduleDaySummaryEvent` both use bloc_concurrency's `restartable()`,
+  /// so if the old timer's deadline had already elapsed while backgrounded it
+  /// fires on the very next event-loop tick after resume — i.e. right
+  /// alongside this refresh. Two concurrent dispatches race restartable():
+  /// whichever lands second cancels the first mid-flight, which is exactly
+  /// what a live device log showed — a forced resume refresh getting
+  /// superseded by the stale timer's un-forced one, doubling the network
+  /// calls (two `getDaySummary` round trips for one wake-up) while the
+  /// screen never visibly updated. Cancelling first and re-arming fresh
+  /// after means exactly one refresh happens per resume.
+  ///
+  /// Deliberately calls [handleRefresh] — the same pull-to-refresh path —
+  /// rather than [callScheduleRefresh], which also re-arms the timer itself;
+  /// re-arming is done explicitly below once the refresh settles instead.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed && mounted) {
+      autoRefreshList?.cancel();
+      handleRefresh().whenComplete(() {
+        if (mounted) {
+          autoRefreshTileList(
+              Duration(minutes: autoRefreshSubEventDurationInMinutes));
+        }
+      });
+    }
   }
 
   void initializingSwipingAnimation(
@@ -80,10 +125,8 @@ abstract class TileListState<T extends TileList> extends State<T>
   void autoRefreshTileList(Duration duration) {
     print("Schedule auto refresh called " +
         Utility.currentTime(minuteLimitAccuracy: false).toString());
-    Future onTileExpiredCallBack =
-        Future.delayed(duration, callScheduleRefresh);
-    // ignore: cancel_subscriptions
-    autoRefreshList = onTileExpiredCallBack.asStream().listen((_) {});
+    autoRefreshList?.cancel();
+    autoRefreshList = Timer(duration, callScheduleRefresh);
   }
 
   void callScheduleRefresh() {

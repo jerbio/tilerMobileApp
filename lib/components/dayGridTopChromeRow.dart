@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/homeTopRightActions.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -137,15 +139,21 @@ class DayGridTopChromeRow extends StatelessWidget {
     summaryOpenTag(dayIndex, isToday: currentDate.isToday);
     final DateTime start = Utility.getTimeFromIndex(dayIndex);
     final DateTime end = start.endOfDay;
+    final Timeline timeline =
+        Timeline(start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TodayStatusScreen(
-          timeline:
-              Timeline(start.millisecondsSinceEpoch, end.millisecondsSinceEpoch),
-        ),
+        builder: (context) => TodayStatusScreen(timeline: timeline),
       ),
-    );
+    ).then((_) {
+      // Today Status can complete/edit tiles for this day; refresh this
+      // button's counts instead of waiting on the next poll.
+      if (!context.mounted) return;
+      context
+          .read<ScheduleSummaryBloc>()
+          .add(GetScheduleDaySummaryEvent(timeline: timeline));
+    });
   }
 
   Widget _dayPill(BuildContext context) {
