@@ -13,6 +13,9 @@ import 'package:tiler_app/data/todayStatus/dayPlanViewModel.dart';
 import 'package:tiler_app/data/todayStatus/planItemViewModel.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/integration/connetions.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 import 'package:tiler_app/util.dart';
@@ -33,6 +36,9 @@ class TodayStatusScreen extends StatefulWidget {
   static const Key loadingKey = Key('todayStatus.screen.loading');
   static const Key errorKey = Key('todayStatus.screen.error');
   static const Key retryKey = Key('todayStatus.screen.retry');
+  static const Key clearDayAddTileKey = Key('todayStatus.clearDay.addTile');
+  static const Key clearDayConnectCalendarsKey =
+      Key('todayStatus.clearDay.connectCalendars');
 
   final Timeline timeline;
 
@@ -56,6 +62,7 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
 
   bool _selectionMode = false;
   Set<String> _selectedIds = {};
+  bool _isCompleting = false;
 
   @override
   void initState() {
@@ -104,7 +111,25 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
         date: model.date,
         onClose: () => Navigator.of(context).maybePop(),
       ),
-      body: SafeArea(child: _body(model, tokens)),
+      body: SafeArea(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (_isCompleting)
+              const Positioned.fill(
+                child: AddTilePendingSweep(
+                    key: ValueKey('todayStatusCompleteSweep')),
+              ),
+            ExcludeFocus(
+              excluding: _isCompleting,
+              child: AbsorbPointer(
+                absorbing: _isCompleting,
+                child: _body(model, tokens),
+              ),
+            ),
+          ],
+        ),
+      ),
       bottomNavigationBar: model.showPreviewCta ? _stickyCta(tokens) : null,
     );
   }
@@ -196,22 +221,117 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
           ),
         ),
         OutlinedButton(
-          onPressed: () => _completeSelected(model),
+          onPressed: _isCompleting ? null : () => _completeSelected(model),
           child: Text(l10n.completeTiles),
         ),
       ],
     );
   }
 
+  /// An invitation rather than a dead end: the clear-day state carries the
+  /// same "add a tile / connect a calendar" pair the day grid's empty state
+  /// offers (`EmptyDayTile`), styled to match this screen's cards instead of
+  /// introducing a new visual language.
   Widget _clearDay(TodayStatusTokens tokens) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final Color onBrand = Theme.of(context).colorScheme.onPrimary;
+    final BorderRadius ctaRadius =
+        BorderRadius.circular(TodayStatusTokens.radiusMd + 4);
+
     return Padding(
-      padding: const EdgeInsets.only(top: 80),
-      child: Center(
-        child: Text(
-          AppLocalizations.of(context)!.todayStatusClearDay,
-          style: TextStyle(fontSize: 18, color: tokens.textSecondary),
+      padding: const EdgeInsets.only(top: TodayStatusTokens.space6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: TodayStatusTokens.space5,
+          vertical: TodayStatusTokens.space6,
+        ),
+        decoration: BoxDecoration(
+          color: tokens.surface,
+          borderRadius: BorderRadius.circular(TodayStatusTokens.radiusLg),
+          border: Border.all(color: tokens.cardBorder),
+          boxShadow: tokens.cardShadow,
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration:
+                  BoxDecoration(shape: BoxShape.circle, color: tokens.brandTint),
+              child: Icon(Icons.calendar_month_outlined,
+                  color: tokens.brand, size: 26),
+            ),
+            const SizedBox(height: TodayStatusTokens.space4),
+            Text(
+              l10n.todayStatusClearDayHeadline,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: tokens.textPrimary,
+              ),
+            ),
+            const SizedBox(height: TodayStatusTokens.space2),
+            Text(
+              l10n.todayStatusClearDaySubtext,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 14, color: tokens.textSecondary, height: 1.4),
+            ),
+            const SizedBox(height: TodayStatusTokens.space6),
+            SizedBox(
+              width: double.infinity,
+              height: TodayStatusTokens.ctaHeight,
+              child: ElevatedButton.icon(
+                key: TodayStatusScreen.clearDayAddTileKey,
+                onPressed: _openAddTile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: tokens.brand,
+                  foregroundColor: onBrand,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: ctaRadius),
+                ),
+                icon: const Icon(Icons.add),
+                label: Text(l10n.addTile,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600)),
+              ),
+            ),
+            const SizedBox(height: TodayStatusTokens.space3),
+            SizedBox(
+              width: double.infinity,
+              height: TodayStatusTokens.ctaHeight,
+              child: OutlinedButton.icon(
+                key: TodayStatusScreen.clearDayConnectCalendarsKey,
+                onPressed: _openConnections,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: tokens.textPrimary,
+                  side: BorderSide(color: tokens.cardBorder),
+                  shape: RoundedRectangleBorder(borderRadius: ctaRadius),
+                ),
+                icon: const Icon(Icons.calendar_today_outlined),
+                label: Text(l10n.connectCalendars,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  void _openAddTile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddTileEntry()),
+    );
+  }
+
+  void _openConnections() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const Connections()),
     );
   }
 
@@ -305,13 +425,18 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
     Utility.debugPrint(
         '[TodayStatus] completing ${selected.length} tile(s): $ids');
 
-    final bool success = await BlocProvider.of<ScheduleSummaryBloc>(context)
-        .completeTasks(ids, types, userIds);
+    setState(() => _isCompleting = true);
+    try {
+      final bool success = await BlocProvider.of<ScheduleSummaryBloc>(context)
+          .completeTasks(ids, types, userIds);
 
-    if (!mounted) return;
-    if (success) {
-      _exitSelectionMode();
-      await _load();
+      if (!mounted) return;
+      if (success) {
+        _exitSelectionMode();
+        await _load();
+      }
+    } finally {
+      if (mounted) setState(() => _isCompleting = false);
     }
   }
 }

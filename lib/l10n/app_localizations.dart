@@ -1402,6 +1402,18 @@ abstract class AppLocalizations {
   /// **'Your day is clear.'**
   String get todayStatusClearDay;
 
+  /// No description provided for @todayStatusClearDayHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Light day, nothing urgent.'**
+  String get todayStatusClearDayHeadline;
+
+  /// No description provided for @todayStatusClearDaySubtext.
+  ///
+  /// In en, this message translates to:
+  /// **'Make Tiler work for you.'**
+  String get todayStatusClearDaySubtext;
+
   /// No description provided for @todayStatusPreviewCta.
   ///
   /// In en, this message translates to:

@@ -411,6 +411,8 @@
     "todayStatusEverythingElseOnTrack": "Everything else is on track",
     "todayStatusOnTrackSubcopy": "No scheduled tiles are running late.",
     "todayStatusClearDay": "Your day is clear.",
+    "todayStatusClearDayHeadline": "Light day, nothing urgent.",
+    "todayStatusClearDaySubtext": "Make Tiler work for you.",
     "todayStatusPreviewCta": "Preview a better plan",
     "todayStatusPreviewLoading": "Preparing preview…",
     "todayStatusPreviewUnavailable": "Preview couldn't be generated. Your plan is unchanged.",

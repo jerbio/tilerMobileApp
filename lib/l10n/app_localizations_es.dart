@@ -734,6 +734,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get todayStatusClearDay => 'Tu día está despejado.';
 
   @override
+  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+
+  @override
+  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+
+  @override
   String get todayStatusPreviewCta => 'Ver un plan mejor';
 
   @override

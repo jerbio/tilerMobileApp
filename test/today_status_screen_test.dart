@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/todayStatus/planPreviewCta.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/components/todayStatus/planSectionCard.dart';
 import 'package:tiler_app/components/todayStatus/planTaskRow.dart';
 import 'package:tiler_app/components/todayStatus/statusSummaryStrip.dart';
@@ -25,6 +26,8 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/integration/connetions.dart';
 import 'package:tiler_app/routes/authenticatedUser/todayStatusScreen.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/theme/theme_data.dart';
@@ -79,13 +82,15 @@ class _FakeScheduleApi extends ScheduleApi {
 }
 
 class _FakeSummaryBloc extends ScheduleSummaryBloc {
-  _FakeSummaryBloc() : super(getContextCallBack: () => null);
+  _FakeSummaryBloc({this.gate}) : super(getContextCallBack: () => null);
 
   final List<List<String>> completeCalls = [];
+  final Completer<void>? gate;
 
   @override
   Future<bool> completeTasks(String id, String type, String userId) async {
     completeCalls.add([id, type, userId]);
+    if (gate != null) await gate!.future;
     return true;
   }
 }
@@ -168,9 +173,33 @@ void main() {
       await tester.pumpWidget(_harness(_FakeScheduleApi()));
       await tester.pumpAndSettle();
 
-      expect(find.text('Your day is clear.'), findsOneWidget);
+      expect(find.text('Light day, nothing urgent.'), findsOneWidget);
+      expect(find.text('Make Tiler work for you.'), findsOneWidget);
+      expect(find.byKey(TodayStatusScreen.clearDayAddTileKey), findsOneWidget);
+      expect(find.byKey(TodayStatusScreen.clearDayConnectCalendarsKey),
+          findsOneWidget);
       expect(find.byType(PlanSectionCard), findsNothing);
       expect(find.byType(TrackStatusCard), findsNothing);
+    });
+
+    testWidgets('E · clear day "Add Tile" CTA opens Add Tile', (tester) async {
+      await tester.pumpWidget(_harness(_FakeScheduleApi()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(TodayStatusScreen.clearDayAddTileKey));
+      await tester.pumpAndSettle();
+      expect(find.byType(AddTileEntry), findsOneWidget);
+    });
+
+    testWidgets('E · clear day "Connect calendars" CTA opens Connections',
+        (tester) async {
+      await tester.pumpWidget(_harness(_FakeScheduleApi()));
+      await tester.pumpAndSettle();
+
+      await tester
+          .tap(find.byKey(TodayStatusScreen.clearDayConnectCalendarsKey));
+      await tester.pumpAndSettle();
+      expect(find.byType(Connections), findsOneWidget);
     });
 
     testWidgets('F · a 100+ char title renders without overflow',
@@ -314,6 +343,42 @@ void main() {
 
       expect(bloc.completeCalls, hasLength(1));
       expect(bloc.completeCalls.single.first, 'a0');
+    });
+
+    testWidgets(
+        'shows pending UI and disables the button while multiple tiles complete',
+        (tester) async {
+      final gate = Completer<void>();
+      final bloc = _FakeSummaryBloc(gate: gate);
+      await tester
+          .pumpWidget(_harness(_FakeScheduleApi(attention: 2), bloc: bloc));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(PlanSectionCard.enterSelectionKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(Checkbox).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(Checkbox).last);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AddTilePendingSweep), findsNothing);
+
+      await tester.tap(find.text('Complete Tiles'));
+      await tester.pump();
+
+      // Request is still in flight: the pending sweep is up and the
+      // completion button is disabled so a second tap can't fire twice.
+      expect(find.byType(AddTilePendingSweep), findsOneWidget);
+      final OutlinedButton button = tester
+          .widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'Complete Tiles'));
+      expect(button.onPressed, isNull);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AddTilePendingSweep), findsNothing);
+      expect(bloc.completeCalls, hasLength(1));
+      expect(bloc.completeCalls.single.first, 'a0,a1');
     });
   });
 }

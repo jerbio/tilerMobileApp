@@ -710,6 +710,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get todayStatusClearDay => '今日は空いています。';
 
   @override
+  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+
+  @override
+  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+
+  @override
   String get todayStatusPreviewCta => 'より良いプランをプレビュー';
 
   @override

@@ -732,6 +732,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get todayStatusClearDay => 'O seu dia está livre.';
 
   @override
+  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+
+  @override
+  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+
+  @override
   String get todayStatusPreviewCta => 'Pré-visualizar um plano melhor';
 
   @override
