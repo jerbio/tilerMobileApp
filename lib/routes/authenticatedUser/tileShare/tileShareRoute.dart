@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'tileShareActivityWidget.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareListWidget.dart';
@@ -18,7 +19,8 @@ class _TileShareState extends State<TileShareRoute> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return DefaultTabController(
-      length: 2,
+      length: 3,
+      initialIndex: 1,
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -71,6 +73,7 @@ class _TileShareState extends State<TileShareRoute> {
           ),
           bottom: TabBar(
             tabs: [
+              Tab(icon: const Icon(Icons.history), text: AppLocalizations.of(context)!.tileShareActivityTitle),
               Tab(
                 icon: Column(
                   children: [
@@ -108,6 +111,7 @@ class _TileShareState extends State<TileShareRoute> {
         body: TabBarView(
           physics: NeverScrollableScrollPhysics(),
           children: [
+            const TileShareActivityWidget(),
             TileShareListWidget(
               key: outBoxKey,
               isOutBox: true,

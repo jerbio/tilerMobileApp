@@ -112,6 +112,168 @@ abstract class AppLocalizations {
     Locale('pt')
   ];
 
+  /// No description provided for @tileShareActivityInvitationUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation send outcome unknown'**
+  String get tileShareActivityInvitationUnknown;
+
+  /// No description provided for @tileShareActivityExplicitResend.
+  ///
+  /// In en, this message translates to:
+  /// **'The invitation may have been sent. Resend explicitly if needed.'**
+  String get tileShareActivityExplicitResend;
+
+  /// No description provided for @tileShareActivityEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get tileShareActivityEmail;
+
+  /// No description provided for @tileShareActivitySms.
+  ///
+  /// In en, this message translates to:
+  /// **'SMS'**
+  String get tileShareActivitySms;
+
+  /// No description provided for @tileShareActivityPush.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notification'**
+  String get tileShareActivityPush;
+
+  /// No description provided for @tileShareActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activities'**
+  String get tileShareActivityTitle;
+
+  /// No description provided for @tileShareActivityRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get tileShareActivityRefresh;
+
+  /// No description provided for @tileShareActivityRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get tileShareActivityRetry;
+
+  /// No description provided for @tileShareActivityEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity yet.'**
+  String get tileShareActivityEmpty;
+
+  /// No description provided for @tileShareActivityFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity could not be loaded. Check your connection and try again.'**
+  String get tileShareActivityFailed;
+
+  /// No description provided for @tileShareActivityAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'This activity is no longer available to you.'**
+  String get tileShareActivityAccess;
+
+  /// No description provided for @tileShareActivityUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity updated'**
+  String get tileShareActivityUnknown;
+
+  /// No description provided for @tileShareActivityUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Item no longer available'**
+  String get tileShareActivityUnavailable;
+
+  /// No description provided for @tileShareActivityMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get tileShareActivityMore;
+
+  /// No description provided for @tileShareActivityClusterCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'TileShare created'**
+  String get tileShareActivityClusterCreated;
+
+  /// No description provided for @tileShareActivityClusterDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'TileShare deleted'**
+  String get tileShareActivityClusterDeleted;
+
+  /// No description provided for @tileShareActivityTiletteAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilette added'**
+  String get tileShareActivityTiletteAdded;
+
+  /// No description provided for @tileShareActivityTiletteEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilette updated'**
+  String get tileShareActivityTiletteEdited;
+
+  /// No description provided for @tileShareActivityTiletteDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilette deleted'**
+  String get tileShareActivityTiletteDeleted;
+
+  /// No description provided for @tileShareActivityTiletteRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilette restored'**
+  String get tileShareActivityTiletteRestored;
+
+  /// No description provided for @tileShareActivityRecipientAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Participant added'**
+  String get tileShareActivityRecipientAdded;
+
+  /// No description provided for @tileShareActivityRecipientRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Participant removed'**
+  String get tileShareActivityRecipientRemoved;
+
+  /// No description provided for @tileShareActivityRecipientRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Participant restored'**
+  String get tileShareActivityRecipientRestored;
+
+  /// No description provided for @tileShareActivityAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment accepted'**
+  String get tileShareActivityAccepted;
+
+  /// No description provided for @tileShareActivityDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment declined'**
+  String get tileShareActivityDeclined;
+
+  /// No description provided for @tileShareActivityInvitationSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation sent'**
+  String get tileShareActivityInvitationSent;
+
+  /// No description provided for @tileShareActivityInvitationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation could not be sent'**
+  String get tileShareActivityInvitationFailed;
+
   /// No description provided for @whiteSpace.
   ///
   /// In en, this message translates to:

@@ -9,6 +9,92 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
+  String get tileShareActivityInvitationUnknown =>
+      'Invitation send outcome unknown';
+
+  @override
+  String get tileShareActivityExplicitResend =>
+      'The invitation may have been sent. Resend explicitly if needed.';
+
+  @override
+  String get tileShareActivityEmail => 'Email';
+
+  @override
+  String get tileShareActivitySms => 'SMS';
+
+  @override
+  String get tileShareActivityPush => 'Push notification';
+
+  @override
+  String get tileShareActivityTitle => 'Activities';
+
+  @override
+  String get tileShareActivityRefresh => 'Refresh';
+
+  @override
+  String get tileShareActivityRetry => 'Retry';
+
+  @override
+  String get tileShareActivityEmpty => 'No activity yet.';
+
+  @override
+  String get tileShareActivityFailed =>
+      'Activity could not be loaded. Check your connection and try again.';
+
+  @override
+  String get tileShareActivityAccess =>
+      'This activity is no longer available to you.';
+
+  @override
+  String get tileShareActivityUnknown => 'Activity updated';
+
+  @override
+  String get tileShareActivityUnavailable => 'Item no longer available';
+
+  @override
+  String get tileShareActivityMore => 'Load more';
+
+  @override
+  String get tileShareActivityClusterCreated => 'TileShare created';
+
+  @override
+  String get tileShareActivityClusterDeleted => 'TileShare deleted';
+
+  @override
+  String get tileShareActivityTiletteAdded => 'Tilette added';
+
+  @override
+  String get tileShareActivityTiletteEdited => 'Tilette updated';
+
+  @override
+  String get tileShareActivityTiletteDeleted => 'Tilette deleted';
+
+  @override
+  String get tileShareActivityTiletteRestored => 'Tilette restored';
+
+  @override
+  String get tileShareActivityRecipientAdded => 'Participant added';
+
+  @override
+  String get tileShareActivityRecipientRemoved => 'Participant removed';
+
+  @override
+  String get tileShareActivityRecipientRestored => 'Participant restored';
+
+  @override
+  String get tileShareActivityAccepted => 'Assignment accepted';
+
+  @override
+  String get tileShareActivityDeclined => 'Assignment declined';
+
+  @override
+  String get tileShareActivityInvitationSent => 'Invitation sent';
+
+  @override
+  String get tileShareActivityInvitationFailed =>
+      'Invitation could not be sent';
+
+  @override
   String get whiteSpace => ' ';
 
   @override
