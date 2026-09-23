@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/homeTopRightActions.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/todayStatusScreen.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 /// Signature of the injectable date-picker seam used by
@@ -156,6 +159,61 @@ class DayGridTopChromeRow extends StatelessWidget {
     });
   }
 
+  /// The retained day summary for [dayIndex], from either the loaded or the
+  /// loading state — the loading state carries the previous fetch's retained
+  /// summaries, so the badge keeps showing its last-known counts while a
+  /// refresh is in flight instead of blanking out.
+  TimelineSummary? _matchingSummary(ScheduleSummaryState state, int dayIndex) {
+    List<TimelineSummary>? dayData;
+    if (state is ScheduleDaySummaryLoaded) {
+      dayData = state.dayData;
+    } else if (state is ScheduleDaySummaryLoading) {
+      dayData = state.dayData;
+    }
+    return dayData
+        ?.where((summary) => summary.dayIndex == dayIndex)
+        .firstOrNull;
+  }
+
+  /// The summary button's icon, badged with the day's needs-attention count
+  /// when there is one — the actionable number — falling back to a quiet
+  /// completed count when the day is clear, rather than a plain icon that
+  /// carries no information about whether today needs a look.
+  Widget _summaryIcon(BuildContext context, Color iconColor) {
+    final Icon icon = Icon(Icons.assessment_outlined, color: iconColor);
+    return BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(
+      builder: (context, state) {
+        final TimelineSummary? dayData =
+            _matchingSummary(state, currentDate.universalDayIndex);
+        final int attentionCount = dayData?.nonViable?.length ?? 0;
+        final int completeCount = dayData?.complete?.length ?? 0;
+        final NumberFormat numberFmt = NumberFormat.decimalPattern(
+            Localizations.localeOf(context).toString());
+
+        if (attentionCount > 0) {
+          return Badge(
+            backgroundColor: Theme.of(context).colorScheme.error,
+            textColor: Colors.white,
+            label: Text(numberFmt.format(attentionCount)),
+            child: icon,
+          );
+        }
+        if (completeCount > 0) {
+          final TileThemeExtension? tileTheme =
+              Theme.of(context).extension<TileThemeExtension>();
+          return Badge(
+            backgroundColor: tileTheme?.statusSuccess ??
+                Theme.of(context).colorScheme.primary,
+            textColor: Colors.white,
+            label: Text(numberFmt.format(completeCount)),
+            child: icon,
+          );
+        }
+        return icon;
+      },
+    );
+  }
+
   Widget _dayPill(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final Widget pill = Material(
@@ -231,8 +289,7 @@ class DayGridTopChromeRow extends StatelessWidget {
                   Flexible(child: _dayPill(context)),
                   IconButton(
                     key: summaryButtonKey,
-                    icon: Icon(Icons.assessment_outlined,
-                        color: colorScheme.primary),
+                    icon: _summaryIcon(context, colorScheme.primary),
                     onPressed: () => _onSummaryTapped(context),
                     tooltip: l10n.dayGridDaySummary,
                   ),

@@ -10,29 +10,43 @@
 // the real platform dialog.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/dayGridTopChromeRow.dart';
 import 'package:tiler_app/components/homeTopRightActions.dart';
 import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/util.dart';
 
-Widget _wrap(Widget child) {
-  return MaterialApp(
-    theme: TileThemeData.lightTheme,
-    localizationsDelegates: const [
-      AppLocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    supportedLocales: const [Locale('en', '')],
-    home: Scaffold(body: child),
+Widget _wrap(
+  Widget child, {
+  ScheduleSummaryBloc? scheduleSummaryBloc,
+  Locale? locale,
+  List<Locale> supportedLocales = const [Locale('en', '')],
+}) {
+  return BlocProvider<ScheduleSummaryBloc>.value(
+    value: scheduleSummaryBloc ??
+        ScheduleSummaryBloc(getContextCallBack: () => null),
+    child: MaterialApp(
+      theme: TileThemeData.lightTheme,
+      locale: locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: supportedLocales,
+      home: Scaffold(body: child),
+    ),
   );
 }
 
@@ -179,6 +193,67 @@ void main() {
       expect(find.byIcon(Icons.calendar_today), findsOneWidget);
       await tester.tap(find.byIcon(Icons.calendar_today));
       expect(called, isTrue);
+    });
+  });
+
+  group('DayGridTopChromeRow — summary button badge', () {
+    testWidgets('shows no badge when there is nothing to report',
+        (tester) async {
+      await tester.pumpWidget(_wrap(_chrome()));
+      await tester.pump();
+
+      expect(find.byType(Badge), findsNothing);
+    });
+
+    testWidgets('badges the needs-attention count when non-zero',
+        (tester) async {
+      final DateTime day = DateTime(2026, 6, 1);
+      final int dayIndex = day.universalDayIndex;
+      final bloc = ScheduleSummaryBloc(getContextCallBack: () => null);
+      final summary = TimelineSummary()
+        ..dayIndex = dayIndex
+        ..nonViable = [TilerEvent(), TilerEvent()]
+        ..complete = [TilerEvent()];
+      bloc.emit(ScheduleDaySummaryLoaded(dayData: [summary], elapsedTiles: []));
+
+      await tester.pumpWidget(
+          _wrap(_chrome(currentDate: day), scheduleSummaryBloc: bloc));
+      await tester.pump();
+
+      expect(find.byType(Badge), findsOneWidget);
+      expect(find.text('2'), findsOneWidget,
+          reason: 'the attention count leads over the completed count');
+    });
+
+    testWidgets('falls back to the completed count on a clear day',
+        (tester) async {
+      final DateTime day = DateTime(2026, 6, 1);
+      final int dayIndex = day.universalDayIndex;
+      final bloc = ScheduleSummaryBloc(getContextCallBack: () => null);
+      final summary = TimelineSummary()
+        ..dayIndex = dayIndex
+        ..nonViable = []
+        ..complete = [TilerEvent(), TilerEvent(), TilerEvent()];
+      bloc.emit(ScheduleDaySummaryLoaded(dayData: [summary], elapsedTiles: []));
+
+      await tester.pumpWidget(
+          _wrap(_chrome(currentDate: day), scheduleSummaryBloc: bloc));
+      await tester.pump();
+
+      expect(find.byType(Badge), findsOneWidget);
+      expect(find.text('3'), findsOneWidget);
+    });
+
+    test(
+        'sanity check: the locale used for badge counts affects how numbers group',
+        () {
+      // Documents *why* the widget formats counts through
+      // NumberFormat.decimalPattern(locale) instead of a hardcoded
+      // '$count' interpolation: locale changes the grouping separator
+      // ('1,234' in English vs '1.234' in German). Today's counts are
+      // small, but the formatting call is correct regardless of magnitude.
+      expect(NumberFormat.decimalPattern('en').format(1234), '1,234');
+      expect(NumberFormat.decimalPattern('de').format(1234), '1.234');
     });
   });
 
