@@ -818,6 +818,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get todayStatusClearDay => 'O seu dia está livre.';
 
   @override
+  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+
+  @override
+  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+
+  @override
   String get todayStatusPreviewCta => 'Pré-visualizar um plano melhor';
 
   @override
@@ -3922,7 +3928,15 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get addTileHoursEndBeforeStart => 'O fim não pode ser antes do início';
+  String addTileHoursEndsNextDay(String day, String time) {
+    return 'Ends $day at $time';
+  }
+
+  @override
+  String addTileRestrictionWindowNextDay(
+      String days, String start, String end) {
+    return '$days · $start – $end (next day)';
+  }
 
   @override
   String get addTileRestrictionAllDay => 'Dia inteiro';

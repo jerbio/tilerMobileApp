@@ -818,6 +818,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get todayStatusClearDay => 'Η μέρα σας είναι ελεύθερη.';
 
   @override
+  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+
+  @override
+  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+
+  @override
   String get todayStatusPreviewCta => 'Προεπισκόπηση βελτιωμένου προγράμματος';
 
   @override
@@ -3933,8 +3939,15 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String get addTileHoursEndBeforeStart =>
-      'Το τέλος δεν μπορεί να είναι πριν την αρχή';
+  String addTileHoursEndsNextDay(String day, String time) {
+    return 'Ends $day at $time';
+  }
+
+  @override
+  String addTileRestrictionWindowNextDay(
+      String days, String start, String end) {
+    return '$days · $start – $end (next day)';
+  }
 
   @override
   String get addTileRestrictionAllDay => 'Ολοήμερο';

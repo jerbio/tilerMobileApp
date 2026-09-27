@@ -1,4 +1,5 @@
-import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
+import 'package:tiler_app/components/tileUI/searchResultDestination.dart';
+import 'package:tiler_app/components/tileUI/searchResultsPane.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -81,20 +82,30 @@ class EventNameSearchState extends SearchWidgetState {
   // from the chip strip until a later search reports them healthy.
   Set<TileSource> _failedProviders = {};
 
-  // Rebuilds resultViewContainer (inherited from SearchWidgetState) from cached
-  // results, e.g. when the deletion confirmation toggles.
+  // True once a completed search produced `nameSearchResult`; the build
+  // then renders the pinned-header pane from that list instead of the
+  // base class's `resultViewContainer` (its shimmer / hint placeholders).
+  bool _resultsReady = false;
+
+  // Rebuilds the cached results, e.g. when the deletion confirmation
+  // toggles or a provider chip re-queries.
   void _refreshResultView() {
     final widgets = _buildResultWidgets();
     setState(() {
       nameSearchResult = widgets;
-      resultViewContainer = GestureDetector(
-        onTap: () => setState(() => showResponseContainer = false),
-        child: Container(
-          decoration: this.widget.resultBoxDecoration,
-          child: ListView(children: widgets),
-        ),
-      );
+      _resultsReady = true;
     });
+  }
+
+  /// The results with the count + filter header PINNED above them: the
+  /// header used to be the list's first item and scrolled away (2026-09-19).
+  Widget _resultsPane() {
+    return SearchResultsPane(
+      header: _buildResultsHeader(),
+      results: nameSearchResult,
+      onDismiss: () => setState(() => showResponseContainer = false),
+      decoration: this.widget.resultBoxDecoration,
+    );
   }
 
   @override
@@ -224,11 +235,8 @@ class EventNameSearchState extends SearchWidgetState {
       // (provider id + account + type), the same call the timeline tile and
       // the web client make; native Tiler events use the CalendarEvent route.
       final Future<dynamic> deletion = item.isFromProvider
-          ? this.subCalendarEventApi.delete(
-              item.id,
-              item.thirdPartyEventId,
-              item.thirdPartyUserId,
-              _wireSource(_tileSourceOf(item)))
+          ? this.subCalendarEventApi.delete(item.id, item.thirdPartyEventId,
+              item.thirdPartyUserId, _wireSource(_tileSourceOf(item)))
           : this.calendarEventApi.delete(item.id, item.thirdPartyEventId ?? "");
       return deletion.then((value) {
         this.context.read<ScheduleBloc>().add(GetScheduleEvent());
@@ -343,8 +351,7 @@ class EventNameSearchState extends SearchWidgetState {
       final integrations = await integrationApi.getIntegrations();
       final Set<TileSource> connected = {};
       for (final integration in integrations ?? const []) {
-        final String provider =
-            (integration.calendarType ?? '').toLowerCase();
+        final String provider = (integration.calendarType ?? '').toLowerCase();
         if (provider == 'google') connected.add(TileSource.google);
         if (provider == 'microsoft' || provider == 'outlook') {
           connected.add(TileSource.outlook);
@@ -393,16 +400,8 @@ class EventNameSearchState extends SearchWidgetState {
     }
   }
 
-  static TileSource _tileSourceOf(CalendarSearchItem item) {
-    switch (item.sourceKind) {
-      case CalendarSearchSource.google:
-        return TileSource.google;
-      case CalendarSearchSource.microsoft:
-        return TileSource.outlook;
-      default:
-        return TileSource.tiler;
-    }
-  }
+  static TileSource _tileSourceOf(CalendarSearchItem item) =>
+      tileSourceOfSearchItem(item);
 
   /// Adapts a legacy name-search result so both code paths render the same.
   static CalendarSearchItem _itemFromTilerEvent(TilerEvent tile) {
@@ -656,19 +655,14 @@ class EventNameSearchState extends SearchWidgetState {
 
   /// Opens the edit flow the same way the timeline tile does: third-party
   /// rows are addressed by their provider event id + source + account.
+  /// A Tiler row is a CALENDAR EVENT and opens Tile details; a provider
+  /// row is a SUB-EVENT and opens Edit Tile (searchResultDestination.dart).
   void _openEditTile(CalendarSearchItem item) {
+    final Widget? destination = searchResultEditorFor(item);
+    if (destination == null) return;
     AnalysticsSignal.send('NAME_SEARCH_EDIT_OPENED');
-    final String tileId =
-        (item.isFromTiler ? item.id : item.thirdPartyEventId) ?? "";
-    if (tileId.isEmpty) return;
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => EditTileRoute(
-                  tileId: tileId,
-                  tileSource: _tileSourceOf(item),
-                  thirdPartyUserId: item.thirdPartyUserId,
-                )));
+        context, MaterialPageRoute(builder: (context) => destination));
   }
 
   Widget? _buildMoreMenu(CalendarSearchItem item) {
@@ -810,7 +804,8 @@ class EventNameSearchState extends SearchWidgetState {
           height: 28,
           decoration: BoxDecoration(
             color: TileColors.completedGreen.withValues(alpha: 0.18),
-            shape: BoxShape.circle,          ),
+            shape: BoxShape.circle,
+          ),
           child: Icon(Icons.check, size: 16, color: TileColors.completedGreen),
         ),
         label: localization.complete,
@@ -832,8 +827,8 @@ class EventNameSearchState extends SearchWidgetState {
     if (!item.isReadOnly && actions.isEmpty) {
       if (caps.canEdit) {
         actions.add(_cardAction(
-          icon: Icon(Icons.edit_outlined,
-              size: 22, color: colorScheme.onSurface),
+          icon:
+              Icon(Icons.edit_outlined, size: 22, color: colorScheme.onSurface),
           label: localization.edit,
           onTap: () => _openEditTile(item),
         ));
@@ -843,8 +838,7 @@ class EventNameSearchState extends SearchWidgetState {
         actions.add(_cardAction(
           icon: Icon(Icons.delete_outline, size: 22, color: colorScheme.error),
           label: localization.delete,
-          onTap: () =>
-              createDeletionCallBack(item)!(),
+          onTap: () => createDeletionCallBack(item)!(),
         ));
       }
     } else if (!item.isReadOnly) {
@@ -852,68 +846,77 @@ class EventNameSearchState extends SearchWidgetState {
     }
     final bool hasActionRow = actions.isNotEmpty || moreMenu != null;
 
+    // The whole card opens the tile (Tile details for a Tiler row, Edit
+    // Tile for a provider row) and claims the tap, so the results stay
+    // open — the list's outer GestureDetector used to swallow it and hide
+    // them (2026-09-19).
+    final bool canOpen = searchResultEditorFor(item) != null;
     return _cardShell(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(16, 16, 12, hasActionRow ? 8 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    item.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: TileTextStyles.rubikFontName,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-                if (item.isReadOnly) ...[
-                  SizedBox(width: 8),
-                  _readOnlyBadge(),
-                ],
-              ],
-            ),
-            if (metaRow.isNotEmpty) ...[
-              SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(children: metaRow),
-              ),
-            ],
-            if (item.thirdPartyUserId != null &&
-                item.thirdPartyUserId!.isNotEmpty) ...[
-              SizedBox(height: 4),
-              Text(
-                localization.searchConnectedAccount(item.thirdPartyUserId!),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontFamily: TileTextStyles.rubikFontName,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-            if (hasActionRow) ...[
-              Padding(
-                padding: EdgeInsets.only(top: 12, bottom: 4, right: 4),
-                child: Divider(height: 1, color: colorScheme.outlineVariant),
-              ),
+      child: SearchResultTapTarget(
+        key: ValueKey('searchResult_${item.id}'),
+        onOpen: canOpen ? () => _openEditTile(item) : null,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16, 16, 12, hasActionRow ? 8 : 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Row(
                 children: [
-                  ...actions,
-                  Spacer(),
-                  if (moreMenu != null) moreMenu,
+                  Expanded(
+                    child: Text(
+                      item.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: TileTextStyles.rubikFontName,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  if (item.isReadOnly) ...[
+                    SizedBox(width: 8),
+                    _readOnlyBadge(),
+                  ],
                 ],
               ),
+              if (metaRow.isNotEmpty) ...[
+                SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: metaRow),
+                ),
+              ],
+              if (item.thirdPartyUserId != null &&
+                  item.thirdPartyUserId!.isNotEmpty) ...[
+                SizedBox(height: 4),
+                Text(
+                  localization.searchConnectedAccount(item.thirdPartyUserId!),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontFamily: TileTextStyles.rubikFontName,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              if (hasActionRow) ...[
+                Padding(
+                  padding: EdgeInsets.only(top: 12, bottom: 4, right: 4),
+                  child: Divider(height: 1, color: colorScheme.outlineVariant),
+                ),
+                Row(
+                  children: [
+                    ...actions,
+                    Spacer(),
+                    if (moreMenu != null) moreMenu,
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -947,9 +950,11 @@ class EventNameSearchState extends SearchWidgetState {
     );
   }
 
+  /// The scrolling part of the results — cards, banners, messages. The
+  /// header is pinned above them by [_resultsPane].
   List<Widget> _buildResultWidgets() {
     final localization = AppLocalizations.of(context)!;
-    List<Widget> retValue = [_buildResultsHeader()];
+    List<Widget> retValue = [];
 
     // Total failure (502): a service issue, never rendered as "no matches".
     if (_searchUnavailable != null) {
@@ -992,9 +997,8 @@ class EventNameSearchState extends SearchWidgetState {
     _tileIdPendingDeletion = null;
     _searchUnavailable = null;
 
-    List<String>? sources = _selectedProvider == null
-        ? null
-        : [_wireSource(_selectedProvider!)];
+    List<String>? sources =
+        _selectedProvider == null ? null : [_wireSource(_selectedProvider!)];
 
     try {
       List<CalendarSearchItem> items;
@@ -1071,14 +1075,18 @@ class EventNameSearchState extends SearchWidgetState {
       )
     ];
 
+    bool ready = false;
     if (name.length > Constants.autoCompleteMinCharLength) {
       AnalysticsSignal.send('NAME_SEARCH_REQUEST_RECEIVED');
+      if (mounted) setState(() => _resultsReady = false);
       await _runSearch(name);
       retValue = _buildResultWidgets();
+      ready = true;
     }
 
     setState(() {
       nameSearchResult = retValue;
+      _resultsReady = ready;
     });
 
     return retValue;
@@ -1121,8 +1129,8 @@ class EventNameSearchState extends SearchWidgetState {
                   color: colorScheme.surfaceContainerHigh,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.close,
-                    size: 16, color: colorScheme.onSurface),
+                child:
+                    Icon(Icons.close, size: 16, color: colorScheme.onSurface),
               ),
               onPressed: () {
                 ++_searchSeq; // invalidate any in-flight request
@@ -1200,10 +1208,12 @@ class EventNameSearchState extends SearchWidgetState {
                       ),
                       Expanded(
                         child: showResponseContainer &&
-                                resultViewContainer != null
+                                (_resultsReady || resultViewContainer != null)
                             ? Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 16),
-                                child: resultViewContainer!,
+                                child: _resultsReady
+                                    ? _resultsPane()
+                                    : resultViewContainer!,
                               )
                             : SizedBox.shrink(),
                       ),

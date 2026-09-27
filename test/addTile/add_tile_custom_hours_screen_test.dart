@@ -245,7 +245,6 @@ void main() {
       await tester.pump();
       expect(key('hoursAllDay_2'), findsOneWidget);
       expect(find.text(testL10n.addTileRestrictionAllDay), findsOneWidget);
-      expect(key('hoursInvalid_2'), findsNothing);
       expect(
           tester.widget<AddTileDoneButton>(key('hoursDone')).enabled, isTrue);
       await tapDone(tester);
@@ -254,25 +253,40 @@ void main() {
     });
 
     testWidgets(
-        'an end before its start shows the error and disables '
-        'Done (D70)', (tester) async {
+        'an end before its start wraps: the row says where it ends and Done '
+        'stays enabled (D75)', (tester) async {
       await pumpEditor(tester, request: adHoc);
-      await reveal(tester, key('hoursDay_2'));
-      pickerAnswer = const TimeOfDay(hour: 8, minute: 0);
-      await tester.tap(key('hoursEnd_2'));
+      await reveal(tester, key('hoursDay_1'));
+      pickerAnswer = const TimeOfDay(hour: 21, minute: 0);
+      await tester.tap(key('hoursStart_1'));
       await tester.pump();
-      expect(key('hoursInvalid_2'), findsOneWidget);
-      expect(find.text(testL10n.addTileHoursEndBeforeStart), findsOneWidget);
-      expect(
-          tester.widget<AddTileDoneButton>(key('hoursDone')).enabled, isFalse);
-      await tapDone(tester);
-      expect(doneCalled, isFalse);
-      pickerAnswer = const TimeOfDay(hour: 12, minute: 0);
-      await tester.tap(key('hoursEnd_2'));
+      pickerAnswer = const TimeOfDay(hour: 2, minute: 0);
+      await tester.tap(key('hoursEnd_1'));
       await tester.pump();
-      expect(key('hoursInvalid_2'), findsNothing);
+      expect(key('hoursNextDay_1'), findsOneWidget);
+      // Monday 9 PM – 2 AM ends on TUESDAY.
+      expect(find.text(testL10n.addTileHoursEndsNextDay('Tuesday', '2:00 AM')),
+          findsOneWidget);
       expect(
           tester.widget<AddTileDoneButton>(key('hoursDone')).enabled, isTrue);
+      await tapDone(tester);
+      expect(result!.profile!.daySelection[1]!.restrictionTimeLine!.duration,
+          const Duration(hours: 5));
+    });
+
+    testWidgets('Saturday wraps into Sunday', (tester) async {
+      await pumpEditor(tester, request: adHoc);
+      await reveal(tester, key('hoursDay_6'));
+      await tester.tap(key('hoursSwitch_6'));
+      await tester.pump();
+      pickerAnswer = const TimeOfDay(hour: 22, minute: 0);
+      await tester.tap(key('hoursStart_6'));
+      await tester.pump();
+      pickerAnswer = const TimeOfDay(hour: 6, minute: 0);
+      await tester.tap(key('hoursEnd_6'));
+      await tester.pump();
+      expect(find.text(testL10n.addTileHoursEndsNextDay('Sunday', '6:00 AM')),
+          findsOneWidget);
     });
   });
 

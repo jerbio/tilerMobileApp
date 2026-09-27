@@ -14,6 +14,44 @@ enum TilePriority { low, medium, high }
 
 enum TileSource { tiler, google, outlook }
 
+/// The server's spelling of a provider. The enum says `outlook`; every
+/// Tiler endpoint (search, integrations, sign-in, sub-events) says
+/// `microsoft`. Send [wireName], never [TileSource.name].
+extension TileSourceWire on TileSource {
+  String get wireName => switch (this) {
+        TileSource.tiler => 'tiler',
+        TileSource.google => 'google',
+        TileSource.outlook => 'microsoft',
+      };
+}
+
+/// Normalises a source string a caller may have built from
+/// [TileSource.name] (`outlook`) to the wire spelling (`microsoft`). Any
+/// other value — already wire vocabulary, or empty — passes through
+/// lower-cased.
+String tileSourceWireName(String raw) {
+  final String lower = raw.trim().toLowerCase();
+  return lower == TileSource.outlook.name ? TileSource.outlook.wireName : lower;
+}
+
+/// The inverse of [tileSourceWireName]: maps a source string the server sends
+/// (the wire spelling `microsoft`, or the legacy enum name `outlook`) back to
+/// a [TileSource]. Anything it does not recognise — including empty — maps to
+/// null, matching the old `byName`-and-swallow behaviour for unknown values.
+TileSource? tileSourceFromWireName(String raw) {
+  switch (raw.trim().toLowerCase()) {
+    case 'tiler':
+      return TileSource.tiler;
+    case 'google':
+      return TileSource.google;
+    case 'outlook':
+    case 'microsoft':
+      return TileSource.outlook;
+    default:
+      return null;
+  }
+}
+
 class TilerEvent extends TilerObj with TimeRange {
   String? name;
   String? address;
@@ -102,11 +140,11 @@ class TilerEvent extends TilerObj with TimeRange {
     String? thirdpartyTypeRaw =
         json['thirdpartyType'] ?? json['thirdPartyType'];
     if (thirdpartyTypeRaw != null) {
-      try {
-        thirdpartyType = TileSource.values.byName(thirdpartyTypeRaw);
-      } catch (e) {
-        thirdpartyType = null;
-      }
+      // The server spells Outlook `microsoft`; the enum says `outlook`. Map the
+      // wire name back (the inverse of [tileSourceWireName]) — `byName` threw
+      // on `microsoft`, so a Microsoft event's source was dropping to null and
+      // its sub-event could not be found on edit.
+      thirdpartyType = tileSourceFromWireName(thirdpartyTypeRaw);
     }
     if (json.containsKey('thirdPartyUserId') &&
         json['thirdPartyUserId'] != null) {

@@ -62,6 +62,12 @@ String restrictionProfileSummary(
       return l10n.addTileRestrictionAllDayWindow(
           days, l10n.addTileRestrictionAllDay);
     }
+    // D75: an overnight window says so, or "Sun – Mon · 9 PM – 2 AM" reads
+    // as one stretch from Sunday evening to Monday morning.
+    if (g.wrapsToNextDay) {
+      return l10n.addTileRestrictionWindowNextDay(days,
+          material.formatTimeOfDay(g.start), material.formatTimeOfDay(g.end));
+    }
     return l10n.addTileRestrictionWindow(days,
         material.formatTimeOfDay(g.start), material.formatTimeOfDay(g.end));
   }).join(', ');

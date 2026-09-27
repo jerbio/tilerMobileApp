@@ -22,7 +22,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
-import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
@@ -264,8 +264,7 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets(
-        'pinching past the zoom limit does NOT keep scrolling the grid',
+    testWidgets('pinching past the zoom limit does NOT keep scrolling the grid',
         (tester) async {
       _setSurface(tester);
       // A SHORT viewport (540 x 500): at the 40 px/h floor the day (960px)
@@ -519,11 +518,11 @@ void main() {
         // scale recognizer).
         await tester.tapAt(const Offset(200, 320));
         await tester.pump();
-        // Advance the fake clock past AddTile's 700ms auto-result Timer so
+        // Advance the fake clock past AddTileEntry's 700ms auto-result Timer so
         // its callback runs and is consumed (same idiom as the tap-to-add
         // suite).
         await tester.pump(const Duration(milliseconds: 750));
-        expect(find.byType(AddTile), findsOneWidget);
+        expect(find.byType(AddTileEntry), findsOneWidget);
 
         await _closeBloc(tester, bloc);
         controller.dispose();

@@ -22,6 +22,7 @@ import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
 import 'package:tiler_app/bloc/dayContentFilter/day_content_filter_cubit.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/dayGridPageBody.dart';
 import 'package:tiler_app/components/dayGridTopChromeRow.dart';
@@ -58,6 +59,8 @@ Widget _buildHarness({
         BlocProvider.value(value: cubit),
         BlocProvider.value(value: dateBloc),
         BlocProvider(create: (_) => ScheduleBloc(getContextCallBack: () => null)),
+        BlocProvider(
+            create: (_) => ScheduleSummaryBloc(getContextCallBack: () => null)),
         BlocProvider(create: (_) => DayContentFilterCubit()),
       ],
       child: Scaffold(

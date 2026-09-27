@@ -1564,6 +1564,18 @@ abstract class AppLocalizations {
   /// **'Your day is clear.'**
   String get todayStatusClearDay;
 
+  /// No description provided for @todayStatusClearDayHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Light day, nothing urgent.'**
+  String get todayStatusClearDayHeadline;
+
+  /// No description provided for @todayStatusClearDaySubtext.
+  ///
+  /// In en, this message translates to:
+  /// **'Make Tiler work for you.'**
+  String get todayStatusClearDaySubtext;
+
   /// No description provided for @todayStatusPreviewCta.
   ///
   /// In en, this message translates to:
@@ -6836,11 +6848,17 @@ abstract class AppLocalizations {
   /// **'{start} – {end}'**
   String addTileHoursPresetWindow(String start, String end);
 
-  /// No description provided for @addTileHoursEndBeforeStart.
+  /// Hint under an overnight hours row: the end is on the following weekday.
   ///
   /// In en, this message translates to:
-  /// **'End cannot be before start'**
-  String get addTileHoursEndBeforeStart;
+  /// **'Ends {day} at {time}'**
+  String addTileHoursEndsNextDay(String day, String time);
+
+  /// An hours-summary group whose window ends on the following day.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} · {start} – {end} (next day)'**
+  String addTileRestrictionWindowNextDay(String days, String start, String end);
 
   /// No description provided for @addTileRestrictionAllDay.
   ///

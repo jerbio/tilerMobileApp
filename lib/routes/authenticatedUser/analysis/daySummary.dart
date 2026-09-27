@@ -237,7 +237,14 @@ class _DaySummaryState extends State<DaySummary> {
                         MaterialPageRoute(
                             builder: (context) => TodayStatusScreen(
                                   timeline: timeline,
-                                )));
+                                ))).then((_) {
+                      // Today Status can complete/edit tiles for this day;
+                      // refresh this row's counts instead of waiting on the
+                      // next poll.
+                      if (!context.mounted) return;
+                      context.read<ScheduleSummaryBloc>().add(
+                          GetScheduleDaySummaryEvent(timeline: timeline));
+                    });
                   },
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,

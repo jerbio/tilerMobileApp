@@ -2,7 +2,8 @@
 //
 // Seven day rows (switch, start, end, copy/paste) over a `RestrictionHoursDraft`,
 // four quick presets that rewrite the rows (D69), platform time pickers
-// (D42), an end that must follow its start (D70), and two modes:
+// (D42), overnight windows that wrap into the next day with a hint saying
+// so (D75 — nothing is invalid), and two modes:
 //
 //   * AD-HOC — Done returns the tile's own hours (D68); every day off is
 //     Anytime (a null profile);
@@ -111,7 +112,7 @@ class AddTileCustomHoursScreenState extends State<AddTileCustomHoursScreen> {
         null => l10n.addTileCustomHoursTitle,
       };
 
-  bool get _doneEnabled => draft.isValid && !_saving;
+  bool get _doneEnabled => !_saving;
 
   Future<void> _pick(int day, {required bool start}) async {
     final RestrictionHoursDay row = draft.days[day];
@@ -314,7 +315,9 @@ class AddTileCustomHoursScreenState extends State<AddTileCustomHoursScreen> {
       TextTheme textTheme, MaterialLocalizations material) {
     final RestrictionHoursDay row = draft.days[day];
     final String dayName = hoursDayName(l10n, day);
-    final bool invalid = draft.invalidDays.contains(day);
+    // D75: the end of an overnight window is on the FOLLOWING weekday,
+    // Saturday wrapping to Sunday.
+    final String nextDayName = hoursDayName(l10n, (day + 1) % 7);
     final int? copied = draft.copiedDay;
     final bool isSource = copied == day;
     final bool canPaste = copied != null && !isSource;
@@ -330,9 +333,7 @@ class AddTileCustomHoursScreenState extends State<AddTileCustomHoursScreen> {
       decoration: BoxDecoration(
         color: tokens.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: invalid ? tokens.danger : tokens.cardBorder,
-            width: invalid ? 1.5 : 1),
+        border: Border.all(color: tokens.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,7 +424,7 @@ class AddTileCustomHoursScreenState extends State<AddTileCustomHoursScreen> {
           }),
           // D74: equal start and end is the whole day — say so, since two
           // identical times read as a mistake otherwise.
-          if (row.enabled && !invalid && row.isAllDay)
+          if (row.enabled && row.isAllDay)
             Padding(
               key: ValueKey('hoursAllDay_$day'),
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
@@ -431,12 +432,18 @@ class AddTileCustomHoursScreenState extends State<AddTileCustomHoursScreen> {
                   style: textTheme.bodySmall?.copyWith(
                       color: tokens.brand, fontWeight: FontWeight.w500)),
             ),
-          if (invalid)
+          // D75: "Ends Tuesday at 2:00 AM" — the one hint that keeps a
+          // 9 AM / 9 PM slip from silently becoming a 22-hour window.
+          if (row.enabled && row.wrapsToNextDay)
             Padding(
-              key: ValueKey('hoursInvalid_$day'),
+              key: ValueKey('hoursNextDay_$day'),
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
-              child: Text(l10n.addTileHoursEndBeforeStart,
-                  style: textTheme.bodySmall?.copyWith(color: tokens.danger)),
+              child: Text(
+                  l10n.addTileHoursEndsNextDay(
+                      nextDayName, material.formatTimeOfDay(row.end)),
+                  style: textTheme.bodySmall?.copyWith(
+                      color: tokens.textSecondary,
+                      fontWeight: FontWeight.w500)),
             ),
         ],
       ),

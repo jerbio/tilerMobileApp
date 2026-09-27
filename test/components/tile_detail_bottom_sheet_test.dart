@@ -11,7 +11,7 @@ import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 
@@ -19,9 +19,7 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 /// true the range straddles the current time (so `isCurrentTimeWithin` is
 /// true and the time scrub should render); otherwise it is a future event.
 SubCalendarEvent _event(
-    {bool active = false,
-    String? name = 'Test Event',
-    String? address}) {
+    {bool active = false, String? name = 'Test Event', String? address}) {
   final now = DateTime.now();
   final start = active
       ? now.subtract(const Duration(minutes: 30))
@@ -61,17 +59,17 @@ Widget _harness(
   );
 }
 
-/// The pushed EditTile route reads the schedule providers, so the tap-out
+/// The pushed EditTileRoute route reads the schedule providers, so the tap-out
 /// tests provide one above the MaterialApp (like the grid's sheet tests).
 class _NoopScheduleBloc extends ScheduleBloc {
   _NoopScheduleBloc() : super(getContextCallBack: () => null);
 }
 
-/// No-op [SubCalendarTileBloc]. [EditTile.initState] dispatches
+/// No-op [SubCalendarTileBloc]. [EditTileRoute.initState] dispatches
 /// [GetSubCalendarTileBlocEvent] on the bloc in scope; the real handler would
 /// issue an API fetch that never settles in a widget test, leaving
 /// [Bloc.close] (called in teardown) hanging. Overriding [add] swallows the
-/// event so the pushed [EditTile] route can build and be asserted on.
+/// event so the pushed [EditTileRoute] route can build and be asserted on.
 class _NoopTileBloc extends SubCalendarTileBloc {
   _NoopTileBloc() : super(getContextCallBack: () => null);
 
@@ -83,11 +81,11 @@ class _NoopTileBloc extends SubCalendarTileBloc {
 
 /// Records routes pushed onto the harness navigator.
 ///
-/// The sheet's tap-out opens the real [EditTile] route. We assert on that
-/// route *without pumping*, so [EditTile]'s [State.initState] (which performs
+/// The sheet's tap-out opens the real [EditTileRoute] route. We assert on that
+/// route *without pumping*, so [EditTileRoute]'s [State.initState] (which performs
 /// non-injectable credential/tile fetches that cannot settle inside a widget
 /// test) never runs. The pushed route's `builder` is invoked manually to read
-/// the resulting [EditTile] widget (constructing a widget does not run
+/// the resulting [EditTileRoute] widget (constructing a widget does not run
 /// `initState`), after which the route is popped.
 class _RouteSpy extends NavigatorObserver {
   final List<Route<dynamic>> pushed = <Route<dynamic>>[];
@@ -108,8 +106,8 @@ void main() {
       ));
       await tester.pump();
 
-      final size = tester
-          .getSize(find.byKey(const ValueKey('enhancedTileCardCompactOpacity')));
+      final size = tester.getSize(
+          find.byKey(const ValueKey('enhancedTileCardCompactOpacity')));
       // height = compactListTileHeight + vertical margin (4 * 2).
       expect(size.height, TileDimensions.compactListTileHeight + 8);
 
@@ -145,8 +143,8 @@ void main() {
 
       // ...but tapping it routes through onTileTap (the caller wires this to
       // open the detail bottom sheet).
-      await tester.tap(
-          find.byKey(const ValueKey('enhancedTileCardCompactOpacity')));
+      await tester
+          .tap(find.byKey(const ValueKey('enhancedTileCardCompactOpacity')));
       await tester.pump();
 
       expect(tapCount, 1);
@@ -163,8 +161,8 @@ void main() {
       await tester.pump(); // frame 2: that setState renders the scrub
 
       // The active tile is taller than a plain compact tile (header + scrub).
-      final size = tester
-          .getSize(find.byKey(const ValueKey('enhancedTileCardCompactOpacity')));
+      final size = tester.getSize(
+          find.byKey(const ValueKey('enhancedTileCardCompactOpacity')));
       expect(size.height, TileDimensions.compactListTileHeightActive + 8);
 
       // ...and carries an inline time-scrub strip so it's easy to spot...
@@ -187,9 +185,8 @@ void main() {
       await tester.pump(); // frame 2: render the scrub strip
 
       final nameLeft = tester.getTopLeft(find.text('Test Event')).dx;
-      final trackLeft = tester
-          .getTopLeft(find.byKey(const ValueKey('timeScrubTrack')))
-          .dx;
+      final trackLeft =
+          tester.getTopLeft(find.byKey(const ValueKey('timeScrubTrack'))).dx;
 
       // The scrub's leading edge is flush with the name's leading edge.
       expect(trackLeft, closeTo(nameLeft, 1.0));
@@ -209,9 +206,8 @@ void main() {
       await tester.pump(); // frame 1: scrub post-frame callback
       await tester.pump(); // frame 2: render the scrub strip
 
-      final trackRight = tester
-          .getTopRight(find.byKey(const ValueKey('timeScrubTrack')))
-          .dx;
+      final trackRight =
+          tester.getTopRight(find.byKey(const ValueKey('timeScrubTrack'))).dx;
       final badgeRight = tester
           .getTopRight(
             find.byKey(const ValueKey('compactTileLocationButton')),
@@ -234,8 +230,8 @@ void main() {
       // and on the same row as, the name.
       await tester.pumpWidget(_harness(
         Center(
-          child:
-              EnhancedTileCard(subEvent: _event(address: '123 Main St'), compact: true),
+          child: EnhancedTileCard(
+              subEvent: _event(address: '123 Main St'), compact: true),
         ),
       ));
       await tester.pump();
@@ -269,7 +265,8 @@ void main() {
       // Active event (straddles "now") => time scrub present.
       await tester.pumpWidget(
           _harness(TileDetailBottomSheet(subEvent: _event(active: true))));
-      await tester.pump(); // frame 1: TimeScrub initState schedules a post-frame
+      await tester
+          .pump(); // frame 1: TimeScrub initState schedules a post-frame
       await tester.pump(); // frame 2: that post-frame setState renders
       expect(find.byType(PlayBack), findsOneWidget);
       expect(find.byType(TimeScrubWidget), findsOneWidget);
@@ -299,7 +296,7 @@ void main() {
         providers: [
           BlocProvider<ScheduleBloc>.value(value: scheduleBloc),
           // Explicitly typed as [SubCalendarTileBloc] (not _NoopTileBloc) so
-          // EditTile's `context.read<SubCalendarTileBloc>()` resolves.
+          // EditTileRoute's `context.read<SubCalendarTileBloc>()` resolves.
           BlocProvider<SubCalendarTileBloc>(create: (_) => tileBloc),
         ],
         child: _harness(child, navigatorObservers: [spy]),
@@ -327,7 +324,7 @@ void main() {
       expect(find.byType(TileDetailBottomSheet), findsOneWidget);
     }
 
-    testWidgets('tapping the sheet opens EditTile and closes the sheet',
+    testWidgets('tapping the sheet opens EditTileRoute and closes the sheet',
         (tester) async {
       final spy = _RouteSpy();
       final event = _event(); // Tiler tile, id 'evt-1'
@@ -344,18 +341,18 @@ void main() {
       // affordance; visible content is what a user actually taps.
       await tester.tap(find.text('Test Event'));
       // _openEditFlow ran during the tap (synchronously): it popped the sheet
-      // and pushed the EditTile route. We deliberately do NOT pump, so the
-      // pushed EditTile (whose initState issues non-injectable credential/tile
+      // and pushed the EditTileRoute route. We deliberately do NOT pump, so the
+      // pushed EditTileRoute (whose initState issues non-injectable credential/tile
       // fetches) never builds. Read the route's target widget directly.
       final route = spy.pushed.last as MaterialPageRoute;
-      final EditTile edit =
-          route.builder(route.navigator!.context) as EditTile;
+      final EditTileRoute edit =
+          route.builder(route.navigator!.context) as EditTileRoute;
       expect(edit.tileId, 'evt-1');
 
       // Pop the (unbuilt) route so the test tears down cleanly.
       route.navigator!.pop();
       await tester.pump();
-      expect(find.byType(EditTile), findsNothing);
+      expect(find.byType(EditTileRoute), findsNothing);
     });
 
     testWidgets('a third-party tile resolves the edit id from thirdpartyId',
@@ -371,10 +368,10 @@ void main() {
       // Tap the event name — a deterministic inner content node (see the
       // tap-out test above for why a corner tap is not used).
       await tester.tap(find.text('Test Event'));
-      // Read the pushed EditTile route without pumping (see the test above).
+      // Read the pushed EditTileRoute route without pumping (see the test above).
       final route = spy.pushed.last as MaterialPageRoute;
-      final EditTile edit =
-          route.builder(route.navigator!.context) as EditTile;
+      final EditTileRoute edit =
+          route.builder(route.navigator!.context) as EditTileRoute;
       expect(edit.tileId, 'gp-42');
       expect(edit.tileSource, TileSource.google);
 
@@ -386,7 +383,8 @@ void main() {
       final spy = _RouteSpy();
       await _openSheet(tester, _event(), preview: true, spy: spy);
 
-      expect(find.byKey(TileDetailBottomSheet.sheetEditTargetKey), findsNothing);
+      expect(
+          find.byKey(TileDetailBottomSheet.sheetEditTargetKey), findsNothing);
       // Tap an inner content node (event name). The preview sheet has no edit
       // affordance, so this is a no-op and the read-only sheet stays open.
       await tester.tap(find.text('Test Event'));
@@ -395,7 +393,7 @@ void main() {
 
       // A preview (read-only) sheet has no edit affordance and disabled playback
 // controls, so tapping it opens no edit route and leaves the sheet open.
-      expect(find.byType(EditTile), findsNothing);
+      expect(find.byType(EditTileRoute), findsNothing);
       expect(find.byType(TileDetailBottomSheet), findsOneWidget,
           reason: 'a read-only sheet stays open');
     });

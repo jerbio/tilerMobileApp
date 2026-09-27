@@ -71,7 +71,8 @@ class EditTileRoute extends StatelessWidget {
       context,
       EditTileRedesignRouteArgs(
         tileId: tileId,
-        source: tileSource?.name,
+        // The server's spelling (`microsoft`), not the enum's (`outlook`).
+        source: tileSource?.wireName,
         thirdPartyUserId: thirdPartyUserId,
       ),
     );

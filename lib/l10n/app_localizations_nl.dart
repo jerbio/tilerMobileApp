@@ -817,6 +817,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get todayStatusClearDay => 'Uw dag is vrij.';
 
   @override
+  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+
+  @override
+  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+
+  @override
   String get todayStatusPreviewCta => 'Bekijk een beter plan';
 
   @override
@@ -3916,7 +3922,15 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get addTileHoursEndBeforeStart => 'Einde kan niet vóór begin zijn';
+  String addTileHoursEndsNextDay(String day, String time) {
+    return 'Ends $day at $time';
+  }
+
+  @override
+  String addTileRestrictionWindowNextDay(
+      String days, String start, String end) {
+    return '$days · $start – $end (next day)';
+  }
 
   @override
   String get addTileRestrictionAllDay => 'De hele dag';

@@ -108,7 +108,11 @@ class _WeeklyTileListState extends TileListState {
                     timeline: timeline,
                   ),
                 ),
-              );
+              ).then((_) {
+                // Today Status can complete/edit tiles for this day; refresh
+                // this icon's counts instead of waiting on the next poll.
+                if (mounted) refreshScheduleSummary(lookupTimeline: timeline);
+              });
             },
             child: Center(
               child: Container(

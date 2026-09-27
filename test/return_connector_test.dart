@@ -61,6 +61,25 @@ void main() {
     );
   }
 
+  group(
+      'ReturnConnector without a last tile (End of Day ahead of the first '
+      'tile, 2026-09-19)', () {
+    testWidgets('renders the End of Day marker and no travel section',
+        (tester) async {
+      await tester.pumpWidget(_wrap(ReturnConnector(
+          lastTile: null,
+          endOfDayTime: DateTime(2026, 9, 21, 3, 30),
+          hasSubsequentTiles: true)));
+      await tester.pump();
+      expect(find.text('End of Day'), findsOneWidget);
+      expect(find.textContaining('3:30'), findsOneWidget);
+      expect(find.byIcon(Icons.wb_twilight), findsOneWidget);
+      expect(find.byIcon(Icons.navigation_outlined), findsNothing,
+          reason: 'no return-home leg without a tile to return from');
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   // ---------------------------------------------------------------------------
   // Group 1: End-of-day section always renders
   // ---------------------------------------------------------------------------
