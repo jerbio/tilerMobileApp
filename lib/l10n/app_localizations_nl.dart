@@ -4138,6 +4138,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get commentsAttachmentUploaded => 'Geüpload';
 
   @override
+  String get commentsAttachmentQueued => 'In wachtrij';
+
+  @override
   String commentsAttachmentUploadingSummary(int count) {
     return 'Bestanden worden geüpload ($count resterend). Houd deze pagina open.';
   }
@@ -4162,7 +4165,18 @@ class AppLocalizationsNl extends AppLocalizations {
       'Het bestand kon niet worden gedownload.';
 
   @override
-  String get commentsAttachmentSaved => 'Het bestand is opgeslagen.';
+  String get commentsAttachmentDownloading => 'Downloaden…';
+
+  @override
+  String commentsAttachmentSaved(String name) {
+    return 'Opgeslagen: $name';
+  }
+
+  @override
+  String get commentsAttachmentOpen => 'Openen';
+
+  @override
+  String get commentsAttachmentOpenFailed => 'Kon het bestand niet openen.';
 
   @override
   String get commentsAttachmentInvalidType =>

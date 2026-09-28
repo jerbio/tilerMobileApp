@@ -4145,6 +4145,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get commentsAttachmentUploaded => 'Enviado';
 
   @override
+  String get commentsAttachmentQueued => 'Na fila';
+
+  @override
   String commentsAttachmentUploadingSummary(int count) {
     return 'Enviando arquivos ($count restantes). Mantenha esta página aberta.';
   }
@@ -4169,7 +4172,19 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não foi possível baixar o arquivo.';
 
   @override
-  String get commentsAttachmentSaved => 'O ficheiro foi guardado.';
+  String get commentsAttachmentDownloading => 'A transferir…';
+
+  @override
+  String commentsAttachmentSaved(String name) {
+    return 'Guardado: $name';
+  }
+
+  @override
+  String get commentsAttachmentOpen => 'Abrir';
+
+  @override
+  String get commentsAttachmentOpenFailed =>
+      'Não foi possível abrir o ficheiro.';
 
   @override
   String get commentsAttachmentInvalidType =>

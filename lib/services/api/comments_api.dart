@@ -41,6 +41,26 @@ class CommentsApi extends AppApi {
     return oneLine.length > 500 ? '${oneLine.substring(0, 500)}…' : oneLine;
   }
 
+  /// Builds a user-facing error message from [e] without ever leaking raw
+  /// exception types, stack traces, ids, or URLs. A [TilerError] that already
+  /// carries a localized message is passed through; network-level failures
+  /// (DNS lookup, refused/closed socket, read timeout) map to a friendly
+  /// "no connection" message; anything else falls back to the generic server
+  /// message. The raw exception is intentionally kept out of the thrown
+  /// [TilerError] so it never reaches the UI verbatim.
+  String _friendlyMessage(Object e) {
+    final translations = LocalizationService.instance.translations;
+    if (e is TilerError && e.Message != null && e.Message!.isNotEmpty) {
+      return e.Message!;
+    }
+    if (e is http.ClientException ||
+        e is SocketException ||
+        e is TimeoutException) {
+      return translations.noInternetConnection;
+    }
+    return translations.reachingServerIssues;
+  }
+
   Future<void> _requireHeaders() async {
     bool userIsAuthenticated =
         (await this.authentication.isUserAuthenticated()).item1;
@@ -84,17 +104,27 @@ class CommentsApi extends AppApi {
     });
   }
 
-  /// PUT/POST with the shared timeout; anything that is not a PUT is a POST
-  /// (mirrors the previous inline ternary).
+  /// PUT/POST/DELETE with the shared timeout. [method] is the logical HTTP
+  /// verb and must be forwarded as that verb — the server's attribute routing
+  /// dispatches on the real method, so sending a DELETE as a POST (or any
+  /// other substitution) lands on the wrong action and fails with a generic
+  /// bad-request envelope.
   Future<http.Response> _sendRequest(
     Uri uri,
     String method,
     String encodedBody,
     Map<String, String> header,
   ) {
-    Future<http.Response> send() => method == 'PUT'
-        ? httpClient.put(uri, headers: header, body: encodedBody)
-        : httpClient.post(uri, headers: header, body: encodedBody);
+    Future<http.Response> send() {
+      switch (method) {
+        case 'PUT':
+          return httpClient.put(uri, headers: header, body: encodedBody);
+        case 'DELETE':
+          return httpClient.delete(uri, headers: header, body: encodedBody);
+        default:
+          return httpClient.post(uri, headers: header, body: encodedBody);
+      }
+    }
     return send().timeout(AppApi.requestTimeout, onTimeout: () {
       throw TilerError(
           Message:
@@ -161,8 +191,7 @@ class CommentsApi extends AppApi {
       rethrow;
     } catch (e, st) {
       debugPrint('[CommentsApi] GET $uri failed: $e\n$st');
-      throw TilerError(
-          Message: 'Issues with reaching Tiler servers (${e.toString()})');
+      throw TilerError(Message: _friendlyMessage(e));
     }
   }
 
@@ -209,8 +238,7 @@ class CommentsApi extends AppApi {
     } on TilerError {
       rethrow;
     } catch (e) {
-      throw TilerError(
-          Message: 'Issues with reaching Tiler servers (${e.toString()})');
+      throw TilerError(Message: _friendlyMessage(e));
     }
   }
 
@@ -347,11 +375,37 @@ class CommentsApi extends AppApi {
 
   // ---------------------------------------------------------- attachments
 
+  /// Server-side allowlist for attachment uploads, keyed by the lowercased
+  /// filename extension. The server validates the file part's declared
+  /// Content-Type against exactly this list (to block executable payloads),
+  /// so the part must be declared with the matching media type — never a
+  /// generic `application/octet-stream`. Keep in sync with
+  /// `CommentsBloc.allowedExtensions` and the server's allowlist.
+  static final Map<String, http.MediaType> _attachmentContentTypes = {
+    'pdf': http.MediaType('application', 'pdf'),
+    'docx': http.MediaType(
+        'application', 'vnd.openxmlformats-officedocument.wordprocessingml.document'),
+    'png': http.MediaType('image', 'png'),
+    'jpeg': http.MediaType('image', 'jpeg'),
+    'jpg': http.MediaType('image', 'jpeg'),
+  };
+
+  /// The Content-Type the server requires for a file with [fileName], or
+  /// `null` when the extension is not on the allowlist.
+  static http.MediaType? attachmentContentType(String fileName) {
+    final dot = fileName.lastIndexOf('.');
+    if (dot < 0 || dot == fileName.length - 1) return null;
+    return _attachmentContentTypes[fileName.substring(dot + 1).toLowerCase()];
+  }
+
   /// Uploads one file to the attachment quarantine (multipart).
   ///
   /// The multipart **field order matters**: the backend streams parts in
   /// order and the file must be **last**:
   /// 1. `targetType`  2. `targetId`  3. `retryKey` (optional)  4. `file`.
+  /// The file part must be declared with the allowlisted Content-Type for
+  /// its extension (see [_attachmentContentTypes]); throws [TilerError] for
+  /// disallowed extensions.
   /// Returns the uploaded [Attachment]; its [Attachment.state] is `ready`
   /// (scan passed) or `rejected` (failed the allowlist/scan).
   Future<Attachment> uploadAttachment({
@@ -365,8 +419,14 @@ class CommentsApi extends AppApi {
     final uri = Uri.https(Constants.tilerDomain, 'api/CommentAttachments');
     final request = http.MultipartRequest('POST', uri);
     request.headers.addAll(header);
+    // `MultipartRequest.finalize()` only writes the multipart Content-Type
+    // (with boundary) when one is not already set, but getHeaders() pins
+    // `application/json`. Without removing it the server receives a multipart
+    // body declared as JSON and rejects it with 400
+    // ("check if the request body is in the correct format...").
+    request.headers.remove(HttpHeaders.contentTypeHeader);
     // The backend streams multipart parts in order, so the field order
-    // matters: targetType â†’ targetId â†’ retryKey (optional) â†’ file (last).
+    // matters: targetType → targetId → retryKey (optional) → file (last).
     request.fields['targetType'] = targetType;
     request.fields['targetId'] = targetId;
     if (retryKey != null && retryKey.isNotEmpty) {
@@ -376,14 +436,32 @@ class CommentsApi extends AppApi {
     final fileName = file.uri.pathSegments.isNotEmpty
         ? file.uri.pathSegments.last
         : 'attachment';
-    request.files.add(await http.MultipartFile('file', file.openRead(),
-        file.lengthSync(), filename: fileName));
+    final fileContentType = attachmentContentType(fileName);
+    if (fileContentType == null) {
+      debugPrint(
+          '[CommentsApi] uploadAttachment: disallowed extension for $fileName');
+      throw TilerError(Message: 'Unsupported file type');
+    }
+    debugPrint('[CommentsApi] uploadAttachment: POST $uri '
+        'targetType=$targetType targetId=$targetId retryKey=$retryKey '
+        'file=$fileName type=$fileContentType bytes=${file.lengthSync()}');
+    request.files.add(await http.MultipartFile(
+      'file',
+      file.openRead(),
+      file.lengthSync(),
+      filename: fileName,
+      contentType: fileContentType,
+    ));
 
     try {
       final streamed =
           await request.send().timeout(const Duration(minutes: 10));
+      debugPrint(
+          '[CommentsApi] uploadAttachment: response status=${streamed.statusCode}');
       if (streamed.statusCode >= 400) {
         final bodyText = await streamed.stream.bytesToString();
+        debugPrint('[CommentsApi] uploadAttachment: HTTP error body: '
+            '${_snippet(bodyText)}');
         try {
           final decoded = jsonDecode(bodyText);
           if (decoded is Map<String, dynamic> &&
@@ -403,20 +481,26 @@ class CommentsApi extends AppApi {
         throw TilerError(Message: 'Issues with reaching Tiler servers');
       }
       final bodyText = await streamed.stream.bytesToString();
+      debugPrint('[CommentsApi] uploadAttachment: response body: '
+          '${_snippet(bodyText)}');
       final decoded = jsonDecode(bodyText);
       final content = _unwrapEnvelope(decoded is Map<String, dynamic>
           ? decoded
           : const <String, dynamic>{});
       final attachmentJson = content['attachment'];
       if (attachmentJson is Map<String, dynamic>) {
-        return Attachment.fromJson(attachmentJson);
+        final attachment = Attachment.fromJson(attachmentJson);
+        debugPrint('[CommentsApi] uploadAttachment: ok id=${attachment.id} '
+            'state=${attachment.state}');
+        return attachment;
       }
       throw TilerError(Message: 'Unexpected attachment response');
     } on TilerError {
       rethrow;
-    } catch (e) {
-      throw TilerError(
-          Message: 'Issues with reaching Tiler servers (${e.toString()})');
+    } catch (e, st) {
+      debugPrint('[CommentsApi] uploadAttachment: send/decode failed: '
+          '$e\n$st');
+      throw TilerError(Message: _friendlyMessage(e));
     }
   }
 
@@ -429,13 +513,15 @@ class CommentsApi extends AppApi {
     int maxAttempts = 60,
   }) async {
     var last = await _getAttachmentOnce(attachmentId);
-    for (var attempt = 0; attempt < maxAttempts; attempt++) {
-      if (last.isTerminal) {
-        return last;
-      }
+    var attempt = 0;
+    while (attempt < maxAttempts && !last.isTerminal) {
+      attempt++;
       await Future<void>.delayed(pollInterval);
       last = await _getAttachmentOnce(attachmentId);
     }
+    debugPrint('[CommentsApi] getAttachmentStatus: id=$attachmentId '
+        'after ${attempt + 1} poll(s) state=${last.state} '
+        'terminal=${last.isTerminal}');
     return last;
   }
 
@@ -451,14 +537,24 @@ class CommentsApi extends AppApi {
   }
 
   /// Downloads the bytes of a quarantine or attached file, honouring the
-  /// `Content-Disposition` filename.
+  /// `Content-Disposition` filename. When [onProgress] is provided it is
+  /// called after every streamed chunk with the received byte count and the
+  /// total size from the `Content-Length` header (null when absent).
   Future<({String fileName, List<int> bytes})> downloadAttachment({
     required String attachmentId,
+    void Function(int received, int? total)? onProgress,
   }) async {
-    await _requireHeaders();
+    debugPrint('[DownloadDiag] downloadAttachment START id=$attachmentId');
+    try {
+      await _requireHeaders();
+    } catch (e) {
+      debugPrint('[DownloadDiag] _requireHeaders THREW id=$attachmentId: $e');
+      rethrow;
+    }
     final header = getHeaders()!;
     final uri = Uri.https(Constants.tilerDomain,
         'api/CommentAttachments/$attachmentId/download');
+    debugPrint('[DownloadDiag] GET $uri');
     try {
       final streamed = await httpClient
           .send(http.Request('GET', uri)..headers.addAll(header))
@@ -467,15 +563,25 @@ class CommentsApi extends AppApi {
             Message:
                 LocalizationService.instance.translations.requestTimeout);
       });
+      debugPrint('[DownloadDiag] response status=${streamed.statusCode} '
+          'contentLength=${streamed.headers['content-length']}');
       if (streamed.statusCode >= 400) {
+        final body = await streamed.stream.bytesToString();
+        debugPrint('[DownloadDiag] error body (truncated): '
+            '${body.length > 500 ? body.substring(0, 500) : body}');
         throw TilerError(Message: 'Issues with reaching Tiler servers');
       }
+      final total = int.tryParse(streamed.headers['content-length'] ?? '');
       final bytes = <int>[];
       await for (final chunk in streamed.stream) {
         bytes.addAll(chunk);
+        onProgress?.call(bytes.length, total);
       }
+      debugPrint('[DownloadDiag] stream complete, '
+          '${bytes.length} bytes received');
       var fileName = 'attachment';
       final disposition = streamed.headers['content-disposition'];
+      debugPrint('[DownloadDiag] content-disposition: $disposition');
       if (disposition != null) {
         final match = RegExp('filename\\*?=(?:UTF-8\'\')?"?([^";]+)"?')
             .firstMatch(disposition);
@@ -483,12 +589,13 @@ class CommentsApi extends AppApi {
           fileName = Uri.decodeComponent(match.group(1)!.trim());
         }
       }
+      debugPrint('[DownloadDiag] resolved fileName=$fileName');
       return (fileName: fileName, bytes: bytes);
     } on TilerError {
       rethrow;
-    } catch (e) {
-      throw TilerError(
-          Message: 'Issues with reaching Tiler servers (${e.toString()})');
+    } catch (e, st) {
+      debugPrint('[DownloadDiag] downloadAttachment UNEXPECTED ERROR id=$attachmentId: $e\n$st');
+      throw TilerError(Message: _friendlyMessage(e));
     }
   }
 
@@ -515,8 +622,7 @@ class CommentsApi extends AppApi {
     } on TilerError {
       rethrow;
     } catch (e) {
-      throw TilerError(
-          Message: 'Issues with reaching Tiler servers (${e.toString()})');
+      throw TilerError(Message: _friendlyMessage(e));
     }
   }
 }

@@ -4159,6 +4159,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get commentsAttachmentUploaded => 'Hochgeladen';
 
   @override
+  String get commentsAttachmentQueued => 'In der Warteschlange';
+
+  @override
   String commentsAttachmentUploadingSummary(int count) {
     return 'Dateien werden hochgeladen ($count übrig). Diese Seite offen halten.';
   }
@@ -4183,7 +4186,19 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Datei konnte nicht heruntergeladen werden.';
 
   @override
-  String get commentsAttachmentSaved => 'Die Datei wurde gespeichert.';
+  String get commentsAttachmentDownloading => 'Wird heruntergeladen…';
+
+  @override
+  String commentsAttachmentSaved(String name) {
+    return 'Gespeichert: $name';
+  }
+
+  @override
+  String get commentsAttachmentOpen => 'Öffnen';
+
+  @override
+  String get commentsAttachmentOpenFailed =>
+      'Datei konnte nicht geöffnet werden.';
 
   @override
   String get commentsAttachmentInvalidType =>

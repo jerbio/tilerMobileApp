@@ -66,17 +66,24 @@ class _CommentsSectionState extends State<CommentsSection> {
   }
 
   /// Surfaces toasts and forwards state changes event-driven, never from
-  /// [build]. The "attachment saved" toast is localized here because it is
-  /// a UI string; every other toast shows [CommentsState.error] verbatim.
+  /// [build]. The "attachment saved" and "open failed" toasts are handled
+  /// by the host screen (via [CommentsSection.onStateChange]) because they
+  /// need localized text / an Open action; every other toast shows
+  /// [CommentsState.error] verbatim.
   void _onStateTransition(BuildContext context, CommentsState state) {
     if (!mounted) return;
     if (state.showToast && !_wasShowingToast) {
-      final l10n = AppLocalizations.of(context);
-      widget.onToast(
-        state.toastKind == CommentToastKind.attachmentSaved && l10n != null
-            ? l10n.commentsAttachmentSaved
-            : state.error,
-      );
+      final isHostHandledToast =
+          state.toastKind == CommentToastKind.attachmentSaved ||
+              state.toastKind == CommentToastKind.attachmentOpenFailed;
+      debugPrint('[DownloadDiag] section: toast detected kind='
+          '${state.toastKind} error="${state.error}" '
+          'savedFileName=${state.savedFileName}');
+      if (!isHostHandledToast) {
+        // The host shows the "Saved {name} — Open" / "couldn't open"
+        // SnackBars itself.
+        widget.onToast(state.error);
+      }
       // Consume the toast so the next message can be surfaced again.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) context.read<CommentsBloc>().add(const ClearToastEvent());

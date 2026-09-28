@@ -7190,6 +7190,12 @@ abstract class AppLocalizations {
   /// **'Uploaded'**
   String get commentsAttachmentUploaded;
 
+  /// No description provided for @commentsAttachmentQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Queued'**
+  String get commentsAttachmentQueued;
+
   /// No description provided for @commentsAttachmentUploadingSummary.
   ///
   /// In en, this message translates to:
@@ -7226,11 +7232,29 @@ abstract class AppLocalizations {
   /// **'Couldn\'t download the file.'**
   String get commentsAttachmentDownloadError;
 
-  /// No description provided for @commentsAttachmentSaved.
+  /// No description provided for @commentsAttachmentDownloading.
   ///
   /// In en, this message translates to:
-  /// **'The file was saved.'**
-  String get commentsAttachmentSaved;
+  /// **'Downloading…'**
+  String get commentsAttachmentDownloading;
+
+  /// Confirmation shown after a comment attachment file was saved to the device.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {name}'**
+  String commentsAttachmentSaved(String name);
+
+  /// No description provided for @commentsAttachmentOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get commentsAttachmentOpen;
+
+  /// No description provided for @commentsAttachmentOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the file.'**
+  String get commentsAttachmentOpenFailed;
 
   /// No description provided for @commentsAttachmentInvalidType.
   ///

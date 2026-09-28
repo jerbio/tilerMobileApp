@@ -5,6 +5,23 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
   static const int maxAttachmentBytes = 10 * 1024 * 1024; // 10 MB
   static const List<String> allowedExtensions =
       ['pdf', 'docx', 'png', 'jpg', 'jpeg'];
+
+  /// Leading bytes identifying the real format behind each allowed
+  /// extension (PDF marker, PNG/JPEG markers, ZIP container for DOCX).
+  /// file_picker v11 exposes no MIME type for a picked file and a
+  /// filename-derived MIME would just restate the extension, so the header
+  /// is the only client-side source of truth for what the bytes actually
+  /// are — see [validateSignature].
+  static const Map<String, List<int>> _contentSignatures = {
+    'pdf': [0x25, 0x50, 0x44, 0x46], // "%PDF"
+    'png': [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],
+    'jpg': [0xFF, 0xD8, 0xFF],
+    'jpeg': [0xFF, 0xD8, 0xFF],
+    // DOCX is an OOXML (ZIP) container; PK\x03\x04 is the strongest
+    // header-level check without a full archive parser (it still rules
+    // out executables, scripts and every non-ZIP disguise).
+    'docx': [0x50, 0x4B, 0x03, 0x04],
+  };
   final CommentsApi _api;
   final String _targetType;
   final String _targetId;
@@ -37,9 +54,10 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
     on<ToggleRepliesEvent>(_onToggleReplies);
     on<ComposerTextEvent>(_onComposerText);
     on<SetReplyTargetEvent>(_onSetReplyTarget);
-    on<UploadAttachmentEvent>(_onUploadAttachment);
+    on<AddAttachmentEvent>(_onAddAttachment);
     on<RemoveAttachmentEvent>(_onRemoveAttachment);
     on<DownloadAttachmentEvent>(_onDownloadAttachment);
+    on<OpenAttachmentEvent>(_onOpenAttachment);
     on<ClearToastEvent>(_onClearToast);
   }
   void _onClearToast(ClearToastEvent event, Emitter<CommentsState> emit) {
@@ -56,7 +74,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       return e.Message!;
     }
     // Never surface raw ids/tokens to the user.
-    return 'Issues with reaching Tiler servers';
+    return LocalizationService.instance.translations.reachingServerIssues;
   }
   List<ComposerAttachmentDraft> _replaceDraft(
       List<ComposerAttachmentDraft> drafts, ComposerAttachmentDraft next) {
@@ -294,20 +312,60 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
   Future<void> _onPostComment(
       PostCommentEvent event, Emitter<CommentsState> emit) async {
     final trimmed = event.text.trim();
-    if ((trimmed.isEmpty && event.attachmentIds.isEmpty) ||
+    if ((trimmed.isEmpty && state.attachmentDrafts.isEmpty) ||
         state.isSending ||
         state.hasPendingAttachments) {
       return;
     }
     emit(state.copyWith(isSending: true, clearError: true));
     try {
+      // Uploads happen here, not at pick time: a file only ever reaches the
+      // quarantine (and thus storage) if the comment is actually posted.
+      // Local drafts and drafts whose previous upload failed are retried
+      // with their stored idempotency key.
+      for (final target in state.attachmentDrafts) {
+        if (target.step != ComposerAttachmentStep.local &&
+            target.step != ComposerAttachmentStep.failed) {
+          continue;
+        }
+        emit(state.copyWith(
+          attachmentDrafts: _replaceDraft(
+              state.attachmentDrafts,
+              target.copyWith(
+                  step: ComposerAttachmentStep.uploading,
+                  clearErrorMessage: true)),
+        ));
+        final (updatedDraft, uploadError) = await _uploadDraft(target);
+        if (_disposed) return;
+        emit(state.copyWith(
+          attachmentDrafts: _replaceDraft(
+              state.attachmentDrafts, updatedDraft),
+          error: uploadError.isEmpty ? state.error : uploadError,
+          clearError: !uploadError.isEmpty,
+          showToast: uploadError.isNotEmpty,
+        ));
+        if (!updatedDraft.isClaimable) {
+          // The comment is aborted, but no request has been made yet — do
+          // not park an idempotency key, so a later send mints a fresh one.
+          _pendingPostKey = null;
+          _pendingPostRootId = null;
+          emit(state.copyWith(isSending: false));
+          return;
+        }
+      }
+      // Resolve the claimable ids from the current state so a draft removed
+      // mid-upload is honored.
+      final attachmentIds = state.attachmentDrafts
+          .where((d) => d.isClaimable)
+          .map((d) => d.attachmentId!)
+          .toList();
       final comment = await _api.createComment(
         targetType: _targetType,
         targetId: _targetId,
         text: event.text,
         idempotencyKey: event.idempotencyKey,
         rootCommentId: event.rootCommentId,
-        attachmentIds: event.attachmentIds,
+        attachmentIds: attachmentIds,
         mentionedUserIds: event.mentionedUserIds,
       );
       _pendingPostKey = null;
@@ -425,52 +483,102 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
     }
     return null;
   }
-  Future<void> _onUploadAttachment(
-      UploadAttachmentEvent event, Emitter<CommentsState> emit) async {
+
+  /// Content-level complement of [validateAttachment]: reads the file's
+  /// leading bytes and verifies they match the signature of its extension,
+  /// so a disallowed file renamed to a permitted extension (the picker's
+  /// filter is bypassable on desktop) is rejected at pick time instead of
+  /// failing the server scan at send time. Returns the same 'invalidType'
+  /// code on a mismatch or when the header cannot be read, null on success.
+  static Future<String?> validateSignature(
+      String localPath, String fileName) async {
+    final dot = fileName.lastIndexOf('.');
+    final ext = dot >= 0 ? fileName.substring(dot + 1).toLowerCase() : '';
+    final signature = _contentSignatures[ext];
+    if (signature == null) return 'invalidType';
+    final head = <int>[];
+    try {
+      // Bounded read: only the header bytes are consumed from the stream.
+      await for (final chunk in File(localPath).openRead()) {
+        final take =
+            head.length + chunk.length > 16 ? 16 - head.length : chunk.length;
+        head.addAll(chunk.sublist(0, take));
+        if (head.length == 16) break;
+      }
+    } catch (e) {
+      debugPrint('[CommentsBloc] signature check: cannot read header of '
+          '$fileName: $e');
+      return 'invalidType';
+    }
+    if (head.length < signature.length) return 'invalidType';
+    for (var i = 0; i < signature.length; i++) {
+      if (head[i] != signature[i]) return 'invalidType';
+    }
+    return null;
+  }
+  Future<void> _onAddAttachment(
+      AddAttachmentEvent event, Emitter<CommentsState> emit) async {
+    // Local-only: no network traffic and no server storage until the
+    // comment is actually sent.
     final draft = ComposerAttachmentDraft(
       localPath: event.localPath,
       fileName: event.fileName,
       byteSize: event.byteSize,
       retryKey: event.retryKey,
-      step: ComposerAttachmentStep.uploading,
     );
     emit(state.copyWith(
         attachmentDrafts: [...state.attachmentDrafts, draft]));
+  }
+
+  /// Uploads [draft] into the quarantine and polls until the scan resolves
+  /// to a terminal state. Pure: it reports the updated draft and an error
+  /// message ('' when none) without emitting; the caller applies both to
+  /// the state. [draft.retryKey] keeps the upload idempotent, so a retried
+  /// send never uploads the same file twice.
+  Future<(ComposerAttachmentDraft, String)> _uploadDraft(
+      ComposerAttachmentDraft draft) async {
     try {
       final uploaded = await _api.uploadAttachment(
         targetType: _targetType,
         targetId: _targetId,
-        file: File(event.localPath),
-        retryKey: event.retryKey,
+        file: File(draft.localPath),
+        retryKey: draft.retryKey,
       );
-      if (_disposed) return;
+      if (_disposed) {
+        return (draft, '');
+      }
       // Poll until the scan resolves to a terminal state.
       final resolved =
           await _api.getAttachmentStatus(attachmentId: uploaded.id);
-      if (_disposed) return;
+      if (_disposed) {
+        return (draft, '');
+      }
       final isReady =
           resolved.state == 'ready' || resolved.state == 'attached';
-      emit(state.copyWith(
-        attachmentDrafts: _replaceDraft(state.attachmentDrafts,
-            draft.copyWith(
+      debugPrint('[CommentsBloc] attachment ${draft.fileName} resolved: '
+          'id=${uploaded.id} state=${resolved.state}');
+      return (
+        draft.copyWith(
           attachmentId: uploaded.id,
           step: isReady
               ? ComposerAttachmentStep.ready
               : ComposerAttachmentStep.rejected,
-        )),
-      ));
-    } catch (e) {
+        ),
+        '',
+      );
+    } catch (e, st) {
       // Release-useful: attachment upload failures are otherwise only
       // visible as the generic toast.
-      debugPrint('[CommentsBloc] attachment upload failed: $e');
-      if (_disposed) return;
-      emit(state.copyWith(
-        attachmentDrafts: _replaceDraft(state.attachmentDrafts,
-            draft.copyWith(step: ComposerAttachmentStep.failed)),
-        error: _message(e),
-        clearError: true,
-        showToast: true,
-      ));
+      debugPrint('[CommentsBloc] attachment upload failed '
+          '(file=${draft.fileName} bytes=${draft.byteSize} '
+          'retryKey=${draft.retryKey}): $e\n$st');
+      if (_disposed) {
+        return (draft, '');
+      }
+      return (
+        draft.copyWith(step: ComposerAttachmentStep.failed),
+        _message(e),
+      );
     }
   }
   Future<void> _onRemoveAttachment(
@@ -486,29 +594,278 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
     unawaited(_api.cancelAttachment(attachmentId: attachmentId).catchError(
         (_) => attachmentId));
   }
+  /// Native channel backed by MainActivity's
+  /// `tiler_app/comment_downloads` handler. Android 10+ (scoped storage, and
+  /// this app targets 36) blocks file-path writes to the public Downloads
+  /// folder, so the write happens in Kotlin via MediaStore and returns the
+  /// stored file name.
+  static const MethodChannel _downloadsChannel =
+      MethodChannel('tiler_app/comment_downloads');
+
+  /// In-memory map of attachment id to where its file was stored on this
+  /// device during this session: `'media:<contentUri>'` for the shared
+  /// Android Downloads folder (MediaStore), `'media:<displayName>'` when the
+  /// native side had no URI, or an absolute path for the temp-directory
+  /// fallback. Needed so the SnackBar's Open action can reopen the file
+  /// without downloading it again.
+  final Map<String, String> _savedFiles = {};
+
+  /// Display name per attachment id (for the "Saved {name}" SnackBar and
+  /// the MIME lookup when opening a stored content URI).
+  final Map<String, String> _savedFileNames = {};
+
+  /// Persists [bytes] somewhere the user can actually find: the shared
+  /// Downloads folder on Android (MediaStore) and iOS (path_provider), with a
+  /// temp-directory fallback on unsupported platforms or when the write
+  /// fails. Returns the resolved location and the display name.
+  Future<({String location, String name})> _persistCommentAttachment(
+      List<int> bytes, String safeName) async {
+    debugPrint('[DownloadDiag] persist: start safeName=$safeName '
+        'bytes=${bytes.length} platform=${Platform.operatingSystem}');
+    if (Platform.isAndroid) {
+      try {
+        final saved = await _downloadsChannel.invokeMethod<Map>(
+          'saveToDownloads',
+          {
+            // The standard codec encodes Uint8List as an int list, which the
+            // Kotlin side receives as IntArray.
+            'bytes': bytes,
+            'fileName': safeName,
+            // When a file with the same name and size is already in
+            // Downloads the native side reuses its name instead of
+            // appending "(2)", so re-downloads stay put.
+            'expectedBytes': bytes.length,
+          },
+        );
+        final name = saved?['name']?.toString() ?? '';
+        final uri = saved?['uri']?.toString() ?? '';
+        if (name.isNotEmpty) {
+          // Prefer the exact MediaStore row URI the native side wrote: a
+          // DISPLAY_NAME re-query right after the insert can miss the fresh
+          // row, while the URI stays valid until the user deletes the file.
+          if (uri.startsWith('content://')) {
+            debugPrint('[DownloadDiag] persist: Android MediaStore channel OK, '
+                'name=$name uri=$uri');
+            return (location: 'media:$uri', name: name);
+          }
+          // The native side returns either the MediaStore display name
+          // (no separators) or an absolute fallback path.
+          final isPath = name.contains(Platform.pathSeparator);
+          debugPrint('[DownloadDiag] persist: Android MediaStore channel OK, '
+              'name=$name isPath=$isPath');
+          return isPath
+              ? (location: name,
+                  name: name.split(Platform.pathSeparator).last)
+              : (location: 'media:$name', name: name);
+        }
+        debugPrint(
+            '[CommentsBloc] Downloads channel returned a null name for $safeName; '
+            'falling back to the app temp directory');
+      } catch (e, st) {
+        debugPrint(
+            '[CommentsBloc] Downloads channel failed for $safeName: $e; '
+            'falling back to the app temp directory\n$st');
+      }
+    }
+    debugPrint('[DownloadDiag] persist: using Dart fallback '
+        '(platform=${Platform.operatingSystem})');
+    Directory? targetDir;
+    try {
+      targetDir = await getDownloadsDirectory();
+    } catch (e) {
+      targetDir = null;
+      debugPrint('[DownloadDiag] persist: getDownloadsDirectory threw: $e');
+    }
+    final dir = targetDir ?? (await getTemporaryDirectory());
+    debugPrint('[DownloadDiag] persist: writing to dir=${dir.path} '
+        'isDownloadsDir=${targetDir != null}');
+    final file = File(
+        '${dir.path}${Platform.pathSeparator}comment_${_uuid.v4().substring(0, 8)}_$safeName');
+    await file.writeAsBytes(bytes);
+    debugPrint('[DownloadDiag] persist: wrote ${bytes.length} bytes to '
+        '${file.path} exists=${file.existsSync()} '
+        'size=${file.existsSync() ? file.lengthSync() : -1}');
+    return (location: file.path, name: safeName);
+  }
+
   Future<void> _onDownloadAttachment(
       DownloadAttachmentEvent event, Emitter<CommentsState> emit) async {
-    emit(state.copyWith(clearError: true));
+    debugPrint(
+        '[DownloadDiag] bloc: DownloadAttachmentEvent received '
+        'id=${event.attachmentId} fileName=${event.fileName}');
+    emit(state.copyWith(
+        clearError: true,
+        downloadingFileId: event.attachmentId,
+        downloadProgress: 0.0));
+    int lastPercent = -1;
     try {
-      final result =
-          await _api.downloadAttachment(attachmentId: event.attachmentId);
-      if (_disposed) return;
-      final tempDir = await getTemporaryDirectory();
-      final safeName =
-          result.fileName.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-      final suffix = _uuid.v4().substring(0, 8);
-      final file = File(
-          '${tempDir.path}${Platform.pathSeparator}comment_${suffix}_$safeName');
-      await file.writeAsBytes(result.bytes);
-      // No in-app viewer exists yet; the section surfaces the localized
-      // "attachment saved" toast for this state.
+      final result = await _api.downloadAttachment(
+        attachmentId: event.attachmentId,
+        onProgress: (received, total) {
+          if (_disposed || total == null || total <= 0) return;
+          final fraction = received / total.toDouble();
+          final percent = (fraction * 100).floor();
+          if (percent == lastPercent) return;
+          lastPercent = percent;
+          emit(state.copyWith(
+              downloadingFileId: event.attachmentId,
+              downloadProgress: fraction));
+        },
+      );
+      debugPrint('[DownloadDiag] bloc: download returned '
+          '${result.bytes.length} bytes, fileName=${result.fileName}');
+      if (_disposed) {
+        debugPrint('[DownloadDiag] bloc: disposed after download, aborting');
+        return;
+      }
+      // The server currently does not send a Content-Disposition header, so
+      // the API reports the 'attachment' sentinel — fall back to the
+      // attachment's known display name (keeps the real name + extension).
+      final saved = await _storeDownloaded(
+          result.bytes, result.fileName,
+          attachmentId: event.attachmentId,
+          fallbackName: event.fileName);
+      if (saved == null) return;
+      debugPrint('[CommentsBloc] attachment saved: ${saved.location}');
+      debugPrint('[DownloadDiag] bloc: emitting showToast '
+          '(attachmentSaved) onDeviceName=${saved.name}');
+      // The host screen surfaces the localized "Saved {name}" SnackBar
+      // with an Open action for this state.
       emit(state.copyWith(
           clearError: true,
+          clearDownload: true,
+          savedFileId: event.attachmentId,
+          savedFileName: saved.name,
           showToast: true,
           toastKind: CommentToastKind.attachmentSaved));
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[DownloadDiag] bloc: download FAILED id='
+          '${event.attachmentId} error=$e\n$st');
       if (_disposed) return;
-      emit(state.copyWith(error: _message(e), clearError: true));
+      emit(state.copyWith(
+          clearDownload: true,
+          error: _message(e),
+          showToast: true,
+          toastKind: CommentToastKind.error));
+    }
+  }
+
+  /// Stores the downloaded [bytes] under the display name the server
+  /// reported ([serverFileName]), falling back to the attachment's own
+  /// display name when that is the 'attachment' sentinel. Returns the
+  /// location record (`media:<name>` or absolute path) or null when the
+  /// bloc was disposed mid-write.
+  Future<({String location, String name})?> _storeDownloaded(
+      List<int> bytes, String serverFileName,
+      {required String attachmentId, required String fallbackName}) async {
+    // The server currently does not send a Content-Disposition header, so
+    // the API reports the 'attachment' sentinel — fall back to the
+    // attachment's known display name (keeps the real name + extension).
+    final server = serverFileName.trim();
+    final chosen = (server.isEmpty || server == 'attachment')
+        ? fallbackName.trim()
+        : server;
+    final sanitized = chosen.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+    final name = sanitized.isEmpty ? 'attachment' : sanitized;
+    debugPrint('[DownloadDiag] bloc: safeName=$name');
+    final saved = await _persistCommentAttachment(bytes, name);
+    if (_disposed) {
+      debugPrint('[DownloadDiag] bloc: disposed after persist, aborting');
+      return null;
+    }
+    _savedFiles[attachmentId] = saved.location;
+    _savedFileNames[attachmentId] = saved.name;
+    return saved;
+  }
+
+  /// Opens a previously saved attachment. The in-memory location is used
+  /// when it still exists on disk; otherwise the file is re-downloaded
+  /// (which updates the location map) and opened.
+  Future<void> _onOpenAttachment(
+      OpenAttachmentEvent event, Emitter<CommentsState> emit) async {
+    debugPrint('[DownloadDiag] bloc: OpenAttachmentEvent id='
+        '${event.attachmentId}');
+    final String location = _savedFiles[event.attachmentId] ?? '';
+    if (location.isEmpty ||
+        !(location.startsWith('media:') || File(location).existsSync())) {
+      debugPrint('[DownloadDiag] bloc: stored location unavailable '
+          '($location), re-downloading');
+      final fresh = await _downloadAndPersist(
+          event.attachmentId, event.fileName, emit);
+      if (fresh == null) return;
+      await _openSavedLocation(event.attachmentId, fresh, emit);
+      return;
+    }
+    await _openSavedLocation(event.attachmentId, location, emit);
+  }
+
+  /// Downloads [attachmentId] and stores it; returns the location record
+  /// (`media:<name>` or absolute path) or null when the download failed
+  /// (an error toast was already shown).
+  Future<String?> _downloadAndPersist(String attachmentId, String fileName,
+      Emitter<CommentsState> emit) async {
+    try {
+      final result = await _api.downloadAttachment(attachmentId: attachmentId);
+      if (_disposed) return null;
+      final saved = await _storeDownloaded(result.bytes, result.fileName,
+          attachmentId: attachmentId, fallbackName: fileName);
+      if (saved == null) return null;
+      return saved.location;
+    } catch (e, st) {
+      debugPrint('[DownloadDiag] bloc: open re-download FAILED id='
+          '$attachmentId error=$e\n$st');
+      if (_disposed) return null;
+      emit(state.copyWith(
+          error: _message(e),
+          showToast: true,
+          toastKind: CommentToastKind.error));
+      return null;
+    }
+  }
+
+  /// Launches the system viewer for the attachment stored at [location]:
+  /// the native channel resolves the MediaStore content URI on Android
+  /// (plain file paths are blocked by FileUriExposure), open_filex handles
+  /// the other platforms.
+  Future<void> _openSavedLocation(String attachmentId, String location,
+      Emitter<CommentsState> emit) async {
+    debugPrint('[DownloadDiag] bloc: opening $location');
+    try {
+      if (Platform.isAndroid && location.startsWith('media:')) {
+        final target = location.substring('media:'.length);
+        final isUri = target.startsWith('content://');
+        await _downloadsChannel.invokeMethod<String>('openInDownloads', {
+          // Pass the exact row URI when we have one; the native side opens
+          // it directly and only falls back to a DISPLAY_NAME query when
+          // no activity accepts the URI (e.g. the file was deleted).
+          'fileName': _savedFileNames[attachmentId] ??
+              (isUri ? target.split('/').last : target),
+          if (isUri) 'uri': target,
+        });
+      } else {
+        final openResult = await OpenFilex.open(location);
+        if (openResult.type != ResultType.done) {
+          throw TilerError(
+              Message: openResult.message.isNotEmpty
+                  ? openResult.message
+                  : 'open failed');
+        }
+      }
+      debugPrint('[DownloadDiag] bloc: open ok id=$attachmentId');
+    } catch (e, st) {
+      debugPrint('[DownloadDiag] bloc: open FAILED id=$attachmentId '
+          'location=$location error=$e\n$st');
+      if (_disposed) return;
+      _savedFiles.remove(attachmentId);
+      _savedFileNames.remove(attachmentId);
+      // Use the dedicated open-failed toast kind so the host can show the
+      // localized "couldn't open" message instead of the raw error, which
+      // is often misleading (e.g. MissingPluginException after a native
+      // rebuild is pending is not a server problem).
+      emit(state.copyWith(
+          error: _message(e),
+          showToast: true,
+          toastKind: CommentToastKind.attachmentOpenFailed));
     }
   }
 }

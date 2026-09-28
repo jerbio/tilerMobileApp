@@ -4159,6 +4159,9 @@ class AppLocalizationsEl extends AppLocalizations {
   String get commentsAttachmentUploaded => 'Ανεβάστηκε';
 
   @override
+  String get commentsAttachmentQueued => 'Σε ουρά';
+
+  @override
   String commentsAttachmentUploadingSummary(int count) {
     return 'Μεταφόρτωση αρχείων (μεταφορτώθηκαν $count). Κρατήστε αυτή τη σελίδα ανοιχτή.';
   }
@@ -4183,7 +4186,19 @@ class AppLocalizationsEl extends AppLocalizations {
       'Δεν ήταν δυνατή η λήψη του αρχείου.';
 
   @override
-  String get commentsAttachmentSaved => 'Το αρχείο αποθηκεύτηκε.';
+  String get commentsAttachmentDownloading => 'Λήψη…';
+
+  @override
+  String commentsAttachmentSaved(String name) {
+    return 'Αποθηκεύτηκε: $name';
+  }
+
+  @override
+  String get commentsAttachmentOpen => 'Άνοιγμα';
+
+  @override
+  String get commentsAttachmentOpenFailed =>
+      'Δεν ήταν δυνατό το άνοιγμα του αρχείου.';
 
   @override
   String get commentsAttachmentInvalidType =>

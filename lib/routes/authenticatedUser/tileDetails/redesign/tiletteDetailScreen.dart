@@ -87,13 +87,21 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
           const Divider(height: 1),
           Expanded(
             child: BlocProvider<CommentsBloc>(
-              create: (_) => CommentsBloc(
-                targetType: CommentsApi.tileShareTiletteTargetType,
-                targetId: id,
-                pageSize: 10,
-                getContextCallBack: () => _hostContext,
-              )..add(const LoadThreadEvent()),
+              create: (_) {
+                final bloc = CommentsBloc(
+                  targetType: CommentsApi.tileShareTiletteTargetType,
+                  targetId: id,
+                  pageSize: 10,
+                  getContextCallBack: () => _hostContext,
+                );
+                // Kept for the saved-SnackBar's Open action; cleared when
+                // the panel unmounts.
+                _commentsBloc = bloc;
+                return bloc..add(const LoadThreadEvent());
+              },
+              lazy: false,
               child: CommentsSection(
+                onStateChange: _onCommentsStateChange,
                 onToast: (String message) => _showToast(message),
               ),
             ),
@@ -103,8 +111,72 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
     );
   }
 
+  void _onCommentsStateChange(CommentsState state) {
+    if (!state.showToast) {
+      return;
+    }
+    if (state.toastKind == CommentToastKind.attachmentOpenFailed) {
+      // Localized "couldn't open" confirmation; the raw bloc error (e.g.
+      // MissingPluginException while a native rebuild is pending) is not
+      // user-friendly, so it is only logged above.
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(_hostContext);
+      debugPrint('[DownloadDiag] host: showing open-failed SnackBar');
+      ScaffoldMessenger.of(_hostContext)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+            content: Text(
+                l10n?.commentsAttachmentOpenFailed ?? "Couldn't open the file.")));
+      return;
+    }
+    if (state.toastKind != CommentToastKind.attachmentSaved) {
+      return;
+    }
+    // The saved-file confirmation carries the real on-device name plus an
+    // Open action that re-dispatches through the bloc.
+    final name = state.savedFileName;
+    if (name == null || name.isEmpty) {
+      debugPrint('[DownloadDiag] host: saved toast without savedFileName');
+      return;
+    }
+    final attachmentId = state.savedFileId;
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(_hostContext);
+    if (l10n == null) {
+      _showToast('Saved $name');
+      return;
+    }
+    debugPrint('[DownloadDiag] host: showing saved SnackBar '
+        '("$name") with Open action id=$attachmentId');
+    ScaffoldMessenger.of(_hostContext)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(l10n.commentsAttachmentSaved(name)),
+        action: SnackBarAction(
+          label: l10n.commentsAttachmentOpen,
+          onPressed: () {
+            if (attachmentId == null) return;
+            debugPrint(
+                '[DownloadDiag] host: Open action tapped id=$attachmentId');
+            _commentsBloc
+                ?.add(OpenAttachmentEvent(attachmentId: attachmentId, fileName: name));
+          },
+        ),
+      ));
+  }
+
+  /// The bloc instance while the comments panel is mounted; the Open
+  /// action needs it to dispatch [OpenAttachmentEvent].
+  CommentsBloc? _commentsBloc;
+
   void _showToast(String message) {
-    if (!mounted || message.isEmpty) return;
+    debugPrint('[DownloadDiag] host _showToast called: "$message" '
+        '(mounted=$mounted)');
+    if (!mounted || message.isEmpty) {
+      debugPrint('[DownloadDiag] host _showToast SKIPPED '
+          '(mounted=$mounted, empty=${message.isEmpty})');
+      return;
+    }
     ScaffoldMessenger.of(_hostContext)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));

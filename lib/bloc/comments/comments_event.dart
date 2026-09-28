@@ -17,22 +17,23 @@ class LoadMoreRootsEvent extends CommentsEvent {
 ///
 /// [idempotencyKey] is a UUIDv4 minted by the composer for this logical
 /// action; the bloc stores it so a retry of the same action reuses it.
+///
+/// No attachment ids here: the bloc resolves the current drafts itself and
+/// uploads any still-local ones right before the post, so a file that was
+/// never attached to a sent comment never reaches the server.
 class PostCommentEvent extends CommentsEvent {
   final String text;
   final String? rootCommentId;
   final String idempotencyKey;
-  final List<String> attachmentIds;
   final List<String> mentionedUserIds;
   const PostCommentEvent({
     required this.text,
     this.rootCommentId,
     required this.idempotencyKey,
-    this.attachmentIds = const [],
     this.mentionedUserIds = const [],
   });
   @override
-  List<Object?> get props =>
-      [text, rootCommentId, idempotencyKey, attachmentIds, mentionedUserIds];
+  List<Object?> get props => [text, rootCommentId, idempotencyKey];
 }
 /// Saves an edited comment. [idempotencyKey] follows the same rules as
 /// [PostCommentEvent.idempotencyKey].
@@ -101,13 +102,15 @@ class SetReplyTargetEvent extends CommentsEvent {
   @override
   List<Object?> get props => [rootId];
 }
-/// Starts uploading [localPath] into the quarantine with [retryKey].
-class UploadAttachmentEvent extends CommentsEvent {
+/// Queues a picked file as a local composer draft. No upload happens here —
+/// the file only reaches the quarantine when the comment is actually sent.
+/// [retryKey] is the idempotency key that upload will use later.
+class AddAttachmentEvent extends CommentsEvent {
   final String localPath;
   final String fileName;
   final int byteSize;
   final String retryKey;
-  const UploadAttachmentEvent({
+  const AddAttachmentEvent({
     required this.localPath,
     required this.fileName,
     required this.byteSize,
@@ -130,6 +133,20 @@ class DownloadAttachmentEvent extends CommentsEvent {
   final String attachmentId;
   final String fileName;
   const DownloadAttachmentEvent({
+    required this.attachmentId,
+    required this.fileName,
+  });
+  @override
+  List<Object?> get props => [attachmentId, fileName];
+}
+
+/// Opens an attachment that was previously saved to this device. The bloc
+/// resolves the stored location; when the copy is gone it re-downloads
+/// before opening.
+class OpenAttachmentEvent extends CommentsEvent {
+  final String attachmentId;
+  final String fileName;
+  const OpenAttachmentEvent({
     required this.attachmentId,
     required this.fileName,
   });

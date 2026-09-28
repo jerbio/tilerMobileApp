@@ -117,6 +117,7 @@ dependencies:
   # AppAuth-iOS 1.7.x, keeping both plugins resolvable via SPM.
   flutter_appauth: 9.0.0
   file_picker: ^11.0.3
+  open_filex: ^4.7.0
 
 dev_dependencies:
   build_runner: ^2.4.5

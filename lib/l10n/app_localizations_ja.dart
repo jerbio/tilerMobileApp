@@ -4030,6 +4030,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commentsAttachmentUploaded => 'アップロード済み';
 
   @override
+  String get commentsAttachmentQueued => 'キューに追加済み';
+
+  @override
   String commentsAttachmentUploadingSummary(int count) {
     return 'ファイルをアップロード中（残り$count件）。このページを開いたままにしてください。';
   }
@@ -4053,7 +4056,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commentsAttachmentDownloadError => 'ファイルをダウンロードできませんでした。';
 
   @override
-  String get commentsAttachmentSaved => 'ファイルが保存されました。';
+  String get commentsAttachmentDownloading => 'ダウンロード中…';
+
+  @override
+  String commentsAttachmentSaved(String name) {
+    return '保存しました：$name';
+  }
+
+  @override
+  String get commentsAttachmentOpen => '開く';
+
+  @override
+  String get commentsAttachmentOpenFailed => 'ファイルを開けませんでした。';
 
   @override
   String get commentsAttachmentInvalidType =>

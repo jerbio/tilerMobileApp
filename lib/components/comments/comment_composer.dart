@@ -198,13 +198,19 @@ class _CommentComposerState extends State<CommentComposer> {
         }
         final file = File(path);
         final size = file.existsSync() ? file.lengthSync() : 0;
-        final error = bloc.validateAttachment(
+        var error = bloc.validateAttachment(
             picked.name, size, bloc.state.attachmentDrafts.length);
+        if (error == null) {
+          // The picker only filters by extension (and the filter is
+          // bypassable on desktop); verify the real format from the file
+          // header before queueing the draft.
+          error = await CommentsBloc.validateSignature(path, picked.name);
+        }
         if (error != null) {
           _toast(_validationMessage(l10n, error));
           continue;
         }
-        widget.onEvent(UploadAttachmentEvent(
+        widget.onEvent(AddAttachmentEvent(
           localPath: path,
           fileName: picked.name,
           byteSize: size,
@@ -258,17 +264,14 @@ class _CommentComposerState extends State<CommentComposer> {
     // Only keep mentions whose `@Name` is still present in the text.
     final validSelections = _reconcile(text, state.mentionSelections);
     final (storedText, ids) = MentionParser.toTokens(text, validSelections);
-    final attachmentIds = state.attachmentDrafts
-        .where((d) => d.isClaimable)
-        .map((d) => d.attachmentId!)
-        .toList();
+    // The bloc resolves the attachment drafts itself and uploads any that
+    // are still local right before the post.
     final key =
         widget.reusablePostKey(state.replyTargetRootId) ?? _uuid.v4();
     widget.onEvent(PostCommentEvent(
       text: storedText,
       rootCommentId: state.replyTargetRootId,
       idempotencyKey: key,
-      attachmentIds: attachmentIds,
       mentionedUserIds: ids,
     ));
     setState(() {});
@@ -290,10 +293,16 @@ class _CommentComposerState extends State<CommentComposer> {
     final drafts = state.attachmentDrafts;
     final hasPending = state.hasPendingAttachments;
     final hasContent = state.composerText.trim().isNotEmpty ||
-        drafts.any((d) => d.isClaimable);
+        drafts.any((d) => d.isSendable);
 
     Widget _status(ComposerAttachmentDraft d) {
       switch (d.step) {
+        case ComposerAttachmentStep.local:
+          return Text(
+            l10n.commentsAttachmentQueued,
+            style: TextStyle(
+                fontSize: 11, color: colorScheme.onSurfaceVariant),
+          );
         case ComposerAttachmentStep.uploading:
           return const SizedBox(
               width: 14,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/comments/comments_state.dart';
 import 'package:tiler_app/components/comments/comment_avatar.dart';
@@ -183,10 +184,14 @@ class _CommentItemState extends State<CommentItem> {
           for (final attachment in attachments)
             _AttachmentFileCard(
               attachment: attachment,
-              onDownload: () => widget.onEvent(DownloadAttachmentEvent(
-                attachmentId: attachment.id,
-                fileName: attachment.fileName,
-              )),
+              onDownload: () {
+                debugPrint('[DownloadDiag] card: download tapped id='
+                    '${attachment.id} fileName=${attachment.fileName}');
+                widget.onEvent(DownloadAttachmentEvent(
+                  attachmentId: attachment.id,
+                  fileName: attachment.fileName,
+                ));
+              },
             ),
         ],
       );
@@ -469,6 +474,12 @@ class _AttachmentFileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
+    // Download feedback for this specific attachment: an in-card progress
+    // bar while downloading and an Open action once the copy is stored.
+    final commentsState = context.watch<CommentsBloc>().state;
+    final isDownloading = commentsState.downloadingFileId == attachment.id;
+    final isSaved =
+        !isDownloading && commentsState.savedFileId == attachment.id;
     return Container(
       margin: const EdgeInsets.only(top: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -477,34 +488,71 @@ class _AttachmentFileCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.6)),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(_icon(), size: 18, color: colorScheme.onSurfaceVariant),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              attachment.fileName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 13),
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(_icon(), size: 18, color: colorScheme.onSurfaceVariant),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  attachment.fileName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 13),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _formatSize(attachment.byteSize),
+                style: TextStyle(
+                    fontSize: 12, color: colorScheme.onSurfaceVariant),
+              ),
+              if (isSaved)
+                TextButton(
+                  onPressed: () => context.read<CommentsBloc>().add(
+                        OpenAttachmentEvent(
+                          attachmentId: attachment.id,
+                          fileName: attachment.fileName,
+                        ),
+                      ),
+                  child: Text(
+                    l10n.commentsAttachmentOpen,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                )
+              else
+                TextButton(
+                  onPressed: isDownloading ? null : onDownload,
+                  child: Text(
+                    isDownloading
+                        ? l10n.commentsAttachmentDownloading
+                        : l10n.commentsAttachmentDownload,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Text(
-            _formatSize(attachment.byteSize),
-            style: TextStyle(
-                fontSize: 12, color: colorScheme.onSurfaceVariant),
-          ),
-          if (onDownload != null)
-            TextButton(
-              onPressed: onDownload,
-              child: Text(
-                l10n.commentsAttachmentDownload,
-                style: const TextStyle(fontSize: 12),
+          if (isDownloading)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(
+                      end: commentsState.downloadProgress ?? 0.0),
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  child: const LinearProgressIndicator(minHeight: 4),
+                  builder: (context, value, _) =>
+                      LinearProgressIndicator(value: value, minHeight: 4),
+                ),
               ),
             ),
-          ],
+        ],
       ),
     );
   }

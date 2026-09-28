@@ -2442,6 +2442,7 @@
   "commentsAttach": "Attach file",
   "commentsAttachmentProcessing": "Checking file…",
   "commentsAttachmentUploaded": "Uploaded",
+  "commentsAttachmentQueued": "Queued",
   "commentsAttachmentUploadingSummary": "Uploading files ({count} left). Keep this page open.",
   "@commentsAttachmentUploadingSummary": {
     "placeholders": { "count": { "type": "int", "example": "2" } }
@@ -2454,7 +2455,14 @@
   },
   "commentsAttachmentDownload": "Download",
   "commentsAttachmentDownloadError": "Couldn't download the file.",
-  "commentsAttachmentSaved": "The file was saved.",
+  "commentsAttachmentDownloading": "Downloading…",
+  "commentsAttachmentSaved": "Saved {name}",
+  "@commentsAttachmentSaved": {
+    "description": "Confirmation shown after a comment attachment file was saved to the device.",
+    "placeholders": { "name": { "type": "String", "example": "report.pdf" } }
+  },
+  "commentsAttachmentOpen": "Open",
+  "commentsAttachmentOpenFailed": "Couldn't open the file.",
   "commentsAttachmentInvalidType": "Only PDF, DOCX, PNG and JPEG files can be attached.",
   "commentsAttachmentTooLarge": "Files must be 10 MB or smaller.",
   "commentsAttachmentEmpty": "That file is empty.",

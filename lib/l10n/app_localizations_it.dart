@@ -4151,6 +4151,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get commentsAttachmentUploaded => 'Caricato';
 
   @override
+  String get commentsAttachmentQueued => 'In coda';
+
+  @override
   String commentsAttachmentUploadingSummary(int count) {
     return 'Caricamento file ($count rimasti). Tieni questa pagina aperta.';
   }
@@ -4175,7 +4178,18 @@ class AppLocalizationsIt extends AppLocalizations {
       'Impossibile scaricare il file.';
 
   @override
-  String get commentsAttachmentSaved => 'Il file è stato salvato.';
+  String get commentsAttachmentDownloading => 'Download in corso…';
+
+  @override
+  String commentsAttachmentSaved(String name) {
+    return 'Salvato: $name';
+  }
+
+  @override
+  String get commentsAttachmentOpen => 'Apri';
+
+  @override
+  String get commentsAttachmentOpenFailed => 'Impossibile aprire il file.';
 
   @override
   String get commentsAttachmentInvalidType =>
