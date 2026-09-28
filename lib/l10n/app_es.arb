@@ -998,6 +998,9 @@
   "editTileWhatIfClean": "No afecta a ningún otro tile.",
   "editTileWhatIfFailed": "No se pudo revisar el efecto en tu agenda.",
   "editTileWhatIfRetry": "Reintentar",
+  "editTileWhatIfMoreDays": "{count, plural, =1{1 día más afectado} other{{count} días más afectados}}",
+  "editTileWhatIfUnplaced": "Sin programar",
+  "editTileWhatIfAffectedCount": "{count, plural, =1{1 tile afectado} other{{count} tiles afectados}}",
   "editTileEditTitle": "Editar título",
   "tileDetailTitle": "Detalles del tile",
   "tileDetailLoadFailed": "No se pudieron cargar los detalles de este tile.",
@@ -1612,7 +1615,8 @@
   "productTourStarting": "Tu recorrido por la app está a punto de comenzar.",
   "commentsCount": "{count} comentarios",
   "@commentsCount": {"placeholders": {"count": {"type": "int"}}},
-  "commentsEmpty": "Aún no hay comentarios",
+  "commentsEmpty": "Aún no hay comentarios",
+
   "commentsTitle": "Comentarios",
   "@commentsTitle": {
     "description": "Title of the comments panel for a shared tilette."

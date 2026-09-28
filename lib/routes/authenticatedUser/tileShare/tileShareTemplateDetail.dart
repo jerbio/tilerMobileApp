@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'tileShareActivityWidget.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/newTileShareSheetWidget.dart';
@@ -518,6 +519,8 @@ class _TileShareTemplateDetailState
 
     return Scaffold(
         appBar: AppBar(
+          actions: [if (tileShareTemplate.clusterId != null && tileShareTemplate.id != null)
+            TileShareActivityButton(clusterId: tileShareTemplate.clusterId!, tiletteId: tileShareTemplate.id!)],
           automaticallyImplyLeading: false,
           leading: TextButton(
             style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),

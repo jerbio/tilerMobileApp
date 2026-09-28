@@ -1,3 +1,4 @@
+import 'package:tiler_app/services/tileShareActivityChanges.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:tiler_app/data/designatedTile.dart';
@@ -55,6 +56,7 @@ class TileShareClusterApi extends AppApi {
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
+          tileShareActivityChanges.value++;
           if (isContentInResponse(jsonResult)) {
             return;
           }
@@ -111,6 +113,7 @@ class TileShareClusterApi extends AppApi {
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
+          tileShareActivityChanges.value++;
           if (isContentInResponse(jsonResult)) {
             if (jsonResult['Content'].containsKey('tileTemplate')) {
               Map<String, dynamic> designatedTilesJson =
@@ -356,6 +359,7 @@ class TileShareClusterApi extends AppApi {
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
+          tileShareActivityChanges.value++;
           if (isContentInResponse(jsonResult)) {
             String clusterKey = 'cluster';
             if (jsonResult['Content'].containsKey(clusterKey)) {
@@ -422,6 +426,7 @@ class TileShareClusterApi extends AppApi {
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
+          tileShareActivityChanges.value++;
           if (isContentInResponse(jsonResult)) {
             var designatedTileJson = jsonResult['Content']['designatedTile'];
             if (designatedTileJson != null) {
@@ -485,6 +490,7 @@ class TileShareClusterApi extends AppApi {
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
+          tileShareActivityChanges.value++;
           if (isContentInResponse(jsonResult)) {
             if (jsonResult['Content'].containsKey('tileShareTemplate')) {
               Map<String, dynamic> designatedTilesJson =
@@ -542,6 +548,7 @@ class TileShareClusterApi extends AppApi {
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
+          tileShareActivityChanges.value++;
           return;
         }
         if (isTilerRequestError(jsonResult)) {
@@ -590,6 +597,7 @@ class TileShareClusterApi extends AppApi {
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
+          tileShareActivityChanges.value++;
           if (isContentInResponse(jsonResult)) {
             return;
           }

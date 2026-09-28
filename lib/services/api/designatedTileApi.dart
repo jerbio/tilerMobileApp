@@ -1,3 +1,4 @@
+import 'package:tiler_app/services/tileShareActivityChanges.dart';
 import 'package:http/http.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'dart:convert';
@@ -56,6 +57,7 @@ class DesignatedTileApi extends AppApi {
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
+          tileShareActivityChanges.value++;
           if (isContentInResponse(jsonResult)) {
             return;
           }
@@ -118,6 +120,7 @@ class DesignatedTileApi extends AppApi {
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
+          tileShareActivityChanges.value++;
           if (isContentInResponse(jsonResult)) {
             return;
           }

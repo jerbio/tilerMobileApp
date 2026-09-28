@@ -354,11 +354,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteGoogleWarning =>
-      'âš ï¸ This will also delete from Google Calendar';
+      '⚠️ This will also delete from Google Calendar';
 
   @override
-  String get deleteOutlookWarning =>
-      'âš ï¸ This will also delete from Outlook';
+  String get deleteOutlookWarning => '⚠️ This will also delete from Outlook';
 
   @override
   String get previously => 'Previously';
@@ -486,7 +485,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String concludesAtTime(String tileName) {
-    return 'ðŸ $tileName concludes soon';
+    return '🏁 $tileName concludes soon';
   }
 
   @override
@@ -994,16 +993,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get skip => 'Skip';
 
   @override
-  String get morningPerson => 'ðŸŒ… Morning person';
+  String get morningPerson => '🌅 Morning person';
 
   @override
   String get morning => 'Morning';
 
   @override
-  String get middayPerson => 'ðŸŒž Midday person';
+  String get middayPerson => '🌞 Midday person';
 
   @override
-  String get nightPerson => 'ðŸŒƒ Night person';
+  String get nightPerson => '🌃 Night person';
 
   @override
   String get enterAddress => 'Enter your address';
@@ -1050,6 +1049,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tileShare => 'Tile Share';
+
+  @override
+  String get tileShareActivityInvitationUnknown =>
+      'Invitation send outcome unknown';
+
+  @override
+  String get tileShareActivityExplicitResend =>
+      'The invitation may have been sent. Resend explicitly if needed.';
+
+  @override
+  String get tileShareActivityEmail => 'Email';
+
+  @override
+  String get tileShareActivitySms => 'SMS';
+
+  @override
+  String get tileShareActivityPush => 'Push notification';
+
+  @override
+  String get tileShareActivityTitle => 'Activities';
+
+  @override
+  String get tileShareActivityRefresh => 'Refresh';
+
+  @override
+  String get tileShareActivityRetry => 'Retry';
+
+  @override
+  String get tileShareActivityEmpty => 'No activity yet.';
+
+  @override
+  String get tileShareActivityFailed =>
+      'Activity could not be loaded. Check your connection and try again.';
+
+  @override
+  String get tileShareActivityAccess =>
+      'This activity is no longer available to you.';
+
+  @override
+  String get tileShareActivityUnknown => 'Activity updated';
+
+  @override
+  String get tileShareActivityUnavailable => 'Item no longer available';
+
+  @override
+  String get tileShareActivityMore => 'Load more';
+
+  @override
+  String get tileShareActivityClusterCreated => 'TileShare created';
+
+  @override
+  String get tileShareActivityClusterDeleted => 'TileShare deleted';
+
+  @override
+  String get tileShareActivityTiletteAdded => 'Tilette added';
+
+  @override
+  String get tileShareActivityTiletteEdited => 'Tilette updated';
+
+  @override
+  String get tileShareActivityTiletteDeleted => 'Tilette deleted';
+
+  @override
+  String get tileShareActivityTiletteRestored => 'Tilette restored';
+
+  @override
+  String get tileShareActivityRecipientAdded => 'Participant added';
+
+  @override
+  String get tileShareActivityRecipientRemoved => 'Participant removed';
+
+  @override
+  String get tileShareActivityRecipientRestored => 'Participant restored';
+
+  @override
+  String get tileShareActivityAccepted => 'Assignment accepted';
+
+  @override
+  String get tileShareActivityDeclined => 'Assignment declined';
+
+  @override
+  String get tileShareActivityInvitationSent => 'Invitation sent';
+
+  @override
+  String get tileShareActivityInvitationFailed =>
+      'Invitation could not be sent';
 
   @override
   String get update => 'Update';
@@ -2463,13 +2548,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tutorialNavNext => 'Next';
 
   @override
-  String get tutorialNavNextArrow => 'Next â†’';
+  String get tutorialNavNextArrow => 'Next →';
 
   @override
   String get tutorialNavBack => 'Back';
 
   @override
-  String get tutorialNavBackArrow => 'â† Back';
+  String get tutorialNavBackArrow => '← Back';
 
   @override
   String get tutorialNavSkip => 'Skip';
@@ -3648,6 +3733,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editTileWhatIfRetry => 'Retry';
+
+  @override
+  String editTileWhatIfMoreDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more days affected',
+      one: '1 more day affected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get editTileWhatIfUnplaced => 'Unplaced';
+
+  @override
+  String editTileWhatIfAffectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count affected tiles',
+      one: '1 affected tile',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get editTileEditTitle => 'Edit title';

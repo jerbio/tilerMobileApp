@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'tileShareActivityWidget.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/newTileShareSheetWidget.dart';
 import 'package:tiler_app/data/contact.dart';
@@ -364,6 +365,8 @@ class _SingleTiletteTileShareDetailWidget
 
     return Scaffold(
         appBar: AppBar(
+          actions: [if (tileShareCluster.id != null && designatedTileList?.firstOrNull?.tileTemplate?.id != null)
+            TileShareActivityButton(clusterId: tileShareCluster.id!, tiletteId: designatedTileList!.first.tileTemplate!.id!)],
           automaticallyImplyLeading: false,
           leading: TextButton(
             style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),
