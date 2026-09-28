@@ -125,8 +125,8 @@
     "deleteBlockConfirming":"Deleting this block...",
     "deleteTileConfirming":"Deleting this tile...",
     "deleteNow":"Delete Now",
-    "deleteGoogleWarning":"⚠️ This will also delete from Google Calendar",
-    "deleteOutlookWarning":"⚠️ This will also delete from Outlook",
+    "deleteGoogleWarning":"âš ï¸ This will also delete from Google Calendar",
+    "deleteOutlookWarning":"âš ï¸ This will also delete from Outlook",
     "previously":"Previously",
     "upcoming":"Upcoming",
     "failedToSendRequest":"Failed to send request",
@@ -196,7 +196,7 @@
           "example": "Starts in 5 Hours"
         }
       }},
-    "concludesAtTime": "🏁 {tileName} concludes soon",
+    "concludesAtTime": "ðŸ {tileName} concludes soon",
     "@concludesAtTime": {
       "description": "Description of time of conclusion",
       "placeholders": {
@@ -598,10 +598,10 @@
     "next":"Next",
     "previous":"Previous",
     "skip":"Skip",
-    "morningPerson":"🌅 Morning person",
+    "morningPerson":"ðŸŒ… Morning person",
     "morning":"Morning",
-    "middayPerson":"🌞 Midday person",
-    "nightPerson":"🌃 Night person",
+    "middayPerson":"ðŸŒž Midday person",
+    "nightPerson":"ðŸŒƒ Night person",
     "enterAddress":"Enter your address",
     "primaryLocationQuestion":"What is your primary location for work or study?",
     "useDeviceLocation":"Use my device location",
@@ -1740,9 +1740,9 @@
         "tutorialStepChatBody": "Tap the chat button anytime to add or adjust tiles just by talking to Tiler — no forms needed.",
 
         "tutorialNavNext": "Next",
-        "tutorialNavNextArrow": "Next →",
+        "tutorialNavNextArrow": "Next â†’",
         "tutorialNavBack": "Back",
-        "tutorialNavBackArrow": "← Back",
+        "tutorialNavBackArrow": "â† Back",
         "tutorialNavSkip": "Skip",
         "tutorialNavLetsGo": "Let's Go!",
         "welcomeExplainerHeadline": "Tiles vs Blocks",
@@ -2366,5 +2366,68 @@
     },
     "noResultsForProvider": "No results from this calendar",
     "readOnly": "Read-only",
+"commentsCount": "{count} comments",
+  "@commentsCount": {
+    "description": "Header above a comment thread.",
+    "placeholders": { "count": { "type": "int", "example": "3" } }
+  },
+  "commentsEmpty": "No comments yet",
+  "commentsTitle": "Comments",
+  "@commentsTitle": {
+    "description": "Title of the comments panel for a shared tilette."
+  },
+  "commentsLoading": "Loading…",
+  "commentsLoadEarlier": "Load earlier comments",
+  "commentsLoadEarlierReplies": "Load earlier replies",
+  "commentsRetry": "Retry",
+  "commentsLoadError": "Couldn't load comments. Please try again.",
+  "commentsCreateError": "Couldn't post your comment.",
+  "commentsEditError": "Couldn't save your edit.",
+  "commentsDeleteError": "Couldn't delete the comment.",
+  "commentsCreateReplyError": "Couldn't post your reply.",
+  "commentsPlaceholder": "Write a comment…",
+  "commentsReplyPlaceholder": "Write a reply…",
+  "commentsSend": "Send",
+  "commentsSending": "Sending…",
+  "commentsEdit": "Edit",
+  "commentsSave": "Save",
+  "commentsCancel": "Cancel",
+  "commentsDelete": "Delete",
+  "commentsEdited": "edited",
+  "commentsDeletedPlaceholder": "This comment was deleted.",
+  "commentsDeletedAuthor": "Deleted user",
+  "commentsReply": "Reply",
+  "commentsReplies": "{count} replies",
+  "@commentsReplies": {
+    "description": "Reply count chip under a root comment.",
+    "placeholders": { "count": { "type": "int", "example": "8" } }
+  },
+  "commentsShowReplies": "Show replies",
+  "commentsHideReplies": "Hide replies",
+  "commentsYou": "(you)",
+  "commentsMentionSuggestions": "People you can mention",
+  "commentsAttach": "Attach file",
+  "commentsAttachmentProcessing": "Checking file…",
+  "commentsAttachmentUploaded": "Uploaded",
+  "commentsAttachmentUploadingSummary": "Uploading files ({count} left). Keep this page open.",
+  "@commentsAttachmentUploadingSummary": {
+    "placeholders": { "count": { "type": "int", "example": "2" } }
+  },
+  "commentsAttachmentUploadFailed": "Upload failed",
+  "commentsAttachmentPickFailed": "Couldn't attach that file. Please try again.",
+  "commentsAttachmentRemove": "Remove {name}",
+  "@commentsAttachmentRemove": {
+    "placeholders": { "name": { "type": "String", "example": "report.pdf" } }
+  },
+  "commentsAttachmentDownload": "Download",
+  "commentsAttachmentDownloadError": "Couldn't download the file.",
+  "commentsAttachmentSaved": "The file was saved.",
+  "commentsAttachmentInvalidType": "Only PDF, DOCX, PNG and JPEG files can be attached.",
+  "commentsAttachmentTooLarge": "Files must be 10 MB or smaller.",
+  "commentsAttachmentEmpty": "That file is empty.",
+  "commentsAttachmentLimit": "You can attach up to {count} files.",
+  "@commentsAttachmentLimit": {
+    "placeholders": { "count": { "type": "int", "example": "5" } }
+  },
   "productTourStarting": "Your product tour is about to begin."
 }

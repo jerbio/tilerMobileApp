@@ -3943,5 +3943,153 @@ class AppLocalizationsDe extends AppLocalizations {
   String get readOnly => 'Nur Lesezugriff';
 
   @override
+  String commentsCount(int count) {
+    return '$count Kommentare';
+  }
+
+  @override
+  String get commentsEmpty => 'Noch keine Kommentare';
+
+  @override
+  String get commentsTitle => 'Kommentare';
+
+  @override
+  String get commentsLoading => 'Wird geladen…';
+
+  @override
+  String get commentsLoadEarlier => 'Frühere Kommentare laden';
+
+  @override
+  String get commentsLoadEarlierReplies => 'Frühere Antworten laden';
+
+  @override
+  String get commentsRetry => 'Erneut versuchen';
+
+  @override
+  String get commentsLoadError =>
+      'Kommentare konnten nicht geladen werden. Bitte erneut versuchen.';
+
+  @override
+  String get commentsCreateError =>
+      'Ihr Kommentar konnte nicht gepostet werden.';
+
+  @override
+  String get commentsEditError =>
+      'Ihre Änderung konnte nicht gespeichert werden.';
+
+  @override
+  String get commentsDeleteError =>
+      'Der Kommentar konnte nicht gelöscht werden.';
+
+  @override
+  String get commentsCreateReplyError =>
+      'Ihre Antwort konnte nicht gepostet werden.';
+
+  @override
+  String get commentsPlaceholder => 'Kommentar schreiben…';
+
+  @override
+  String get commentsReplyPlaceholder => 'Antwort schreiben…';
+
+  @override
+  String get commentsSend => 'Senden';
+
+  @override
+  String get commentsSending => 'Wird gesendet…';
+
+  @override
+  String get commentsEdit => 'Bearbeiten';
+
+  @override
+  String get commentsSave => 'Speichern';
+
+  @override
+  String get commentsCancel => 'Abbrechen';
+
+  @override
+  String get commentsDelete => 'Löschen';
+
+  @override
+  String get commentsEdited => 'bearbeitet';
+
+  @override
+  String get commentsDeletedPlaceholder => 'Dieser Kommentar wurde gelöscht.';
+
+  @override
+  String get commentsDeletedAuthor => 'Gelöschter Benutzer';
+
+  @override
+  String get commentsReply => 'Antworten';
+
+  @override
+  String commentsReplies(int count) {
+    return '$count Antworten';
+  }
+
+  @override
+  String get commentsShowReplies => 'Antworten anzeigen';
+
+  @override
+  String get commentsHideReplies => 'Antworten ausblenden';
+
+  @override
+  String get commentsYou => '(Sie)';
+
+  @override
+  String get commentsMentionSuggestions => 'Personen, die Sie erwähnen können';
+
+  @override
+  String get commentsAttach => 'Datei anhängen';
+
+  @override
+  String get commentsAttachmentProcessing => 'Datei wird geprüft…';
+
+  @override
+  String get commentsAttachmentUploaded => 'Hochgeladen';
+
+  @override
+  String commentsAttachmentUploadingSummary(int count) {
+    return 'Dateien werden hochgeladen ($count übrig). Diese Seite offen halten.';
+  }
+
+  @override
+  String get commentsAttachmentUploadFailed => 'Hochladen fehlgeschlagen';
+
+  @override
+  String get commentsAttachmentPickFailed =>
+      'Couldn\'t attach that file. Please try again.';
+
+  @override
+  String commentsAttachmentRemove(String name) {
+    return '$name entfernen';
+  }
+
+  @override
+  String get commentsAttachmentDownload => 'Herunterladen';
+
+  @override
+  String get commentsAttachmentDownloadError =>
+      'Die Datei konnte nicht heruntergeladen werden.';
+
+  @override
+  String get commentsAttachmentSaved => 'Die Datei wurde gespeichert.';
+
+  @override
+  String get commentsAttachmentInvalidType =>
+      'Nur PDF-, DOCX-, PNG- und JPEG-Dateien können angehängt werden.';
+
+  @override
+  String get commentsAttachmentTooLarge =>
+      'Dateien dürfen maximal 10 MB groß sein.';
+
+  @override
+  String get commentsAttachmentEmpty => 'Diese Datei ist leer.';
+
+  @override
+  String commentsAttachmentLimit(int count) {
+    return 'Sie können bis zu $count Dateien anhängen.';
+  }
+
+  @override
   String get productTourStarting => 'Deine Produktführung beginnt gleich.';
 }

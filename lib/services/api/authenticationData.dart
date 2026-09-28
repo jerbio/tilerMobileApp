@@ -3,7 +3,10 @@ import 'package:tiler_app/util.dart';
 class AuthenticationData {
   final int instantiationTime =
       (Utility.currentTime(minuteLimitAccuracy: false)).millisecondsSinceEpoch;
-  late final String? provider;
+  // Nullable on purpose (not `late`): reading an uninitialized late field
+  // throws a LateInitializationError — the user/password storage-load
+  // constructor historically skipped this field, and null is always safe.
+  String? provider;
   late final String? accessToken;
   late final String? tokenType;
   bool isValid = false;

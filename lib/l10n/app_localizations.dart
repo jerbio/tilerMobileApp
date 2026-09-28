@@ -775,13 +775,13 @@ abstract class AppLocalizations {
   /// No description provided for @deleteGoogleWarning.
   ///
   /// In en, this message translates to:
-  /// **'⚠️ This will also delete from Google Calendar'**
+  /// **'âš ï¸ This will also delete from Google Calendar'**
   String get deleteGoogleWarning;
 
   /// No description provided for @deleteOutlookWarning.
   ///
   /// In en, this message translates to:
-  /// **'⚠️ This will also delete from Outlook'**
+  /// **'âš ï¸ This will also delete from Outlook'**
   String get deleteOutlookWarning;
 
   /// No description provided for @previously.
@@ -1021,7 +1021,7 @@ abstract class AppLocalizations {
   /// Description of time of conclusion
   ///
   /// In en, this message translates to:
-  /// **'🏁 {tileName} concludes soon'**
+  /// **'ðŸ {tileName} concludes soon'**
   String concludesAtTime(String tileName);
 
   /// No description provided for @home.
@@ -1867,7 +1867,7 @@ abstract class AppLocalizations {
   /// No description provided for @morningPerson.
   ///
   /// In en, this message translates to:
-  /// **'🌅 Morning person'**
+  /// **'ðŸŒ… Morning person'**
   String get morningPerson;
 
   /// No description provided for @morning.
@@ -1879,13 +1879,13 @@ abstract class AppLocalizations {
   /// No description provided for @middayPerson.
   ///
   /// In en, this message translates to:
-  /// **'🌞 Midday person'**
+  /// **'ðŸŒž Midday person'**
   String get middayPerson;
 
   /// No description provided for @nightPerson.
   ///
   /// In en, this message translates to:
-  /// **'🌃 Night person'**
+  /// **'ðŸŒƒ Night person'**
   String get nightPerson;
 
   /// No description provided for @enterAddress.
@@ -4312,7 +4312,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialNavNextArrow.
   ///
   /// In en, this message translates to:
-  /// **'Next →'**
+  /// **'Next â†’'**
   String get tutorialNavNextArrow;
 
   /// No description provided for @tutorialNavBack.
@@ -4324,7 +4324,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialNavBackArrow.
   ///
   /// In en, this message translates to:
-  /// **'← Back'**
+  /// **'â† Back'**
   String get tutorialNavBackArrow;
 
   /// No description provided for @tutorialNavSkip.
@@ -6817,6 +6817,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read-only'**
   String get readOnly;
+
+  /// Header above a comment thread.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} comments'**
+  String commentsCount(int count);
+
+  /// No description provided for @commentsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet'**
+  String get commentsEmpty;
+
+  /// Title of the comments panel for a shared tilette.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get commentsTitle;
+
+  /// No description provided for @commentsLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get commentsLoading;
+
+  /// No description provided for @commentsLoadEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Load earlier comments'**
+  String get commentsLoadEarlier;
+
+  /// No description provided for @commentsLoadEarlierReplies.
+  ///
+  /// In en, this message translates to:
+  /// **'Load earlier replies'**
+  String get commentsLoadEarlierReplies;
+
+  /// No description provided for @commentsRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get commentsRetry;
+
+  /// No description provided for @commentsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load comments. Please try again.'**
+  String get commentsLoadError;
+
+  /// No description provided for @commentsCreateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t post your comment.'**
+  String get commentsCreateError;
+
+  /// No description provided for @commentsEditError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save your edit.'**
+  String get commentsEditError;
+
+  /// No description provided for @commentsDeleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete the comment.'**
+  String get commentsDeleteError;
+
+  /// No description provided for @commentsCreateReplyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t post your reply.'**
+  String get commentsCreateReplyError;
+
+  /// No description provided for @commentsPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment…'**
+  String get commentsPlaceholder;
+
+  /// No description provided for @commentsReplyPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a reply…'**
+  String get commentsReplyPlaceholder;
+
+  /// No description provided for @commentsSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get commentsSend;
+
+  /// No description provided for @commentsSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get commentsSending;
+
+  /// No description provided for @commentsEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get commentsEdit;
+
+  /// No description provided for @commentsSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get commentsSave;
+
+  /// No description provided for @commentsCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get commentsCancel;
+
+  /// No description provided for @commentsDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get commentsDelete;
+
+  /// No description provided for @commentsEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'edited'**
+  String get commentsEdited;
+
+  /// No description provided for @commentsDeletedPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'This comment was deleted.'**
+  String get commentsDeletedPlaceholder;
+
+  /// No description provided for @commentsDeletedAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted user'**
+  String get commentsDeletedAuthor;
+
+  /// No description provided for @commentsReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get commentsReply;
+
+  /// Reply count chip under a root comment.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} replies'**
+  String commentsReplies(int count);
+
+  /// No description provided for @commentsShowReplies.
+  ///
+  /// In en, this message translates to:
+  /// **'Show replies'**
+  String get commentsShowReplies;
+
+  /// No description provided for @commentsHideReplies.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide replies'**
+  String get commentsHideReplies;
+
+  /// No description provided for @commentsYou.
+  ///
+  /// In en, this message translates to:
+  /// **'(you)'**
+  String get commentsYou;
+
+  /// No description provided for @commentsMentionSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'People you can mention'**
+  String get commentsMentionSuggestions;
+
+  /// No description provided for @commentsAttach.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach file'**
+  String get commentsAttach;
+
+  /// No description provided for @commentsAttachmentProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking file…'**
+  String get commentsAttachmentProcessing;
+
+  /// No description provided for @commentsAttachmentUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get commentsAttachmentUploaded;
+
+  /// No description provided for @commentsAttachmentUploadingSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading files ({count} left). Keep this page open.'**
+  String commentsAttachmentUploadingSummary(int count);
+
+  /// No description provided for @commentsAttachmentUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed'**
+  String get commentsAttachmentUploadFailed;
+
+  /// No description provided for @commentsAttachmentPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t attach that file. Please try again.'**
+  String get commentsAttachmentPickFailed;
+
+  /// No description provided for @commentsAttachmentRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}'**
+  String commentsAttachmentRemove(String name);
+
+  /// No description provided for @commentsAttachmentDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get commentsAttachmentDownload;
+
+  /// No description provided for @commentsAttachmentDownloadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t download the file.'**
+  String get commentsAttachmentDownloadError;
+
+  /// No description provided for @commentsAttachmentSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'The file was saved.'**
+  String get commentsAttachmentSaved;
+
+  /// No description provided for @commentsAttachmentInvalidType.
+  ///
+  /// In en, this message translates to:
+  /// **'Only PDF, DOCX, PNG and JPEG files can be attached.'**
+  String get commentsAttachmentInvalidType;
+
+  /// No description provided for @commentsAttachmentTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Files must be 10 MB or smaller.'**
+  String get commentsAttachmentTooLarge;
+
+  /// No description provided for @commentsAttachmentEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is empty.'**
+  String get commentsAttachmentEmpty;
+
+  /// No description provided for @commentsAttachmentLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'You can attach up to {count} files.'**
+  String commentsAttachmentLimit(int count);
 
   /// No description provided for @productTourStarting.
   ///

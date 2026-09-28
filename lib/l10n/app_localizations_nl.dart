@@ -3926,6 +3926,150 @@ class AppLocalizationsNl extends AppLocalizations {
   String get readOnly => 'Alleen-lezen';
 
   @override
+  String commentsCount(int count) {
+    return '$count reacties';
+  }
+
+  @override
+  String get commentsEmpty => 'Nog geen reacties';
+
+  @override
+  String get commentsTitle => 'Opmerkingen';
+
+  @override
+  String get commentsLoading => 'Laden…';
+
+  @override
+  String get commentsLoadEarlier => 'Oudere reacties laden';
+
+  @override
+  String get commentsLoadEarlierReplies => 'Oudere antwoorden laden';
+
+  @override
+  String get commentsRetry => 'Opnieuw proberen';
+
+  @override
+  String get commentsLoadError =>
+      'Reacties konden niet worden geladen. Probeer het opnieuw.';
+
+  @override
+  String get commentsCreateError => 'Je reactie kon niet worden gepost.';
+
+  @override
+  String get commentsEditError => 'Je wijziging kon niet worden opgeslagen.';
+
+  @override
+  String get commentsDeleteError => 'De reactie kon niet worden verwijderd.';
+
+  @override
+  String get commentsCreateReplyError => 'Je antwoord kon niet worden gepost.';
+
+  @override
+  String get commentsPlaceholder => 'Schrijf een reactie…';
+
+  @override
+  String get commentsReplyPlaceholder => 'Schrijf een antwoord…';
+
+  @override
+  String get commentsSend => 'Verstuur';
+
+  @override
+  String get commentsSending => 'Versturen…';
+
+  @override
+  String get commentsEdit => 'Bewerken';
+
+  @override
+  String get commentsSave => 'Opslaan';
+
+  @override
+  String get commentsCancel => 'Annuleren';
+
+  @override
+  String get commentsDelete => 'Verwijderen';
+
+  @override
+  String get commentsEdited => 'bewerkt';
+
+  @override
+  String get commentsDeletedPlaceholder => 'Deze reactie is verwijderd.';
+
+  @override
+  String get commentsDeletedAuthor => 'Verwijderde gebruiker';
+
+  @override
+  String get commentsReply => 'Antwoorden';
+
+  @override
+  String commentsReplies(int count) {
+    return '$count antwoorden';
+  }
+
+  @override
+  String get commentsShowReplies => 'Antwoorden weergeven';
+
+  @override
+  String get commentsHideReplies => 'Antwoorden verbergen';
+
+  @override
+  String get commentsYou => '(jij)';
+
+  @override
+  String get commentsMentionSuggestions => 'Personen die je kunt vermelden';
+
+  @override
+  String get commentsAttach => 'Bestand bijvoegen';
+
+  @override
+  String get commentsAttachmentProcessing => 'Bestand wordt gecontroleerd…';
+
+  @override
+  String get commentsAttachmentUploaded => 'Geüpload';
+
+  @override
+  String commentsAttachmentUploadingSummary(int count) {
+    return 'Bestanden worden geüpload ($count resterend). Houd deze pagina open.';
+  }
+
+  @override
+  String get commentsAttachmentUploadFailed => 'Upload mislukt';
+
+  @override
+  String get commentsAttachmentPickFailed =>
+      'Couldn\'t attach that file. Please try again.';
+
+  @override
+  String commentsAttachmentRemove(String name) {
+    return '$name verwijderen';
+  }
+
+  @override
+  String get commentsAttachmentDownload => 'Downloaden';
+
+  @override
+  String get commentsAttachmentDownloadError =>
+      'Het bestand kon niet worden gedownload.';
+
+  @override
+  String get commentsAttachmentSaved => 'Het bestand is opgeslagen.';
+
+  @override
+  String get commentsAttachmentInvalidType =>
+      'Alleen PDF-, DOCX-, PNG- en JPEG-bestanden kunnen worden bijgevoegd.';
+
+  @override
+  String get commentsAttachmentTooLarge =>
+      'Bestanden moeten 10 MB of kleiner zijn.';
+
+  @override
+  String get commentsAttachmentEmpty => 'Dit bestand is leeg.';
+
+  @override
+  String commentsAttachmentLimit(int count) {
+    return 'Je kunt tot $count bestanden bijvoegen.';
+  }
+
+  @override
   String get productTourStarting =>
       'Je rondleiding door de app staat op het punt te beginnen.';
 }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
 import 'package:tiler_app/services/api/emailCodeAuthenticationData.dart';
 import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
@@ -24,18 +25,57 @@ class Authentication {
       cachedCredentials = authenticationData;
       if (cachedCredentials != null) {
         if (cachedCredentials!.isExpired()) {
+          debugPrint('[Auth] stored token expired; re-authenticating '
+              '(provider=${cachedCredentials!.provider})');
           authenticationData =
               await authenticationData!.reloadAuthenticationData();
           if (authenticationData.isValid) {
             cachedCredentials = authenticationData;
+            debugPrint('[Auth] re-authentication succeeded');
           } else {
             cachedCredentials = null;
+            debugPrint('[Auth] re-authentication failed; no valid credential');
           }
+        } else {
+          // Stored token still valid — nothing to report.
         }
+      } else {
+        // Signed-out state — normal, nothing to log.
       }
     } catch (e) {
       print('Error reloading credentials: $e');
     }
+  }
+
+  /// Forces a re-authentication round-trip regardless of the stored
+  /// credential's client-side expiry. Used to recover from servers that
+  /// reject a still-"valid" token (e.g. after a signing-key rotation or a
+  /// backend-environment switch).
+  ///
+  /// Returns the refreshed credential when a genuinely new valid token was
+  /// obtained, or `null` when the provider cannot re-authenticate
+  /// (email-code / third-party sign-in) or the token request failed — in
+  /// which case the previous credential is left in place and the caller
+  /// should surface the error (the user must sign out and back in).
+  Future<AuthenticationData?> forceRefreshCredentials() async {
+    final current = cachedCredentials;
+    if (current == null) {
+      await reLoadCredentialsCache();
+      return isCachedCredentialValid() ? cachedCredentials : null;
+    }
+    try {
+      final refreshed = await current.reloadAuthenticationData();
+      if (refreshed.isValid && refreshed.accessToken != current.accessToken) {
+        cachedCredentials = refreshed;
+        debugPrint('[Auth] forced re-authentication succeeded');
+        return refreshed;
+      }
+    } catch (e) {
+      print('Error force-refreshing credentials: $e');
+    }
+    debugPrint('[Auth] forced re-authentication unavailable '
+        '(provider=${current.provider})');
+    return null;
   }
 
   Future<AuthenticationData?> readCredentials() async {

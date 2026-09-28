@@ -7,6 +7,7 @@ import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileForecast.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailEntry.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tiletteDetailScreen.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
@@ -310,6 +311,26 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                   ),
                 ),
               ),
+              if (this.designatedTile.id != null)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                  child: ElevatedButton(
+                    child: FaIcon(
+                      FontAwesomeIcons.circleInfo,
+                      color: colorScheme.primary,
+                      size: iconSize,
+                    ),
+                    onPressed: () {
+                        TiletteDetailScreen.byTilette(
+                            context: context,
+                            designatedTile: this.designatedTile);
+                      },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
               if (designatedTile.invitationStatus !=
                   InvitationStatus.accepted.name.toString())
                 renderForeCastButton(iconSize),

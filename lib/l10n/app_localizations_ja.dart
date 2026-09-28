@@ -3819,5 +3819,146 @@ class AppLocalizationsJa extends AppLocalizations {
   String get readOnly => '読み取り専用';
 
   @override
+  String commentsCount(int count) {
+    return '$count件のコメント';
+  }
+
+  @override
+  String get commentsEmpty => 'まだコメントがありません';
+
+  @override
+  String get commentsTitle => 'コメント';
+
+  @override
+  String get commentsLoading => '読み込み中…';
+
+  @override
+  String get commentsLoadEarlier => '以前のコメントを読み込む';
+
+  @override
+  String get commentsLoadEarlierReplies => '以前の返信を読み込む';
+
+  @override
+  String get commentsRetry => '再試行';
+
+  @override
+  String get commentsLoadError => 'コメントを読み込めませんでした。もう一度お試しください。';
+
+  @override
+  String get commentsCreateError => 'コメントを公開できませんでした。';
+
+  @override
+  String get commentsEditError => '編集内容を保存できませんでした。';
+
+  @override
+  String get commentsDeleteError => 'コメントを削除できませんでした。';
+
+  @override
+  String get commentsCreateReplyError => '返信を公開できませんでした。';
+
+  @override
+  String get commentsPlaceholder => 'コメントを書き込む…';
+
+  @override
+  String get commentsReplyPlaceholder => '返信を書き込む…';
+
+  @override
+  String get commentsSend => '送信';
+
+  @override
+  String get commentsSending => '送信中…';
+
+  @override
+  String get commentsEdit => '編集';
+
+  @override
+  String get commentsSave => '保存';
+
+  @override
+  String get commentsCancel => 'キャンセル';
+
+  @override
+  String get commentsDelete => '削除';
+
+  @override
+  String get commentsEdited => '編集済み';
+
+  @override
+  String get commentsDeletedPlaceholder => 'このコメントは削除されました。';
+
+  @override
+  String get commentsDeletedAuthor => '削除されたユーザー';
+
+  @override
+  String get commentsReply => '返信';
+
+  @override
+  String commentsReplies(int count) {
+    return '$count件の返信';
+  }
+
+  @override
+  String get commentsShowReplies => '返信を表示';
+
+  @override
+  String get commentsHideReplies => '返信を非表示';
+
+  @override
+  String get commentsYou => '(あなた)';
+
+  @override
+  String get commentsMentionSuggestions => 'メンション可能な人';
+
+  @override
+  String get commentsAttach => 'ファイルを添付';
+
+  @override
+  String get commentsAttachmentProcessing => 'ファイルを確認中…';
+
+  @override
+  String get commentsAttachmentUploaded => 'アップロード済み';
+
+  @override
+  String commentsAttachmentUploadingSummary(int count) {
+    return 'ファイルをアップロード中（残り$count件）。このページを開いたままにしてください。';
+  }
+
+  @override
+  String get commentsAttachmentUploadFailed => 'アップロードに失敗しました';
+
+  @override
+  String get commentsAttachmentPickFailed =>
+      'Couldn\'t attach that file. Please try again.';
+
+  @override
+  String commentsAttachmentRemove(String name) {
+    return '$nameを削除';
+  }
+
+  @override
+  String get commentsAttachmentDownload => 'ダウンロード';
+
+  @override
+  String get commentsAttachmentDownloadError => 'ファイルをダウンロードできませんでした。';
+
+  @override
+  String get commentsAttachmentSaved => 'ファイルが保存されました。';
+
+  @override
+  String get commentsAttachmentInvalidType =>
+      '添付できるのはPDF、DOCX、PNG、JPEGファイルのみです。';
+
+  @override
+  String get commentsAttachmentTooLarge => 'ファイルは10 MB以下でなければなりません。';
+
+  @override
+  String get commentsAttachmentEmpty => 'そのファイルは空です。';
+
+  @override
+  String commentsAttachmentLimit(int count) {
+    return '$count件までのファイルを添付できます。';
+  }
+
+  @override
   String get productTourStarting => 'アプリのツアーがまもなく始まります。';
 }

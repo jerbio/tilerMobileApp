@@ -3944,6 +3944,153 @@ class AppLocalizationsEl extends AppLocalizations {
   String get readOnly => 'Μόνο ανάγνωση';
 
   @override
+  String commentsCount(int count) {
+    return '$count σχόλια';
+  }
+
+  @override
+  String get commentsEmpty => 'Δεν υπάρχουν ακόμα σχόλια';
+
+  @override
+  String get commentsTitle => 'Σχóλια';
+
+  @override
+  String get commentsLoading => 'Φόρτωση…';
+
+  @override
+  String get commentsLoadEarlier => 'Φόρτωση νεότερων σχολίων';
+
+  @override
+  String get commentsLoadEarlierReplies => 'Φόρτωση προηγούμενων απαντήσεων';
+
+  @override
+  String get commentsRetry => 'Νέα προσπάθεια';
+
+  @override
+  String get commentsLoadError =>
+      'Δεν ήταν δυνατή η φόρτωση των σχολίων. Προσπαθήστε ξανά.';
+
+  @override
+  String get commentsCreateError =>
+      'Δεν ήταν δυνατή η δημοσίευση του σχολίου σας.';
+
+  @override
+  String get commentsEditError =>
+      'Δεν ήταν δυνατή η αποθήκευση της επεξεργασίας σας.';
+
+  @override
+  String get commentsDeleteError => 'Δεν ήταν δυνατόν να διαγραφεί το σχόλιο.';
+
+  @override
+  String get commentsCreateReplyError =>
+      'Δεν ήταν δυνατή η δημοσίευση της απάντησής σας.';
+
+  @override
+  String get commentsPlaceholder => 'Γράψτε ένα σχόλιο…';
+
+  @override
+  String get commentsReplyPlaceholder => 'Γράψτε μια απάντηση…';
+
+  @override
+  String get commentsSend => 'Αποστολή';
+
+  @override
+  String get commentsSending => 'Αποστολή…';
+
+  @override
+  String get commentsEdit => 'Επεξεργασία';
+
+  @override
+  String get commentsSave => 'Αποθήκευση';
+
+  @override
+  String get commentsCancel => 'Άκυρο';
+
+  @override
+  String get commentsDelete => 'Διαγραφή';
+
+  @override
+  String get commentsEdited => 'επεξεργάστηκε';
+
+  @override
+  String get commentsDeletedPlaceholder => 'Το σχόλιο αυτό διαγράφηκε.';
+
+  @override
+  String get commentsDeletedAuthor => 'Διαγραμμένος χρήστης';
+
+  @override
+  String get commentsReply => 'Απάντηση';
+
+  @override
+  String commentsReplies(int count) {
+    return '$count απαντήσεις';
+  }
+
+  @override
+  String get commentsShowReplies => 'Εμφάνιση απαντήσεων';
+
+  @override
+  String get commentsHideReplies => 'Απόκρυψη απαντήσεων';
+
+  @override
+  String get commentsYou => '(εσείς)';
+
+  @override
+  String get commentsMentionSuggestions => 'Άτομα που μπορείτε να αναφέρετε';
+
+  @override
+  String get commentsAttach => 'Συνημμένο αρχείο';
+
+  @override
+  String get commentsAttachmentProcessing => 'Έλεγχος αρχείου…';
+
+  @override
+  String get commentsAttachmentUploaded => 'Ανεβάστηκε';
+
+  @override
+  String commentsAttachmentUploadingSummary(int count) {
+    return 'Μεταφόρτωση αρχείων (μεταφορτώθηκαν $count). Κρατήστε αυτή τη σελίδα ανοιχτή.';
+  }
+
+  @override
+  String get commentsAttachmentUploadFailed => 'Αποτυχία μεταφόρτωσης';
+
+  @override
+  String get commentsAttachmentPickFailed =>
+      'Couldn\'t attach that file. Please try again.';
+
+  @override
+  String commentsAttachmentRemove(String name) {
+    return 'Αφαίρεση $name';
+  }
+
+  @override
+  String get commentsAttachmentDownload => 'Λήψη';
+
+  @override
+  String get commentsAttachmentDownloadError =>
+      'Δεν ήταν δυνατή η λήψη του αρχείου.';
+
+  @override
+  String get commentsAttachmentSaved => 'Το αρχείο αποθηκεύτηκε.';
+
+  @override
+  String get commentsAttachmentInvalidType =>
+      'Μόνο αρχεία PDF, DOCX, PNG και JPEG μπορούν να συνηφθούν.';
+
+  @override
+  String get commentsAttachmentTooLarge =>
+      'Τα αρχεία πρέπει να είναι 10 MB ή μικρότερα.';
+
+  @override
+  String get commentsAttachmentEmpty => 'Το αρχείο αυτό είναι κενό.';
+
+  @override
+  String commentsAttachmentLimit(int count) {
+    return 'Μπορείτε να συνάψετε μέχρι $count αρχεία.';
+  }
+
+  @override
   String get productTourStarting =>
       'Η περιήγηση στην εφαρμογή σου πρόκειται να αρχίσει.';
 }

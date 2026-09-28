@@ -3940,5 +3940,148 @@ class AppLocalizationsIt extends AppLocalizations {
   String get readOnly => 'Sola lettura';
 
   @override
+  String commentsCount(int count) {
+    return '$count commenti';
+  }
+
+  @override
+  String get commentsEmpty => 'Nessun commento';
+
+  @override
+  String get commentsTitle => 'Commenti';
+
+  @override
+  String get commentsLoading => 'Caricamento…';
+
+  @override
+  String get commentsLoadEarlier => 'Carica commenti precedenti';
+
+  @override
+  String get commentsLoadEarlierReplies => 'Carica risposte precedenti';
+
+  @override
+  String get commentsRetry => 'Riprova';
+
+  @override
+  String get commentsLoadError => 'Impossibile caricare i commenti. Riprova.';
+
+  @override
+  String get commentsCreateError => 'Impossibile pubblicare il commento.';
+
+  @override
+  String get commentsEditError => 'Impossibile salvare la modifica.';
+
+  @override
+  String get commentsDeleteError => 'Impossibile eliminare il commento.';
+
+  @override
+  String get commentsCreateReplyError => 'Impossibile pubblicare la risposta.';
+
+  @override
+  String get commentsPlaceholder => 'Scrivi un commento…';
+
+  @override
+  String get commentsReplyPlaceholder => 'Scrivi una risposta…';
+
+  @override
+  String get commentsSend => 'Invia';
+
+  @override
+  String get commentsSending => 'Invio…';
+
+  @override
+  String get commentsEdit => 'Modifica';
+
+  @override
+  String get commentsSave => 'Salva';
+
+  @override
+  String get commentsCancel => 'Annulla';
+
+  @override
+  String get commentsDelete => 'Elimina';
+
+  @override
+  String get commentsEdited => 'modificato';
+
+  @override
+  String get commentsDeletedPlaceholder => 'Questo commento è stato eliminato.';
+
+  @override
+  String get commentsDeletedAuthor => 'Utente eliminato';
+
+  @override
+  String get commentsReply => 'Rispondi';
+
+  @override
+  String commentsReplies(int count) {
+    return '$count risposte';
+  }
+
+  @override
+  String get commentsShowReplies => 'Mostra risposte';
+
+  @override
+  String get commentsHideReplies => 'Nascondi risposte';
+
+  @override
+  String get commentsYou => '(tu)';
+
+  @override
+  String get commentsMentionSuggestions => 'Persone che puoi menzionare';
+
+  @override
+  String get commentsAttach => 'Allega file';
+
+  @override
+  String get commentsAttachmentProcessing => 'Verifica del file…';
+
+  @override
+  String get commentsAttachmentUploaded => 'Caricato';
+
+  @override
+  String commentsAttachmentUploadingSummary(int count) {
+    return 'Caricamento file ($count rimasti). Tieni questa pagina aperta.';
+  }
+
+  @override
+  String get commentsAttachmentUploadFailed => 'Caricamento non riuscito';
+
+  @override
+  String get commentsAttachmentPickFailed =>
+      'Couldn\'t attach that file. Please try again.';
+
+  @override
+  String commentsAttachmentRemove(String name) {
+    return 'Rimuovi $name';
+  }
+
+  @override
+  String get commentsAttachmentDownload => 'Scarica';
+
+  @override
+  String get commentsAttachmentDownloadError =>
+      'Impossibile scaricare il file.';
+
+  @override
+  String get commentsAttachmentSaved => 'Il file è stato salvato.';
+
+  @override
+  String get commentsAttachmentInvalidType =>
+      'Possono essere allegati solo file PDF, DOCX, PNG e JPEG.';
+
+  @override
+  String get commentsAttachmentTooLarge =>
+      'I file devono essere di 10 MB o meno.';
+
+  @override
+  String get commentsAttachmentEmpty => 'Il file è vuoto.';
+
+  @override
+  String commentsAttachmentLimit(int count) {
+    return 'Puoi allegare fino a $count file.';
+  }
+
+  @override
   String get productTourStarting => 'Il tour dell\'app sta per iniziare.';
 }

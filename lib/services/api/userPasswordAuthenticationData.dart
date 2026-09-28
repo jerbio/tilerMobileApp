@@ -25,6 +25,7 @@ class UserPasswordAuthenticationData extends AuthenticationData {
     this.tokenType = tokenType;
     this.expirationTime = expirationTime;
     this.accessToken = accessToken;
+    this.provider = provider;
 
     assert(this.accessToken != null);
     assert(this.tokenType != null);

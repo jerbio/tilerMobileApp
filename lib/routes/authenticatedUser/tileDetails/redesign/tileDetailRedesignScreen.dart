@@ -24,7 +24,7 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEnt
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/redesignLog.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileDraft.dart'
-    show EditTileDraft, EditTileMode;
+    show EditTileMode;
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileSubmission.dart'
     show EditTileSaveOutcome;
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/tileFormSections.dart';

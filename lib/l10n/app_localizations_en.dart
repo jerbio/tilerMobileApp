@@ -354,10 +354,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteGoogleWarning =>
-      '⚠️ This will also delete from Google Calendar';
+      'âš ï¸ This will also delete from Google Calendar';
 
   @override
-  String get deleteOutlookWarning => '⚠️ This will also delete from Outlook';
+  String get deleteOutlookWarning =>
+      'âš ï¸ This will also delete from Outlook';
 
   @override
   String get previously => 'Previously';
@@ -485,7 +486,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String concludesAtTime(String tileName) {
-    return '🏁 $tileName concludes soon';
+    return 'ðŸ $tileName concludes soon';
   }
 
   @override
@@ -993,16 +994,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get skip => 'Skip';
 
   @override
-  String get morningPerson => '🌅 Morning person';
+  String get morningPerson => 'ðŸŒ… Morning person';
 
   @override
   String get morning => 'Morning';
 
   @override
-  String get middayPerson => '🌞 Midday person';
+  String get middayPerson => 'ðŸŒž Midday person';
 
   @override
-  String get nightPerson => '🌃 Night person';
+  String get nightPerson => 'ðŸŒƒ Night person';
 
   @override
   String get enterAddress => 'Enter your address';
@@ -2462,13 +2463,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tutorialNavNext => 'Next';
 
   @override
-  String get tutorialNavNextArrow => 'Next →';
+  String get tutorialNavNextArrow => 'Next â†’';
 
   @override
   String get tutorialNavBack => 'Back';
 
   @override
-  String get tutorialNavBackArrow => '← Back';
+  String get tutorialNavBackArrow => 'â† Back';
 
   @override
   String get tutorialNavSkip => 'Skip';
@@ -3896,6 +3897,147 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readOnly => 'Read-only';
+
+  @override
+  String commentsCount(int count) {
+    return '$count comments';
+  }
+
+  @override
+  String get commentsEmpty => 'No comments yet';
+
+  @override
+  String get commentsTitle => 'Comments';
+
+  @override
+  String get commentsLoading => 'Loading…';
+
+  @override
+  String get commentsLoadEarlier => 'Load earlier comments';
+
+  @override
+  String get commentsLoadEarlierReplies => 'Load earlier replies';
+
+  @override
+  String get commentsRetry => 'Retry';
+
+  @override
+  String get commentsLoadError => 'Couldn\'t load comments. Please try again.';
+
+  @override
+  String get commentsCreateError => 'Couldn\'t post your comment.';
+
+  @override
+  String get commentsEditError => 'Couldn\'t save your edit.';
+
+  @override
+  String get commentsDeleteError => 'Couldn\'t delete the comment.';
+
+  @override
+  String get commentsCreateReplyError => 'Couldn\'t post your reply.';
+
+  @override
+  String get commentsPlaceholder => 'Write a comment…';
+
+  @override
+  String get commentsReplyPlaceholder => 'Write a reply…';
+
+  @override
+  String get commentsSend => 'Send';
+
+  @override
+  String get commentsSending => 'Sending…';
+
+  @override
+  String get commentsEdit => 'Edit';
+
+  @override
+  String get commentsSave => 'Save';
+
+  @override
+  String get commentsCancel => 'Cancel';
+
+  @override
+  String get commentsDelete => 'Delete';
+
+  @override
+  String get commentsEdited => 'edited';
+
+  @override
+  String get commentsDeletedPlaceholder => 'This comment was deleted.';
+
+  @override
+  String get commentsDeletedAuthor => 'Deleted user';
+
+  @override
+  String get commentsReply => 'Reply';
+
+  @override
+  String commentsReplies(int count) {
+    return '$count replies';
+  }
+
+  @override
+  String get commentsShowReplies => 'Show replies';
+
+  @override
+  String get commentsHideReplies => 'Hide replies';
+
+  @override
+  String get commentsYou => '(you)';
+
+  @override
+  String get commentsMentionSuggestions => 'People you can mention';
+
+  @override
+  String get commentsAttach => 'Attach file';
+
+  @override
+  String get commentsAttachmentProcessing => 'Checking file…';
+
+  @override
+  String get commentsAttachmentUploaded => 'Uploaded';
+
+  @override
+  String commentsAttachmentUploadingSummary(int count) {
+    return 'Uploading files ($count left). Keep this page open.';
+  }
+
+  @override
+  String get commentsAttachmentUploadFailed => 'Upload failed';
+
+  @override
+  String get commentsAttachmentPickFailed =>
+      'Couldn\'t attach that file. Please try again.';
+
+  @override
+  String commentsAttachmentRemove(String name) {
+    return 'Remove $name';
+  }
+
+  @override
+  String get commentsAttachmentDownload => 'Download';
+
+  @override
+  String get commentsAttachmentDownloadError => 'Couldn\'t download the file.';
+
+  @override
+  String get commentsAttachmentSaved => 'The file was saved.';
+
+  @override
+  String get commentsAttachmentInvalidType =>
+      'Only PDF, DOCX, PNG and JPEG files can be attached.';
+
+  @override
+  String get commentsAttachmentTooLarge => 'Files must be 10 MB or smaller.';
+
+  @override
+  String get commentsAttachmentEmpty => 'That file is empty.';
+
+  @override
+  String commentsAttachmentLimit(int count) {
+    return 'You can attach up to $count files.';
+  }
 
   @override
   String get productTourStarting => 'Your product tour is about to begin.';
