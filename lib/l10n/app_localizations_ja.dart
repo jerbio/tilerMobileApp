@@ -3659,6 +3659,31 @@ class AppLocalizationsJa extends AppLocalizations {
   String get editTileWhatIfOverflow => 'オーバーフロー';
 
   @override
+  String editTileWhatIfMoreDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more days affected',
+      one: '1 more day affected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get editTileWhatIfUnplaced => 'No slot found';
+
+  @override
+  String editTileWhatIfAffectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tiles affected',
+      one: '1 tile affected',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get editTileWhatIfClean => '他のタイルには影響しません。';
 
   @override

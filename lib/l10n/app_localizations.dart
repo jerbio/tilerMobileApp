@@ -6572,6 +6572,24 @@ abstract class AppLocalizations {
   /// **'Overflow'**
   String get editTileWhatIfOverflow;
 
+  /// No description provided for @editTileWhatIfMoreDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 more day affected} other{{count} more days affected}}'**
+  String editTileWhatIfMoreDays(int count);
+
+  /// No description provided for @editTileWhatIfUnplaced.
+  ///
+  /// In en, this message translates to:
+  /// **'No slot found'**
+  String get editTileWhatIfUnplaced;
+
+  /// No description provided for @editTileWhatIfAffectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tile affected} other{{count} tiles affected}}'**
+  String editTileWhatIfAffectedCount(int count);
+
   /// No description provided for @editTileWhatIfClean.
   ///
   /// In en, this message translates to:

@@ -3749,6 +3749,31 @@ class AppLocalizationsEs extends AppLocalizations {
   String get editTileWhatIfOverflow => 'Desbordados';
 
   @override
+  String editTileWhatIfMoreDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días más afectados',
+      one: '1 día más afectado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get editTileWhatIfUnplaced => 'Sin espacio disponible';
+
+  @override
+  String editTileWhatIfAffectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count mosaicos afectados',
+      one: '1 mosaico afectado',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get editTileWhatIfClean => 'No afecta a ningún otro tile.';
 
   @override

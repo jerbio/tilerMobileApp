@@ -34,6 +34,8 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileAct
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileSubmission.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/whatIfSummaryModel.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/whatIfSummarySheet.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/tileFormSections.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDateTimeChoices.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
@@ -226,53 +228,20 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
   Future<void> _showWhatIf() async {
     final WhatIfResult? result = _whatIf;
     if (result == null || result.isEmpty) return;
-    final l10n = AppLocalizations.of(context)!;
-    final tokens = TodayStatusTokens.of(context);
+    final WhatIfSummary summary = WhatIfSummary.from(
+      tardy: result.tardy,
+      overflow: result.overflow,
+    );
+    if (summary.isEmpty) return;
     await showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) {
-        final textTheme = Theme.of(ctx).textTheme;
-        Widget group(String title, List<SubCalendarEvent> tiles) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
-                  child: Text(title,
-                      style: textTheme.labelSmall?.copyWith(
-                          color: tokens.textSecondary, letterSpacing: 0.6)),
-                ),
-                for (final SubCalendarEvent t in tiles)
-                  ListTile(
-                    dense: true,
-                    leading: Icon(Icons.circle,
-                        size: 12, color: t.color ?? tokens.brand),
-                    title: Text(t.name ?? ''),
-                  ),
-              ],
-            );
-        return SafeArea(
-          child: SingleChildScrollView(
-            key: const ValueKey('editWhatIfSheet'),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
-                  child: Text(l10n.editTileWhatIfSheetTitle,
-                      style: textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600)),
-                ),
-                if (result.tardy.isNotEmpty)
-                  group(l10n.editTileWhatIfLate, result.tardy),
-                if (result.overflow.isNotEmpty)
-                  group(l10n.editTileWhatIfOverflow, result.overflow),
-                const SizedBox(height: 12),
-              ],
-            ),
-          ),
-        );
-      },
+      // The sheet pins its own header and scrolls the list under it, so it
+      // needs to own its height rather than shrink-wrap.
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.75,
+      ),
+      builder: (ctx) => WhatIfSummarySheet(summary: summary),
     );
   }
 

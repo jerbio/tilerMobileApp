@@ -62,3 +62,6 @@ androidRelease.sh
 iosRelease.sh
 
 spells/*
+l10n_diff/*
+l10n_workspace/*
+debug_tools/*
