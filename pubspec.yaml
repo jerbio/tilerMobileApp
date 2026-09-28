@@ -116,6 +116,7 @@ dependencies:
   # via googlesignin-ios 8.x). 9.0.0 is the last SPM-enabled release still on
   # AppAuth-iOS 1.7.x, keeping both plugins resolvable via SPM.
   flutter_appauth: 9.0.0
+  file_picker: ^11.0.3
 
 dev_dependencies:
   build_runner: ^2.4.5
