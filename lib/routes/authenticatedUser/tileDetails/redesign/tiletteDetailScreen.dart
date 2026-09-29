@@ -146,6 +146,15 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
       _showToast('Saved $name');
       return;
     }
+    // The Open action mirrors the row buttons' enabled/disabled look:
+    // brand primary when it can actually open the saved file, muted grey
+    // otherwise. The M3 default (theme grey on the light inverseSurface)
+    // made a fully functional action look disabled.
+    final theme = Theme.of(_hostContext);
+    final canOpen = attachmentId != null;
+    final actionColor = canOpen
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onInverseSurface.withValues(alpha: 0.38);
     debugPrint('[DownloadDiag] host: showing saved SnackBar '
         '("$name") with Open action id=$attachmentId');
     ScaffoldMessenger.of(_hostContext)
@@ -154,13 +163,15 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
         content: Text(l10n.commentsAttachmentSaved(name)),
         action: SnackBarAction(
           label: l10n.commentsAttachmentOpen,
-          onPressed: () {
-            if (attachmentId == null) return;
-            debugPrint(
-                '[DownloadDiag] host: Open action tapped id=$attachmentId');
-            _commentsBloc
-                ?.add(OpenAttachmentEvent(attachmentId: attachmentId, fileName: name));
-          },
+          textColor: actionColor,
+          onPressed: canOpen
+              ? () {
+                  debugPrint(
+                      '[DownloadDiag] host: Open action tapped id=$attachmentId');
+                  _commentsBloc?.add(OpenAttachmentEvent(
+                      attachmentId: attachmentId, fileName: name));
+                }
+              : () {},
         ),
       ));
   }
