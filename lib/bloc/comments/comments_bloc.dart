@@ -669,6 +669,13 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
     }
     debugPrint('[DownloadDiag] persist: using Dart fallback '
         '(platform=${Platform.operatingSystem})');
+    // Prefer the shared Downloads folder so the file is easy to find, but it
+    // is not guaranteed to exist — on iOS the OS does not pre-create a
+    // Downloads folder, so path_provider returns a path we must create on
+    // demand. If that is not possible we fall back to the temp dir, which is
+    // created by path_provider and always writable.
+    Directory dir = await getTemporaryDirectory();
+    var usingDownloads = false;
     Directory? targetDir;
     try {
       targetDir = await getDownloadsDirectory();
@@ -676,9 +683,23 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       targetDir = null;
       debugPrint('[DownloadDiag] persist: getDownloadsDirectory threw: $e');
     }
-    final dir = targetDir ?? (await getTemporaryDirectory());
+    if (targetDir != null) {
+      try {
+        // Create the folder on demand; a missing Downloads dir is the cause
+        // of the PathNotFoundException on iOS.
+        if (!targetDir.existsSync()) {
+          await targetDir.create(recursive: true);
+        }
+        dir = targetDir;
+        usingDownloads = true;
+      } catch (e) {
+        debugPrint('[DownloadDiag] persist: could not use ${targetDir.path} '
+            '($e); keeping the temp dir');
+      }
+    }
+    if (!dir.existsSync()) await dir.create(recursive: true);
     debugPrint('[DownloadDiag] persist: writing to dir=${dir.path} '
-        'isDownloadsDir=${targetDir != null}');
+        'isDownloadsDir=$usingDownloads exists=${dir.existsSync()}');
     final file = File(
         '${dir.path}${Platform.pathSeparator}comment_${_uuid.v4().substring(0, 8)}_$safeName');
     await file.writeAsBytes(bytes);
