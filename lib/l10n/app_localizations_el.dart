@@ -732,10 +732,11 @@ class AppLocalizationsEl extends AppLocalizations {
   String get todayStatusClearDay => 'Η μέρα σας είναι ελεύθερη.';
 
   @override
-  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+  String get todayStatusClearDayHeadline => 'Ήρεμη μέρα, χωρίς επείγοντα.';
 
   @override
-  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+  String get todayStatusClearDaySubtext =>
+      'Αφήστε τον Tiler να δουλεύει για εσάς.';
 
   @override
   String get todayStatusPreviewCta => 'Προεπισκόπηση βελτιωμένου προγράμματος';
@@ -1057,11 +1058,11 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get tileShareActivityInvitationUnknown =>
-      'Invitation send outcome unknown';
+      'Άγνωστο αποτέλεσμα αποστολής πρόσκλησης';
 
   @override
   String get tileShareActivityExplicitResend =>
-      'The invitation may have been sent. Resend explicitly if needed.';
+      'Η πρόσκληση ενδέχεται να έχει σταλεί. Επαναστείλετε την πρόσκληση ρητά, εάν χρειάζεται.';
 
   @override
   String get tileShareActivityEmail => 'Email';
@@ -1070,76 +1071,77 @@ class AppLocalizationsEl extends AppLocalizations {
   String get tileShareActivitySms => 'SMS';
 
   @override
-  String get tileShareActivityPush => 'Push notification';
+  String get tileShareActivityPush => 'Ειδοποίηση push';
 
   @override
-  String get tileShareActivityTitle => 'Activities';
+  String get tileShareActivityTitle => 'Δραστηριότητες';
 
   @override
-  String get tileShareActivityRefresh => 'Refresh';
+  String get tileShareActivityRefresh => 'Ενημέρωση';
 
   @override
-  String get tileShareActivityRetry => 'Retry';
+  String get tileShareActivityRetry => 'Επανάληψη';
 
   @override
-  String get tileShareActivityEmpty => 'No activity yet.';
+  String get tileShareActivityEmpty => 'Καμία δραστηριότητα ακόμη.';
 
   @override
   String get tileShareActivityFailed =>
-      'Activity could not be loaded. Check your connection and try again.';
+      'Δεν ήταν δυνατή η φόρτωση της δραστηριότητας. Ελέγξτε τη σύνδεσή σας και ξαναδοκιμάστε.';
 
   @override
   String get tileShareActivityAccess =>
-      'This activity is no longer available to you.';
+      'Αυτή η δραστηριότητα δεν είναι πλέον διαθέσιμη για εσάς.';
 
   @override
-  String get tileShareActivityUnknown => 'Activity updated';
+  String get tileShareActivityUnknown => 'Η δραστηριότητα ενημερώθηκε';
 
   @override
-  String get tileShareActivityUnavailable => 'Item no longer available';
+  String get tileShareActivityUnavailable =>
+      'Το στοιχείο δεν είναι πλέον διαθέσιμο';
 
   @override
-  String get tileShareActivityMore => 'Load more';
+  String get tileShareActivityMore => 'Περισσότερα';
 
   @override
-  String get tileShareActivityClusterCreated => 'TileShare created';
+  String get tileShareActivityClusterCreated => 'Δημιουργήθηκε TileShare';
 
   @override
-  String get tileShareActivityClusterDeleted => 'TileShare deleted';
+  String get tileShareActivityClusterDeleted => 'Διαγράφηκε TileShare';
 
   @override
-  String get tileShareActivityTiletteAdded => 'Tilette added';
+  String get tileShareActivityTiletteAdded => 'Προστέθηκε Tilette';
 
   @override
-  String get tileShareActivityTiletteEdited => 'Tilette updated';
+  String get tileShareActivityTiletteEdited => 'Ενημερώθηκε Tilette';
 
   @override
-  String get tileShareActivityTiletteDeleted => 'Tilette deleted';
+  String get tileShareActivityTiletteDeleted => 'Διαγράφηκε Tilette';
 
   @override
-  String get tileShareActivityTiletteRestored => 'Tilette restored';
+  String get tileShareActivityTiletteRestored => 'Επαναφέρθηκε Tilette';
 
   @override
-  String get tileShareActivityRecipientAdded => 'Participant added';
+  String get tileShareActivityRecipientAdded => 'Προστέθηκε συμμετέχων';
 
   @override
-  String get tileShareActivityRecipientRemoved => 'Participant removed';
+  String get tileShareActivityRecipientRemoved => 'Αφαιρέθηκε συμμετέχων';
 
   @override
-  String get tileShareActivityRecipientRestored => 'Participant restored';
+  String get tileShareActivityRecipientRestored => 'Επαναφέρθηκε συμμετέχων';
 
   @override
-  String get tileShareActivityAccepted => 'Assignment accepted';
+  String get tileShareActivityAccepted => 'Η ανάθεση αποδεκτή';
 
   @override
-  String get tileShareActivityDeclined => 'Assignment declined';
+  String get tileShareActivityDeclined => 'Η ανάθεση απορρίφθηκε';
 
   @override
-  String get tileShareActivityInvitationSent => 'Invitation sent';
+  String get tileShareActivityInvitationSent => 'Απεστάλη η πρόσκληση';
 
   @override
   String get tileShareActivityInvitationFailed =>
-      'Invitation could not be sent';
+      'Δεν ήταν δυνατή η αποστολή της πρόσκλησης';
 
   @override
   String get update => 'Ενημέρωση';
@@ -3779,22 +3781,22 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count more days affected',
-      one: '1 more day affected',
+      other: '$count επιπλέον ημέρες επηρεάστηκαν',
+      one: '1 επιπλέον ημέρα επηρεάστηκε',
     );
     return '$_temp0';
   }
 
   @override
-  String get editTileWhatIfUnplaced => 'Unplaced';
+  String get editTileWhatIfUnplaced => 'Μη τοποθετημένο';
 
   @override
   String editTileWhatIfAffectedCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count affected tiles',
-      one: '1 affected tile',
+      other: '$count πλακίδια επηρεάστηκαν',
+      one: '1 πλακίδιο επηρεάστηκε',
     );
     return '$_temp0';
   }
@@ -3965,13 +3967,13 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String addTileHoursEndsNextDay(String day, String time) {
-    return 'Ends $day at $time';
+    return 'Λήγει $day στις $time';
   }
 
   @override
   String addTileRestrictionWindowNextDay(
       String days, String start, String end) {
-    return '$days · $start – $end (next day)';
+    return '$days · $start – $end (επόμενη ημέρα)';
   }
 
   @override
@@ -4171,7 +4173,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get commentsAttachmentPickFailed =>
-      'Couldn\'t attach that file. Please try again.';
+      'Δεν ήταν δυνατή η σύνδεση του αρχείου. Παρακαλώ ξαναδοκιμάστε.';
 
   @override
   String commentsAttachmentRemove(String name) {

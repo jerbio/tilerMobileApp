@@ -710,10 +710,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get todayStatusClearDay => '今日は空いています。';
 
   @override
-  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+  String get todayStatusClearDayHeadline => '軽めの一日、至急の予定はありません。';
 
   @override
-  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+  String get todayStatusClearDaySubtext => 'Tilerにあなたの代わりに働かせてください。';
 
   @override
   String get todayStatusPreviewCta => 'より良いプランをプレビュー';
@@ -1029,90 +1029,86 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tileShare => 'タイル共有';
 
   @override
-  String get tileShareActivityInvitationUnknown =>
-      'Invitation send outcome unknown';
+  String get tileShareActivityInvitationUnknown => '招待の送信結果は不明です';
 
   @override
   String get tileShareActivityExplicitResend =>
-      'The invitation may have been sent. Resend explicitly if needed.';
+      '招待は送信されている可能性があります。必要に応じて明示的に再送信してください。';
 
   @override
-  String get tileShareActivityEmail => 'Email';
+  String get tileShareActivityEmail => 'メール';
 
   @override
   String get tileShareActivitySms => 'SMS';
 
   @override
-  String get tileShareActivityPush => 'Push notification';
+  String get tileShareActivityPush => 'プッシュ通知';
 
   @override
-  String get tileShareActivityTitle => 'Activities';
+  String get tileShareActivityTitle => 'アクティビティ';
 
   @override
-  String get tileShareActivityRefresh => 'Refresh';
+  String get tileShareActivityRefresh => '更新';
 
   @override
-  String get tileShareActivityRetry => 'Retry';
+  String get tileShareActivityRetry => '再試行';
 
   @override
-  String get tileShareActivityEmpty => 'No activity yet.';
+  String get tileShareActivityEmpty => 'まだアクティビティはありません。';
 
   @override
-  String get tileShareActivityFailed =>
-      'Activity could not be loaded. Check your connection and try again.';
+  String get tileShareActivityFailed => 'アクティビティを読み込めませんでした。接続を確認して再試行してください。';
 
   @override
-  String get tileShareActivityAccess =>
-      'This activity is no longer available to you.';
+  String get tileShareActivityAccess => 'このアクティビティはもう利用できません。';
 
   @override
-  String get tileShareActivityUnknown => 'Activity updated';
+  String get tileShareActivityUnknown => 'アクティビティが更新されました';
 
   @override
-  String get tileShareActivityUnavailable => 'Item no longer available';
+  String get tileShareActivityUnavailable => 'この項目はもう利用できません';
 
   @override
-  String get tileShareActivityMore => 'Load more';
+  String get tileShareActivityMore => 'さらに読み込む';
 
   @override
-  String get tileShareActivityClusterCreated => 'TileShare created';
+  String get tileShareActivityClusterCreated => 'TileShareを作成しました';
 
   @override
-  String get tileShareActivityClusterDeleted => 'TileShare deleted';
+  String get tileShareActivityClusterDeleted => 'TileShareを削除しました';
 
   @override
-  String get tileShareActivityTiletteAdded => 'Tilette added';
+  String get tileShareActivityTiletteAdded => 'Tiletteを追加しました';
 
   @override
-  String get tileShareActivityTiletteEdited => 'Tilette updated';
+  String get tileShareActivityTiletteEdited => 'Tiletteを更新しました';
 
   @override
-  String get tileShareActivityTiletteDeleted => 'Tilette deleted';
+  String get tileShareActivityTiletteDeleted => 'Tiletteを削除しました';
 
   @override
-  String get tileShareActivityTiletteRestored => 'Tilette restored';
+  String get tileShareActivityTiletteRestored => 'Tiletteを復元しました';
 
   @override
-  String get tileShareActivityRecipientAdded => 'Participant added';
+  String get tileShareActivityRecipientAdded => '参加者を追加しました';
 
   @override
-  String get tileShareActivityRecipientRemoved => 'Participant removed';
+  String get tileShareActivityRecipientRemoved => '参加者を削除しました';
 
   @override
-  String get tileShareActivityRecipientRestored => 'Participant restored';
+  String get tileShareActivityRecipientRestored => '参加者を復元しました';
 
   @override
-  String get tileShareActivityAccepted => 'Assignment accepted';
+  String get tileShareActivityAccepted => '割り当てを承諾しました';
 
   @override
-  String get tileShareActivityDeclined => 'Assignment declined';
+  String get tileShareActivityDeclined => '割り当てを辞退しました';
 
   @override
-  String get tileShareActivityInvitationSent => 'Invitation sent';
+  String get tileShareActivityInvitationSent => '招待を送信しました';
 
   @override
-  String get tileShareActivityInvitationFailed =>
-      'Invitation could not be sent';
+  String get tileShareActivityInvitationFailed => '招待を送信できませんでした';
 
   @override
   String get update => '更新';
@@ -3672,22 +3668,22 @@ class AppLocalizationsJa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count more days affected',
-      one: '1 more day affected',
+      other: '追加で$count日影響',
+      one: '追加で1日影響',
     );
     return '$_temp0';
   }
 
   @override
-  String get editTileWhatIfUnplaced => 'Unplaced';
+  String get editTileWhatIfUnplaced => '未配置';
 
   @override
   String editTileWhatIfAffectedCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count affected tiles',
-      one: '1 affected tile',
+      other: '影響を受けたタイル$count件',
+      one: '影響を受けたタイル1件',
     );
     return '$_temp0';
   }
@@ -3842,13 +3838,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String addTileHoursEndsNextDay(String day, String time) {
-    return 'Ends $day at $time';
+    return '$day $timeに終了';
   }
 
   @override
   String addTileRestrictionWindowNextDay(
       String days, String start, String end) {
-    return '$days · $start – $end (next day)';
+    return '$days · $start – $end（翌日）';
   }
 
   @override
@@ -4041,8 +4037,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commentsAttachmentUploadFailed => 'アップロードに失敗しました';
 
   @override
-  String get commentsAttachmentPickFailed =>
-      'Couldn\'t attach that file. Please try again.';
+  String get commentsAttachmentPickFailed => 'そのファイルを添付できませんでした。もう一度お試しください。';
 
   @override
   String commentsAttachmentRemove(String name) {
