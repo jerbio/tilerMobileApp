@@ -1,5 +1,8 @@
 import 'package:intl/intl.dart';
+import 'package:tiler_app/bloc/tileShare/tile_share_attention_state.dart';
+import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareAttention.dart';
+import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/modeBadge.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/statusPill.dart';
@@ -129,6 +132,39 @@ abstract final class AttentionCopy {
       case AttentionType.completed:
         return l10n.attentionCtaView;
     }
+  }
+
+  /// "Accept" — or "Accept all" for a Class, which answers every task at once.
+  static String acceptLabel(AppLocalizations l10n, TileShareMode? mode) =>
+      mode == TileShareMode.class_ ? l10n.attentionAcceptAll : l10n.attentionAccept;
+
+  static String declineLabel(AppLocalizations l10n, TileShareMode? mode) =>
+      mode == TileShareMode.class_
+          ? l10n.attentionDeclineAll
+          : l10n.attentionDecline;
+
+  /// The message under an answer that was just taken (with Undo), naming how
+  /// many tasks it covers when there are several.
+  static String answered(
+      AppLocalizations l10n, InvitationStatus status, int tasks) {
+    if (status == InvitationStatus.accepted) {
+      return tasks > 1
+          ? l10n.attentionAcceptDoneMany(tasks)
+          : l10n.attentionAcceptDone;
+    }
+    return tasks > 1
+        ? l10n.attentionDeclineDoneMany(tasks)
+        : l10n.attentionDeclineDone;
+  }
+
+  static String answerFailure(
+      AppLocalizations l10n, AttentionRespondFailure failure) {
+    if (failure.kind == AttentionRespondFailureKind.scheduleRefresh) {
+      return l10n.attentionScheduleRefreshFailed;
+    }
+    return failure.status == InvitationStatus.accepted
+        ? l10n.attentionAcceptFailed
+        : l10n.attentionDeclineFailed;
   }
 
   static String filterLabel(AppLocalizations l10n, String filterName) {

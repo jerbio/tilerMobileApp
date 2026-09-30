@@ -9,18 +9,71 @@
 //   * an invitation the user answered disappears locally (the response itself
 //     is Step 9.6);
 //   * each cluster's mode is resolved once and cached (the Invitations
-//     endpoint does not carry it).
+//     endpoint does not carry it);
+//   * an invitation is answered inline (T8, T20): the card disappears at once,
+//     the request is sent only after an undo window, Undo inside it sends
+//     nothing, a failure restores exactly what failed, and leaving the screen
+//     sends a pending answer straight away. Only Broadcast and Class can be
+//     answered inline; a Class answers every task it holds.
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_attention_cubit.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_attention_state.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareAttention.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
+import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 
 import 'helpers/tileshare_fakes.dart';
 import 'helpers/tileshare_fixtures.dart';
 
+/// Timers that only fire when the test says so, so the undo window is
+/// deterministic.
+class _ManualTimers {
+  final List<_ManualTimer> timers = <_ManualTimer>[];
+
+  Timer create(Duration duration, void Function() callback) {
+    final timer = _ManualTimer(duration, callback);
+    timers.add(timer);
+    return timer;
+  }
+
+  void fireAll() {
+    for (final timer in List<_ManualTimer>.of(timers)) {
+      timer.fire();
+    }
+  }
+
+  int get active => timers.where((t) => t.isActive).length;
+}
+
+class _ManualTimer implements Timer {
+  final Duration duration;
+  final void Function() _callback;
+  bool _active = true;
+
+  _ManualTimer(this.duration, this._callback);
+
+  void fire() {
+    if (!_active) return;
+    _active = false;
+    _callback();
+  }
+
+  @override
+  void cancel() => _active = false;
+
+  @override
+  bool get isActive => _active;
+
+  @override
+  int get tick => 0;
+}
+
 class _Rig {
+  final _ManualTimers timers = _ManualTimers();
+  final List<String> tags = <String>[];
   final FakeTileShareAttentionSources attention;
   final FakeTileShareAssignmentsSource assignments;
   final FakeTileShareClustersSource clusters;
@@ -40,6 +93,8 @@ class _Rig {
       clusters: this.clusters,
       currentUserId: () => userId,
       clock: () => kTileShareNow,
+      timerFactory: timers.create,
+      analytics: (tag, info) => tags.add(tag),
     );
   }
 
@@ -208,6 +263,137 @@ void main() {
       await rig2.cubit.load();
       expect(few.calls.length, 1, reason: 'a short page ends the paging');
       await rig2.close();
+    });
+  });
+
+  group('logging for diagnosis', () {
+    late List<String> logs;
+    late void Function(String) originalSink;
+
+    setUp(() {
+      logs = <String>[];
+      originalSink = TileShareLog.sink;
+      TileShareLog.sink = logs.add;
+    });
+    tearDown(() => TileShareLog.sink = originalSink);
+
+    bool logged(bool Function(String) test) => logs.any(test);
+
+    test('a failing source is logged with its name and its error', () async {
+      final rig = _Rig();
+      rig.attention.failNextOn('invitations', StateError('endpoint not deployed'));
+      rig.assignments.failNext(StateError('tiles unavailable'));
+      await rig.cubit.load();
+      expect(
+          logged((l) =>
+              l.contains('invitations') && l.contains('endpoint not deployed')),
+          isTrue,
+          reason: '$logs');
+      expect(
+          logged((l) =>
+              l.contains('received') && l.contains('tiles unavailable')),
+          isTrue,
+          reason: '$logs');
+      await rig.close();
+    });
+
+    test('every load says how many things each source returned', () async {
+      final rig = _Rig();
+      await rig.cubit.load();
+      final summary = logs.firstWhere((l) => l.contains('loaded'), orElse: () => '');
+      expect(summary, contains('invitations=1'));
+      expect(summary, contains('activity=1'));
+      expect(summary, contains('received=1'));
+      expect(summary, contains('3 items'));
+      expect(summary, isNot(contains('failed')));
+      await rig.close();
+    });
+
+    test('the summary counts the activity by event type, so events that '
+        'produce no card can be recognised', () async {
+      final rig = _Rig();
+      await rig.cubit.load();
+      final summary = logs.firstWhere((l) => l.contains('loaded'), orElse: () => '');
+      expect(summary, matches(RegExp(r'types=\{[a-z_]+:\d+')),
+          reason: summary);
+      await rig.close();
+    });
+
+    test('the summary names the sources that failed', () async {
+      final rig = _Rig();
+      rig.attention.failNextOn('invitations', StateError('x'));
+      await rig.cubit.load();
+      final summary = logs.firstWhere((l) => l.contains('loaded'), orElse: () => '');
+      expect(summary, contains('invitations=0'));
+      expect(summary, contains('failed: invitations'));
+      await rig.close();
+    });
+
+    test('nothing that looks like a failure is logged when all is well',
+        () async {
+      final rig = _Rig();
+      await rig.cubit.load();
+      expect(logged((l) => l.contains('failed')), isFalse, reason: '$logs');
+      await rig.close();
+    });
+
+    test('an inline answer is logged from start to finish', () async {
+      final rig = _Rig(
+          attention: FakeTileShareAttentionSources(
+              invitations: [tsInvitation('b1', 'c-bc')]),
+          assignments: FakeTileShareAssignmentsSource(),
+          clusters: FakeTileShareClustersSource(
+              inbox: [tsCluster('c-bc', mode: TileShareMode.broadcast)]));
+      await rig.cubit.load();
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      expect(logged((l) => l.contains('accepted') && l.contains('invitation:c-bc')),
+          isTrue,
+          reason: 'taking the answer: $logs');
+      rig.timers.fireAll();
+      await pumpEventQueue();
+      expect(logged((l) => l.contains('b1') && l.contains('ok')), isTrue,
+          reason: 'the request outcome: $logs');
+      await rig.close();
+    });
+
+    test('a refused answer and a failed schedule refresh are logged with '
+        'their errors', () async {
+      final rig = _Rig(
+          attention: FakeTileShareAttentionSources(invitations: [
+            tsInvitation('b1', 'c-bc'),
+          ]),
+          assignments: FakeTileShareAssignmentsSource(),
+          clusters: FakeTileShareClustersSource(
+              inbox: [tsCluster('c-bc', mode: TileShareMode.broadcast)]));
+      await rig.cubit.load();
+      rig.assignments.failNextOn('respond', StateError('server said no'));
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      rig.timers.fireAll();
+      await pumpEventQueue();
+      expect(logged((l) => l.contains('b1') && l.contains('server said no')),
+          isTrue,
+          reason: '$logs');
+
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      rig.assignments.failNextOn('afterAccept', StateError('refresh broke'));
+      rig.timers.fireAll();
+      await pumpEventQueue();
+      expect(logged((l) => l.contains('schedule') && l.contains('refresh broke')),
+          isTrue,
+          reason: '$logs');
+      await rig.close();
+    });
+
+    test('a refused dismissal is logged with the event id and the error',
+        () async {
+      final rig = _Rig();
+      await rig.cubit.load();
+      rig.attention.failNextOn('setDismissed', StateError('dismiss refused'));
+      await rig.cubit.resolve('declined:c-own');
+      expect(logged((l) => l.contains('e1') && l.contains('dismiss refused')),
+          isTrue,
+          reason: '$logs');
+      await rig.close();
     });
   });
 
@@ -502,6 +688,249 @@ void main() {
       await rig.cubit.refresh();
       expect(item().mode, TileShareMode.class_);
       await rig.close();
+    });
+  });
+  group('answer an invitation inline (T8, T20)', () {
+    _Rig answerRig() => _Rig(
+          attention: FakeTileShareAttentionSources(invitations: [
+            tsInvitation('b1', 'c-bc'),
+            tsInvitation('k1', 'c-class'),
+            tsInvitation('k2', 'c-class'),
+            tsInvitation('k3', 'c-class'),
+            tsInvitation('p1', 'c-proj'),
+            tsInvitation('p2', 'c-proj'),
+          ]),
+          assignments: FakeTileShareAssignmentsSource(),
+          clusters: FakeTileShareClustersSource(inbox: [
+            tsCluster('c-bc', mode: TileShareMode.broadcast),
+            tsCluster('c-class', mode: TileShareMode.class_),
+            tsCluster('c-proj', mode: TileShareMode.project),
+          ]),
+        );
+
+    List<String> sent(_Rig r) =>
+        r.assignments.calls.where((c) => c.startsWith('respond')).toList();
+    List<String> refreshed(_Rig r) =>
+        r.assignments.calls.where((c) => c.startsWith('afterAccept')).toList();
+    Future<void> elapse(_Rig r) async {
+      r.timers.fireAll();
+      await pumpEventQueue();
+    }
+
+    test('accepting hides the invitation at once and sends nothing yet',
+        () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      expect(rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted),
+          isTrue);
+      expect(_ids(rig.cubit.state), isNot(contains('invitation:c-bc')));
+      expect(sent(rig), isEmpty, reason: 'the request waits for the undo window');
+      expect(rig.timers.active, 1);
+      await rig.close();
+    });
+
+    test('undo inside the window restores the card and never sends a request',
+        () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      expect(rig.cubit.undoResponse('invitation:c-bc'), isTrue);
+      expect(_ids(rig.cubit.state), contains('invitation:c-bc'));
+      await elapse(rig);
+      expect(sent(rig), isEmpty);
+      expect(refreshed(rig), isEmpty);
+      await rig.close();
+    });
+
+    test('after the window the answer is sent once, then the schedule is '
+        'refreshed', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      await elapse(rig);
+      expect(sent(rig), ['respond(b1, accepted)']);
+      expect(refreshed(rig).length, 1);
+      final order = rig.assignments.calls
+          .where((c) => c.startsWith('respond') || c.startsWith('afterAccept'))
+          .toList();
+      expect(order, ['respond(b1, accepted)', 'afterAccept()']);
+      expect(_ids(rig.cubit.state), isNot(contains('invitation:c-bc')));
+      expect(rig.cubit.state.respondFailure, isNull);
+      await rig.close();
+    });
+
+    test('declining is sent but never re-analyses the schedule', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.declined);
+      await elapse(rig);
+      expect(sent(rig), ['respond(b1, declined)']);
+      expect(refreshed(rig), isEmpty);
+      await rig.close();
+    });
+
+    test('a Class answers every task it holds, one after another, then '
+        'refreshes once', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.cubit.respond('invitation:c-class', InvitationStatus.accepted);
+      await elapse(rig);
+      expect(sent(rig), [
+        'respond(k1, accepted)',
+        'respond(k2, accepted)',
+        'respond(k3, accepted)',
+      ]);
+      expect(refreshed(rig).length, 1);
+      await rig.close();
+    });
+
+    test('a Project cannot be answered inline, nor can an unknown mode',
+        () async {
+      final rig = answerRig();
+      rig.clusters.failNextOn('cluster(c-bc)', StateError('lookup failed'));
+      await rig.cubit.load();
+      expect(rig.cubit.respond('invitation:c-proj', InvitationStatus.accepted),
+          isFalse);
+      expect(rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted),
+          isFalse,
+          reason: 'mode unknown → no inline answer');
+      expect(_ids(rig.cubit.state),
+          containsAll(['invitation:c-proj', 'invitation:c-bc']));
+      expect(rig.timers.timers, isEmpty);
+      await rig.close();
+    });
+
+    test('only an invitation can be answered, and only with accept or decline',
+        () async {
+      final rig = _Rig();
+      await rig.cubit.load();
+      expect(rig.cubit.respond('declined:c-own', InvitationStatus.accepted),
+          isFalse);
+      expect(rig.cubit.respond('nope:x', InvitationStatus.accepted), isFalse);
+      expect(rig.cubit.respond('invitation:c-class', InvitationStatus.none),
+          isFalse);
+      await rig.close();
+    });
+
+    test('a second tap while the first is pending is ignored', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      expect(rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted),
+          isTrue);
+      expect(rig.cubit.respond('invitation:c-bc', InvitationStatus.declined),
+          isFalse);
+      await elapse(rig);
+      expect(sent(rig), ['respond(b1, accepted)']);
+      await rig.close();
+    });
+
+    test('once the send has started it is too late to undo', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      rig.assignments.hold();
+      rig.timers.fireAll();
+      await pumpEventQueue();
+      expect(rig.cubit.undoResponse('invitation:c-bc'), isFalse);
+      rig.assignments.release();
+      await pumpEventQueue();
+      expect(sent(rig), ['respond(b1, accepted)']);
+      await rig.close();
+    });
+
+    test('a failed answer puts the card back and says so', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.assignments.failNextOn('respond', StateError('offline'));
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      await elapse(rig);
+      expect(_ids(rig.cubit.state), contains('invitation:c-bc'));
+      final failure = rig.cubit.state.respondFailure!;
+      expect(failure.itemId, 'invitation:c-bc');
+      expect(failure.status, InvitationStatus.accepted);
+      expect(failure.kind, AttentionRespondFailureKind.answer);
+      expect(refreshed(rig), isEmpty, reason: 'nothing was accepted');
+      rig.cubit.acknowledgeFailure();
+      expect(rig.cubit.state.respondFailure, isNull);
+      await rig.close();
+    });
+
+    test('a Class where one task fails: only that task comes back, the rest '
+        'stay answered and the schedule still refreshes', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.assignments.failNextOn('respond(k2', StateError('one fails'));
+      rig.cubit.respond('invitation:c-class', InvitationStatus.accepted);
+      await elapse(rig);
+      final item = rig.cubit.state.items
+          .firstWhere((i) => i.id == 'invitation:c-class');
+      expect(item.assignmentIds, ['k2']);
+      expect(item.count, 1);
+      expect(refreshed(rig).length, 1, reason: 'k1 and k3 were accepted');
+      expect(rig.cubit.state.respondFailure?.kind,
+          AttentionRespondFailureKind.answer);
+      await rig.close();
+    });
+
+    test('the schedule refresh failing is reported, but the answer stands',
+        () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.assignments.failNextOn('afterAccept', StateError('refresh failed'));
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      await elapse(rig);
+      expect(_ids(rig.cubit.state), isNot(contains('invitation:c-bc')));
+      expect(rig.cubit.state.respondFailure?.kind,
+          AttentionRespondFailureKind.scheduleRefresh);
+      await rig.close();
+    });
+
+    test('leaving the screen sends a pending answer straight away', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      expect(sent(rig), isEmpty);
+      await rig.close();
+      expect(sent(rig), ['respond(b1, accepted)']);
+      expect(refreshed(rig).length, 1);
+      expect(rig.timers.active, 0, reason: 'the undo timer is cancelled');
+    });
+
+    test('flushPending sends immediately and only once', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.declined);
+      await rig.cubit.flushPending();
+      await rig.cubit.flushPending();
+      await elapse(rig);
+      expect(sent(rig), ['respond(b1, declined)']);
+      await rig.close();
+    });
+
+    test('a refresh while the answer is pending does not bring the card back',
+        () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      await rig.cubit.refresh();
+      expect(_ids(rig.cubit.state), isNot(contains('invitation:c-bc')));
+      await rig.close();
+    });
+
+    test('accept, decline and undo are tagged for analytics', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      rig.cubit.undoResponse('invitation:c-bc');
+      rig.cubit.respond('invitation:c-class', InvitationStatus.declined);
+      expect(rig.tags,
+          ['tileshare_accept', 'tileshare_undo', 'tileshare_decline']);
+      await rig.close();
+    });
+
+    test('the undo window is the documented five seconds by default', () {
+      expect(TileShareAttentionCubit.defaultUndoWindow,
+          const Duration(seconds: 5));
     });
   });
 }

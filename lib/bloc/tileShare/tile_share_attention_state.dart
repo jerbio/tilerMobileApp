@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareAttention.dart';
 
 /// Where the inbox is in its life.
@@ -32,6 +33,31 @@ class AttentionDismissFailure extends Equatable {
   List<Object?> get props => [itemId, wasUndo];
 }
 
+/// What went wrong with an inline answer to an invitation.
+enum AttentionRespondFailureKind {
+  /// The server refused (or could not be reached for) some or all of the
+  /// answers; those invitations are back on the list.
+  answer,
+
+  /// The answers were saved but the schedule could not be refreshed, so the
+  /// new tiles may take a moment to appear.
+  scheduleRefresh,
+}
+
+/// An inline answer that did not fully work.
+class AttentionRespondFailure extends Equatable {
+  final String itemId;
+
+  /// What the user was doing: accepting or declining.
+  final InvitationStatus status;
+  final AttentionRespondFailureKind kind;
+
+  const AttentionRespondFailure(this.itemId, this.status, this.kind);
+
+  @override
+  List<Object?> get props => [itemId, status, kind];
+}
+
 class TileShareAttentionState extends Equatable {
   final AttentionLoad load;
 
@@ -43,6 +69,7 @@ class TileShareAttentionState extends Equatable {
   /// one source failing never hides the others.
   final Set<AttentionSource> failedSources;
   final AttentionDismissFailure? dismissFailure;
+  final AttentionRespondFailure? respondFailure;
 
   const TileShareAttentionState({
     this.load = AttentionLoad.initial,
@@ -50,6 +77,7 @@ class TileShareAttentionState extends Equatable {
     this.items = const <AttentionItem>[],
     this.failedSources = const <AttentionSource>{},
     this.dismissFailure,
+    this.respondFailure,
   });
 
   TileShareAttentionState copyWith({
@@ -59,6 +87,8 @@ class TileShareAttentionState extends Equatable {
     Set<AttentionSource>? failedSources,
     AttentionDismissFailure? dismissFailure,
     bool clearDismissFailure = false,
+    AttentionRespondFailure? respondFailure,
+    bool clearRespondFailure = false,
   }) {
     return TileShareAttentionState(
       load: load ?? this.load,
@@ -67,10 +97,12 @@ class TileShareAttentionState extends Equatable {
       failedSources: failedSources ?? this.failedSources,
       dismissFailure:
           clearDismissFailure ? null : (dismissFailure ?? this.dismissFailure),
+      respondFailure:
+          clearRespondFailure ? null : (respondFailure ?? this.respondFailure),
     );
   }
 
   @override
   List<Object?> get props =>
-      [load, isRefreshing, items, failedSources, dismissFailure];
+      [load, isRefreshing, items, failedSources, dismissFailure, respondFailure];
 }

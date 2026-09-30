@@ -4401,4 +4401,179 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tileShareModeClass => 'Clase';
+
+  @override
+  String get attentionAccept => 'Aceptar';
+
+  @override
+  String get attentionDecline => 'Rechazar';
+
+  @override
+  String get attentionAcceptAll => 'Aceptar todo';
+
+  @override
+  String get attentionDeclineAll => 'Rechazar todo';
+
+  @override
+  String get attentionAcceptDone => 'Aceptado';
+
+  @override
+  String attentionAcceptDoneMany(int count) {
+    return 'Aceptaste $count tareas';
+  }
+
+  @override
+  String get attentionDeclineDone => 'Rechazado';
+
+  @override
+  String attentionDeclineDoneMany(int count) {
+    return 'Rechazaste $count tareas';
+  }
+
+  @override
+  String get attentionAcceptFailed => 'No se pudo aceptar. Inténtalo de nuevo.';
+
+  @override
+  String get attentionDeclineFailed =>
+      'No se pudo rechazar. Inténtalo de nuevo.';
+
+  @override
+  String get attentionScheduleRefreshFailed =>
+      'Aceptado, pero tu agenda aún no se pudo actualizar.';
+
+  @override
+  String get clusterTitleFallback => 'Compartido sin título';
+
+  @override
+  String get clusterRoleMine => 'Creado por ti';
+
+  @override
+  String clusterRoleFrom(String name) {
+    return 'De $name';
+  }
+
+  @override
+  String get clusterRoleShared => 'Compartido contigo';
+
+  @override
+  String clusterRsvpAccepted(int accepted, int total) {
+    return '$accepted de $total aceptaron';
+  }
+
+  @override
+  String clusterRsvpPeople(int accepted, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total personas',
+      one: '1 persona',
+    );
+    return '$accepted de $_temp0 aceptaron';
+  }
+
+  @override
+  String clusterRsvpTasks(int accepted, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total tareas',
+      one: '1 tarea',
+    );
+    return '$accepted de $_temp0 aceptadas';
+  }
+
+  @override
+  String get clusterRsvpUnavailable => 'Respuestas no disponibles';
+
+  @override
+  String get clusterMineAccepted => 'Aceptaste';
+
+  @override
+  String get clusterMineDeclined => 'Rechazaste';
+
+  @override
+  String get clusterMinePending => 'Necesita tu respuesta';
+
+  @override
+  String get clusterMineMixed => 'Respondido en parte';
+
+  @override
+  String clusterProjectNeedsAnswer(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tareas necesitan tu respuesta',
+      one: '1 tarea necesita tu respuesta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get clusterOverdue => 'Vencido';
+
+  @override
+  String get clusterMenuTooltip => 'Más acciones';
+
+  @override
+  String get clusterDelete => 'Eliminar';
+
+  @override
+  String get clusterDeleteTitle => '¿Eliminar este elemento compartido?';
+
+  @override
+  String clusterDeleteBody(String name) {
+    return '«$name» se eliminará. Esta acción no se puede deshacer.';
+  }
+
+  @override
+  String clusterDeleteFailed(String name) {
+    return 'No se pudo eliminar «$name». Volvió a tu lista.';
+  }
+
+  @override
+  String get clusterFilterAll => 'Todos';
+
+  @override
+  String get clusterFilterShared => 'Compartidos conmigo';
+
+  @override
+  String get clusterFilterCreated => 'Creados por mí';
+
+  @override
+  String get clusterEmptyAllTitle => 'Aún no hay nada compartido';
+
+  @override
+  String get clusterEmptyAllBody =>
+      'Comparte un tile con alguien y aparecerá aquí.';
+
+  @override
+  String get clusterEmptySharedTitle => 'Nada compartido contigo';
+
+  @override
+  String get clusterEmptySharedBody =>
+      'Cuando alguien comparta un tile contigo, aparecerá aquí.';
+
+  @override
+  String get clusterEmptyCreatedTitle => 'No has compartido nada';
+
+  @override
+  String get clusterEmptyCreatedBody =>
+      'Comparte un tile para ver quién lo ha aceptado.';
+
+  @override
+  String get clusterEmptyAction => 'Compartir un tile';
+
+  @override
+  String get clusterLoadFailed =>
+      'Algunos elementos compartidos no se pudieron cargar';
+
+  @override
+  String get clusterLoadFailedAll =>
+      'No se pudieron cargar los elementos compartidos';
+
+  @override
+  String get clusterLoadMore => 'Cargar más';
+
+  @override
+  String get clusterLoadMoreFailed => 'No se pudo cargar más';
 }

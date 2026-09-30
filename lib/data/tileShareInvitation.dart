@@ -49,3 +49,34 @@ class TileShareInvitationPage {
             .toList(),
         nextCursor = json['nextCursor'] as String?;
 }
+
+/// One project (cluster) the signed-in user has pending invitations in — what
+/// `GET api/TileShare/Invitations` answers when it is not scoped to a cluster.
+/// The per-task invitations come from the scoped call.
+class TileShareInvitationProject {
+  final String clusterId;
+  final String? name;
+  final int pendingCount;
+
+  const TileShareInvitationProject(this.clusterId, this.name, this.pendingCount);
+
+  TileShareInvitationProject.fromJson(Map<String, dynamic> json)
+      : clusterId = (json['clusterId'] ?? '').toString(),
+        name = json['name'] as String?,
+        pendingCount =
+            json['pendingCount'] is num ? (json['pendingCount'] as num).toInt() : 0;
+}
+
+class TileShareInvitationProjectPage {
+  final List<TileShareInvitationProject> items;
+  final String? nextCursor;
+
+  const TileShareInvitationProjectPage(this.items, [this.nextCursor]);
+
+  TileShareInvitationProjectPage.fromJson(Map<String, dynamic> json)
+      : items = (json['projects'] as List)
+            .map((e) =>
+                TileShareInvitationProject.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        nextCursor = json['nextCursor'] as String?;
+}

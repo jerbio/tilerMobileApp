@@ -4431,4 +4431,176 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tileShareModeClass => 'Class';
+
+  @override
+  String get attentionAccept => 'Accept';
+
+  @override
+  String get attentionDecline => 'Decline';
+
+  @override
+  String get attentionAcceptAll => 'Accept all';
+
+  @override
+  String get attentionDeclineAll => 'Decline all';
+
+  @override
+  String get attentionAcceptDone => 'Accepted';
+
+  @override
+  String attentionAcceptDoneMany(int count) {
+    return 'Accepted $count tasks';
+  }
+
+  @override
+  String get attentionDeclineDone => 'Declined';
+
+  @override
+  String attentionDeclineDoneMany(int count) {
+    return 'Declined $count tasks';
+  }
+
+  @override
+  String get attentionAcceptFailed => 'Couldn’t accept it. Try again.';
+
+  @override
+  String get attentionDeclineFailed => 'Couldn’t decline it. Try again.';
+
+  @override
+  String get attentionScheduleRefreshFailed =>
+      'Accepted, but your schedule couldn’t refresh yet.';
+
+  @override
+  String get clusterTitleFallback => 'Untitled share';
+
+  @override
+  String get clusterRoleMine => 'Created by you';
+
+  @override
+  String clusterRoleFrom(String name) {
+    return 'From $name';
+  }
+
+  @override
+  String get clusterRoleShared => 'Shared with you';
+
+  @override
+  String clusterRsvpAccepted(int accepted, int total) {
+    return '$accepted of $total accepted';
+  }
+
+  @override
+  String clusterRsvpPeople(int accepted, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total people',
+      one: '1 person',
+    );
+    return '$accepted of $_temp0 accepted';
+  }
+
+  @override
+  String clusterRsvpTasks(int accepted, int total) {
+    String _temp0 = intl.Intl.pluralLogic(
+      total,
+      locale: localeName,
+      other: '$total tasks',
+      one: '1 task',
+    );
+    return '$accepted of $_temp0 accepted';
+  }
+
+  @override
+  String get clusterRsvpUnavailable => 'Responses unavailable';
+
+  @override
+  String get clusterMineAccepted => 'You accepted';
+
+  @override
+  String get clusterMineDeclined => 'You declined';
+
+  @override
+  String get clusterMinePending => 'Needs your answer';
+
+  @override
+  String get clusterMineMixed => 'Partly answered';
+
+  @override
+  String clusterProjectNeedsAnswer(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tasks need your response',
+      one: '1 task needs your response',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get clusterOverdue => 'Overdue';
+
+  @override
+  String get clusterMenuTooltip => 'More actions';
+
+  @override
+  String get clusterDelete => 'Delete';
+
+  @override
+  String get clusterDeleteTitle => 'Delete this share?';
+
+  @override
+  String clusterDeleteBody(String name) {
+    return '“$name” will be deleted. This can’t be undone.';
+  }
+
+  @override
+  String clusterDeleteFailed(String name) {
+    return 'Couldn’t delete “$name”. It’s back in your list.';
+  }
+
+  @override
+  String get clusterFilterAll => 'All';
+
+  @override
+  String get clusterFilterShared => 'Shared with me';
+
+  @override
+  String get clusterFilterCreated => 'Created by me';
+
+  @override
+  String get clusterEmptyAllTitle => 'Nothing shared yet';
+
+  @override
+  String get clusterEmptyAllBody =>
+      'Share a tile with someone and it will show up here.';
+
+  @override
+  String get clusterEmptySharedTitle => 'Nothing shared with you';
+
+  @override
+  String get clusterEmptySharedBody =>
+      'When someone shares a tile with you it will appear here.';
+
+  @override
+  String get clusterEmptyCreatedTitle => 'You haven’t shared anything';
+
+  @override
+  String get clusterEmptyCreatedBody =>
+      'Share a tile to see who has accepted it.';
+
+  @override
+  String get clusterEmptyAction => 'Share a tile';
+
+  @override
+  String get clusterLoadFailed => 'Some shares couldn’t load';
+
+  @override
+  String get clusterLoadFailedAll => 'Shares couldn’t load';
+
+  @override
+  String get clusterLoadMore => 'Load more';
+
+  @override
+  String get clusterLoadMoreFailed => 'Couldn’t load more';
 }

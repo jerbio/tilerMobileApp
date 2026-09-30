@@ -11,6 +11,7 @@ import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/services/api/tileShareInvitationsApi.dart';
 import 'package:tiler_app/services/api/userApi.dart';
 import 'package:tiler_app/services/tileShare/liveTileShareSources.dart';
+import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 
 /// The Attention inbox wired to the real backend: builds the live sources and
 /// the cubit, learns who the signed-in user is (so their own actions are left
@@ -55,8 +56,12 @@ class _TileShareAttentionTabState extends State<TileShareAttentionTab> {
   Future<void> _start() async {
     try {
       _userId = (await _userApi.getUserProfile())?.id;
-    } catch (_) {
+      TileShareLog.d('TileShareAttention',
+          'signed-in user ${_userId == null ? 'unknown' : 'known'}');
+    } catch (error) {
       // Without the id the user's own actions simply are not filtered out.
+      TileShareLog.d('TileShareAttention',
+          'signed-in user unknown (profile failed: $error)');
     }
     if (mounted) _cubit.load();
   }
@@ -73,12 +78,15 @@ class _TileShareAttentionTabState extends State<TileShareAttentionTab> {
 
   @override
   void dispose() {
-    _cubit.close();
-    _invitationsApi.dispose();
-    _activityApi.dispose();
-    _clusterApi.dispose();
-    _scheduleApi.dispose();
-    _userApi.dispose();
+    // Closing the cubit sends an answer still inside its undo window; the API
+    // clients must stay open until that has finished.
+    _cubit.close().whenComplete(() {
+      _invitationsApi.dispose();
+      _activityApi.dispose();
+      _clusterApi.dispose();
+      _scheduleApi.dispose();
+      _userApi.dispose();
+    });
     super.dispose();
   }
 

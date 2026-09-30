@@ -125,6 +125,30 @@ Future<void> _pumpView(WidgetTester tester, _Rig rig,
 Finder _card(String id) => find.byKey(ValueKey('attention_card_$id'));
 Finder _chip(String name) => find.byKey(Key('attention_chip_$name'));
 
+double _luminance(Color c) => c.computeLuminance();
+
+/// WCAG contrast ratio between two colours (opaque).
+double _contrast(Color a, Color b) {
+  final hi = _luminance(a) > _luminance(b) ? a : b;
+  final lo = identical(hi, a) ? b : a;
+  return (_luminance(hi) + 0.05) / (_luminance(lo) + 0.05);
+}
+
+/// The Undo action must be legible on the snack bar it sits on (its default
+/// colour looks disabled, and the brand red is too faint on the light theme's
+/// translucent-black bar). The bar's colour is blended over the page.
+void _expectLegibleUndo(WidgetTester tester) {
+  final action = tester.widget<SnackBarAction>(find.byType(SnackBarAction));
+  final theme =
+      Theme.of(tester.element(find.byType(TileShareAttentionView)));
+  final background = Color.alphaBlend(
+      theme.snackBarTheme.backgroundColor ?? theme.colorScheme.inverseSurface,
+      theme.scaffoldBackgroundColor);
+  expect(action.textColor, isNotNull);
+  expect(_contrast(action.textColor!, background), greaterThanOrEqualTo(3.0),
+      reason: 'Undo must be readable against the snack bar');
+}
+
 /// Opens a card's overflow menu, lets its route finish animating, and picks
 /// Dismiss.
 Future<void> _chooseDismiss(WidgetTester tester, String itemId) async {
@@ -143,7 +167,11 @@ Future<void> _tapChip(WidgetTester tester, String name) async {
 
 // ---- card in isolation -----------------------------------------------------
 
-Widget _cardApp(AttentionItem item, {ThemeData? theme, VoidCallback? onDismiss}) =>
+Widget _cardApp(AttentionItem item,
+        {ThemeData? theme,
+        VoidCallback? onDismiss,
+        VoidCallback? onAccept,
+        VoidCallback? onDecline}) =>
     MaterialApp(
       theme: theme ?? TileThemeData.lightTheme,
       localizationsDelegates: const [
@@ -156,12 +184,23 @@ Widget _cardApp(AttentionItem item, {ThemeData? theme, VoidCallback? onDismiss})
       home: Scaffold(
           body: SingleChildScrollView(
               child: AttentionCard(
-                  item: item, onOpen: () {}, onDismiss: onDismiss))),
+                  item: item,
+                  onOpen: () {},
+                  onDismiss: onDismiss,
+                  onAccept: onAccept,
+                  onDecline: onDecline))),
     );
 
 Future<void> _pumpCard(WidgetTester tester, AttentionItem item,
-    {ThemeData? theme, VoidCallback? onDismiss}) async {
-  await tester.pumpWidget(_cardApp(item, theme: theme, onDismiss: onDismiss));
+    {ThemeData? theme,
+    VoidCallback? onDismiss,
+    VoidCallback? onAccept,
+    VoidCallback? onDecline}) async {
+  await tester.pumpWidget(_cardApp(item,
+      theme: theme,
+      onDismiss: onDismiss,
+      onAccept: onAccept,
+      onDecline: onDecline));
   await tester.pump();
 }
 
@@ -427,6 +466,100 @@ void main() {
     });
   });
 
+  group('AttentionCard inline answers (T20)', () {
+    AttentionItem invitation(TileShareMode? mode, {int count = 1}) =>
+        AttentionItem(
+            type: AttentionType.invitation,
+            clusterId: 'c',
+            clusterTitle: 'Launch Prep',
+            inviterName: 'Sarah',
+            mode: mode,
+            count: count,
+            assignmentIds: [for (int i = 0; i < count; i++) 'a$i']);
+
+    Finder accept() => find.byKey(const Key('attention_accept_invitation:c'));
+    Finder decline() => find.byKey(const Key('attention_decline_invitation:c'));
+
+    testWidgets('a Broadcast invitation offers Accept and Decline',
+        (tester) async {
+      await _pumpCard(tester, invitation(TileShareMode.broadcast),
+          onAccept: () {}, onDecline: () {});
+      expect(find.descendant(of: accept(), matching: find.text('Accept')),
+          findsOneWidget);
+      expect(find.descendant(of: decline(), matching: find.text('Decline')),
+          findsOneWidget);
+      expect(find.text('Review'), findsOneWidget,
+          reason: 'opening the invitation stays available');
+    });
+
+    testWidgets('a Class invitation offers Accept all and Decline all',
+        (tester) async {
+      await _pumpCard(tester, invitation(TileShareMode.class_, count: 3),
+          onAccept: () {}, onDecline: () {});
+      expect(find.text('Accept all'), findsOneWidget);
+      expect(find.text('Decline all'), findsOneWidget);
+    });
+
+    testWidgets('a Project invitation only offers Review — never Accept all',
+        (tester) async {
+      await _pumpCard(tester, invitation(TileShareMode.project, count: 3),
+          onAccept: () {}, onDecline: () {});
+      expect(accept(), findsNothing);
+      expect(decline(), findsNothing);
+      expect(find.text('Accept all'), findsNothing);
+      expect(find.text('Review'), findsOneWidget);
+    });
+
+    testWidgets('an unknown mode only offers Review', (tester) async {
+      await _pumpCard(tester, invitation(null),
+          onAccept: () {}, onDecline: () {});
+      expect(accept(), findsNothing);
+      expect(find.text('Review'), findsOneWidget);
+    });
+
+    testWidgets('no answer handlers → no buttons', (tester) async {
+      await _pumpCard(tester, invitation(TileShareMode.broadcast));
+      expect(accept(), findsNothing);
+    });
+
+    testWidgets('only invitations get the buttons', (tester) async {
+      await _pumpCard(
+          tester,
+          const AttentionItem(
+              type: AttentionType.declined,
+              clusterId: 'c',
+              clusterTitle: 'C',
+              mode: TileShareMode.broadcast,
+              eventIds: ['e']),
+          onAccept: () {},
+          onDecline: () {});
+      expect(find.text('Accept'), findsNothing);
+      expect(find.text('View'), findsOneWidget);
+    });
+
+    testWidgets('the buttons call their handlers', (tester) async {
+      int accepted = 0, declined = 0;
+      await _pumpCard(tester, invitation(TileShareMode.broadcast),
+          onAccept: () => accepted++, onDecline: () => declined++);
+      await tester.tap(accept());
+      await tester.tap(decline());
+      expect((accepted, declined), (1, 1));
+    });
+
+    testWidgets('the buttons fit a narrow phone without overflowing',
+        (tester) async {
+      tester.view.physicalSize = const Size(320, 700);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      await _pumpCard(tester, invitation(TileShareMode.class_, count: 3),
+          onAccept: () {}, onDecline: () {});
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('the screen', () {
     testWidgets('lists every item in urgency order with its pill and action',
         (tester) async {
@@ -516,6 +649,170 @@ void main() {
       await _pumpView(tester, rig, theme: TileThemeData.darkTheme);
       expect(tester.takeException(), isNull);
       expect(_card('invitation:c-class'), findsOneWidget);
+      await rig.cubit.close();
+    });
+  });
+
+  group('answering an invitation on the screen', () {
+    _Rig answerRig() => _Rig(
+          attention: FakeTileShareAttentionSources(invitations: [
+            tsInvitation('b1', 'c-bc'),
+            tsInvitation('k1', 'c-class'),
+            tsInvitation('k2', 'c-class'),
+            tsInvitation('p1', 'c-proj'),
+          ]),
+          assignments: FakeTileShareAssignmentsSource(),
+          clusters: FakeTileShareClustersSource(inbox: [
+            tsCluster('c-bc', mode: TileShareMode.broadcast),
+            tsCluster('c-class', mode: TileShareMode.class_),
+            tsCluster('c-proj', mode: TileShareMode.project),
+          ]),
+        );
+
+    Finder accept(String c) => find.byKey(Key('attention_accept_invitation:$c'));
+    Finder decline(String c) =>
+        find.byKey(Key('attention_decline_invitation:$c'));
+    List<String> sent(_Rig r) =>
+        r.assignments.calls.where((c) => c.startsWith('respond')).toList();
+    List<String> refreshed(_Rig r) =>
+        r.assignments.calls.where((c) => c.startsWith('afterAccept')).toList();
+
+    testWidgets('each mode shows its own buttons', (tester) async {
+      final rig = answerRig();
+      await _pumpView(tester, rig);
+      expect(accept('c-bc'), findsOneWidget);
+      expect(find.descendant(of: accept('c-class'), matching: find.text('Accept all')),
+          findsOneWidget);
+      expect(accept('c-proj'), findsNothing, reason: 'a Project is reviewed');
+      await rig.cubit.close();
+    });
+
+    testWidgets('Accept removes the card, offers Undo, and Undo brings it '
+        'back without sending anything', (tester) async {
+      final rig = answerRig();
+      await _pumpView(tester, rig);
+      await tester.tap(accept('c-bc'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(_card('invitation:c-bc'), findsNothing);
+      expect(find.text('Accepted'), findsOneWidget);
+      expect(find.text('Undo'), findsOneWidget);
+
+      await tester.tap(find.text('Undo'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(_card('invitation:c-bc'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 10));
+      expect(sent(rig), isEmpty, reason: 'undone inside the window');
+      await rig.cubit.close();
+    });
+
+    testWidgets('after the window the answer is sent and the schedule '
+        'refreshed', (tester) async {
+      final rig = answerRig();
+      await _pumpView(tester, rig);
+      await tester.tap(accept('c-bc'));
+      await tester.pump();
+      expect(sent(rig), isEmpty);
+      await tester.pump(TileShareAttentionCubit.defaultUndoWindow +
+          const Duration(seconds: 1));
+      expect(sent(rig), ['respond(b1, accepted)']);
+      expect(refreshed(rig).length, 1);
+      expect(_card('invitation:c-bc'), findsNothing);
+      await rig.cubit.close();
+    });
+
+    testWidgets('the Undo action is readable: the theme default looks disabled',
+        (tester) async {
+      final rig = answerRig();
+      await _pumpView(tester, rig);
+      await tester.tap(accept('c-bc'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      _expectLegibleUndo(tester);
+      await rig.cubit.close();
+    });
+
+    testWidgets('the Undo action is readable in the dark theme too',
+        (tester) async {
+      final rig = answerRig();
+      await _pumpView(tester, rig, theme: TileThemeData.darkTheme);
+      await tester.tap(accept('c-bc'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      _expectLegibleUndo(tester);
+      await rig.cubit.close();
+    });
+
+    testWidgets('the answer message goes away by itself', (tester) async {
+      final rig = answerRig();
+      await _pumpView(tester, rig);
+      await tester.tap(accept('c-bc'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Accepted'), findsOneWidget);
+      await tester.pump(TileShareAttentionCubit.defaultUndoWindow); // times out
+      await tester.pump(const Duration(milliseconds: 500)); // and slides away
+      expect(find.text('Accepted'), findsNothing);
+      await rig.cubit.close();
+    });
+
+    testWidgets('Decline sends a decline and never refreshes the schedule',
+        (tester) async {
+      final rig = answerRig();
+      await _pumpView(tester, rig);
+      await tester.tap(decline('c-bc'));
+      await tester.pump();
+      expect(find.text('Declined'), findsWidgets);
+      await tester.pump(TileShareAttentionCubit.defaultUndoWindow +
+          const Duration(seconds: 1));
+      expect(sent(rig), ['respond(b1, declined)']);
+      expect(refreshed(rig), isEmpty);
+      await rig.cubit.close();
+    });
+
+    testWidgets('a Class says how many tasks it answered', (tester) async {
+      final rig = answerRig();
+      await _pumpView(tester, rig);
+      await tester.tap(accept('c-class'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Accepted 2 tasks'), findsOneWidget);
+      await tester.pump(TileShareAttentionCubit.defaultUndoWindow +
+          const Duration(seconds: 1));
+      expect(sent(rig), ['respond(k1, accepted)', 'respond(k2, accepted)']);
+      await rig.cubit.close();
+    });
+
+    testWidgets('a refused answer puts the card back and says so',
+        (tester) async {
+      final rig = answerRig();
+      await _pumpView(tester, rig);
+      rig.assignments.failNextOn('respond', StateError('offline'));
+      await tester.tap(accept('c-bc'));
+      await tester.pump();
+      await tester.pump(TileShareAttentionCubit.defaultUndoWindow +
+          const Duration(seconds: 1));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(_card('invitation:c-bc'), findsOneWidget);
+      expect(find.text('Couldn’t accept it. Try again.'), findsOneWidget);
+      expect(rig.cubit.state.respondFailure, isNull, reason: 'acknowledged');
+      await rig.cubit.close();
+    });
+
+    testWidgets('a schedule refresh that fails is reported, and the card '
+        'stays gone', (tester) async {
+      final rig = answerRig();
+      await _pumpView(tester, rig);
+      rig.assignments.failNextOn('afterAccept', StateError('refresh failed'));
+      await tester.tap(accept('c-bc'));
+      await tester.pump();
+      await tester.pump(TileShareAttentionCubit.defaultUndoWindow +
+          const Duration(seconds: 1));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(_card('invitation:c-bc'), findsNothing);
+      expect(find.text('Accepted, but your schedule couldn’t refresh yet.'),
+          findsOneWidget);
       await rig.cubit.close();
     });
   });
@@ -624,6 +921,30 @@ void main() {
       await rig.cubit.close();
     });
 
+    testWidgets('the Undo action on the dismiss message is readable too',
+        (tester) async {
+      final rig = _Rig();
+      await _pumpView(tester, rig);
+      await _chooseDismiss(tester, 'declined:c-own');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      _expectLegibleUndo(tester);
+      await rig.cubit.close();
+    });
+
+    testWidgets('the dismiss message goes away by itself', (tester) async {
+      final rig = _Rig();
+      await _pumpView(tester, rig);
+      await _chooseDismiss(tester, 'declined:c-own');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Dismissed'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 5)); // the message times out
+      await tester.pump(const Duration(milliseconds: 500)); // and slides away
+      expect(find.text('Dismissed'), findsNothing);
+      await rig.cubit.close();
+    });
+
     testWidgets('invitation and at-risk cards have no dismiss menu',
         (tester) async {
       final rig = _Rig();
@@ -667,6 +988,50 @@ void main() {
       expect(find.byKey(const Key('attention_error_banner')), findsNothing);
       expect(_card('declined:c-own'), findsOneWidget);
       await rig.cubit.close();
+    });
+
+    testWidgets('a source failing with nothing else to show does NOT claim '
+        'you are all caught up', (tester) async {
+      final rig = _Rig(
+          attention: FakeTileShareAttentionSources(),
+          assignments: FakeTileShareAssignmentsSource(),
+          clusters: FakeTileShareClustersSource());
+      rig.attention.failNextOn('invitations', StateError('not deployed'));
+      await _pumpView(tester, rig);
+      expect(find.byKey(const Key('attention_empty')), findsNothing,
+          reason: 'we could not check everything');
+      expect(find.text('You’re all caught up'), findsNothing);
+      expect(find.text('Some updates couldn’t load'), findsOneWidget,
+          reason: 'said once, not as a banner AND an empty state');
+      expect(find.text('Retry'), findsOneWidget);
+
+      await tester.tap(find.text('Retry'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byKey(const Key('attention_empty')), findsOneWidget,
+          reason: 'now every source answered, so it is honestly empty');
+      await rig.cubit.close();
+    });
+
+    testWidgets('the banner’s Retry is readable in both themes',
+        (tester) async {
+      for (final theme in [TileThemeData.lightTheme, TileThemeData.darkTheme]) {
+        final rig = _Rig();
+        rig.attention.failNextOn('activity', StateError('feed down'));
+        await _pumpView(tester, rig, theme: theme);
+        final banner = find.byKey(const Key('attention_error_banner'));
+        expect(banner, findsOneWidget);
+        final retry = tester.widget<TextButton>(
+            find.descendant(of: banner, matching: find.byType(TextButton)));
+        final color = retry.style!.foregroundColor!.resolve(<WidgetState>{})!;
+        final background = Color.alphaBlend(
+            theme.colorScheme.errorContainer.withValues(alpha: 0.5),
+            theme.scaffoldBackgroundColor);
+        expect(_contrast(color, background), greaterThanOrEqualTo(3.0),
+            reason: 'Retry on the ${theme.brightness.name} banner');
+        await rig.cubit.close();
+        await tester.pumpWidget(const SizedBox());
+      }
     });
 
     testWidgets('everything failing shows one error state with Retry',

@@ -7603,6 +7603,270 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Class'**
   String get tileShareModeClass;
+
+  /// No description provided for @attentionAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get attentionAccept;
+
+  /// No description provided for @attentionDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get attentionDecline;
+
+  /// No description provided for @attentionAcceptAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept all'**
+  String get attentionAcceptAll;
+
+  /// No description provided for @attentionDeclineAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline all'**
+  String get attentionDeclineAll;
+
+  /// No description provided for @attentionAcceptDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get attentionAcceptDone;
+
+  /// No description provided for @attentionAcceptDoneMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted {count} tasks'**
+  String attentionAcceptDoneMany(int count);
+
+  /// No description provided for @attentionDeclineDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get attentionDeclineDone;
+
+  /// No description provided for @attentionDeclineDoneMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined {count} tasks'**
+  String attentionDeclineDoneMany(int count);
+
+  /// No description provided for @attentionAcceptFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t accept it. Try again.'**
+  String get attentionAcceptFailed;
+
+  /// No description provided for @attentionDeclineFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t decline it. Try again.'**
+  String get attentionDeclineFailed;
+
+  /// No description provided for @attentionScheduleRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted, but your schedule couldn’t refresh yet.'**
+  String get attentionScheduleRefreshFailed;
+
+  /// No description provided for @clusterTitleFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled share'**
+  String get clusterTitleFallback;
+
+  /// No description provided for @clusterRoleMine.
+  ///
+  /// In en, this message translates to:
+  /// **'Created by you'**
+  String get clusterRoleMine;
+
+  /// No description provided for @clusterRoleFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From {name}'**
+  String clusterRoleFrom(String name);
+
+  /// No description provided for @clusterRoleShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared with you'**
+  String get clusterRoleShared;
+
+  /// No description provided for @clusterRsvpAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'{accepted} of {total} accepted'**
+  String clusterRsvpAccepted(int accepted, int total);
+
+  /// No description provided for @clusterRsvpPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'{accepted} of {total, plural, =1{1 person} other{{total} people}} accepted'**
+  String clusterRsvpPeople(int accepted, int total);
+
+  /// No description provided for @clusterRsvpTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'{accepted} of {total, plural, =1{1 task} other{{total} tasks}} accepted'**
+  String clusterRsvpTasks(int accepted, int total);
+
+  /// No description provided for @clusterRsvpUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Responses unavailable'**
+  String get clusterRsvpUnavailable;
+
+  /// No description provided for @clusterMineAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'You accepted'**
+  String get clusterMineAccepted;
+
+  /// No description provided for @clusterMineDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'You declined'**
+  String get clusterMineDeclined;
+
+  /// No description provided for @clusterMinePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs your answer'**
+  String get clusterMinePending;
+
+  /// No description provided for @clusterMineMixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Partly answered'**
+  String get clusterMineMixed;
+
+  /// No description provided for @clusterProjectNeedsAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 task needs your response} other{{count} tasks need your response}}'**
+  String clusterProjectNeedsAnswer(int count);
+
+  /// No description provided for @clusterOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get clusterOverdue;
+
+  /// No description provided for @clusterMenuTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get clusterMenuTooltip;
+
+  /// No description provided for @clusterDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get clusterDelete;
+
+  /// No description provided for @clusterDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this share?'**
+  String get clusterDeleteTitle;
+
+  /// No description provided for @clusterDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'“{name}” will be deleted. This can’t be undone.'**
+  String clusterDeleteBody(String name);
+
+  /// No description provided for @clusterDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t delete “{name}”. It’s back in your list.'**
+  String clusterDeleteFailed(String name);
+
+  /// No description provided for @clusterFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get clusterFilterAll;
+
+  /// No description provided for @clusterFilterShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared with me'**
+  String get clusterFilterShared;
+
+  /// No description provided for @clusterFilterCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created by me'**
+  String get clusterFilterCreated;
+
+  /// No description provided for @clusterEmptyAllTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing shared yet'**
+  String get clusterEmptyAllTitle;
+
+  /// No description provided for @clusterEmptyAllBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Share a tile with someone and it will show up here.'**
+  String get clusterEmptyAllBody;
+
+  /// No description provided for @clusterEmptySharedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing shared with you'**
+  String get clusterEmptySharedTitle;
+
+  /// No description provided for @clusterEmptySharedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When someone shares a tile with you it will appear here.'**
+  String get clusterEmptySharedBody;
+
+  /// No description provided for @clusterEmptyCreatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven’t shared anything'**
+  String get clusterEmptyCreatedTitle;
+
+  /// No description provided for @clusterEmptyCreatedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Share a tile to see who has accepted it.'**
+  String get clusterEmptyCreatedBody;
+
+  /// No description provided for @clusterEmptyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Share a tile'**
+  String get clusterEmptyAction;
+
+  /// No description provided for @clusterLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Some shares couldn’t load'**
+  String get clusterLoadFailed;
+
+  /// No description provided for @clusterLoadFailedAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Shares couldn’t load'**
+  String get clusterLoadFailedAll;
+
+  /// No description provided for @clusterLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get clusterLoadMore;
+
+  /// No description provided for @clusterLoadMoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load more'**
+  String get clusterLoadMoreFailed;
 }
 
 class _AppLocalizationsDelegate

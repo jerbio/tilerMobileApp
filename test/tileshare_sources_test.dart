@@ -7,6 +7,7 @@
 //     error states.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
@@ -110,20 +111,40 @@ class _FakeWhatIfApi extends WhatIfApi {
   }
 }
 
+/// Answers like the server does: the project summary first, then one cluster's
+/// invitations per call, each in pages.
 class _FakeInvitationsApi extends TileShareInvitationsApi {
   _FakeInvitationsApi(this.log) : super(getContextCallBack: () => null);
 
   final List<String> log;
   Object? failWith;
-  TileShareInvitationPage result = const TileShareInvitationPage([]);
+  Object? failClusterWith;
+  String? failCluster;
+
+  /// Project pages by the cursor that asks for them (`null` = first page).
+  Map<String?, TileShareInvitationProjectPage> projectPages = {};
+
+  /// Invitation pages by `clusterId|afterId` (`clusterId|` = first page).
+  Map<String, TileShareInvitationPage> invitationPages = {};
+
+  @override
+  Future<TileShareInvitationProjectPage> getInvitationProjects(
+      {String? afterId, int pageSize = 50}) async {
+    log.add('getInvitationProjects(afterId: $afterId, pageSize: $pageSize)');
+    if (failWith != null) throw failWith!;
+    return projectPages[afterId] ?? const TileShareInvitationProjectPage([]);
+  }
 
   @override
   Future<TileShareInvitationPage> getInvitations(
-      {String? clusterId, String? afterId, int pageSize = 50}) async {
-    log.add('getInvitations(afterId: $afterId, pageSize: $pageSize, '
-        'clusterId: $clusterId)');
-    if (failWith != null) throw failWith!;
-    return result;
+      {required String clusterId, String? afterId, int pageSize = 50}) async {
+    log.add('getInvitations(clusterId: $clusterId, afterId: $afterId, '
+        'pageSize: $pageSize)');
+    if (failClusterWith != null && failCluster == clusterId) {
+      throw failClusterWith!;
+    }
+    return invitationPages['$clusterId|${afterId ?? ''}'] ??
+        const TileShareInvitationPage([]);
   }
 }
 
@@ -171,13 +192,94 @@ void main() {
       source = LiveTileShareAttentionSources(invitationsApi, activityApi);
     });
 
-    test('invitations passes the cursor and page size through', () async {
-      invitationsApi.result = TileShareInvitationPage([tsInvitation('a1', 'c1')], 'a1');
-      final page = await source.invitations(afterId: 'a0', pageSize: 20);
-      expect(page.items.single.assignmentId, 'a1');
-      expect(page.nextCursor, 'a1');
-      expect(log.single,
-          'getInvitations(afterId: a0, pageSize: 20, clusterId: null)');
+    test('invitations reads the project summary, then each project, and '
+        'returns them as one flat list', () async {
+      invitationsApi.projectPages = {
+        null: const TileShareInvitationProjectPage([
+          TileShareInvitationProject('c1', 'Sprint', 2),
+          TileShareInvitationProject('c2', 'Class', 1),
+        ]),
+      };
+      invitationsApi.invitationPages = {
+        'c1|': TileShareInvitationPage(
+            [tsInvitation('a1', 'c1'), tsInvitation('a2', 'c1')]),
+        'c2|': TileShareInvitationPage([tsInvitation('a3', 'c2')]),
+      };
+      final page = await source.invitations();
+      expect(page.items.map((i) => i.assignmentId), ['a1', 'a2', 'a3']);
+      expect(page.nextCursor, isNull,
+          reason: 'the whole inbox arrives as the first page');
+      expect(log.first, startsWith('getInvitationProjects('));
+      expect(log.where((l) => l.startsWith('getInvitations(clusterId: c1')),
+          hasLength(1));
+      expect(log.where((l) => l.startsWith('getInvitations(clusterId: c2')),
+          hasLength(1));
+    });
+
+    test('a project with more invitations than a page is read to the end '
+        '(Accept all needs every task)', () async {
+      invitationsApi.projectPages = {
+        null: const TileShareInvitationProjectPage(
+            [TileShareInvitationProject('c1', 'Class', 3)]),
+      };
+      invitationsApi.invitationPages = {
+        'c1|': TileShareInvitationPage([tsInvitation('a1', 'c1')], 'a1'),
+        'c1|a1': TileShareInvitationPage([tsInvitation('a2', 'c1')], 'a2'),
+        'c1|a2': TileShareInvitationPage([tsInvitation('a3', 'c1')]),
+      };
+      final page = await source.invitations();
+      expect(page.items.map((i) => i.assignmentId), ['a1', 'a2', 'a3']);
+    });
+
+    test('more projects than a page are followed too', () async {
+      invitationsApi.projectPages = {
+        null: const TileShareInvitationProjectPage(
+            [TileShareInvitationProject('c1', 'One', 1)], 'c1'),
+        'c1': const TileShareInvitationProjectPage(
+            [TileShareInvitationProject('c2', 'Two', 1)]),
+      };
+      invitationsApi.invitationPages = {
+        'c1|': TileShareInvitationPage([tsInvitation('a1', 'c1')]),
+        'c2|': TileShareInvitationPage([tsInvitation('a2', 'c2')]),
+      };
+      final page = await source.invitations();
+      expect(page.items.map((i) => i.assignmentId), ['a1', 'a2']);
+    });
+
+    test('nothing pending is an empty page after a single call', () async {
+      final page = await source.invitations();
+      expect(page.items, isEmpty);
+      expect(log, hasLength(1));
+    });
+
+    test('a later page is empty and asks nothing (the first had it all)',
+        () async {
+      final page = await source.invitations(afterId: 'a1');
+      expect(page.items, isEmpty);
+      expect(page.nextCursor, isNull);
+      expect(log, isEmpty);
+    });
+
+    test('a cursor that never ends is cut off, and the cut is logged',
+        () async {
+      final logs = <String>[];
+      final original = TileShareLog.sink;
+      TileShareLog.sink = logs.add;
+      addTearDown(() => TileShareLog.sink = original);
+      invitationsApi.projectPages = {
+        null: const TileShareInvitationProjectPage(
+            [TileShareInvitationProject('c1', 'Endless', 999)]),
+      };
+      // every page points at another one
+      invitationsApi.invitationPages = {
+        for (var i = 0; i < 40; i++)
+          'c1|${i == 0 ? '' : 'p$i'}':
+              TileShareInvitationPage([tsInvitation('a$i', 'c1')], 'p${i + 1}'),
+      };
+      final page = await source.invitations();
+      expect(page.items.length, lessThan(40));
+      expect(logs.any((l) => l.contains('c1') && l.contains('cut')), isTrue,
+          reason: '$logs');
     });
 
     test('activity asks for the non-dismissed feed, with the cursor and size',
@@ -206,6 +308,23 @@ void main() {
       await expectLater(source.invitations(), throwsA(same(error)));
       await expectLater(source.activity(), throwsA(same(error)));
       await expectLater(source.setDismissed('e', true), throwsA(same(error)));
+    });
+
+    test('one project failing fails the source: a partial inbox is not '
+        'reported as the whole inbox', () async {
+      final error = StateError('cluster gone');
+      invitationsApi.projectPages = {
+        null: const TileShareInvitationProjectPage([
+          TileShareInvitationProject('c1', 'One', 1),
+          TileShareInvitationProject('c2', 'Two', 1),
+        ]),
+      };
+      invitationsApi.invitationPages = {
+        'c1|': TileShareInvitationPage([tsInvitation('a1', 'c1')]),
+      };
+      invitationsApi.failCluster = 'c2';
+      invitationsApi.failClusterWith = error;
+      await expectLater(source.invitations(), throwsA(same(error)));
     });
   });
 
