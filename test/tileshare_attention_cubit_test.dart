@@ -742,6 +742,36 @@ void main() {
       await rig.close();
     });
 
+    test('finishing an answer bumps answerRevision, so other screens know to '
+        'refresh; an undone one does not', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      expect(rig.cubit.state.answerRevision, 0);
+
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      expect(rig.cubit.state.answerRevision, 0, reason: 'not sent yet');
+      rig.cubit.undoResponse('invitation:c-bc');
+      await elapse(rig);
+      expect(rig.cubit.state.answerRevision, 0, reason: 'nothing was sent');
+
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.accepted);
+      await elapse(rig);
+      expect(rig.cubit.state.answerRevision, 1);
+      await rig.close();
+    });
+
+    test('a refused answer also bumps answerRevision (the row must come '
+        'back everywhere)', () async {
+      final rig = answerRig();
+      await rig.cubit.load();
+      rig.assignments.failNextOn('respond', StateError('no'));
+      rig.cubit.respond('invitation:c-bc', InvitationStatus.declined);
+      await elapse(rig);
+      expect(rig.cubit.state.answerRevision, 1);
+      expect(rig.cubit.state.respondFailure, isNotNull);
+      await rig.close();
+    });
+
     test('after the window the answer is sent once, then the schedule is '
         'refreshed', () async {
       final rig = answerRig();

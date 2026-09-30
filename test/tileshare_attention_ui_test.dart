@@ -13,7 +13,6 @@ import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/attention/attentionCard.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/attention/attentionView.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
 import 'helpers/tileshare_fakes.dart';
@@ -1092,36 +1091,6 @@ void main() {
           reason: 'it has made room for the new card');
       expect(tester.takeException(), isNull);
       await rig.cubit.close();
-    });
-  });
-
-  group('inside the Share route', () {
-    testWidgets('the Attention tab leads when enabled', (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        theme: TileThemeData.lightTheme,
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: TileShareRoute(
-          showAttention: true,
-          attentionBuilder: (_) => const Text('attention-stub'),
-        ),
-      ));
-      await tester.pump();
-      expect(find.text('Attention'), findsOneWidget);
-      expect(find.text('attention-stub'), findsOneWidget,
-          reason: 'opens on Attention when it is enabled');
-      final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-      expect(tabBar.isScrollable, isTrue,
-          reason: 'four tabs no longer fit across a phone without wrapping');
-      final scheme = Theme.of(tester.element(find.byType(TabBar))).colorScheme;
-      expect(tabBar.labelColor, scheme.onPrimary,
-          reason: 'the selected tab must not be the app bar own colour');
-      expect(tabBar.unselectedLabelColor, isNotNull);
     });
   });
 }

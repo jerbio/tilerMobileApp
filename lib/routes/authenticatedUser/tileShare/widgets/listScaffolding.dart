@@ -176,20 +176,25 @@ class TileShareSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color fill = Theme.of(context).colorScheme.surfaceContainerHigh;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Column(
-        children: [
-          for (int i = 0; i < 3; i++)
-            Container(
-              height: cardHeight,
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: fill,
-                borderRadius: BorderRadius.circular(16),
+    // Not scrollable, but clipped rather than overflowing on a short screen
+    // (a phone held sideways shows fewer than three).
+    return ClipRect(
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        child: Column(
+          children: [
+            for (int i = 0; i < 3; i++)
+              Container(
+                height: cardHeight,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: fill,
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

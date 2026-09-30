@@ -78,7 +78,12 @@ class TileShareAttentionState extends Equatable {
     this.failedSources = const <AttentionSource>{},
     this.dismissFailure,
     this.respondFailure,
+    this.answerRevision = 0,
   });
+
+  /// Goes up each time an inline answer has finished being sent (saved or
+  /// refused), so another screen showing the same invitations knows to reload.
+  final int answerRevision;
 
   TileShareAttentionState copyWith({
     AttentionLoad? load,
@@ -89,6 +94,7 @@ class TileShareAttentionState extends Equatable {
     bool clearDismissFailure = false,
     AttentionRespondFailure? respondFailure,
     bool clearRespondFailure = false,
+    int? answerRevision,
   }) {
     return TileShareAttentionState(
       load: load ?? this.load,
@@ -99,10 +105,19 @@ class TileShareAttentionState extends Equatable {
           clearDismissFailure ? null : (dismissFailure ?? this.dismissFailure),
       respondFailure:
           clearRespondFailure ? null : (respondFailure ?? this.respondFailure),
+      answerRevision: answerRevision ?? this.answerRevision,
     );
   }
 
   @override
   List<Object?> get props =>
-      [load, isRefreshing, items, failedSources, dismissFailure, respondFailure];
+      [
+        load,
+        isRefreshing,
+        items,
+        failedSources,
+        dismissFailure,
+        respondFailure,
+        answerRevision
+      ];
 }

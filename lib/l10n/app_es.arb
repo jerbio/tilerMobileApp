@@ -1764,5 +1764,6 @@
     "clusterLoadFailed": "Algunos elementos compartidos no se pudieron cargar",
     "clusterLoadFailedAll": "No se pudieron cargar los elementos compartidos",
     "clusterLoadMore": "Cargar más",
-    "clusterLoadMoreFailed": "No se pudo cargar más"
+    "clusterLoadMoreFailed": "No se pudo cargar más",
+    "clustersTabTitle": "Clusters"
 }

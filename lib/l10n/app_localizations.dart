@@ -7867,6 +7867,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn’t load more'**
   String get clusterLoadMoreFailed;
+
+  /// No description provided for @clustersTabTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clusters'**
+  String get clustersTabTitle;
 }
 
 class _AppLocalizationsDelegate

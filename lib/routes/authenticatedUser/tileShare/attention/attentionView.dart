@@ -10,6 +10,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/attention/attention
 import 'package:tiler_app/routes/authenticatedUser/tileShare/attention/attentionFilter.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/animatedCardList.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/listScaffolding.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/undoSnackBar.dart';
 
 /// The Attention inbox (redesign T7): filter chips over an animated list of
 /// [AttentionCard]s. Reads a [TileShareAttentionCubit] from the tree.
@@ -32,47 +33,20 @@ class _TileShareAttentionViewState extends State<TileShareAttentionView> {
 
   TileShareAttentionCubit get _cubit => context.read<TileShareAttentionCubit>();
 
-  /// The colour of an "Undo" action on a snack bar. The framework default is a
-  /// muted colour that makes a working button look disabled, so use the brand
-  /// colour where it is legible on the bar (the dark theme's light bar) and
-  /// the theme's own readable "on inverse" colour where it is not (the light
-  /// theme's translucent-black bar). Legible means a contrast of at least 3:1
-  /// — the bar's colour is blended over the page it sits on.
-  Color _undoColor(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final Color bar = Color.alphaBlend(
-        theme.snackBarTheme.backgroundColor ?? theme.colorScheme.inverseSurface,
-        theme.scaffoldBackgroundColor);
-    final Color brand = theme.colorScheme.primary;
-    return _contrast(brand, bar) >= 3.0
-        ? brand
-        : theme.colorScheme.onInverseSurface;
-  }
-
-  static double _contrast(Color a, Color b) {
-    final double la = a.computeLuminance(), lb = b.computeLuminance();
-    final double hi = la > lb ? la : lb, lo = la > lb ? lb : la;
-    return (hi + 0.05) / (lo + 0.05);
-  }
-
   Future<void> _dismiss(AttentionItem item) async {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final TileShareAttentionCubit cubit = _cubit;
-    final Color undoColor = _undoColor(context);
+    final Color undoColor = tileShareUndoColor(context);
     final bool done = await cubit.resolve(item.id);
     if (!mounted || !done) return;
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        persist: false,
-        content: Text(l10n.attentionDismissed),
-        action: SnackBarAction(
-          textColor: undoColor,
-          label: l10n.attentionUndo,
-          onPressed: () => cubit.undo(item.id),
-        ),
-      ));
+    showTileShareUndoSnackBar(
+      messenger,
+      undoColor,
+      message: l10n.attentionDismissed,
+      undoLabel: l10n.attentionUndo,
+      onUndo: () => cubit.undo(item.id),
+    );
   }
 
   /// Accepts or declines inline, with an Undo that lasts as long as the
@@ -81,20 +55,16 @@ class _TileShareAttentionViewState extends State<TileShareAttentionView> {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final TileShareAttentionCubit cubit = _cubit;
-    final Color undoColor = _undoColor(context);
+    final Color undoColor = tileShareUndoColor(context);
     if (!cubit.respond(item.id, status)) return;
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        persist: false,
-        duration: cubit.undoWindow,
-        content: Text(AttentionCopy.answered(l10n, status, item.count)),
-        action: SnackBarAction(
-          textColor: undoColor,
-          label: l10n.attentionUndo,
-          onPressed: () => cubit.undoResponse(item.id),
-        ),
-      ));
+    showTileShareUndoSnackBar(
+      messenger,
+      undoColor,
+      message: AttentionCopy.answered(l10n, status, item.count),
+      undoLabel: l10n.attentionUndo,
+      onUndo: () => cubit.undoResponse(item.id),
+      duration: cubit.undoWindow,
+    );
   }
 
   void _onState(BuildContext context, TileShareAttentionState state) {

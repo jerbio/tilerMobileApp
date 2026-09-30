@@ -2594,5 +2594,6 @@
     "clusterLoadFailed": "Some shares couldn’t load",
     "clusterLoadFailedAll": "Shares couldn’t load",
     "clusterLoadMore": "Load more",
-    "clusterLoadMoreFailed": "Couldn’t load more"
+    "clusterLoadMoreFailed": "Couldn’t load more",
+    "clustersTabTitle": "Clusters"
 }

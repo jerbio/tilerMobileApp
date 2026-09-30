@@ -4461,4 +4461,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get clusterLoadMoreFailed => 'Couldn’t load more';
+
+  @override
+  String get clustersTabTitle => 'Clusters';
 }

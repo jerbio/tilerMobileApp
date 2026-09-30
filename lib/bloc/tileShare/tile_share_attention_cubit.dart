@@ -430,7 +430,10 @@ class TileShareAttentionCubit extends Cubit<TileShareAttentionState> {
             AttentionRespondFailureKind.scheduleRefresh);
       }
     }
-    _emit(state.copyWith(items: _derive(), respondFailure: failure));
+    _emit(state.copyWith(
+        items: _derive(),
+        respondFailure: failure,
+        answerRevision: state.answerRevision + 1));
   }
 
   /// The UI has shown the failure message.
