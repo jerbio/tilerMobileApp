@@ -1,0 +1,79 @@
+import 'package:tiler_app/data/ForecastResponse.dart';
+import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/data/tileShareActivity.dart';
+import 'package:tiler_app/data/tileShareClusterData.dart';
+import 'package:tiler_app/data/tileShareInvitation.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
+
+// The data seams the TileShare cubits depend on (redesign T9). Each is a small
+// interface over what a screen needs, not over an API class: the live adapters
+// (liveTileShareSources.dart) delegate to the existing APIs, and tests inject
+// in-memory fakes — the same pattern as `TileShareActivityWidget.loader`.
+//
+// A seam for editing a share (contacts, tilettes) is added with the step that
+// first needs it.
+
+/// The Clusters tab and cluster loading: what I created, what is shared with
+/// me, a cluster's tilettes, and deleting a cluster.
+abstract class TileShareClustersSource {
+  /// One page of clusters: [isOutbox] `true` = created by me, `false` = shared
+  /// with me.
+  Future<List<TileShareClusterData>> clusters({
+    required bool isOutbox,
+    int index = 0,
+    int pageSize = 50,
+  });
+
+  /// A single cluster; `null` when it does not exist or is not visible.
+  Future<TileShareClusterData?> cluster(String clusterId);
+
+  /// The cluster's tilettes, each with its assignments.
+  Future<List<TileShareTemplate>> tilettes(String clusterId);
+
+  Future<void> deleteCluster(String clusterId);
+}
+
+/// The signed-in user's own assignments and their responses.
+abstract class TileShareAssignmentsSource {
+  /// One page of my assignments, optionally scoped to a cluster.
+  Future<List<DesignatedTile>> designatedTiles({
+    String? clusterId,
+    int index = 0,
+    int pageSize = 50,
+  });
+
+  /// Accepts or declines an assignment; returns the updated assignment.
+  Future<DesignatedTile?> respond(
+      String designatedTileId, InvitationStatus status);
+
+  /// What must follow an acceptance so the new tiles appear: re-analyze the
+  /// schedule, then refresh it.
+  Future<void> afterAccept();
+}
+
+/// The "does this fit my schedule" forecast behind Check fit.
+abstract class TileShareFitSource {
+  Future<ForecastResponse> forecast(Map<String, Object> params);
+}
+
+/// What the Attention inbox reads: my pending invitations, the activity feed
+/// and the per-event dismissal.
+abstract class TileShareAttentionSources {
+  /// One page of my pending invitations; pass the previous page's
+  /// `nextCursor` as [afterId] to continue.
+  Future<TileShareInvitationPage> invitations({
+    String? afterId,
+    int pageSize = 50,
+  });
+
+  /// One page of the activity feed (events I have not dismissed), newest
+  /// first; pass the previous page's `nextCursor` as [cursor] to continue.
+  Future<TileShareActivityPage> activity({
+    String? cursor,
+    int pageSize = 50,
+  });
+
+  /// Dismisses ([isDismissed] `true`) or restores one activity event. Stored
+  /// server-side, so it follows the user across devices.
+  Future<void> setDismissed(String eventId, bool isDismissed);
+}
