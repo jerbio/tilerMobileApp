@@ -4,6 +4,7 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/request/contactModel.dart';
 import 'package:tiler_app/data/request/tileShareClusterModel.dart';
+import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/userProfile.dart';
@@ -24,6 +25,10 @@ class TileShareClusterData {
   bool? isDeleted;
   bool? isDismissed;
   bool? isMultiTilette;
+
+  /// The backend cluster mode (broadcast / class / project). `null` when the
+  /// server did not send one; use [TileShareMode.fromCluster] to resolve it.
+  TileShareMode? mode;
 
   TilePriority priority = TilePriority.medium;
   TileShareClusterData();
@@ -61,6 +66,8 @@ class TileShareClusterData {
     if (json.containsKey('isMultiTilette')) {
       isMultiTilette = json['isMultiTilette'];
     }
+    // The response key is read as `mode` or `Mode`; values in any casing.
+    mode = TileShareMode.tryParse(json['mode'] ?? json['Mode']);
     if (json.containsKey('tileShareTemplates') &&
         json['tileShareTemplates'] != null &&
         json['tileShareTemplates'] is Iterable) {
@@ -107,6 +114,9 @@ class TileShareClusterData {
     templateClusterModel.StartTime = this.startTimeInMs;
     templateClusterModel.EndTime = this.endTimeInMs;
     templateClusterModel.IsMultiTilette = this.isMultiTilette;
+    // Sent only when the mode is explicit, so legacy create flows keep their
+    // exact payload.
+    templateClusterModel.Mode = this.mode?.wire;
     templateClusterModel.Contacts =
         this.contacts?.map<ContactModel>((e) => e.toContactModel()).toList();
     templateClusterModel.ClusterTemplateTileModels = this

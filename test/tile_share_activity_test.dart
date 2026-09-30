@@ -29,7 +29,7 @@ void main() {
 
   test('parses the server canonical event and tolerates future versions', () {
     final fixture = File(
-            '../../WagTapWeb/TilerFront/TilerFront.Tests/Fixtures/TileShareActivity/AssignmentAccepted.json')
+            'test/fixtures/tileshare_activity/AssignmentAccepted.json')
         .readAsStringSync();
     final json = jsonDecode(fixture) as Map<String, dynamic>;
     final event = TileShareActivity.fromJson(json);

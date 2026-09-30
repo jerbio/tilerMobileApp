@@ -85,8 +85,20 @@ class DesignatedTile {
     return null;
   }
 
+  /// Maps a server status string to [InvitationStatus]. `tentative` is still
+  /// a pending invitation server-side, so it maps to [InvitationStatus.none];
+  /// anything unrecognised is `null` (it must never throw while parsing a
+  /// cluster).
   static InvitationStatus? stringToInvitationStatus(String value) {
-    return InvitationStatus.values.firstWhere(
-        (element) => element.name.toLowerCase() == value.toLowerCase());
+    final String normalized = value.trim().toLowerCase();
+    if (normalized == 'tentative') {
+      return InvitationStatus.none;
+    }
+    for (final InvitationStatus status in InvitationStatus.values) {
+      if (status.name.toLowerCase() == normalized) {
+        return status;
+      }
+    }
+    return null;
   }
 }

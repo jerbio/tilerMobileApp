@@ -18,6 +18,9 @@ class TileShareClusterModel {
   String? SchedulePattern;
   String? Notes;
   bool? IsMultiTilette;
+
+  /// Cluster mode on the wire: `broadcast`, `class` or `project`.
+  String? Mode;
   List<ClusterTemplateTileModel>? ClusterTemplateTileModels;
 
   factory TileShareClusterModel.fromJson(Map<String, dynamic> json) =>
