@@ -7285,6 +7285,324 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your product tour is about to begin.'**
   String get productTourStarting;
+
+  /// No description provided for @attentionTabTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Attention'**
+  String get attentionTabTitle;
+
+  /// No description provided for @attentionFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get attentionFilterAll;
+
+  /// No description provided for @attentionFilterInvitations.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitations'**
+  String get attentionFilterInvitations;
+
+  /// No description provided for @attentionFilterChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes'**
+  String get attentionFilterChanges;
+
+  /// No description provided for @attentionFilterAtRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'At risk'**
+  String get attentionFilterAtRisk;
+
+  /// No description provided for @attentionFilterResponses.
+  ///
+  /// In en, this message translates to:
+  /// **'Responses'**
+  String get attentionFilterResponses;
+
+  /// No description provided for @attentionPillInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation'**
+  String get attentionPillInvitation;
+
+  /// No description provided for @attentionPillChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed'**
+  String get attentionPillChanged;
+
+  /// No description provided for @attentionPillAtRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'At risk'**
+  String get attentionPillAtRisk;
+
+  /// No description provided for @attentionPillDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get attentionPillDeclined;
+
+  /// No description provided for @attentionPillCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get attentionPillCompleted;
+
+  /// No description provided for @attentionPillNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sent'**
+  String get attentionPillNotSent;
+
+  /// No description provided for @attentionSomeone.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone'**
+  String get attentionSomeone;
+
+  /// No description provided for @attentionReasonInvited.
+  ///
+  /// In en, this message translates to:
+  /// **'{inviter} invited you'**
+  String attentionReasonInvited(String inviter);
+
+  /// No description provided for @attentionReasonInvitedMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{inviter} invited you to {count} tasks'**
+  String attentionReasonInvitedMany(String inviter, int count);
+
+  /// No description provided for @attentionReasonAtRiskOne.
+  ///
+  /// In en, this message translates to:
+  /// **'“{task}” no longer fits your schedule'**
+  String attentionReasonAtRiskOne(String task);
+
+  /// No description provided for @attentionReasonAtRiskUntitled.
+  ///
+  /// In en, this message translates to:
+  /// **'A task no longer fits your schedule'**
+  String get attentionReasonAtRiskUntitled;
+
+  /// No description provided for @attentionReasonAtRiskMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tasks no longer fit your schedule'**
+  String attentionReasonAtRiskMany(int count);
+
+  /// No description provided for @attentionReasonDeadlineMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} moved the deadline from {from} to {to}'**
+  String attentionReasonDeadlineMoved(String actor, String from, String to);
+
+  /// No description provided for @attentionReasonDeadlineChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} changed the deadline'**
+  String attentionReasonDeadlineChanged(String actor);
+
+  /// No description provided for @attentionReasonRenamed.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} renamed a task'**
+  String attentionReasonRenamed(String actor);
+
+  /// No description provided for @attentionReasonNotesUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} updated the notes'**
+  String attentionReasonNotesUpdated(String actor);
+
+  /// No description provided for @attentionReasonUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} updated a task'**
+  String attentionReasonUpdated(String actor);
+
+  /// No description provided for @attentionReasonManyChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} made {count} changes'**
+  String attentionReasonManyChanges(String actor, int count);
+
+  /// No description provided for @attentionReasonDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} declined'**
+  String attentionReasonDeclined(String actor);
+
+  /// No description provided for @attentionReasonDeclinedMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} people declined'**
+  String attentionReasonDeclinedMany(int count);
+
+  /// No description provided for @attentionReasonNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t send an invitation'**
+  String get attentionReasonNotSent;
+
+  /// No description provided for @attentionReasonNotSentMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t send {count} invitations'**
+  String attentionReasonNotSentMany(int count);
+
+  /// No description provided for @attentionReasonSendUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'An invitation may not have been sent — resend if needed'**
+  String get attentionReasonSendUnknown;
+
+  /// No description provided for @attentionReasonCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} completed {task}'**
+  String attentionReasonCompleted(String actor, String task);
+
+  /// No description provided for @attentionReasonCompletedUntitled.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} completed a task'**
+  String attentionReasonCompletedUntitled(String actor);
+
+  /// No description provided for @attentionReasonCompletedMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tasks completed'**
+  String attentionReasonCompletedMany(int count);
+
+  /// No description provided for @attentionMetaTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 task} other{{count} tasks}}'**
+  String attentionMetaTasks(int count);
+
+  /// No description provided for @attentionMetaDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String attentionMetaDue(String date);
+
+  /// No description provided for @attentionCtaReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get attentionCtaReview;
+
+  /// No description provided for @attentionCtaReviewChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Review changes'**
+  String get attentionCtaReviewChanges;
+
+  /// No description provided for @attentionCtaReviewPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Review plan'**
+  String get attentionCtaReviewPlan;
+
+  /// No description provided for @attentionCtaView.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get attentionCtaView;
+
+  /// No description provided for @attentionMenuTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get attentionMenuTooltip;
+
+  /// No description provided for @attentionDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get attentionDismiss;
+
+  /// No description provided for @attentionDismissed.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismissed'**
+  String get attentionDismissed;
+
+  /// No description provided for @attentionUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get attentionUndo;
+
+  /// No description provided for @attentionDismissFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t dismiss it. Try again.'**
+  String get attentionDismissFailed;
+
+  /// No description provided for @attentionUndoFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t restore it. Try again.'**
+  String get attentionUndoFailed;
+
+  /// No description provided for @attentionEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You’re all caught up'**
+  String get attentionEmptyTitle;
+
+  /// No description provided for @attentionEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing needs your attention right now.'**
+  String get attentionEmptyBody;
+
+  /// No description provided for @attentionEmptyFiltered.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to show here'**
+  String get attentionEmptyFiltered;
+
+  /// No description provided for @attentionLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Some updates couldn’t load'**
+  String get attentionLoadFailed;
+
+  /// No description provided for @attentionLoadFailedAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Attention couldn’t load'**
+  String get attentionLoadFailedAll;
+
+  /// No description provided for @attentionRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get attentionRetry;
+
+  /// No description provided for @tileShareModeBroadcast.
+  ///
+  /// In en, this message translates to:
+  /// **'Broadcast'**
+  String get tileShareModeBroadcast;
+
+  /// No description provided for @tileShareModeProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get tileShareModeProject;
+
+  /// No description provided for @tileShareModeClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get tileShareModeClass;
 }
 
 class _AppLocalizationsDelegate

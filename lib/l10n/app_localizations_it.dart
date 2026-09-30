@@ -4209,4 +4209,207 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get productTourStarting => 'Il tour dell\'app sta per iniziare.';
+
+  @override
+  String get attentionTabTitle => 'Attention';
+
+  @override
+  String get attentionFilterAll => 'All';
+
+  @override
+  String get attentionFilterInvitations => 'Invitations';
+
+  @override
+  String get attentionFilterChanges => 'Changes';
+
+  @override
+  String get attentionFilterAtRisk => 'At risk';
+
+  @override
+  String get attentionFilterResponses => 'Responses';
+
+  @override
+  String get attentionPillInvitation => 'Invitation';
+
+  @override
+  String get attentionPillChanged => 'Changed';
+
+  @override
+  String get attentionPillAtRisk => 'At risk';
+
+  @override
+  String get attentionPillDeclined => 'Declined';
+
+  @override
+  String get attentionPillCompleted => 'Completed';
+
+  @override
+  String get attentionPillNotSent => 'Not sent';
+
+  @override
+  String get attentionSomeone => 'Someone';
+
+  @override
+  String attentionReasonInvited(String inviter) {
+    return '$inviter invited you';
+  }
+
+  @override
+  String attentionReasonInvitedMany(String inviter, int count) {
+    return '$inviter invited you to $count tasks';
+  }
+
+  @override
+  String attentionReasonAtRiskOne(String task) {
+    return '“$task” no longer fits your schedule';
+  }
+
+  @override
+  String get attentionReasonAtRiskUntitled =>
+      'A task no longer fits your schedule';
+
+  @override
+  String attentionReasonAtRiskMany(int count) {
+    return '$count tasks no longer fit your schedule';
+  }
+
+  @override
+  String attentionReasonDeadlineMoved(String actor, String from, String to) {
+    return '$actor moved the deadline from $from to $to';
+  }
+
+  @override
+  String attentionReasonDeadlineChanged(String actor) {
+    return '$actor changed the deadline';
+  }
+
+  @override
+  String attentionReasonRenamed(String actor) {
+    return '$actor renamed a task';
+  }
+
+  @override
+  String attentionReasonNotesUpdated(String actor) {
+    return '$actor updated the notes';
+  }
+
+  @override
+  String attentionReasonUpdated(String actor) {
+    return '$actor updated a task';
+  }
+
+  @override
+  String attentionReasonManyChanges(String actor, int count) {
+    return '$actor made $count changes';
+  }
+
+  @override
+  String attentionReasonDeclined(String actor) {
+    return '$actor declined';
+  }
+
+  @override
+  String attentionReasonDeclinedMany(int count) {
+    return '$count people declined';
+  }
+
+  @override
+  String get attentionReasonNotSent => 'Couldn’t send an invitation';
+
+  @override
+  String attentionReasonNotSentMany(int count) {
+    return 'Couldn’t send $count invitations';
+  }
+
+  @override
+  String get attentionReasonSendUnknown =>
+      'An invitation may not have been sent — resend if needed';
+
+  @override
+  String attentionReasonCompleted(String actor, String task) {
+    return '$actor completed $task';
+  }
+
+  @override
+  String attentionReasonCompletedUntitled(String actor) {
+    return '$actor completed a task';
+  }
+
+  @override
+  String attentionReasonCompletedMany(int count) {
+    return '$count tasks completed';
+  }
+
+  @override
+  String attentionMetaTasks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tasks',
+      one: '1 task',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String attentionMetaDue(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String get attentionCtaReview => 'Review';
+
+  @override
+  String get attentionCtaReviewChanges => 'Review changes';
+
+  @override
+  String get attentionCtaReviewPlan => 'Review plan';
+
+  @override
+  String get attentionCtaView => 'View';
+
+  @override
+  String get attentionMenuTooltip => 'More';
+
+  @override
+  String get attentionDismiss => 'Dismiss';
+
+  @override
+  String get attentionDismissed => 'Dismissed';
+
+  @override
+  String get attentionUndo => 'Undo';
+
+  @override
+  String get attentionDismissFailed => 'Couldn’t dismiss it. Try again.';
+
+  @override
+  String get attentionUndoFailed => 'Couldn’t restore it. Try again.';
+
+  @override
+  String get attentionEmptyTitle => 'You’re all caught up';
+
+  @override
+  String get attentionEmptyBody => 'Nothing needs your attention right now.';
+
+  @override
+  String get attentionEmptyFiltered => 'Nothing to show here';
+
+  @override
+  String get attentionLoadFailed => 'Some updates couldn’t load';
+
+  @override
+  String get attentionLoadFailedAll => 'Attention couldn’t load';
+
+  @override
+  String get attentionRetry => 'Retry';
+
+  @override
+  String get tileShareModeBroadcast => 'Broadcast';
+
+  @override
+  String get tileShareModeProject => 'Project';
+
+  @override
+  String get tileShareModeClass => 'Class';
 }

@@ -4197,4 +4197,208 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get productTourStarting =>
       'Tu recorrido por la app está a punto de comenzar.';
+
+  @override
+  String get attentionTabTitle => 'Atención';
+
+  @override
+  String get attentionFilterAll => 'Todo';
+
+  @override
+  String get attentionFilterInvitations => 'Invitaciones';
+
+  @override
+  String get attentionFilterChanges => 'Cambios';
+
+  @override
+  String get attentionFilterAtRisk => 'En riesgo';
+
+  @override
+  String get attentionFilterResponses => 'Respuestas';
+
+  @override
+  String get attentionPillInvitation => 'Invitación';
+
+  @override
+  String get attentionPillChanged => 'Cambiado';
+
+  @override
+  String get attentionPillAtRisk => 'En riesgo';
+
+  @override
+  String get attentionPillDeclined => 'Rechazado';
+
+  @override
+  String get attentionPillCompleted => 'Completado';
+
+  @override
+  String get attentionPillNotSent => 'No enviado';
+
+  @override
+  String get attentionSomeone => 'Alguien';
+
+  @override
+  String attentionReasonInvited(String inviter) {
+    return '$inviter te invitó';
+  }
+
+  @override
+  String attentionReasonInvitedMany(String inviter, int count) {
+    return '$inviter te invitó a $count tareas';
+  }
+
+  @override
+  String attentionReasonAtRiskOne(String task) {
+    return '«$task» ya no cabe en tu agenda';
+  }
+
+  @override
+  String get attentionReasonAtRiskUntitled =>
+      'Una tarea ya no cabe en tu agenda';
+
+  @override
+  String attentionReasonAtRiskMany(int count) {
+    return '$count tareas ya no caben en tu agenda';
+  }
+
+  @override
+  String attentionReasonDeadlineMoved(String actor, String from, String to) {
+    return '$actor movió la fecha límite del $from al $to';
+  }
+
+  @override
+  String attentionReasonDeadlineChanged(String actor) {
+    return '$actor cambió la fecha límite';
+  }
+
+  @override
+  String attentionReasonRenamed(String actor) {
+    return '$actor renombró una tarea';
+  }
+
+  @override
+  String attentionReasonNotesUpdated(String actor) {
+    return '$actor actualizó las notas';
+  }
+
+  @override
+  String attentionReasonUpdated(String actor) {
+    return '$actor actualizó una tarea';
+  }
+
+  @override
+  String attentionReasonManyChanges(String actor, int count) {
+    return '$actor hizo $count cambios';
+  }
+
+  @override
+  String attentionReasonDeclined(String actor) {
+    return '$actor rechazó';
+  }
+
+  @override
+  String attentionReasonDeclinedMany(int count) {
+    return '$count personas rechazaron';
+  }
+
+  @override
+  String get attentionReasonNotSent => 'No se pudo enviar una invitación';
+
+  @override
+  String attentionReasonNotSentMany(int count) {
+    return 'No se pudieron enviar $count invitaciones';
+  }
+
+  @override
+  String get attentionReasonSendUnknown =>
+      'Puede que una invitación no se haya enviado — reenvíala si hace falta';
+
+  @override
+  String attentionReasonCompleted(String actor, String task) {
+    return '$actor completó $task';
+  }
+
+  @override
+  String attentionReasonCompletedUntitled(String actor) {
+    return '$actor completó una tarea';
+  }
+
+  @override
+  String attentionReasonCompletedMany(int count) {
+    return '$count tareas completadas';
+  }
+
+  @override
+  String attentionMetaTasks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tareas',
+      one: '1 tarea',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String attentionMetaDue(String date) {
+    return 'Vence el $date';
+  }
+
+  @override
+  String get attentionCtaReview => 'Revisar';
+
+  @override
+  String get attentionCtaReviewChanges => 'Revisar cambios';
+
+  @override
+  String get attentionCtaReviewPlan => 'Revisar plan';
+
+  @override
+  String get attentionCtaView => 'Ver';
+
+  @override
+  String get attentionMenuTooltip => 'Más';
+
+  @override
+  String get attentionDismiss => 'Descartar';
+
+  @override
+  String get attentionDismissed => 'Descartado';
+
+  @override
+  String get attentionUndo => 'Deshacer';
+
+  @override
+  String get attentionDismissFailed =>
+      'No se pudo descartar. Inténtalo de nuevo.';
+
+  @override
+  String get attentionUndoFailed => 'No se pudo restaurar. Inténtalo de nuevo.';
+
+  @override
+  String get attentionEmptyTitle => 'Estás al día';
+
+  @override
+  String get attentionEmptyBody => 'Nada requiere tu atención ahora mismo.';
+
+  @override
+  String get attentionEmptyFiltered => 'No hay nada que mostrar aquí';
+
+  @override
+  String get attentionLoadFailed => 'No se pudieron cargar algunas novedades';
+
+  @override
+  String get attentionLoadFailedAll => 'No se pudo cargar Atención';
+
+  @override
+  String get attentionRetry => 'Reintentar';
+
+  @override
+  String get tileShareModeBroadcast => 'Difusión';
+
+  @override
+  String get tileShareModeProject => 'Proyecto';
+
+  @override
+  String get tileShareModeClass => 'Clase';
 }
