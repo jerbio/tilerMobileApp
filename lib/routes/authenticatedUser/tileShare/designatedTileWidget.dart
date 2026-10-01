@@ -11,6 +11,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tiletteD
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
+import 'package:tiler_app/services/tileShare/tileShareForecastRequest.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
@@ -391,39 +392,13 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
       showForecasts = !showForecasts;
     });
     if (!_isForeCastLoading && showForecasts) {
-      if (this.designatedTile.tileTemplate?.durationInMs != null &&
-          this.designatedTile.tileTemplate?.end != null) {
-        DateTime now = Utility.currentTime();
-        int currentMinute = now.minute;
-        int currentHour = now.hour;
-        int currentDay = now.day;
-        int currentMonth = now.month;
-        int currentYear = now.year;
-        Duration duration = Duration(
-            milliseconds: this.designatedTile.tileTemplate!.durationInMs!);
-        DateTime endTime = DateTime.fromMillisecondsSinceEpoch(
-            this.designatedTile.tileTemplate!.end!);
-        int endDay = endTime.day;
-        int endMonth = endTime.month;
-        int endYear = endTime.year;
-        var durInHours = duration.inHours;
-        var durrInMilliseconds = duration.inMilliseconds;
-        // var durInUtc = durationToUtcString(duration);
-
-        Map<String, Object> queryParams = {
-          "StartMinute": currentMinute.toString(),
-          "StartHour": currentHour.toString(),
-          "StartDay": currentDay.toString(),
-          "StartMonth": currentMonth.toString(),
-          "StartYear": currentYear.toString(),
-          "EndDay": endDay.toString(),
-          "EndMonth": endMonth.toString(),
-          "EndYear": endYear.toString(),
-          "DurationHours": durInHours.toString(),
-          "DurationInMs": durrInMilliseconds.toString(),
-          // "Duration": durInUtc.toString(),
-        };
-
+      // From now to the deadline (its time of day included), for the duration.
+      final Map<String, Object>? queryParams = TileShareForecastRequest.forTask(
+        durationMs: this.designatedTile.tileTemplate?.durationInMs,
+        endMs: this.designatedTile.tileTemplate?.end,
+        now: Utility.currentTime(),
+      );
+      if (queryParams != null) {
         setState(() {
           _isForeCastLoading = true;
           _isForeCastError = false;

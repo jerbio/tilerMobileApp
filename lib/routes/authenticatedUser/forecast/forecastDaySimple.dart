@@ -246,12 +246,19 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
     return MediaQuery.sizeOf(context).width * TileDimensions.widthRatio;
   }
 
+  /// The room the row actually has, once it is laid out (see [build]); until
+  /// then, and where there is no layout to ask, a share of the screen.
+  double? _availableBarWidth;
+
+  /// What is left of the row after its fixed parts.
+  double get _fixedPartsWidth =>
+      unAllocatedContainerWidth + dayOfWeekContainerWidth + (2 * renderedTimeWidth);
+
+  /// The width of the in-and-out bar. Sized from the space the row has, not
+  /// from the screen: inside a card narrower than the screen a screen-based bar
+  /// pushed the row past its edge.
   double get inAndOutBarWidth {
-    return screenWidth -
-        unAllocatedContainerWidth -
-        dayOfWeekContainerWidth -
-        (2 * renderedTimeWidth) -
-        10;
+    return _availableBarWidth ?? (screenWidth - _fixedPartsWidth - 10);
   }
 
   @override
@@ -273,19 +280,26 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
               ),
             )
           : null,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          renderDayOfWeek(),
-          renderUnallocatedTime(),
-          renderTime(peekDay.outHomeStartTime),
-          Container(
-              height: timeBarHeight,
-              width: inAndOutBarWidth,
-              child: renderEntryAndExit()),
-          renderTime(peekDay.outHomeEndTime),
-        ],
-      ),
+      child: LayoutBuilder(builder: (context, constraints) {
+        if (constraints.hasBoundedWidth) {
+          _availableBarWidth =
+              (constraints.maxWidth - _fixedPartsWidth).clamp(0.0, double.infinity);
+        }
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            renderDayOfWeek(),
+            renderUnallocatedTime(),
+            renderTime(peekDay.outHomeStartTime),
+            Container(
+                key: const Key('forecast_bar'),
+                height: timeBarHeight,
+                width: inAndOutBarWidth,
+                child: renderEntryAndExit()),
+            renderTime(peekDay.outHomeEndTime),
+          ],
+        );
+      }),
     );
   }
 }

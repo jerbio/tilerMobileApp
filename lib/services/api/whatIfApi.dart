@@ -23,11 +23,13 @@ class WhatIfApi extends AppApi {
       Map<String, Object> externalParams) async {
     var queryParams = {};
     queryParams.addAll(externalParams);
+    int? status;
 
     try {
       // Perform the initial POST request
       var response = await sendPostRequest('/api/WhatIf/NewTile', queryParams,
           analyze: false);
+      status = response.statusCode;
       var jsonResult = jsonDecode(response.body);
 
       if (isJsonResponseOk(jsonResult) && isContentInResponse(jsonResult)) {
@@ -37,10 +39,27 @@ class WhatIfApi extends AppApi {
         return forecastResponse;
       }
 
+      // Callers treat this as "nothing to show"; say why, so a screen that
+      // shows nothing can be diagnosed.
+      Utility.debugPrint('WhatIfApi: forecast not usable (HTTP $status): '
+          '${_whyNotUsable(jsonResult)}');
       return ForecastResponse();
     } catch (e) {
+      Utility.debugPrint('WhatIfApi: forecast failed (HTTP $status): $e');
       throw TilerError(Message: "Failed to get preview");
     }
+  }
+
+  /// What a 200 that was not a usable forecast said: the Tiler error code and
+  /// message, or that it had no content.
+  static String _whyNotUsable(dynamic jsonResult) {
+    if (jsonResult is! Map) return 'the response was not an object';
+    final dynamic error = jsonResult['Error'];
+    if (error is Map && error['Code'] != null && '${error['Code']}' != '0') {
+      return 'server error ${error['Code']} (${error['Message']})';
+    }
+    if (jsonResult['Content'] == null) return 'the response had no Content';
+    return 'the response was not marked successful';
   }
 
   /// The query map the preview sends, built without sending it.
