@@ -10,13 +10,15 @@ import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 ///
 /// Anything else is an error that says what was wrong — a non-zero Tiler error
 /// code, a body that is not an object, or a payload missing the list named by
-/// [listKey] — and is logged under [tag]. Silently treating a missing list as
-/// "nothing there" once made a broken response look like an empty inbox.
+/// [listKey] or the value named by [requiredKey] — and is logged under [tag].
+/// Silently treating a missing list as "nothing there" once made a broken
+/// response look like an empty inbox.
 Map<String, dynamic> readTileShareContent(
   String body, {
   required String tag,
   required String what,
-  required String listKey,
+  String? listKey,
+  String? requiredKey,
 }) {
   Never fail(String message) {
     TileShareLog.d(tag, '$what: $message');
@@ -45,8 +47,12 @@ Map<String, dynamic> readTileShareContent(
     content = inner;
   }
 
-  if (content[listKey] is! List) {
+  if (listKey != null && content[listKey] is! List) {
     fail('the response had no "$listKey" list '
+        '(found: ${content.keys.join(', ')})');
+  }
+  if (requiredKey != null && content[requiredKey] == null) {
+    fail('the response had no "$requiredKey" '
         '(found: ${content.keys.join(', ')})');
   }
   return content;

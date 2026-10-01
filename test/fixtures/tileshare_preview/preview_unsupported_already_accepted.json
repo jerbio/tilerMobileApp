@@ -1,0 +1,27 @@
+{
+  "assignmentId": "DesignatedTileTemplate+01JGPMJJFC18Z1E2WXW9YBTTTA+01JGPMJJFCTY6288SEG6B6SEXT",
+  "capabilities": {
+    "alternatives": false,
+    "fixedSessions": false,
+    "reviewedAcceptance": false
+  },
+  "clusterId": "TileShareCluster+6bc6992f-3222-4fd8-9e2b-b94eba2fb717+01JGPMJJFCDC7VDE41X19R4W2Z",
+  "conflicts": [],
+  "current": [],
+  "deadline": 1790104800000,
+  "definition": "{\"Id\":\"DesignatedTileTemplate+01JGPMJJFC18Z1E2WXW9YBTTTA+01JGPMJJFCTY6288SEG6B6SEXT\",\"InvitationStatus_DB\":\"none\"}",
+  "description": "A snapshot of content performance and marketing impact.",
+  "duration": 3600000,
+  "generatedAt": 1789500000000,
+  "inviterName": "Jessica Jones",
+  "isViable": false,
+  "name": "Content & Marketing Report",
+  "proposed": [],
+  "rangeEnd": 1791919200000,
+  "rangeStart": 1789413600000,
+  "sessions": [],
+  "shuffleSeed": 0,
+  "tiletteId": "TileShareTemplate+01JGPMJJFCDC7VDE41X19R4W2Z+01JGPMJJFC18Z1E2WXW9YBTTTA",
+  "timeZone": "America/Chicago",
+  "unsupportedReason": "alreadyAccepted"
+}

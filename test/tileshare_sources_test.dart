@@ -8,7 +8,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/services/tileShare/tileShareLog.dart';
-import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
@@ -18,7 +17,6 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareActivityApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/services/api/tileShareInvitationsApi.dart';
-import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/services/tileShare/liveTileShareSources.dart';
 
 import 'helpers/tileshare_fakes.dart';
@@ -98,21 +96,6 @@ class _FakeScheduleApi extends ScheduleApi {
   }
 }
 
-class _FakeWhatIfApi extends WhatIfApi {
-  _FakeWhatIfApi(this.result) : super(getContextCallBack: () => null);
-
-  final ForecastResponse result;
-  Map<String, Object>? received;
-
-  @override
-  Future<ForecastResponse> forecastNewTile(Map<String, Object> externalParams) async {
-    received = externalParams;
-    return result;
-  }
-}
-
-/// Answers like the server does: the project summary first, then one cluster's
-/// invitations per call, each in pages.
 class _FakeInvitationsApi extends TileShareInvitationsApi {
   _FakeInvitationsApi(this.log) : super(getContextCallBack: () => null);
 
@@ -434,18 +417,6 @@ void main() {
     });
   });
 
-  group('LiveTileShareFitSource delegates 1:1', () {
-    test('forecast passes the parameters through and returns the response',
-        () async {
-      final response = tsForecast(viable: true);
-      final api = _FakeWhatIfApi(response);
-      final source = LiveTileShareFitSource(api);
-      final params = <String, Object>{'DurationHours': '2', 'EndDay': '30'};
-      expect(await source.forecast(params), same(response));
-      expect(api.received, same(params));
-    });
-  });
-
   group('the fakes behave like the real sources', () {
     test('clusters pages the right list and keeps the two lists apart',
         () async {
@@ -495,14 +466,6 @@ void main() {
       expect(await fake.respond('nope', InvitationStatus.declined), isNull);
       await fake.afterAccept();
       expect(fake.calls.last, 'afterAccept()');
-    });
-
-    test('fit returns the configured response and records the call', () async {
-      final fake = FakeTileShareFitSource(tsForecast(viable: false, conflicts: 2));
-      final r = await fake.forecast({'b': '1', 'a': '2'});
-      expect(r.isViable, isFalse);
-      expect(r.conflictingCount, 2);
-      expect(fake.calls.single, 'forecast(a,b)');
     });
 
     test('failNext throws exactly once, then the fake recovers', () async {

@@ -1,14 +1,14 @@
-import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareInvitation.dart';
+import 'package:tiler_app/data/tileSharePreview.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareActivityApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/services/api/tileShareInvitationsApi.dart';
-import 'package:tiler_app/services/api/whatIfApi.dart';
+import 'package:tiler_app/services/api/tileSharePreviewApi.dart';
 import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 
@@ -75,14 +75,64 @@ class LiveTileShareAssignmentsSource implements TileShareAssignmentsSource {
   }
 }
 
-class LiveTileShareFitSource implements TileShareFitSource {
-  final WhatIfApi _api;
+class LiveTileSharePreviewSource implements TileSharePreviewSource {
+  final TileSharePreviewApi _api;
 
-  LiveTileShareFitSource(this._api);
+  LiveTileSharePreviewSource(this._api);
 
   @override
-  Future<ForecastResponse> forecast(Map<String, Object> params) =>
-      _api.forecastNewTile(params);
+  Future<TileSharePreview> preview(String assignmentId) =>
+      _api.preview(assignmentId);
+
+  @override
+  Future<PreviewOptionsPage> options({
+    required String assignmentId,
+    required String previewToken,
+    required String sessionKey,
+    int offset = 0,
+  }) =>
+      _api.options(
+          assignmentId: assignmentId,
+          previewToken: previewToken,
+          sessionKey: sessionKey,
+          offset: offset);
+
+  @override
+  Future<TileSharePreview> revise({
+    required String assignmentId,
+    required String previewToken,
+    String? optionId,
+    String? sessionKey,
+    bool? fixed,
+  }) =>
+      _api.revise(
+          assignmentId: assignmentId,
+          previewToken: previewToken,
+          optionId: optionId,
+          sessionKey: sessionKey,
+          fixed: fixed);
+
+  @override
+  Future<TileShareOperation> accept({
+    required String assignmentId,
+    required String previewToken,
+    required String operationId,
+  }) =>
+      _api.accept(
+          assignmentId: assignmentId,
+          previewToken: previewToken,
+          operationId: operationId);
+
+  @override
+  Future<TileShareOperation> operation(String operationId) =>
+      _api.operation(operationId);
+
+  @override
+  Future<TileShareAssignmentResponse> response(String assignmentId) =>
+      _api.response(assignmentId);
+
+  @override
+  String newOperationId() => TileSharePreviewApi.newOperationId();
 }
 
 class LiveTileShareAttentionSources implements TileShareAttentionSources {

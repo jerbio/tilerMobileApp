@@ -9,12 +9,13 @@
 //   * `calls` records every call, in order, for assertions.
 import 'dart:async';
 
-import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareInvitation.dart';
+import 'package:tiler_app/data/tileSharePreview.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
+import 'package:tiler_app/services/api/tileSharePreviewApi.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 
 /// Shared "misbehave on demand" behaviour.
@@ -141,16 +142,128 @@ class FakeTileShareAssignmentsSource
   Future<void> afterAccept() => run('afterAccept()', () {});
 }
 
-class FakeTileShareFitSource
+/// The accept preview in memory. Behaves like the server: alternatives come a
+/// page at a time (the page whose start offset matches the request), each
+/// option revises to its own scripted preview, and an accepted operation moves
+/// through [operationScript] as it is polled (by default queued -> applied ->
+/// completed, then stays completed).
+class FakeTileSharePreviewSource
     with FakeSourceControls
-    implements TileShareFitSource {
-  ForecastResponse response;
+    implements TileSharePreviewSource {
+  TileSharePreview previewResult;
+  final List<PreviewOptionsPage> optionPages;
 
-  FakeTileShareFitSource(this.response);
+  /// Previews to revise to, by option id.
+  final Map<String, TileSharePreview> revisions;
+  final List<OperationState> operationScript;
+  final TileShareAssignmentResponse? responseResult;
+
+  /// The calendar event a completed operation names.
+  final String calendarId;
+
+  final Map<String, int> _polls = <String, int>{};
+  final Map<String, String> _assignmentOfOperation = <String, String>{};
+  int _ids = 0;
+
+  FakeTileSharePreviewSource(
+    this.previewResult, {
+    List<PreviewOptionsPage>? optionPages,
+    Map<String, TileSharePreview>? revisions,
+    List<OperationState>? operationScript,
+    TileShareAssignmentResponse? response,
+    this.calendarId = 'CalendarEvent+fake',
+  })  : optionPages = optionPages ?? <PreviewOptionsPage>[],
+        revisions = revisions ?? <String, TileSharePreview>{},
+        operationScript = operationScript ??
+            const <OperationState>[
+              OperationState.applied,
+              OperationState.completed
+            ],
+        responseResult = response;
 
   @override
-  Future<ForecastResponse> forecast(Map<String, Object> params) =>
-      run('forecast(${(params.keys.toList()..sort()).join(',')})', () => response);
+  Future<TileSharePreview> preview(String assignmentId) =>
+      run('preview($assignmentId)', () => previewResult);
+
+  @override
+  Future<PreviewOptionsPage> options({
+    required String assignmentId,
+    required String previewToken,
+    required String sessionKey,
+    int offset = 0,
+  }) =>
+      run('options($assignmentId, offset: $offset)', () {
+        int start = 0;
+        for (final PreviewOptionsPage page in optionPages) {
+          if (start == offset) return page;
+          final int? next = page.nextOffset;
+          if (next == null) break;
+          start = next;
+        }
+        return const PreviewOptionsPage(options: <PreviewOption>[]);
+      });
+
+  @override
+  Future<TileSharePreview> revise({
+    required String assignmentId,
+    required String previewToken,
+    String? optionId,
+    String? sessionKey,
+    bool? fixed,
+  }) =>
+      run('revise($assignmentId, option: $optionId, fixed: $fixed)', () {
+        final TileSharePreview? revised = revisions[optionId];
+        if (revised == null) {
+          throw const TileSharePreviewFailure(PreviewFailureKind.notFound,
+              statusCode: 404);
+        }
+        return revised;
+      });
+
+  @override
+  Future<TileShareOperation> accept({
+    required String assignmentId,
+    required String previewToken,
+    required String operationId,
+  }) =>
+      run('accept($assignmentId, $operationId)', () {
+        _assignmentOfOperation[operationId] = assignmentId;
+        return TileShareOperation(
+            operationId: operationId,
+            assignmentId: assignmentId,
+            state: OperationState.queued);
+      });
+
+  @override
+  Future<TileShareOperation> operation(String operationId) =>
+      run('operation($operationId)', () {
+        final int polls = _polls[operationId] = (_polls[operationId] ?? 0) + 1;
+        final OperationState state = operationScript.isEmpty
+            ? OperationState.completed
+            : operationScript[
+                (polls - 1).clamp(0, operationScript.length - 1).toInt()];
+        return TileShareOperation(
+          operationId: operationId,
+          assignmentId: _assignmentOfOperation[operationId] ?? '',
+          state: state,
+          calendarId: state == OperationState.completed ? calendarId : null,
+          reason: state == OperationState.needsReview ? 'scheduleChanged' : null,
+        );
+      });
+
+  @override
+  Future<TileShareAssignmentResponse> response(String assignmentId) =>
+      run('response($assignmentId)', () {
+        final TileShareAssignmentResponse? r = responseResult;
+        if (r == null) {
+          throw const TileSharePreviewFailure(PreviewFailureKind.notFound,
+              statusCode: 404);
+        }
+        return r;
+      });
+
+  @override
+  String newOperationId() => (++_ids).toRadixString(16).padLeft(32, '0');
 }
 
 /// Invitations, the activity feed and dismissal, in memory. The activity list

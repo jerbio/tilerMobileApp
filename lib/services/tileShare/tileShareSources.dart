@@ -1,8 +1,8 @@
-import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareInvitation.dart';
+import 'package:tiler_app/data/tileSharePreview.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 
 // The data seams the TileShare cubits depend on (redesign T9). Each is a small
@@ -51,9 +51,49 @@ abstract class TileShareAssignmentsSource {
   Future<void> afterAccept();
 }
 
-/// The "does this fit my schedule" forecast behind Check fit.
-abstract class TileShareFitSource {
-  Future<ForecastResponse> forecast(Map<String, Object> params);
+/// The accept preview (redesign T21): what accepting an assignment would do to
+/// the user's schedule, other times for it, and accepting exactly what was
+/// previewed.
+abstract class TileSharePreviewSource {
+  /// The forecast of accepting [assignmentId]; a viable one carries a token.
+  Future<TileSharePreview> preview(String assignmentId);
+
+  /// A page of alternative start times for one session of a previewed task;
+  /// [offset] is the previous page's `nextOffset`.
+  Future<PreviewOptionsPage> options({
+    required String assignmentId,
+    required String previewToken,
+    required String sessionKey,
+    int offset = 0,
+  });
+
+  /// The preview again with an option chosen (or a session locked), under a new
+  /// token.
+  Future<TileSharePreview> revise({
+    required String assignmentId,
+    required String previewToken,
+    String? optionId,
+    String? sessionKey,
+    bool? fixed,
+  });
+
+  /// Accepts exactly the previewed schedule; queues an operation. Sending the
+  /// same [operationId] again never accepts twice.
+  Future<TileShareOperation> accept({
+    required String assignmentId,
+    required String previewToken,
+    required String operationId,
+  });
+
+  /// The queued accept's current state; poll until it is final.
+  Future<TileShareOperation> operation(String operationId);
+
+  /// What a recipient can recover about an assignment, e.g. after the app was
+  /// closed mid-accept.
+  Future<TileShareAssignmentResponse> response(String assignmentId);
+
+  /// A fresh id for one accept (32 lower-case hex characters).
+  String newOperationId();
 }
 
 /// What the Attention inbox reads: my pending invitations, the activity feed

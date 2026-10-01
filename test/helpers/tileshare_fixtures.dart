@@ -1,7 +1,6 @@
 // Builders for TileShare test data, shared by the TileShare suites (redesign
 // Step 9.3). The models only have `fromJson` constructors, so everything goes
 // through the wire shape — which also keeps the fixtures honest.
-import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/designatedUser.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
@@ -138,8 +137,4 @@ TileShareActivity tsActivity(
       if (metadata != null) 'metadata': metadata,
     });
 
-ForecastResponse tsForecast({bool? viable, int conflicts = 0}) =>
-    ForecastResponse.fromJson({
-      if (viable != null) 'isViable': viable,
-      'conflictingCount': conflicts,
-    });
+
