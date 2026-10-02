@@ -54,8 +54,10 @@ class _RecordingApi extends TileSharePreviewApi {
     required String assignmentId,
     required String previewToken,
     required String operationId,
+    required TileShareAcceptanceMode mode,
+    String? sessionKey,
   }) =>
-      _run('accept($assignmentId, $previewToken, $operationId)',
+      _run('accept($assignmentId, $previewToken, $operationId, ${mode.name}, $sessionKey)',
           TileShareOperation.fromJson(previewFixture('operation_queued')));
 
   @override
@@ -87,14 +89,18 @@ void main() {
           assignmentId: 'a1', previewToken: 't', sessionKey: '0', offset: 4);
       await source.revise(assignmentId: 'a1', previewToken: 't', optionId: 'o');
       await source.accept(
-          assignmentId: 'a1', previewToken: 't', operationId: 'op');
+          assignmentId: 'a1',
+          previewToken: 't',
+          operationId: 'op',
+          mode: TileShareAcceptanceMode.lockSession,
+          sessionKey: '1');
       await source.operation('op');
       await source.response('a1');
       expect(log, [
         'preview(a1)',
         'options(a1, t, 0, 4)',
         'revise(a1, t, o, null, null)',
-        'accept(a1, t, op)',
+        'accept(a1, t, op, lockSession, 1)',
         'operation(op)',
         'response(a1)',
       ]);
@@ -167,7 +173,10 @@ void main() {
       final fake = FakeTileSharePreviewSource(viable());
       final id = fake.newOperationId();
       final queued = await fake.accept(
-          assignmentId: 'a', previewToken: 't', operationId: id);
+          assignmentId: 'a',
+          previewToken: 't',
+          operationId: id,
+          mode: TileShareAcceptanceMode.flexible);
       expect(queued.state, OperationState.queued);
       expect(queued.operationId, id);
       expect((await fake.operation(id)).state, OperationState.applied);
@@ -185,11 +194,29 @@ void main() {
         OperationState.needsReview,
       ]);
       final id = fake.newOperationId();
-      await fake.accept(assignmentId: 'a', previewToken: 't', operationId: id);
+      await fake.accept(
+          assignmentId: 'a',
+          previewToken: 't',
+          operationId: id,
+          mode: TileShareAcceptanceMode.flexible);
       expect((await fake.operation(id)).state, OperationState.applied);
       final last = await fake.operation(id);
       expect(last.state, OperationState.needsReview);
       expect(last.succeeded, isFalse);
+    });
+
+    test('the fake remembers what was accepted: the mode and the locked '
+        'session', () async {
+      final fake = FakeTileSharePreviewSource(viable());
+      await fake.accept(
+          assignmentId: 'a',
+          previewToken: 't',
+          operationId: fake.newOperationId(),
+          mode: TileShareAcceptanceMode.lockSession,
+          sessionKey: '1');
+      expect(fake.accepted.single.mode, TileShareAcceptanceMode.lockSession);
+      expect(fake.accepted.single.sessionKey, '1');
+      expect(fake.accepted.single.previewToken, 't');
     });
 
     test('operation ids are 32 hex characters and never repeat', () {

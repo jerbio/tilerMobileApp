@@ -127,11 +127,22 @@ class TileSharePreviewApi extends AppApi {
         requiredKey: 'assignmentId'));
   }
 
-  /// Accepts exactly the previewed schedule. Returns the queued operation.
+  /// Accepts exactly the previewed schedule, in [mode]. Returns the queued
+  /// operation.
+  ///
+  /// The mode is always stated (an omitted one would mean the older "constraints
+  /// bound to the token" behaviour). [TileShareAcceptanceMode.lockSession]
+  /// needs the [sessionKey] of the one session to fix, and the server refuses a
+  /// key it does not find among the stored proposal's viable sessions
+  /// (409 `invalidSession`); a flexible accept has none. Retrying the same
+  /// [operationId] with another mode or session is a 409 `operationMismatch`,
+  /// so a retry must repeat all three.
   Future<TileShareOperation> accept({
     required String assignmentId,
     required String previewToken,
     required String operationId,
+    required TileShareAcceptanceMode mode,
+    String? sessionKey,
   }) async {
     if (previewToken.isEmpty) {
       throw ArgumentError.value(
@@ -141,11 +152,22 @@ class TileSharePreviewApi extends AppApi {
       throw ArgumentError.value(
           operationId, 'operationId', 'must be 32 lower-case hex characters');
     }
+    final bool locking = mode == TileShareAcceptanceMode.lockSession;
+    if (locking && (sessionKey == null || sessionKey.trim().isEmpty)) {
+      throw ArgumentError.value(sessionKey, 'sessionKey',
+          'locking a session needs the session to lock');
+    }
+    if (!locking && sessionKey != null) {
+      throw ArgumentError.value(
+          sessionKey, 'sessionKey', 'a flexible accept has no session to lock');
+    }
     final String body = await _post(_statusRoute, {
       'Id': assignmentId,
       'Status': 'accepted',
       'PreviewToken': previewToken,
       'OperationId': operationId,
+      'AcceptanceMode': mode.wire,
+      if (locking) 'SessionKey': sessionKey,
     });
     return TileShareOperation.fromJson(readTileShareContent(body,
         tag: _tag, what: 'Accept', requiredKey: 'operationId'));

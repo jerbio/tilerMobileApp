@@ -4,6 +4,24 @@
 /// but it never invents permission: nothing may be accepted or explored unless
 /// the response itself says so.
 
+/// How an accepted preview is applied.
+///
+/// * [flexible] - accept every session at the reviewed times; Tiler may move
+///   flexible work later as the schedule changes.
+/// * [lockSession] - accept every session and fix only one of them (named by its
+///   `sessionKey`) at its reviewed interval; the others stay flexible. The server
+///   resolves the times from its own stored proposal - the client never sends
+///   times to lock.
+enum TileShareAcceptanceMode {
+  flexible('Flexible'),
+  lockSession('LockSession');
+
+  /// The value the server expects.
+  final String wire;
+
+  const TileShareAcceptanceMode(this.wire);
+}
+
 int? _ms(Object? value) => value is num ? value.toInt() : null;
 
 String? _text(Object? value) => value?.toString();

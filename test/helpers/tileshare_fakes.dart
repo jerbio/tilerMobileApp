@@ -142,6 +142,23 @@ class FakeTileShareAssignmentsSource
   Future<void> afterAccept() => run('afterAccept()', () {});
 }
 
+/// What a [FakeTileSharePreviewSource] was asked to accept.
+class FakeAcceptedPreview {
+  final String assignmentId;
+  final String previewToken;
+  final String operationId;
+  final TileShareAcceptanceMode mode;
+  final String? sessionKey;
+
+  const FakeAcceptedPreview({
+    required this.assignmentId,
+    required this.previewToken,
+    required this.operationId,
+    required this.mode,
+    this.sessionKey,
+  });
+}
+
 /// The accept preview in memory. Behaves like the server: alternatives come a
 /// page at a time (the page whose start offset matches the request), each
 /// option revises to its own scripted preview, and an accepted operation moves
@@ -160,6 +177,9 @@ class FakeTileSharePreviewSource
 
   /// The calendar event a completed operation names.
   final String calendarId;
+
+  /// Every accept it was asked for, in order.
+  final List<FakeAcceptedPreview> accepted = <FakeAcceptedPreview>[];
 
   final Map<String, int> _polls = <String, int>{};
   final Map<String, String> _assignmentOfOperation = <String, String>{};
@@ -225,8 +245,16 @@ class FakeTileSharePreviewSource
     required String assignmentId,
     required String previewToken,
     required String operationId,
+    required TileShareAcceptanceMode mode,
+    String? sessionKey,
   }) =>
-      run('accept($assignmentId, $operationId)', () {
+      run('accept($assignmentId, $operationId, ${mode.name}, $sessionKey)', () {
+        accepted.add(FakeAcceptedPreview(
+            assignmentId: assignmentId,
+            previewToken: previewToken,
+            operationId: operationId,
+            mode: mode,
+            sessionKey: sessionKey));
         _assignmentOfOperation[operationId] = assignmentId;
         return TileShareOperation(
             operationId: operationId,

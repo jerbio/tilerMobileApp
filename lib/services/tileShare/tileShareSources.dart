@@ -77,12 +77,15 @@ abstract class TileSharePreviewSource {
     bool? fixed,
   });
 
-  /// Accepts exactly the previewed schedule; queues an operation. Sending the
-  /// same [operationId] again never accepts twice.
+  /// Accepts exactly the previewed schedule, flexibly or locking one session;
+  /// queues an operation. Sending the same [operationId] again - with the same
+  /// [mode] and [sessionKey] - never accepts twice.
   Future<TileShareOperation> accept({
     required String assignmentId,
     required String previewToken,
     required String operationId,
+    required TileShareAcceptanceMode mode,
+    String? sessionKey,
   });
 
   /// The queued accept's current state; poll until it is final.

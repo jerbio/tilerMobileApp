@@ -203,6 +203,7 @@ void main() {
     test('sends Status accepted with the token and an operation id', () async {
       client.nextBody = previewBody(previewFixture('operation_queued'));
       final op = await api.accept(
+          mode: TileShareAcceptanceMode.flexible,
           assignmentId: kPreviewAssignmentId,
           previewToken: kPreviewToken,
           operationId: kPreviewOperationId);
@@ -214,6 +215,92 @@ void main() {
       expect(body['OperationId'], kPreviewOperationId);
       expect(op.state, OperationState.queued);
       expect(op.operationId, kPreviewOperationId);
+    });
+
+    test('Accept is Flexible: the mode is named and there is no lock target',
+        () async {
+      client.nextBody = previewBody(previewFixture('operation_queued'));
+      await api.accept(
+          mode: TileShareAcceptanceMode.flexible,
+          assignmentId: kPreviewAssignmentId,
+          previewToken: kPreviewToken,
+          operationId: kPreviewOperationId);
+      final body = sentBody();
+      expect(body['AcceptanceMode'], 'Flexible');
+      expect(body.containsKey('SessionKey'), isFalse);
+    });
+
+    test('Accept and lock names the one session to fix', () async {
+      client.nextBody = previewBody(previewFixture('operation_queued'));
+      await api.accept(
+          mode: TileShareAcceptanceMode.lockSession,
+          sessionKey: '1',
+          assignmentId: kPreviewAssignmentId,
+          previewToken: kPreviewToken,
+          operationId: kPreviewOperationId);
+      final body = sentBody();
+      expect(body['Status'], 'accepted');
+      expect(body['AcceptanceMode'], 'LockSession');
+      expect(body['SessionKey'], '1');
+      expect(body['PreviewToken'], kPreviewToken);
+    });
+
+    test('the lock is never sent as times: the server owns them and ignores '
+        'LockedTimeLineRequest', () async {
+      client.nextBody = previewBody(previewFixture('operation_queued'));
+      await api.accept(
+          mode: TileShareAcceptanceMode.lockSession,
+          sessionKey: '0',
+          assignmentId: kPreviewAssignmentId,
+          previewToken: kPreviewToken,
+          operationId: kPreviewOperationId);
+      expect(sentBody().keys, isNot(contains('LockedTimeLineRequest')));
+    });
+
+    test('locking without saying which session is refused before sending',
+        () async {
+      for (final key in [null, '', '  ']) {
+        await expectLater(
+            api.accept(
+                mode: TileShareAcceptanceMode.lockSession,
+                sessionKey: key,
+                assignmentId: kPreviewAssignmentId,
+                previewToken: kPreviewToken,
+                operationId: kPreviewOperationId),
+            throwsA(isA<ArgumentError>()),
+            reason: '"$key"');
+      }
+      expect(client.requests, isEmpty);
+    });
+
+    test('a flexible accept with a lock target is refused before sending '
+        '(the server would answer 400)', () async {
+      await expectLater(
+          api.accept(
+              mode: TileShareAcceptanceMode.flexible,
+              sessionKey: '0',
+              assignmentId: kPreviewAssignmentId,
+              previewToken: kPreviewToken,
+              operationId: kPreviewOperationId),
+          throwsA(isA<ArgumentError>()));
+      expect(client.requests, isEmpty);
+    });
+
+    test('a retry keeps its mode and session, so the server accepts it as '
+        'the same command', () async {
+      client.nextBody = previewBody(previewFixture('operation_queued'));
+      for (var i = 0; i < 2; i++) {
+        await api.accept(
+            mode: TileShareAcceptanceMode.lockSession,
+            sessionKey: '1',
+            assignmentId: kPreviewAssignmentId,
+            previewToken: kPreviewToken,
+            operationId: kPreviewOperationId);
+      }
+      final a = jsonDecode((client.requests[0] as dynamic).body);
+      final b = jsonDecode((client.requests[1] as dynamic).body);
+      expect([a['OperationId'], a['AcceptanceMode'], a['SessionKey']],
+          [b['OperationId'], b['AcceptanceMode'], b['SessionKey']]);
     });
 
     test('a new operation id is 32 hex characters, and different each time',
@@ -229,10 +316,12 @@ void main() {
         'the server)', () async {
       client.nextBody = previewBody(previewFixture('operation_queued'));
       await api.accept(
+          mode: TileShareAcceptanceMode.flexible,
           assignmentId: kPreviewAssignmentId,
           previewToken: kPreviewToken,
           operationId: kPreviewOperationId);
       await api.accept(
+          mode: TileShareAcceptanceMode.flexible,
           assignmentId: kPreviewAssignmentId,
           previewToken: kPreviewToken,
           operationId: kPreviewOperationId);
@@ -245,6 +334,7 @@ void main() {
         () async {
       await expectLater(
           api.accept(
+              mode: TileShareAcceptanceMode.flexible,
               assignmentId: kPreviewAssignmentId,
               previewToken: '',
               operationId: kPreviewOperationId),
@@ -255,6 +345,7 @@ void main() {
     test('refuses an operation id that is not 32 hex characters', () async {
       await expectLater(
           api.accept(
+              mode: TileShareAcceptanceMode.flexible,
               assignmentId: kPreviewAssignmentId,
               previewToken: kPreviewToken,
               operationId: 'not-hex'),
@@ -339,12 +430,28 @@ void main() {
         client.nextStatus = 409;
         client.nextBody = previewConflictBody(reason);
         final f = await failure(api.accept(
+            mode: TileShareAcceptanceMode.flexible,
             assignmentId: kPreviewAssignmentId,
             previewToken: kPreviewToken,
             operationId: kPreviewOperationId));
         expect(f.kind, PreviewFailureKind.conflict, reason: reason);
         expect(f.reason, reason);
         expect(f.toString(), contains(reason));
+      }
+    });
+
+    test('the lock-specific conflicts keep their reason', () async {
+      for (final reason in ['invalidSession', 'operationMismatch']) {
+        client.nextStatus = 409;
+        client.nextBody = previewConflictBody(reason);
+        final f = await failure(api.accept(
+            mode: TileShareAcceptanceMode.lockSession,
+            sessionKey: '9',
+            assignmentId: kPreviewAssignmentId,
+            previewToken: kPreviewToken,
+            operationId: kPreviewOperationId));
+        expect(f.kind, PreviewFailureKind.conflict);
+        expect(f.reason, reason);
       }
     });
 
