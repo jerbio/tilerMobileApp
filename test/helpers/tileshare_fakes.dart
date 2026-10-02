@@ -16,6 +16,7 @@ import 'package:tiler_app/data/tileShareInvitation.dart';
 import 'package:tiler_app/data/tileSharePreview.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/services/api/tileSharePreviewApi.dart';
+import 'package:tiler_app/services/tileShare/tileSharePendingAccept.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 
 /// Shared "misbehave on demand" behaviour.
@@ -161,11 +162,20 @@ class FakeAcceptedPreview {
   });
 }
 
-/// The accept preview in memory. Behaves like the server: alternatives come a
-/// page at a time (the page whose start offset matches the request), each
-/// option revises to its own scripted preview, and an accepted operation moves
-/// through [operationScript] as it is polled (by default queued -> applied ->
-/// completed, then stays completed).
+/// The accept preview in memory, behaving like the server:
+///
+/// * alternatives come a page at a time (the page whose start offset matches the
+///   request) and each option revises to its own scripted preview;
+/// * an **accept answers with the outcome** ([acceptState], completed unless
+///   told otherwise; [acceptReason] for rejected / needs review) - the server
+///   runs the whole acceptance inside the request;
+/// * an operation is **idempotent**: the same id with the same command returns
+///   the stored record without accepting twice, and a different command is a 409
+///   `operationMismatch`;
+/// * [commitButLoseResponse] makes the next accept commit and then fail like a
+///   lost connection, so a retry can be shown to return the stored outcome;
+/// * for a non-final [acceptState], later reads of the operation follow
+///   [operationScript] (the last entry repeats).
 class FakeTileSharePreviewSource
     with FakeSourceControls
     implements TileSharePreviewSource {
@@ -174,33 +184,35 @@ class FakeTileSharePreviewSource
 
   /// Previews to revise to, by option id.
   final Map<String, TileSharePreview> revisions;
+  OperationState acceptState;
+  String? acceptReason;
   final List<OperationState> operationScript;
   final TileShareAssignmentResponse? responseResult;
 
   /// The calendar event a completed operation names.
   final String calendarId;
 
-  /// Every accept it was asked for, in order.
+  /// The next accept commits, then fails as if the response was lost.
+  bool commitButLoseResponse = false;
+
+  /// Every accept that reached the server and was new, in order.
   final List<FakeAcceptedPreview> accepted = <FakeAcceptedPreview>[];
 
-  final Map<String, int> _polls = <String, int>{};
-  final Map<String, String> _assignmentOfOperation = <String, String>{};
+  final Map<String, _StoredOperation> _stored = <String, _StoredOperation>{};
   int _ids = 0;
 
   FakeTileSharePreviewSource(
     this.previewResult, {
     List<PreviewOptionsPage>? optionPages,
     Map<String, TileSharePreview>? revisions,
+    this.acceptState = OperationState.completed,
+    this.acceptReason,
     List<OperationState>? operationScript,
     TileShareAssignmentResponse? response,
     this.calendarId = 'CalendarEvent+fake',
   })  : optionPages = optionPages ?? <PreviewOptionsPage>[],
         revisions = revisions ?? <String, TileSharePreview>{},
-        operationScript = operationScript ??
-            const <OperationState>[
-              OperationState.applied,
-              OperationState.completed
-            ],
+        operationScript = operationScript ?? <OperationState>[],
         responseResult = response;
 
   @override
@@ -252,6 +264,16 @@ class FakeTileSharePreviewSource
     TileShareLockedTimeLine? lockedTimeLine,
   }) =>
       run('accept($assignmentId, $operationId, ${mode.name}, $sessionKey)', () {
+        final String command = '$assignmentId|$previewToken|${mode.name}|'
+            '$sessionKey|${lockedTimeLine?.startMs}/${lockedTimeLine?.durationMs}';
+        final _StoredOperation? existing = _stored[operationId];
+        if (existing != null) {
+          if (existing.command != command) {
+            throw const TileSharePreviewFailure(PreviewFailureKind.conflict,
+                statusCode: 409, reason: 'operationMismatch');
+          }
+          return existing.currentRecord();
+        }
         accepted.add(FakeAcceptedPreview(
             assignmentId: assignmentId,
             previewToken: previewToken,
@@ -259,28 +281,35 @@ class FakeTileSharePreviewSource
             mode: mode,
             sessionKey: sessionKey,
             lockedTimeLine: lockedTimeLine));
-        _assignmentOfOperation[operationId] = assignmentId;
-        return TileShareOperation(
-            operationId: operationId,
-            assignmentId: assignmentId,
-            state: OperationState.queued);
+        final _StoredOperation stored = _StoredOperation(
+            command,
+            TileShareOperation(
+              operationId: operationId,
+              assignmentId: assignmentId,
+              state: acceptState,
+              calendarId:
+                  acceptState == OperationState.completed ? calendarId : null,
+              reason: acceptReason,
+            ),
+            operationScript);
+        _stored[operationId] = stored;
+        if (commitButLoseResponse) {
+          commitButLoseResponse = false;
+          throw const TileSharePreviewFailure(PreviewFailureKind.server,
+              reason: 'timed out');
+        }
+        return stored.first;
       });
 
   @override
   Future<TileShareOperation> operation(String operationId) =>
       run('operation($operationId)', () {
-        final int polls = _polls[operationId] = (_polls[operationId] ?? 0) + 1;
-        final OperationState state = operationScript.isEmpty
-            ? OperationState.completed
-            : operationScript[
-                (polls - 1).clamp(0, operationScript.length - 1).toInt()];
-        return TileShareOperation(
-          operationId: operationId,
-          assignmentId: _assignmentOfOperation[operationId] ?? '',
-          state: state,
-          calendarId: state == OperationState.completed ? calendarId : null,
-          reason: state == OperationState.needsReview ? 'scheduleChanged' : null,
-        );
+        final _StoredOperation? stored = _stored[operationId];
+        if (stored == null) {
+          throw const TileSharePreviewFailure(PreviewFailureKind.notFound,
+              statusCode: 404);
+        }
+        return stored.read();
       });
 
   @override
@@ -296,6 +325,40 @@ class FakeTileSharePreviewSource
 
   @override
   String newOperationId() => (++_ids).toRadixString(16).padLeft(32, '0');
+}
+
+class _StoredOperation {
+  final String command;
+  final TileShareOperation first;
+  final List<OperationState> script;
+  int _reads = 0;
+
+  _StoredOperation(this.command, this.first, this.script);
+
+  /// What the server holds now (a repeated accept returns this).
+  TileShareOperation currentRecord() => _reads == 0 ? first : _at(_reads - 1);
+
+  /// One read of the operation; follows the script, then stays where it ended.
+  TileShareOperation read() {
+    if (script.isEmpty) return first;
+    final TileShareOperation next = _at(_reads);
+    _reads++;
+    return next;
+  }
+
+  TileShareOperation _at(int i) {
+    final OperationState state =
+        script[i.clamp(0, script.length - 1).toInt()];
+    return TileShareOperation(
+      operationId: first.operationId,
+      assignmentId: first.assignmentId,
+      state: state,
+      calendarId: state == OperationState.completed ? first.calendarId ?? 'CalendarEvent+fake' : null,
+      reason: state == OperationState.needsReview || state == OperationState.rejected
+          ? first.reason ?? 'scheduleChanged'
+          : null,
+    );
+  }
 }
 
 /// Invitations, the activity feed and dismissal, in memory. The activity list
@@ -355,4 +418,35 @@ class FakeTileShareAttentionSources
           dismissed.remove(eventId);
         }
       });
+}
+
+/// The unconfirmed accept, kept in memory. Records what was saved and cleared,
+/// in order, so a test can show a command was saved BEFORE it was sent.
+class FakePendingAcceptStore implements TileSharePendingAcceptStore {
+  final Map<String, PendingAccept> _byAssignment = <String, PendingAccept>{};
+  final List<String> log = <String>[];
+
+  FakePendingAcceptStore([PendingAccept? initial]) {
+    if (initial != null) _byAssignment[initial.assignmentId] = initial;
+  }
+
+  PendingAccept? operator [](String assignmentId) => _byAssignment[assignmentId];
+
+  @override
+  Future<PendingAccept?> read(String assignmentId) async {
+    log.add('read($assignmentId)');
+    return _byAssignment[assignmentId];
+  }
+
+  @override
+  Future<void> save(PendingAccept pending) async {
+    log.add('save(${pending.operationId})');
+    _byAssignment[pending.assignmentId] = pending;
+  }
+
+  @override
+  Future<void> clear(String assignmentId) async {
+    log.add('clear($assignmentId)');
+    _byAssignment.remove(assignmentId);
+  }
 }

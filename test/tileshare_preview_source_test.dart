@@ -1,7 +1,7 @@
 // TileShare redesign Step 9.10 (T9, T21): the preview seam. The live adapter is
 // a thin 1:1 layer over the API; the in-memory fake behaves like the server
-// (paged alternatives, a revision per option, an operation that moves
-// queued -> applied -> completed) and can be told to fail or stall, so the
+// (paged alternatives, a revision per option, an accept that answers with its
+// outcome and is idempotent) and can be told to fail or stall, so the
 // cubit and screen tests in later steps need no network.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/data/tileSharePreview.dart';
@@ -172,9 +172,104 @@ void main() {
           throwsA(isA<TileSharePreviewFailure>()));
     });
 
-    test('an accept moves queued -> applied -> completed as it is polled',
+    test('an accept answers with the outcome, completed unless scripted '
+        'otherwise (the server runs the acceptance inside the request)',
         () async {
       final fake = FakeTileSharePreviewSource(viable());
+      final id = fake.newOperationId();
+      final done = await fake.accept(
+          assignmentId: 'a',
+          previewToken: 't',
+          operationId: id,
+          mode: TileShareAcceptanceMode.flexible);
+      expect(done.state, OperationState.completed);
+      expect(done.succeeded, isTrue);
+      expect(done.calendarId, isNotNull);
+      expect((await fake.operation(id)).state, OperationState.completed);
+
+      final review = FakeTileSharePreviewSource(viable(),
+          acceptState: OperationState.needsReview, acceptReason: 'fixedTimeChanged');
+      final r = await review.accept(
+          assignmentId: 'a',
+          previewToken: 't',
+          operationId: review.newOperationId(),
+          mode: TileShareAcceptanceMode.flexible);
+      expect(r.state, OperationState.needsReview);
+      expect(r.reason, 'fixedTimeChanged');
+    });
+
+    test('a repeated accept returns the stored outcome and accepts once',
+        () async {
+      final fake = FakeTileSharePreviewSource(viable());
+      final id = fake.newOperationId();
+      Future<TileShareOperation> send() => fake.accept(
+          assignmentId: 'a',
+          previewToken: 't',
+          operationId: id,
+          mode: TileShareAcceptanceMode.lockSession,
+          sessionKey: '0',
+          lockedTimeLine:
+              const TileShareLockedTimeLine(startMs: 60000, durationMs: 120000));
+      final first = await send();
+      final second = await send();
+      expect(second.state, first.state);
+      expect(second.operationId, first.operationId);
+      expect(fake.accepted, hasLength(1));
+    });
+
+    test('the same operation id with a different command is a 409 '
+        'operationMismatch', () async {
+      final fake = FakeTileSharePreviewSource(viable());
+      final id = fake.newOperationId();
+      await fake.accept(
+          assignmentId: 'a',
+          previewToken: 't',
+          operationId: id,
+          mode: TileShareAcceptanceMode.flexible);
+      await expectLater(
+          fake.accept(
+              assignmentId: 'a',
+              previewToken: 't',
+              operationId: id,
+              mode: TileShareAcceptanceMode.lockSession,
+              sessionKey: '0',
+              lockedTimeLine: const TileShareLockedTimeLine(
+                  startMs: 60000, durationMs: 120000)),
+          throwsA(predicate((e) =>
+              e is TileSharePreviewFailure && e.reason == 'operationMismatch')));
+    });
+
+    test('a lost response: the accept committed, the call failed, and a repeat '
+        'returns the stored outcome', () async {
+      final fake = FakeTileSharePreviewSource(viable())
+        ..commitButLoseResponse = true;
+      final id = fake.newOperationId();
+      Future<TileShareOperation> send() => fake.accept(
+          assignmentId: 'a',
+          previewToken: 't',
+          operationId: id,
+          mode: TileShareAcceptanceMode.flexible);
+      await expectLater(send(), throwsA(isA<TileSharePreviewFailure>()));
+      expect(fake.accepted, hasLength(1), reason: 'it did commit');
+      final again = await send();
+      expect(again.state, OperationState.completed);
+      expect(fake.accepted, hasLength(1), reason: 'and was not accepted twice');
+    });
+
+    test('reading an operation the server never saw is a 404', () async {
+      final fake = FakeTileSharePreviewSource(viable());
+      await expectLater(
+          fake.operation('never'),
+          throwsA(predicate((e) =>
+              e is TileSharePreviewFailure &&
+              e.kind == PreviewFailureKind.notFound)));
+    });
+
+    test('a non-final accept follows its script as it is read, then stays',
+        () async {
+      final fake = FakeTileSharePreviewSource(viable(),
+          acceptState: OperationState.queued,
+          operationScript: [OperationState.applied, OperationState.completed]);
       final id = fake.newOperationId();
       final queued = await fake.accept(
           assignmentId: 'a',
@@ -182,49 +277,9 @@ void main() {
           operationId: id,
           mode: TileShareAcceptanceMode.flexible);
       expect(queued.state, OperationState.queued);
-      expect(queued.operationId, id);
       expect((await fake.operation(id)).state, OperationState.applied);
-      final done = await fake.operation(id);
-      expect(done.state, OperationState.completed);
-      expect(done.succeeded, isTrue);
-      expect(done.calendarId, isNotNull);
-      expect((await fake.operation(id)).state, OperationState.completed,
-          reason: 'stays completed');
-    });
-
-    test('the operation script can end badly', () async {
-      final fake = FakeTileSharePreviewSource(viable(), operationScript: [
-        OperationState.applied,
-        OperationState.needsReview,
-      ]);
-      final id = fake.newOperationId();
-      await fake.accept(
-          assignmentId: 'a',
-          previewToken: 't',
-          operationId: id,
-          mode: TileShareAcceptanceMode.flexible);
-      expect((await fake.operation(id)).state, OperationState.applied);
-      final last = await fake.operation(id);
-      expect(last.state, OperationState.needsReview);
-      expect(last.succeeded, isFalse);
-    });
-
-    test('the fake remembers what was accepted: the mode and the locked '
-        'session', () async {
-      final fake = FakeTileSharePreviewSource(viable());
-      await fake.accept(
-          assignmentId: 'a',
-          previewToken: 't',
-          operationId: fake.newOperationId(),
-          mode: TileShareAcceptanceMode.lockSession,
-          sessionKey: '1',
-          lockedTimeLine:
-              const TileShareLockedTimeLine(startMs: 60000, durationMs: 120000));
-      expect(fake.accepted.single.mode, TileShareAcceptanceMode.lockSession);
-      expect(fake.accepted.single.sessionKey, '1');
-      expect(fake.accepted.single.lockedTimeLine,
-          const TileShareLockedTimeLine(startMs: 60000, durationMs: 120000));
-      expect(fake.accepted.single.previewToken, 't');
+      expect((await fake.operation(id)).state, OperationState.completed);
+      expect((await fake.operation(id)).state, OperationState.completed);
     });
 
     test('operation ids are 32 hex characters and never repeat', () {
