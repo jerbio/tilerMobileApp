@@ -490,7 +490,11 @@ class TileGridWidgetState extends GridPositionableState {
         final Widget body = Padding(
           padding: EdgeInsets.only(
               bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
-          child: PreviewDetailsTileWidget(tile),
+          // A preview tile is a proposal: nothing to complete, start, defer
+          // or delete.
+          child: PreviewDetailsTileWidget(tile,
+              showPlayback: !(this.widget is TileGridWidget &&
+                  (this.widget as TileGridWidget).preview)),
         );
         return Container(
           width: MediaQuery.of(sheetContext).size.width,

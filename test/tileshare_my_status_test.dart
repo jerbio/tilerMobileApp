@@ -47,6 +47,22 @@ void main() {
     expect(s.needsAnswer, isTrue);
   });
 
+  test('the tasks still to answer are named, so one can be previewed '
+      '(Step 9.11b)', () {
+    final s = MyClusterStatus.byCluster([
+      tile('a', 'c1', InvitationStatus.accepted),
+      tile('b', 'c1', InvitationStatus.none),
+      tile('c', 'c1', InvitationStatus.declined),
+      tile('d', 'c1', InvitationStatus.none),
+    ])['c1']!;
+    expect(s.pendingAssignmentIds, ['b', 'd']);
+    expect(
+        MyClusterStatus.byCluster([tile('a', 'c1', InvitationStatus.accepted)])[
+                'c1']!
+            .pendingAssignmentIds,
+        isEmpty);
+  });
+
   test('accepted on some and declined on the rest, none pending, is mixed '
       'and needs nothing', () {
     final s = MyClusterStatus.byCluster([

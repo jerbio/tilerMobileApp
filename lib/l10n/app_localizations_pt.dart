@@ -4582,4 +4582,157 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get clustersTabTitle => 'Clusters';
+
+  @override
+  String get previewTitleFallback => 'Review schedule';
+
+  @override
+  String get previewRegenerate => 'Generate new preview';
+
+  @override
+  String get previewSuggested => 'Suggested schedule';
+
+  @override
+  String get previewSelected => 'Selected schedule';
+
+  @override
+  String previewMoves(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Moves $count flexible tiles',
+      one: 'Moves 1 flexible tile',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get previewAccept => 'Accept';
+
+  @override
+  String get previewAcceptAndLock => 'Accept & lock';
+
+  @override
+  String get previewAcceptHint => 'Tiler may move flexible work later.';
+
+  @override
+  String previewLockHint(String when) {
+    return 'Locks $when. Other sessions stay flexible.';
+  }
+
+  @override
+  String get previewDecline => 'Decline';
+
+  @override
+  String get previewCannotFit => 'It can’t be fitted before its deadline.';
+
+  @override
+  String previewOutsideWindow(String when) {
+    return 'Scheduled outside the days shown: $when';
+  }
+
+  @override
+  String get previewNothingThisDay => 'Nothing scheduled this day';
+
+  @override
+  String get previewPrevDay => 'Previous day';
+
+  @override
+  String get previewNextDay => 'Next day';
+
+  @override
+  String get previewStale => 'This preview is out of date.';
+
+  @override
+  String get previewRefresh => 'Refresh preview';
+
+  @override
+  String get previewSessionInvalid =>
+      'That time can no longer be locked. You can still accept.';
+
+  @override
+  String get previewLoading => 'Checking your schedule…';
+
+  @override
+  String get previewLoadFailed => 'Couldn’t build the preview.';
+
+  @override
+  String get previewGone => 'This invitation is no longer available.';
+
+  @override
+  String get previewSwitchedOff => 'Previews aren’t available right now.';
+
+  @override
+  String get previewSignIn => 'Sign in again to see the preview.';
+
+  @override
+  String get previewInvalid => 'That request wasn’t accepted. Try again.';
+
+  @override
+  String get previewUnsupportedAccepted => 'You’ve already accepted this.';
+
+  @override
+  String get previewUnsupportedDeadline => 'Its deadline has passed.';
+
+  @override
+  String get previewUnsupportedConstraints =>
+      'This task repeats, has a place, or has limits a preview can’t show yet. You can still answer it from the list.';
+
+  @override
+  String get previewUnsupportedOther => 'This task can’t be previewed.';
+
+  @override
+  String get previewAdding => 'Adding to your calendar…';
+
+  @override
+  String get previewAdded => 'Added to your calendar';
+
+  @override
+  String get previewNeedsReview => 'Added, but its time couldn’t be confirmed.';
+
+  @override
+  String get previewNotAdded => 'Not added';
+
+  @override
+  String get previewReasonScheduleChanged =>
+      'Your schedule changed since this preview.';
+
+  @override
+  String get previewReasonAnswered => 'It was answered or changed elsewhere.';
+
+  @override
+  String get previewReasonExpired => 'The preview expired.';
+
+  @override
+  String get previewReasonOther => 'It couldn’t be scheduled as previewed.';
+
+  @override
+  String get previewReviewAgain => 'Review again';
+
+  @override
+  String get previewUnconfirmed => 'We couldn’t confirm your answer.';
+
+  @override
+  String get previewTryAgain => 'Try again';
+
+  @override
+  String get previewCheckStatus => 'Check status';
+
+  @override
+  String get previewStillAdding => 'Still adding…';
+
+  @override
+  String get previewDeclined => 'Declined';
+
+  @override
+  String get previewDeclineFailed => 'Couldn’t decline. Try again.';
+
+  @override
+  String get previewDone => 'Done';
+
+  @override
+  String get previewCheckFit => 'Check fit';
+
+  @override
+  String get previewDetails => 'Details';
 }

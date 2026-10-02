@@ -22,7 +22,11 @@ class TileShareAttentionView extends StatefulWidget {
   /// A card was opened. The host decides where that goes.
   final void Function(AttentionItem item)? onOpen;
 
-  const TileShareAttentionView({super.key, this.onOpen});
+  /// Check fit: open the accept preview of this assignment. Without it the
+  /// cards offer no preview.
+  final void Function(String assignmentId)? onPreview;
+
+  const TileShareAttentionView({super.key, this.onOpen, this.onPreview});
 
   @override
   State<TileShareAttentionView> createState() => _TileShareAttentionViewState();
@@ -134,6 +138,10 @@ class _TileShareAttentionViewState extends State<TileShareAttentionView> {
                       onDismiss: () => _dismiss(item),
                       onAccept: () => _answer(item, InvitationStatus.accepted),
                       onDecline: () => _answer(item, InvitationStatus.declined),
+                      onCheckFit: widget.onPreview == null ||
+                              item.assignmentIds.length != 1
+                          ? null
+                          : () => widget.onPreview!(item.assignmentIds.single),
                     ),
                   ),
                 ),

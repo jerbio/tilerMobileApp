@@ -4579,4 +4579,162 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get clustersTabTitle => 'Clusters';
+
+  @override
+  String get previewTitleFallback => 'Revisar horario';
+
+  @override
+  String get previewRegenerate => 'Generar nueva vista previa';
+
+  @override
+  String get previewSuggested => 'Horario sugerido';
+
+  @override
+  String get previewSelected => 'Horario seleccionado';
+
+  @override
+  String previewMoves(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Mueve $count tiles flexibles',
+      one: 'Mueve 1 tile flexible',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get previewAccept => 'Aceptar';
+
+  @override
+  String get previewAcceptAndLock => 'Aceptar y fijar';
+
+  @override
+  String get previewAcceptHint =>
+      'Tiler puede mover el trabajo flexible más adelante.';
+
+  @override
+  String previewLockHint(String when) {
+    return 'Fija $when. Las demás sesiones siguen flexibles.';
+  }
+
+  @override
+  String get previewDecline => 'Rechazar';
+
+  @override
+  String get previewCannotFit => 'No cabe antes de su fecha límite.';
+
+  @override
+  String previewOutsideWindow(String when) {
+    return 'Programado fuera de los días mostrados: $when';
+  }
+
+  @override
+  String get previewNothingThisDay => 'Nada programado este día';
+
+  @override
+  String get previewPrevDay => 'Día anterior';
+
+  @override
+  String get previewNextDay => 'Día siguiente';
+
+  @override
+  String get previewStale => 'Esta vista previa está desactualizada.';
+
+  @override
+  String get previewRefresh => 'Actualizar vista previa';
+
+  @override
+  String get previewSessionInvalid =>
+      'Esa hora ya no se puede fijar. Aún puedes aceptar.';
+
+  @override
+  String get previewLoading => 'Revisando tu horario…';
+
+  @override
+  String get previewLoadFailed => 'No se pudo crear la vista previa.';
+
+  @override
+  String get previewGone => 'Esta invitación ya no está disponible.';
+
+  @override
+  String get previewSwitchedOff =>
+      'Las vistas previas no están disponibles ahora.';
+
+  @override
+  String get previewSignIn =>
+      'Inicia sesión de nuevo para ver la vista previa.';
+
+  @override
+  String get previewInvalid =>
+      'No se aceptó esa solicitud. Inténtalo de nuevo.';
+
+  @override
+  String get previewUnsupportedAccepted => 'Ya aceptaste esto.';
+
+  @override
+  String get previewUnsupportedDeadline => 'Su fecha límite ya pasó.';
+
+  @override
+  String get previewUnsupportedConstraints =>
+      'Esta tarea se repite, tiene un lugar o límites que la vista previa aún no puede mostrar. Aún puedes responderla desde la lista.';
+
+  @override
+  String get previewUnsupportedOther => 'Esta tarea no se puede previsualizar.';
+
+  @override
+  String get previewAdding => 'Añadiendo a tu calendario…';
+
+  @override
+  String get previewAdded => 'Añadido a tu calendario';
+
+  @override
+  String get previewNeedsReview =>
+      'Añadido, pero no se pudo confirmar su hora.';
+
+  @override
+  String get previewNotAdded => 'No añadido';
+
+  @override
+  String get previewReasonScheduleChanged =>
+      'Tu horario cambió desde esta vista previa.';
+
+  @override
+  String get previewReasonAnswered => 'Se respondió o cambió en otro lugar.';
+
+  @override
+  String get previewReasonExpired => 'La vista previa expiró.';
+
+  @override
+  String get previewReasonOther => 'No se pudo programar como se previsualizó.';
+
+  @override
+  String get previewReviewAgain => 'Revisar de nuevo';
+
+  @override
+  String get previewUnconfirmed => 'No pudimos confirmar tu respuesta.';
+
+  @override
+  String get previewTryAgain => 'Intentar de nuevo';
+
+  @override
+  String get previewCheckStatus => 'Ver estado';
+
+  @override
+  String get previewStillAdding => 'Todavía añadiendo…';
+
+  @override
+  String get previewDeclined => 'Rechazado';
+
+  @override
+  String get previewDeclineFailed => 'No se pudo rechazar. Inténtalo de nuevo.';
+
+  @override
+  String get previewDone => 'Listo';
+
+  @override
+  String get previewCheckFit => 'Ver si cabe';
+
+  @override
+  String get previewDetails => 'Detalles';
 }

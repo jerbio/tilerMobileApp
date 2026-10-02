@@ -29,11 +29,16 @@ class TileShareClustersView extends StatelessWidget {
   /// host owns the answering (and its undo); without it the buttons are hidden.
   final void Function(ClusterListItem item, InvitationStatus status)? onAnswer;
 
+  /// Check fit: open the accept preview of this assignment. Without it the
+  /// cards offer no preview.
+  final void Function(String assignmentId)? onPreview;
+
   const TileShareClustersView({
     super.key,
     this.onOpen,
     this.onCreate,
     this.onAnswer,
+    this.onPreview,
   });
 
   static Set<ClusterSource> _shownSources(ClusterFilter filter) {
@@ -133,6 +138,7 @@ class TileShareClustersView extends StatelessWidget {
                       onOpen: () => onOpen?.call(item),
                       onDelete: () => _delete(context, item),
                       onAnswer: onAnswer,
+                      onPreview: onPreview,
                     ),
                   ),
                 ),
@@ -243,6 +249,7 @@ class _ClusterRow extends StatefulWidget {
   final VoidCallback onOpen;
   final VoidCallback onDelete;
   final void Function(ClusterListItem item, InvitationStatus status)? onAnswer;
+  final void Function(String assignmentId)? onPreview;
 
   const _ClusterRow({
     super.key,
@@ -250,6 +257,7 @@ class _ClusterRow extends StatefulWidget {
     required this.onOpen,
     required this.onDelete,
     required this.onAnswer,
+    required this.onPreview,
   });
 
   @override
@@ -279,6 +287,9 @@ class _ClusterRowState extends State<_ClusterRow> {
   Widget build(BuildContext context) {
     final item = widget.item;
     final onAnswer = widget.onAnswer;
+    final onPreview = widget.onPreview;
+    final List<String> pending =
+        item.mine?.pendingAssignmentIds ?? const <String>[];
     return ClusterCard(
       item: item,
       onOpen: widget.onOpen,
@@ -289,6 +300,9 @@ class _ClusterRowState extends State<_ClusterRow> {
           onAnswer == null ? null : () => onAnswer(item, InvitationStatus.declined),
       onRetryRsvp: () =>
           context.read<TileShareClustersCubit>().retrySummary(item.id),
+      onCheckFit: onPreview == null || pending.length != 1
+          ? null
+          : () => onPreview(pending.single),
     );
   }
 }

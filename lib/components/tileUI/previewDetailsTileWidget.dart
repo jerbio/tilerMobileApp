@@ -11,9 +11,14 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 
 class PreviewDetailsTileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
+
+  /// The playback controls (complete, now, defer, delete). Off for a tile in
+  /// a preview, which is a proposal rather than part of the schedule.
+  final bool showPlayback;
   PreviewDetailsTileWidgetState? _state;
 
-  PreviewDetailsTileWidget(subEvent) : super(key: Key(subEvent.id)) {
+  PreviewDetailsTileWidget(subEvent, {this.showPlayback = true})
+      : super(key: Key(subEvent.id)) {
     assert(subEvent != null);
     this.subEvent = subEvent;
   }
@@ -119,15 +124,17 @@ class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
     // `WeeklyDetailsTile`. The grid detail sheet is a modal bottom sheet, so
     // `isWeeklyView: true` makes the (already-present) handlers pop the
     // sheet after a playback action. Rigid tiles only offer Delete.
-    allElements.add(Container(
-        margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
-        child: PlayBack(
-          widget.subEvent,
-          isWeeklyView: true,
-          forcedOption: (widget.subEvent.isRigid == true
-              ? [PlaybackOptions.Delete]
-              : null),
-        )));
+    if (widget.showPlayback) {
+      allElements.add(Container(
+          margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
+          child: PlayBack(
+            widget.subEvent,
+            isWeeklyView: true,
+            forcedOption: (widget.subEvent.isRigid == true
+                ? [PlaybackOptions.Delete]
+                : null),
+          )));
+    }
 
     return Material(
       type: MaterialType.transparency,

@@ -7873,6 +7873,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clusters'**
   String get clustersTabTitle;
+
+  /// No description provided for @previewTitleFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Review schedule'**
+  String get previewTitleFallback;
+
+  /// No description provided for @previewRegenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate new preview'**
+  String get previewRegenerate;
+
+  /// No description provided for @previewSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested schedule'**
+  String get previewSuggested;
+
+  /// No description provided for @previewSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected schedule'**
+  String get previewSelected;
+
+  /// No description provided for @previewMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Moves 1 flexible tile} other{Moves {count} flexible tiles}}'**
+  String previewMoves(int count);
+
+  /// No description provided for @previewAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get previewAccept;
+
+  /// No description provided for @previewAcceptAndLock.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept & lock'**
+  String get previewAcceptAndLock;
+
+  /// No description provided for @previewAcceptHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler may move flexible work later.'**
+  String get previewAcceptHint;
+
+  /// No description provided for @previewLockHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Locks {when}. Other sessions stay flexible.'**
+  String previewLockHint(String when);
+
+  /// No description provided for @previewDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get previewDecline;
+
+  /// No description provided for @previewCannotFit.
+  ///
+  /// In en, this message translates to:
+  /// **'It can’t be fitted before its deadline.'**
+  String get previewCannotFit;
+
+  /// No description provided for @previewOutsideWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled outside the days shown: {when}'**
+  String previewOutsideWindow(String when);
+
+  /// No description provided for @previewNothingThisDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing scheduled this day'**
+  String get previewNothingThisDay;
+
+  /// No description provided for @previewPrevDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous day'**
+  String get previewPrevDay;
+
+  /// No description provided for @previewNextDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Next day'**
+  String get previewNextDay;
+
+  /// No description provided for @previewStale.
+  ///
+  /// In en, this message translates to:
+  /// **'This preview is out of date.'**
+  String get previewStale;
+
+  /// No description provided for @previewRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh preview'**
+  String get previewRefresh;
+
+  /// No description provided for @previewSessionInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That time can no longer be locked. You can still accept.'**
+  String get previewSessionInvalid;
+
+  /// No description provided for @previewLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your schedule…'**
+  String get previewLoading;
+
+  /// No description provided for @previewLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t build the preview.'**
+  String get previewLoadFailed;
+
+  /// No description provided for @previewGone.
+  ///
+  /// In en, this message translates to:
+  /// **'This invitation is no longer available.'**
+  String get previewGone;
+
+  /// No description provided for @previewSwitchedOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Previews aren’t available right now.'**
+  String get previewSwitchedOff;
+
+  /// No description provided for @previewSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again to see the preview.'**
+  String get previewSignIn;
+
+  /// No description provided for @previewInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'That request wasn’t accepted. Try again.'**
+  String get previewInvalid;
+
+  /// No description provided for @previewUnsupportedAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'You’ve already accepted this.'**
+  String get previewUnsupportedAccepted;
+
+  /// No description provided for @previewUnsupportedDeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Its deadline has passed.'**
+  String get previewUnsupportedDeadline;
+
+  /// No description provided for @previewUnsupportedConstraints.
+  ///
+  /// In en, this message translates to:
+  /// **'This task repeats, has a place, or has limits a preview can’t show yet. You can still answer it from the list.'**
+  String get previewUnsupportedConstraints;
+
+  /// No description provided for @previewUnsupportedOther.
+  ///
+  /// In en, this message translates to:
+  /// **'This task can’t be previewed.'**
+  String get previewUnsupportedOther;
+
+  /// No description provided for @previewAdding.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding to your calendar…'**
+  String get previewAdding;
+
+  /// No description provided for @previewAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to your calendar'**
+  String get previewAdded;
+
+  /// No description provided for @previewNeedsReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Added, but its time couldn’t be confirmed.'**
+  String get previewNeedsReview;
+
+  /// No description provided for @previewNotAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Not added'**
+  String get previewNotAdded;
+
+  /// No description provided for @previewReasonScheduleChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Your schedule changed since this preview.'**
+  String get previewReasonScheduleChanged;
+
+  /// No description provided for @previewReasonAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'It was answered or changed elsewhere.'**
+  String get previewReasonAnswered;
+
+  /// No description provided for @previewReasonExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The preview expired.'**
+  String get previewReasonExpired;
+
+  /// No description provided for @previewReasonOther.
+  ///
+  /// In en, this message translates to:
+  /// **'It couldn’t be scheduled as previewed.'**
+  String get previewReasonOther;
+
+  /// No description provided for @previewReviewAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Review again'**
+  String get previewReviewAgain;
+
+  /// No description provided for @previewUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn’t confirm your answer.'**
+  String get previewUnconfirmed;
+
+  /// No description provided for @previewTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get previewTryAgain;
+
+  /// No description provided for @previewCheckStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Check status'**
+  String get previewCheckStatus;
+
+  /// No description provided for @previewStillAdding.
+  ///
+  /// In en, this message translates to:
+  /// **'Still adding…'**
+  String get previewStillAdding;
+
+  /// No description provided for @previewDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get previewDeclined;
+
+  /// No description provided for @previewDeclineFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t decline. Try again.'**
+  String get previewDeclineFailed;
+
+  /// No description provided for @previewDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get previewDone;
+
+  /// No description provided for @previewCheckFit.
+  ///
+  /// In en, this message translates to:
+  /// **'Check fit'**
+  String get previewCheckFit;
+
+  /// No description provided for @previewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get previewDetails;
 }
 
 class _AppLocalizationsDelegate

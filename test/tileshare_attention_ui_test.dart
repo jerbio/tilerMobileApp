@@ -170,7 +170,8 @@ Widget _cardApp(AttentionItem item,
         {ThemeData? theme,
         VoidCallback? onDismiss,
         VoidCallback? onAccept,
-        VoidCallback? onDecline}) =>
+        VoidCallback? onDecline,
+        VoidCallback? onCheckFit}) =>
     MaterialApp(
       theme: theme ?? TileThemeData.lightTheme,
       localizationsDelegates: const [
@@ -187,19 +188,22 @@ Widget _cardApp(AttentionItem item,
                   onOpen: () {},
                   onDismiss: onDismiss,
                   onAccept: onAccept,
-                  onDecline: onDecline))),
+                  onDecline: onDecline,
+                  onCheckFit: onCheckFit))),
     );
 
 Future<void> _pumpCard(WidgetTester tester, AttentionItem item,
     {ThemeData? theme,
     VoidCallback? onDismiss,
     VoidCallback? onAccept,
-    VoidCallback? onDecline}) async {
+    VoidCallback? onDecline,
+    VoidCallback? onCheckFit}) async {
   await tester.pumpWidget(_cardApp(item,
       theme: theme,
       onDismiss: onDismiss,
       onAccept: onAccept,
-      onDecline: onDecline));
+      onDecline: onDecline,
+      onCheckFit: onCheckFit));
   await tester.pump();
 }
 
@@ -559,6 +563,82 @@ void main() {
     });
   });
 
+  // Step 9.11b (T21-T23): a single Broadcast task can be previewed before it
+  // is answered. A Class or a Project is never previewed here, and neither is
+  // an invitation of several tasks (a preview is of one task).
+  group('AttentionCard Check fit', () {
+    AttentionItem invitation(TileShareMode? mode, {int count = 1}) =>
+        AttentionItem(
+            type: AttentionType.invitation,
+            clusterId: 'c',
+            clusterTitle: 'Launch Prep',
+            inviterName: 'Sarah',
+            mode: mode,
+            count: count,
+            assignmentIds: [for (int i = 0; i < count; i++) 'a$i']);
+
+    Finder checkFit() =>
+        find.byKey(const Key('attention_check_fit_invitation:c'));
+
+    testWidgets('a Broadcast task offers Check fit beside its answers',
+        (tester) async {
+      int opened = 0;
+      await _pumpCard(tester, invitation(TileShareMode.broadcast),
+          onAccept: () {}, onDecline: () {}, onCheckFit: () => opened++);
+      expect(find.descendant(of: checkFit(), matching: find.text('Check fit')),
+          findsOneWidget);
+      expect(find.text('Accept'), findsOneWidget);
+      expect(find.text('Review'), findsOneWidget);
+      await tester.tap(checkFit());
+      expect(opened, 1);
+    });
+
+    testWidgets('a Class, a Project, an unknown mode or several tasks are not '
+        'previewed here', (tester) async {
+      for (final item in [
+        invitation(TileShareMode.class_),
+        invitation(TileShareMode.project),
+        invitation(null),
+        invitation(TileShareMode.broadcast, count: 2),
+      ]) {
+        await _pumpCard(tester, item,
+            onAccept: () {}, onDecline: () {}, onCheckFit: () {});
+        expect(checkFit(), findsNothing, reason: '${item.mode} x${item.count}');
+      }
+    });
+
+    testWidgets('only invitations, and only with a handler', (tester) async {
+      await _pumpCard(tester, invitation(TileShareMode.broadcast),
+          onAccept: () {}, onDecline: () {});
+      expect(checkFit(), findsNothing);
+      await _pumpCard(
+          tester,
+          const AttentionItem(
+              type: AttentionType.declined,
+              clusterId: 'c',
+              clusterTitle: 'C',
+              mode: TileShareMode.broadcast,
+              assignmentIds: ['a0'],
+              eventIds: ['e']),
+          onCheckFit: () {});
+      expect(checkFit(), findsNothing);
+    });
+
+    testWidgets('fits a narrow phone with large text', (tester) async {
+      tester.view.physicalSize = const Size(320, 700);
+      tester.view.devicePixelRatio = 1.0;
+      tester.platformDispatcher.textScaleFactorTestValue = 1.6;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        tester.platformDispatcher.clearTextScaleFactorTestValue();
+      });
+      await _pumpCard(tester, invitation(TileShareMode.broadcast),
+          onAccept: () {}, onDecline: () {}, onCheckFit: () {});
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('the screen', () {
     testWidgets('lists every item in urgency order with its pill and action',
         (tester) async {
@@ -683,6 +763,33 @@ void main() {
       expect(find.descendant(of: accept('c-class'), matching: find.text('Accept all')),
           findsOneWidget);
       expect(accept('c-proj'), findsNothing, reason: 'a Project is reviewed');
+      await rig.cubit.close();
+    });
+
+    testWidgets('Check fit opens the preview of that one task', (tester) async {
+      final rig = answerRig();
+      final previewed = <String>[];
+      tester.view.physicalSize = const Size(400, 1400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(_app(rig,
+          child: TileShareAttentionView(onPreview: previewed.add)));
+      rig.cubit.load();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byKey(const Key('attention_check_fit_invitation:c-class')),
+          findsNothing);
+      await tester.tap(find.byKey(const Key('attention_check_fit_invitation:c-bc')));
+      expect(previewed, ['b1']);
+      await rig.cubit.close();
+    });
+
+    testWidgets('without a preview handler there is no Check fit',
+        (tester) async {
+      final rig = answerRig();
+      await _pumpView(tester, rig);
+      expect(find.byKey(const Key('attention_check_fit_invitation:c-bc')),
+          findsNothing);
       await rig.cubit.close();
     });
 

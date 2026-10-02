@@ -707,11 +707,28 @@ class DayGridWidgetState extends State<DayGridWidget> {
     }
   }
 
-  /// The initial auto-scroll target: the first tile's start hour (or
-  /// [defaultScrollHour] on an empty day) at the current zoom.
+  /// The initial auto-scroll target: in preview mode the selected action's
+  /// start hour, otherwise the first tile's (or [defaultScrollHour] on an
+  /// empty day), at the current zoom.
   double _initialScrollTarget() {
-    final firstHour = _firstTileStartHour();
+    final firstHour = _selectedTileStartHour() ?? _firstTileStartHour();
     return _pxPerHour * (firstHour ?? defaultScrollHour);
+  }
+
+  /// The start hour of the tile matching [DayGridWidget.selectedActionEntityId]
+  /// when the grid is a preview; `null` otherwise or when no tile matches.
+  int? _selectedTileStartHour() {
+    final entityId = widget.selectedActionEntityId;
+    if (!widget.preview || entityId == null) {
+      return null;
+    }
+    for (final tile in widget.tiles) {
+      final start = tile.start;
+      if (start != null && DayGridWidget.tileMatchesAction(tile, entityId)) {
+        return Utility.localDateTimeFromMs(start).hour;
+      }
+    }
+    return null;
   }
 
   /// Queue an initial scroll to the first tile's start hour.
@@ -1812,10 +1829,12 @@ class DayGridWidgetState extends State<DayGridWidget> {
             // behaviour as before, without duplicating the widget.
             // The highlighted TileCast action tile
             // renders above the unhighlighted tiles (top-z in its overlap
-            // cluster), below the user-tapped tile.
+            // cluster), below the user-tapped tile. A tile that is both
+            // highlighted and tapped is drawn once, in the tapped layer.
             final highlighted = highlightedEntityId != null
                 ? renderable
                     .where((t) =>
+                        !_selectedEventIds.contains(t.id) &&
                         DayGridWidget.tileMatchesAction(t, highlightedEntityId))
                     .toList()
                 : <SubCalendarEvent>[];
@@ -1916,8 +1935,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
                   editable: !widget.preview && widget.day != null,
                   // The highlighted TileCast
                   // action's tile gets the dotted-border treatment (same
-                  // rule as `EnhancedTileCard.hasDottedBorder`).
-                  hasDottedBorder: highlightedIds.contains(tile.id) == true,
+                  // rule as `EnhancedTileCard.hasDottedBorder`), whichever
+                  // layer it is drawn in.
+                  hasDottedBorder: DayGridWidget.tileMatchesAction(
+                      tile, highlightedEntityId),
                   // Newly-added tiles slide in (staggered);
                   // existing/static tiles pass null (no enter animation).
                   enterDelay: _enterDelays[tile.uniqueId],

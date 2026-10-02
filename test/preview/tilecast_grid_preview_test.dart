@@ -171,6 +171,68 @@ void main() {
       );
     });
 
+    // TileShare accept preview (Step 9.11b): the grid opens where the selected
+    // tile is, not where the day's first tile is - a late selection would
+    // otherwise start below the fold.
+    testWidgets('opens on the selected action\'s tile, not the day\'s first',
+        (tester) async {
+      SubCalendarEvent at(String id, int hour) => SubCalendarEvent(
+            id: id,
+            name: 'Tile $id',
+            start: DateTime(2026, 9, 5, hour).millisecondsSinceEpoch,
+            end: DateTime(2026, 9, 5, hour + 1).millisecondsSinceEpoch,
+          )..thirdpartyType = TileSource.tiler;
+      final tiles = [at('early', 6), at('late', 21)];
+
+      await tester.pumpWidget(_harness(tiles, selectedEntityId: 'late'));
+      await tester.pump();
+      await tester.pump();
+      final viewport = tester.getRect(find.byType(DayGridWidget));
+      final late = tester.getRect(find.text('Tile late'));
+      expect(late.top, greaterThanOrEqualTo(viewport.top));
+      expect(late.top, lessThan(viewport.bottom));
+
+      // with nothing selected it still opens on the first tile
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(_harness(tiles));
+      await tester.pump();
+      await tester.pump();
+      final early = tester.getRect(find.text('Tile early'));
+      expect(early.top, greaterThanOrEqualTo(viewport.top));
+      expect(early.top, lessThan(viewport.top + 100));
+    });
+
+    // Seen on device (TileShare accept preview): tapping the highlighted tile
+    // put it in both the highlighted and the tapped layer - one tile, two
+    // widgets with the same key ("Duplicate keys found").
+    testWidgets('tapping the highlighted tile draws it once, on top',
+        (tester) async {
+      await tester.pumpWidget(
+        _harness(
+          [
+            _makeTile('evt_1', viable: true),
+            _makeTile('evt_42', viable: true),
+          ],
+          selectedEntityId: 'evt_42',
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Tile evt_42'));
+      // a tapped tile keeps animating, so pump frames rather than settle
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(const ValueKey<String>('daygrid_tile_evt_42')),
+          findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is CustomPaint && widget.painter is DashedBorderPainter,
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets(
         'raises no tile to the dotted border without a selected action',
         (tester) async {

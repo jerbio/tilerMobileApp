@@ -74,6 +74,7 @@ class _Rig {
 
   final List<String> openedAttention = [];
   final List<String> openedClusters = [];
+  final List<String> previewed = [];
   int created = 0;
   int activityOpened = 0;
   bool? popResult;
@@ -159,6 +160,7 @@ Widget _hub(_Rig rig) => TileShareHub(
       onOpenCluster: (item) async => rig.openedClusters.add(item.id),
       onCreate: () async => rig.created++,
       onOpenActivity: () => rig.activityOpened++,
+      onPreview: (assignmentId) async => rig.previewed.add(assignmentId),
     );
 
 Future<void> _openHub(WidgetTester tester, _Rig rig, {ThemeData? theme}) async {
@@ -457,6 +459,45 @@ void main() {
       await tester.pumpAndSettle();
       expect(rig.openedClusters, ['o1']);
       expect(rig.callsStarting('clusters(isOutbox: true'), greaterThan(before));
+      await rig.close();
+    });
+  });
+
+  // Step 9.11b: Check fit opens the accept preview of that one task; what
+  // the preview may have answered is reloaded on return.
+  group('checking fit', () {
+    testWidgets('from an Attention card, then Attention reloads',
+        (tester) async {
+      final rig = _Rig();
+      await _openHub(tester, rig);
+      final before =
+          rig.attention.calls.where((c) => c.startsWith('invitations')).length;
+      await tester.tap(
+          find.byKey(const Key('attention_check_fit_invitation:i-bc')));
+      await tester.pumpAndSettle();
+      expect(rig.previewed, ['b1']);
+      expect(
+          rig.attention.calls.where((c) => c.startsWith('invitations')).length,
+          greaterThan(before));
+      await rig.close();
+    });
+
+    testWidgets('from a Clusters row, then both lists reload', (tester) async {
+      final rig = _Rig();
+      await _openHub(tester, rig);
+      await tester.tap(_segment('clusters'));
+      await tester.pumpAndSettle();
+      final attentionBefore =
+          rig.attention.calls.where((c) => c.startsWith('invitations')).length;
+      final clustersBefore = rig.callsStarting('clusters(isOutbox: false');
+      await tester.tap(find.byKey(const Key('cluster_check_fit_i-bc')));
+      await tester.pumpAndSettle();
+      expect(rig.previewed, ['b1']);
+      expect(
+          rig.attention.calls.where((c) => c.startsWith('invitations')).length,
+          greaterThan(attentionBefore));
+      expect(rig.callsStarting('clusters(isOutbox: false'),
+          greaterThan(clustersBefore));
       await rig.close();
     });
   });

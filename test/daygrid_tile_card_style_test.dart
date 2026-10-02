@@ -27,6 +27,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileEntry.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -472,6 +473,47 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.byType(EditTileRoute), findsNothing);
+      await _closeBloc(tester, bloc);
+    });
+
+    // A preview shows a proposal, not the user's schedule: completing,
+    // starting, deferring or deleting a previewed tile means nothing, so its
+    // sheet has no playback controls (TileShare accept preview, TileCast).
+    testWidgets('the preview sheet has no playback controls', (tester) async {
+      _setSurface(tester);
+      final bloc = _RecordingScheduleBloc();
+      final controller = DayGridController();
+      addTearDown(controller.dispose);
+      final tile = _tile('previewed', dayStart.add(const Duration(hours: 4)),
+          dayStart.add(const Duration(hours: 6)))
+        ..thirdpartyType = TileSource.tiler;
+      await tester.pumpWidget(
+          sheetApp(bloc, controller, [tile], day: dayStart, preview: true));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      await openSheet(tester, 'previewed');
+      expect(find.byType(PlayBack), findsNothing);
+      expect(tester.takeException(), isNull);
+      await _closeBloc(tester, bloc);
+    });
+
+    testWidgets('the live grid sheet keeps its playback controls',
+        (tester) async {
+      _setSurface(tester);
+      final bloc = _RecordingScheduleBloc();
+      final controller = DayGridController();
+      addTearDown(controller.dispose);
+      final tile = _tile('live', dayStart.add(const Duration(hours: 4)),
+          dayStart.add(const Duration(hours: 6)))
+        ..thirdpartyType = TileSource.tiler;
+      await tester
+          .pumpWidget(sheetApp(bloc, controller, [tile], day: dayStart));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      await openSheet(tester, 'live');
+      expect(find.byType(PlayBack), findsOneWidget);
       await _closeBloc(tester, bloc);
     });
   });

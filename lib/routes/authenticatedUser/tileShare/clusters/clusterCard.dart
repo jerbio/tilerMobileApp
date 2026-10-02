@@ -41,6 +41,10 @@ class ClusterCard extends StatelessWidget {
   /// Owner only: try counting the responses again after a failure.
   final VoidCallback? onRetryRsvp;
 
+  /// Recipient only: open the accept preview (T21-T23) of a pending Broadcast
+  /// task. A Class or a Project is never previewed from here.
+  final VoidCallback? onCheckFit;
+
   const ClusterCard({
     super.key,
     required this.item,
@@ -50,6 +54,7 @@ class ClusterCard extends StatelessWidget {
     this.onAccept,
     this.onDecline,
     this.onRetryRsvp,
+    this.onCheckFit,
   });
 
   bool get _inlineAnswers =>
@@ -59,6 +64,12 @@ class ClusterCard extends StatelessWidget {
       onDecline != null &&
       (item.mode == TileShareMode.broadcast ||
           item.mode == TileShareMode.class_);
+
+  bool get _checkFit =>
+      !item.createdByMe &&
+      onCheckFit != null &&
+      item.mode == TileShareMode.broadcast &&
+      item.mine?.pendingAssignmentIds.length == 1;
 
   @override
   Widget build(BuildContext context) {
@@ -280,23 +291,33 @@ class ClusterCard extends StatelessWidget {
                 ?.copyWith(fontWeight: FontWeight.w600)),
       ];
     }
-    if (!_inlineAnswers) return const <Widget>[];
+    if (!_inlineAnswers && !_checkFit) return const <Widget>[];
     return [
       const SizedBox(height: 10),
       Wrap(
         spacing: 8,
         runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          FilledButton(
-            key: Key('cluster_accept_$id'),
-            onPressed: onAccept,
-            child: Text(AttentionCopy.acceptLabel(l10n, item.mode)),
-          ),
-          OutlinedButton(
-            key: Key('cluster_decline_$id'),
-            onPressed: onDecline,
-            child: Text(AttentionCopy.declineLabel(l10n, item.mode)),
-          ),
+          if (_inlineAnswers) ...[
+            FilledButton(
+              key: Key('cluster_accept_$id'),
+              onPressed: onAccept,
+              child: Text(AttentionCopy.acceptLabel(l10n, item.mode)),
+            ),
+            OutlinedButton(
+              key: Key('cluster_decline_$id'),
+              onPressed: onDecline,
+              child: Text(AttentionCopy.declineLabel(l10n, item.mode)),
+            ),
+          ],
+          if (_checkFit)
+            TextButton.icon(
+              key: Key('cluster_check_fit_$id'),
+              onPressed: onCheckFit,
+              icon: const Icon(Icons.calendar_view_day_outlined, size: 18),
+              label: Text(l10n.previewCheckFit),
+            ),
         ],
       ),
     ];

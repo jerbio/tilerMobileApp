@@ -26,11 +26,16 @@ class MyClusterStatus extends Equatable {
   final int declined;
   final int pending;
 
+  /// The ids of the assignments still to answer, in the order read (a single
+  /// one can be previewed before it is answered).
+  final List<String> pendingAssignmentIds;
+
   const MyClusterStatus({
     required this.taskCount,
     required this.accepted,
     required this.declined,
     required this.pending,
+    this.pendingAssignmentIds = const <String>[],
   });
 
   /// At least one task still waits for an answer.
@@ -44,13 +49,15 @@ class MyClusterStatus extends Equatable {
   }
 
   @override
-  List<Object?> get props => [taskCount, accepted, declined, pending];
+  List<Object?> get props =>
+      [taskCount, accepted, declined, pending, pendingAssignmentIds];
 
   /// One status per cluster the [tiles] belong to. A tile without a cluster is
   /// ignored. A status the server spells unexpectedly (`tentative`, something
   /// new) counts as still to answer, never as an answer.
   static Map<String, MyClusterStatus> byCluster(Iterable<DesignatedTile> tiles) {
     final Map<String, List<int>> counts = <String, List<int>>{};
+    final Map<String, List<String>> pendingIds = <String, List<String>>{};
     for (final DesignatedTile tile in tiles) {
       final String? clusterId = tile.tileTemplate?.clusterId;
       if (clusterId == null || clusterId.isEmpty) continue;
@@ -63,6 +70,10 @@ class MyClusterStatus extends Equatable {
           c[1]++;
         case InvitationStatus.none:
           c[2]++;
+          final String? id = tile.id;
+          if (id != null && id.isNotEmpty) {
+            pendingIds.putIfAbsent(clusterId, () => <String>[]).add(id);
+          }
       }
     }
     return counts.map((String id, List<int> c) => MapEntry(
@@ -71,7 +82,9 @@ class MyClusterStatus extends Equatable {
             taskCount: c[0] + c[1] + c[2],
             accepted: c[0],
             declined: c[1],
-            pending: c[2])));
+            pending: c[2],
+            pendingAssignmentIds: List<String>.unmodifiable(
+                pendingIds[id] ?? const <String>[]))));
   }
 
   static InvitationStatus _statusOf(String? raw) {

@@ -26,6 +26,10 @@ class AttentionCard extends StatelessWidget {
   final VoidCallback? onAccept;
   final VoidCallback? onDecline;
 
+  /// Opens the accept preview (T21-T23): shown only for a Broadcast invitation
+  /// of one task. A Class or a Project is never previewed from here.
+  final VoidCallback? onCheckFit;
+
   const AttentionCard({
     super.key,
     required this.item,
@@ -33,6 +37,7 @@ class AttentionCard extends StatelessWidget {
     this.onDismiss,
     this.onAccept,
     this.onDecline,
+    this.onCheckFit,
   });
 
   bool get _dismissible => onDismiss != null && item.eventIds.isNotEmpty;
@@ -43,6 +48,12 @@ class AttentionCard extends StatelessWidget {
       onDecline != null &&
       (item.mode == TileShareMode.broadcast ||
           item.mode == TileShareMode.class_);
+
+  bool get _checkFit =>
+      item.type == AttentionType.invitation &&
+      onCheckFit != null &&
+      item.mode == TileShareMode.broadcast &&
+      item.assignmentIds.length == 1;
 
   /// The "open it" action — always there, whatever else the card offers.
   Widget _review(ThemeData theme, ColorScheme scheme, String label) {
@@ -99,40 +110,51 @@ class AttentionCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.w700),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            TileShareStatusPill(
-                              label: AttentionCopy.pill(l10n, item.type),
-                              tone: AttentionCopy.tone(item.type),
-                            ),
-                            if (_dismissible)
-                              PopupMenuButton<_CardAction>(
-                                key: Key('attention_menu_${item.id}'),
-                                tooltip: l10n.attentionMenuTooltip,
-                                padding: EdgeInsets.zero,
-                                icon: const Icon(Icons.more_horiz, size: 20),
-                                onSelected: (_) => onDismiss!(),
-                                itemBuilder: (context) => [
-                                  PopupMenuItem<_CardAction>(
-                                    value: _CardAction.dismiss,
-                                    child: Text(l10n.attentionDismiss),
-                                  ),
-                                ],
-                              )
-                            else
-                              const SizedBox(width: 8),
-                          ],
-                        ),
+                        LayoutBuilder(
+                            builder: (context, constraints) => Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        title,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                                fontWeight: FontWeight.w700),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    // Capped, so large text on a narrow phone shortens
+                                    // the pill's label instead of pushing the row over.
+                                    ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                          maxWidth:
+                                              constraints.maxWidth * 0.45),
+                                      child: TileShareStatusPill(
+                                        label:
+                                            AttentionCopy.pill(l10n, item.type),
+                                        tone: AttentionCopy.tone(item.type),
+                                      ),
+                                    ),
+                                    if (_dismissible)
+                                      PopupMenuButton<_CardAction>(
+                                        key: Key('attention_menu_${item.id}'),
+                                        tooltip: l10n.attentionMenuTooltip,
+                                        padding: EdgeInsets.zero,
+                                        icon: const Icon(Icons.more_horiz,
+                                            size: 20),
+                                        onSelected: (_) => onDismiss!(),
+                                        itemBuilder: (context) => [
+                                          PopupMenuItem<_CardAction>(
+                                            value: _CardAction.dismiss,
+                                            child: Text(l10n.attentionDismiss),
+                                          ),
+                                        ],
+                                      )
+                                    else
+                                      const SizedBox(width: 8),
+                                  ],
+                                )),
                         Text(
                           reason,
                           maxLines: 3,
@@ -143,8 +165,8 @@ class AttentionCard extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             meta,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                                color: scheme.onSurfaceVariant),
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(color: scheme.onSurfaceVariant),
                           ),
                         ],
                       ],
@@ -153,7 +175,7 @@ class AttentionCard extends StatelessWidget {
                 ],
               ),
               const Divider(height: 20),
-              if (_inlineAnswers)
+              if (_inlineAnswers || _checkFit)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Wrap(
@@ -161,17 +183,28 @@ class AttentionCard extends StatelessWidget {
                     runSpacing: 4,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      FilledButton(
-                        key: Key('attention_accept_${item.id}'),
-                        onPressed: onAccept,
-                        child: Text(AttentionCopy.acceptLabel(l10n, item.mode)),
-                      ),
-                      OutlinedButton(
-                        key: Key('attention_decline_${item.id}'),
-                        onPressed: onDecline,
-                        child:
-                            Text(AttentionCopy.declineLabel(l10n, item.mode)),
-                      ),
+                      if (_inlineAnswers) ...[
+                        FilledButton(
+                          key: Key('attention_accept_${item.id}'),
+                          onPressed: onAccept,
+                          child:
+                              Text(AttentionCopy.acceptLabel(l10n, item.mode)),
+                        ),
+                        OutlinedButton(
+                          key: Key('attention_decline_${item.id}'),
+                          onPressed: onDecline,
+                          child:
+                              Text(AttentionCopy.declineLabel(l10n, item.mode)),
+                        ),
+                      ],
+                      if (_checkFit)
+                        TextButton.icon(
+                          key: Key('attention_check_fit_${item.id}'),
+                          onPressed: onCheckFit,
+                          icon: const Icon(Icons.calendar_view_day_outlined,
+                              size: 18),
+                          label: Text(l10n.previewCheckFit),
+                        ),
                       _review(theme, scheme, cta),
                     ],
                   ),

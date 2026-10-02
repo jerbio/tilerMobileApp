@@ -7,6 +7,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/attention/attentionFilter.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/hub/tileShareHub.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/preview/tileSharePreviewHost.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareActivityWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -90,6 +91,9 @@ class _TileShareHubHostState extends State<TileShareHubHost> {
 
   Future<void> _create() => _push(CreateTileShareClusterWidget());
 
+  Future<void> _preview(String assignmentId) => _push(TileSharePreviewHost(
+      assignmentId: assignmentId, accountKey: _userId));
+
   void _openActivity() {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     _push(Scaffold(
@@ -128,6 +132,7 @@ class _TileShareHubHostState extends State<TileShareHubHost> {
       onOpenCluster: _openCluster,
       onCreate: _create,
       onOpenActivity: _openActivity,
+      onPreview: _preview,
     );
   }
 }

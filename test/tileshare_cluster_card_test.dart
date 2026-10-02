@@ -70,7 +70,8 @@ MyClusterStatus _mine({int accepted = 0, int declined = 0, int pending = 0}) =>
         taskCount: accepted + declined + pending,
         accepted: accepted,
         declined: declined,
-        pending: pending);
+        pending: pending,
+        pendingAssignmentIds: [for (int i = 0; i < pending; i++) 'p$i']);
 
 TileShareRsvpSummary _rsvp(int accepted, int declined, int pending) =>
     TileShareRsvpSummary(
@@ -109,6 +110,7 @@ ClusterCard _card(
   VoidCallback? onAccept,
   VoidCallback? onDecline,
   VoidCallback? onRetryRsvp,
+  VoidCallback? onCheckFit,
 }) =>
     ClusterCard(
       item: item,
@@ -118,6 +120,7 @@ ClusterCard _card(
       onAccept: onAccept,
       onDecline: onDecline,
       onRetryRsvp: onRetryRsvp,
+      onCheckFit: onCheckFit,
     );
 
 void main() {
@@ -425,6 +428,43 @@ void main() {
       expect(find.byKey(const Key('cluster_accept_c2')), findsNothing);
     });
 
+    // Step 9.11b (T21-T23): one pending Broadcast task can be previewed first.
+    testWidgets('a pending Broadcast offers Check fit beside its answers',
+        (tester) async {
+      var opened = 0;
+      await _pump(
+          tester,
+          _card(_recipient(_cluster('c1'), mine: _mine(pending: 1)),
+              onAccept: () {}, onDecline: () {}, onCheckFit: () => opened++));
+      final checkFit = find.byKey(const Key('cluster_check_fit_c1'));
+      expect(find.descendant(of: checkFit, matching: find.text('Check fit')),
+          findsOneWidget);
+      await tester.tap(checkFit);
+      expect(opened, 1);
+    });
+
+    testWidgets('no Check fit for a Class, a Project, once answered, or '
+        'without a handler', (tester) async {
+      Future<void> none(ClusterListItem item, {bool handler = true}) async {
+        await _pump(
+            tester,
+            _card(item,
+                onAccept: () {},
+                onDecline: () {},
+                onCheckFit: handler ? () {} : null));
+        expect(find.byKey(Key('cluster_check_fit_${item.id}')), findsNothing,
+            reason: item.id);
+      }
+
+      await none(_recipient(_cluster('k', mode: TileShareMode.class_),
+          mine: _mine(pending: 1)));
+      await none(_recipient(_cluster('p', mode: TileShareMode.project),
+          mine: _mine(pending: 1)));
+      await none(_recipient(_cluster('a'), mine: _mine(accepted: 1)));
+      await none(_recipient(_cluster('h'), mine: _mine(pending: 1)),
+          handler: false);
+    });
+
     testWidgets('a recipient has no delete menu', (tester) async {
       await _pump(
           tester,
@@ -489,6 +529,8 @@ void main() {
           _recipient(_cluster('e', mode: TileShareMode.project),
               mine: _mine(accepted: 1, pending: 3)),
           _recipient(_cluster('f'), mine: _mine(declined: 1)),
+          _recipient(_cluster('g', creator: 'Sarah Kim'),
+              mine: _mine(pending: 1)),
         ];
         for (final item in variants) {
           await _pump(
@@ -498,6 +540,7 @@ void main() {
                   onDelete: item.createdByMe ? () {} : null,
                   onAccept: () {},
                   onDecline: () {},
+                  onCheckFit: () {},
                   onRetryRsvp: () {}),
               theme: theme.value,
               width: 320);

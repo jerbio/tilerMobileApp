@@ -47,6 +47,10 @@ class TileShareHub extends StatefulWidget {
   /// Opens the raw activity feed as its own screen.
   final VoidCallback onOpenActivity;
 
+  /// Check fit: the accept preview of one assignment. The hub reloads both
+  /// lists when it closes. Without it no card offers a preview.
+  final Future<void> Function(String assignmentId)? onPreview;
+
   const TileShareHub({
     super.key,
     required this.attention,
@@ -56,6 +60,7 @@ class TileShareHub extends StatefulWidget {
     required this.onOpenCluster,
     required this.onCreate,
     required this.onOpenActivity,
+    this.onPreview,
   });
 
   @override
@@ -155,6 +160,13 @@ class _TileShareHubState extends State<TileShareHub>
   Future<void> _openCluster(ClusterListItem item) async {
     await widget.onOpenCluster(item);
     if (mounted) widget.clusters.refresh();
+  }
+
+  Future<void> _preview(String assignmentId) async {
+    await widget.onPreview!(assignmentId);
+    if (!mounted) return;
+    widget.attention.refresh();
+    if (_clustersVisited) widget.clusters.refresh();
   }
 
   Future<void> _create() async {
@@ -276,7 +288,10 @@ class _TileShareHubState extends State<TileShareHub>
                     children: [
                       KeyedSubtree(
                         key: const Key('hub_attention'),
-                        child: TileShareAttentionView(onOpen: _openAttention),
+                        child: TileShareAttentionView(
+                          onOpen: _openAttention,
+                          onPreview: widget.onPreview == null ? null : _preview,
+                        ),
                       ),
                       KeyedSubtree(
                         key: const Key('hub_clusters'),
@@ -285,6 +300,8 @@ class _TileShareHubState extends State<TileShareHub>
                                 onOpen: _openCluster,
                                 onCreate: _create,
                                 onAnswer: _answer,
+                                onPreview:
+                                    widget.onPreview == null ? null : _preview,
                               )
                             : const SizedBox.shrink(),
                       ),
