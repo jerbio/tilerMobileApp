@@ -119,13 +119,15 @@ class LiveTileSharePreviewSource implements TileSharePreviewSource {
     required String operationId,
     required TileShareAcceptanceMode mode,
     String? sessionKey,
+    TileShareLockedTimeLine? lockedTimeLine,
   }) =>
       _api.accept(
           assignmentId: assignmentId,
           previewToken: previewToken,
           operationId: operationId,
           mode: mode,
-          sessionKey: sessionKey);
+          sessionKey: sessionKey,
+          lockedTimeLine: lockedTimeLine);
 
   @override
   Future<TileShareOperation> operation(String operationId) =>

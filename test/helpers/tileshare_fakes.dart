@@ -149,6 +149,7 @@ class FakeAcceptedPreview {
   final String operationId;
   final TileShareAcceptanceMode mode;
   final String? sessionKey;
+  final TileShareLockedTimeLine? lockedTimeLine;
 
   const FakeAcceptedPreview({
     required this.assignmentId,
@@ -156,6 +157,7 @@ class FakeAcceptedPreview {
     required this.operationId,
     required this.mode,
     this.sessionKey,
+    this.lockedTimeLine,
   });
 }
 
@@ -247,6 +249,7 @@ class FakeTileSharePreviewSource
     required String operationId,
     required TileShareAcceptanceMode mode,
     String? sessionKey,
+    TileShareLockedTimeLine? lockedTimeLine,
   }) =>
       run('accept($assignmentId, $operationId, ${mode.name}, $sessionKey)', () {
         accepted.add(FakeAcceptedPreview(
@@ -254,7 +257,8 @@ class FakeTileSharePreviewSource
             previewToken: previewToken,
             operationId: operationId,
             mode: mode,
-            sessionKey: sessionKey));
+            sessionKey: sessionKey,
+            lockedTimeLine: lockedTimeLine));
         _assignmentOfOperation[operationId] = assignmentId;
         return TileShareOperation(
             operationId: operationId,

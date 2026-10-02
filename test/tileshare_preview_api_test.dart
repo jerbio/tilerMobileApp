@@ -42,6 +42,9 @@ class _TestApi extends TileSharePreviewApi {
   }
 }
 
+/// The interval of the session being locked, as the preview showed it.
+const _lock = const TileShareLockedTimeLine(startMs: 1789560000000, durationMs: 3600000);
+
 void main() {
   late RecordingHttpClient client;
   late _TestApi api;
@@ -234,6 +237,7 @@ void main() {
       client.nextBody = previewBody(previewFixture('operation_queued'));
       await api.accept(
           mode: TileShareAcceptanceMode.lockSession,
+          lockedTimeLine: _lock,
           sessionKey: '1',
           assignmentId: kPreviewAssignmentId,
           previewToken: kPreviewToken,
@@ -245,16 +249,90 @@ void main() {
       expect(body['PreviewToken'], kPreviewToken);
     });
 
-    test('the lock is never sent as times: the server owns them and ignores '
-        'LockedTimeLineRequest', () async {
+    test('Accept and lock also sends the interval it locks, which the server '
+        'checks against its own stored session', () async {
       client.nextBody = previewBody(previewFixture('operation_queued'));
       await api.accept(
           mode: TileShareAcceptanceMode.lockSession,
+          lockedTimeLine: _lock,
           sessionKey: '0',
           assignmentId: kPreviewAssignmentId,
           previewToken: kPreviewToken,
           operationId: kPreviewOperationId);
-      expect(sentBody().keys, isNot(contains('LockedTimeLineRequest')));
+      expect(sentBody()['LockedTimeLineRequest'], {
+        'StartTimeUnixMsUtc': 1789560000000,
+        'DurationInMs': 3600000,
+      });
+      expect(sentBody()['AcceptanceMode'], 'LockSession');
+      expect(sentBody()['SessionKey'], '0');
+    });
+
+    test('a flexible accept never carries a lock interval', () async {
+      client.nextBody = previewBody(previewFixture('operation_queued'));
+      await api.accept(
+          mode: TileShareAcceptanceMode.flexible,
+          assignmentId: kPreviewAssignmentId,
+          previewToken: kPreviewToken,
+          operationId: kPreviewOperationId);
+      expect(sentBody().containsKey('LockedTimeLineRequest'), isFalse);
+    });
+
+    test('locking without the interval is refused before sending (the server '
+        'would answer 400)', () async {
+      await expectLater(
+          api.accept(
+              mode: TileShareAcceptanceMode.lockSession,
+              sessionKey: '0',
+              assignmentId: kPreviewAssignmentId,
+              previewToken: kPreviewToken,
+              operationId: kPreviewOperationId),
+          throwsA(isA<ArgumentError>()));
+      expect(client.requests, isEmpty);
+    });
+
+    test('an interval with no length is refused before sending', () async {
+      for (final d in [0, -60000]) {
+        await expectLater(
+            api.accept(
+                mode: TileShareAcceptanceMode.lockSession,
+                sessionKey: '0',
+                lockedTimeLine:
+                    TileShareLockedTimeLine(startMs: 1789560000000, durationMs: d),
+                assignmentId: kPreviewAssignmentId,
+                previewToken: kPreviewToken,
+                operationId: kPreviewOperationId),
+            throwsA(isA<ArgumentError>()),
+            reason: '$d');
+      }
+      expect(client.requests, isEmpty);
+    });
+
+    test('a flexible accept with an interval is refused before sending',
+        () async {
+      await expectLater(
+          api.accept(
+              mode: TileShareAcceptanceMode.flexible,
+              lockedTimeLine: _lock,
+              assignmentId: kPreviewAssignmentId,
+              previewToken: kPreviewToken,
+              operationId: kPreviewOperationId),
+          throwsA(isA<ArgumentError>()));
+      expect(client.requests, isEmpty);
+    });
+
+    test('the accept answers with the operation, which may already be final '
+        '(the server finishes scheduling inside the request)', () async {
+      client.nextBody = previewBody(previewFixture('operation_completed'));
+      final op = await api.accept(
+          mode: TileShareAcceptanceMode.lockSession,
+          lockedTimeLine: _lock,
+          sessionKey: '0',
+          assignmentId: kPreviewAssignmentId,
+          previewToken: kPreviewToken,
+          operationId: kPreviewOperationId);
+      expect(op.isFinal, isTrue);
+      expect(op.succeeded, isTrue);
+      expect(op.calendarId, isNotNull);
     });
 
     test('locking without saying which session is refused before sending',
@@ -263,6 +341,7 @@ void main() {
         await expectLater(
             api.accept(
                 mode: TileShareAcceptanceMode.lockSession,
+                lockedTimeLine: _lock,
                 sessionKey: key,
                 assignmentId: kPreviewAssignmentId,
                 previewToken: kPreviewToken,
@@ -292,6 +371,7 @@ void main() {
       for (var i = 0; i < 2; i++) {
         await api.accept(
             mode: TileShareAcceptanceMode.lockSession,
+            lockedTimeLine: _lock,
             sessionKey: '1',
             assignmentId: kPreviewAssignmentId,
             previewToken: kPreviewToken,
@@ -299,8 +379,17 @@ void main() {
       }
       final a = jsonDecode((client.requests[0] as dynamic).body);
       final b = jsonDecode((client.requests[1] as dynamic).body);
-      expect([a['OperationId'], a['AcceptanceMode'], a['SessionKey']],
-          [b['OperationId'], b['AcceptanceMode'], b['SessionKey']]);
+      expect([
+        a['OperationId'],
+        a['AcceptanceMode'],
+        a['SessionKey'],
+        a['LockedTimeLineRequest']
+      ], [
+        b['OperationId'],
+        b['AcceptanceMode'],
+        b['SessionKey'],
+        b['LockedTimeLineRequest']
+      ]);
     });
 
     test('a new operation id is 32 hex characters, and different each time',
@@ -446,6 +535,7 @@ void main() {
         client.nextBody = previewConflictBody(reason);
         final f = await failure(api.accept(
             mode: TileShareAcceptanceMode.lockSession,
+            lockedTimeLine: _lock,
             sessionKey: '9',
             assignmentId: kPreviewAssignmentId,
             previewToken: kPreviewToken,

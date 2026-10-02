@@ -9,9 +9,8 @@
 /// * [flexible] - accept every session at the reviewed times; Tiler may move
 ///   flexible work later as the schedule changes.
 /// * [lockSession] - accept every session and fix only one of them (named by its
-///   `sessionKey`) at its reviewed interval; the others stay flexible. The server
-///   resolves the times from its own stored proposal - the client never sends
-///   times to lock.
+///   `sessionKey`, and by the interval the user was shown - see
+///   [TileShareLockedTimeLine]) at that interval; the others stay flexible.
 enum TileShareAcceptanceMode {
   flexible('Flexible'),
   lockSession('LockSession');
@@ -20,6 +19,44 @@ enum TileShareAcceptanceMode {
   final String wire;
 
   const TileShareAcceptanceMode(this.wire);
+}
+
+/// The interval a lock fixes: when it starts (epoch ms, UTC) and how long it
+/// is, sent as `LockedTimeLineRequest` on the accept.
+///
+/// With a preview the server **checks it against its own stored session** - it
+/// must equal that session's start and length or the accept is a 409
+/// `invalidSession` - so it states exactly what the user saw and agreed to; it
+/// is not where the time comes from. It is only valid with a lock.
+class TileShareLockedTimeLine {
+  final int startMs;
+  final int durationMs;
+
+  const TileShareLockedTimeLine(
+      {required this.startMs, required this.durationMs});
+
+  /// The interval of a session, as the preview showed it.
+  factory TileShareLockedTimeLine.fromBlock(PreviewBlock session) =>
+      TileShareLockedTimeLine(
+          startMs: session.startMs, durationMs: session.endMs - session.startMs);
+
+  /// The wire form: `{StartTimeUnixMsUtc, DurationInMs}`.
+  Map<String, Object> toJson() => <String, Object>{
+        'StartTimeUnixMsUtc': startMs,
+        'DurationInMs': durationMs,
+      };
+
+  @override
+  bool operator ==(Object other) =>
+      other is TileShareLockedTimeLine &&
+      other.startMs == startMs &&
+      other.durationMs == durationMs;
+
+  @override
+  int get hashCode => Object.hash(startMs, durationMs);
+
+  @override
+  String toString() => 'TileShareLockedTimeLine($startMs, $durationMs ms)';
 }
 
 int? _ms(Object? value) => value is num ? value.toInt() : null;

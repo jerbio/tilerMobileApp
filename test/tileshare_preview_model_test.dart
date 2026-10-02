@@ -67,6 +67,24 @@ void main() {
     });
   });
 
+  group('the interval a lock fixes', () {
+    test('is the start and the length of the session, as the preview showed it',
+        () {
+      final session = viable().sessions.single;
+      final lock = TileShareLockedTimeLine.fromBlock(session);
+      expect(lock.startMs, session.startMs);
+      expect(lock.durationMs, session.endMs - session.startMs);
+      expect(lock.durationMs, 3600000);
+    });
+
+    test('is the same for equal intervals', () {
+      expect(const TileShareLockedTimeLine(startMs: 1, durationMs: 2),
+          const TileShareLockedTimeLine(startMs: 1, durationMs: 2));
+      expect(const TileShareLockedTimeLine(startMs: 1, durationMs: 2),
+          isNot(const TileShareLockedTimeLine(startMs: 1, durationMs: 3)));
+    });
+  });
+
   group('colour (the server sends "#RRGGBB" or null)', () {
     PreviewBlock block(Object? color) => PreviewBlock.fromJson(
         {'id': 'x', 'start': 1, 'end': 2, 'color': color});

@@ -56,8 +56,10 @@ class _RecordingApi extends TileSharePreviewApi {
     required String operationId,
     required TileShareAcceptanceMode mode,
     String? sessionKey,
+    TileShareLockedTimeLine? lockedTimeLine,
   }) =>
-      _run('accept($assignmentId, $previewToken, $operationId, ${mode.name}, $sessionKey)',
+      _run('accept($assignmentId, $previewToken, $operationId, ${mode.name}, '
+          '$sessionKey, ${lockedTimeLine?.startMs}/${lockedTimeLine?.durationMs})',
           TileShareOperation.fromJson(previewFixture('operation_queued')));
 
   @override
@@ -93,14 +95,16 @@ void main() {
           previewToken: 't',
           operationId: 'op',
           mode: TileShareAcceptanceMode.lockSession,
-          sessionKey: '1');
+          sessionKey: '1',
+          lockedTimeLine:
+              const TileShareLockedTimeLine(startMs: 60000, durationMs: 120000));
       await source.operation('op');
       await source.response('a1');
       expect(log, [
         'preview(a1)',
         'options(a1, t, 0, 4)',
         'revise(a1, t, o, null, null)',
-        'accept(a1, t, op, lockSession, 1)',
+        'accept(a1, t, op, lockSession, 1, 60000/120000)',
         'operation(op)',
         'response(a1)',
       ]);
@@ -213,9 +217,13 @@ void main() {
           previewToken: 't',
           operationId: fake.newOperationId(),
           mode: TileShareAcceptanceMode.lockSession,
-          sessionKey: '1');
+          sessionKey: '1',
+          lockedTimeLine:
+              const TileShareLockedTimeLine(startMs: 60000, durationMs: 120000));
       expect(fake.accepted.single.mode, TileShareAcceptanceMode.lockSession);
       expect(fake.accepted.single.sessionKey, '1');
+      expect(fake.accepted.single.lockedTimeLine,
+          const TileShareLockedTimeLine(startMs: 60000, durationMs: 120000));
       expect(fake.accepted.single.previewToken, 't');
     });
 

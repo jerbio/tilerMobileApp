@@ -132,17 +132,22 @@ class TileSharePreviewApi extends AppApi {
   ///
   /// The mode is always stated (an omitted one would mean the older "constraints
   /// bound to the token" behaviour). [TileShareAcceptanceMode.lockSession]
-  /// needs the [sessionKey] of the one session to fix, and the server refuses a
-  /// key it does not find among the stored proposal's viable sessions
-  /// (409 `invalidSession`); a flexible accept has none. Retrying the same
-  /// [operationId] with another mode or session is a 409 `operationMismatch`,
-  /// so a retry must repeat all three.
+  /// needs the [sessionKey] of the one session to fix and the [lockedTimeLine]
+  /// the user was shown for it; the server refuses a key it does not find among
+  /// the stored proposal's viable sessions, or an interval that is not exactly
+  /// that session's (409 `invalidSession`). A flexible accept has neither.
+  /// Retrying the same [operationId] with another mode, session or interval is a
+  /// 409 `operationMismatch`, so a retry must repeat all of them.
+  ///
+  /// The server finishes scheduling inside this request, so the answer is often
+  /// already final and the call can take a while.
   Future<TileShareOperation> accept({
     required String assignmentId,
     required String previewToken,
     required String operationId,
     required TileShareAcceptanceMode mode,
     String? sessionKey,
+    TileShareLockedTimeLine? lockedTimeLine,
   }) async {
     if (previewToken.isEmpty) {
       throw ArgumentError.value(
@@ -161,6 +166,17 @@ class TileSharePreviewApi extends AppApi {
       throw ArgumentError.value(
           sessionKey, 'sessionKey', 'a flexible accept has no session to lock');
     }
+    if (locking && lockedTimeLine == null) {
+      throw ArgumentError.notNull('lockedTimeLine');
+    }
+    if (locking && lockedTimeLine!.durationMs <= 0) {
+      throw ArgumentError.value(lockedTimeLine, 'lockedTimeLine',
+          'the interval to lock must have a length');
+    }
+    if (!locking && lockedTimeLine != null) {
+      throw ArgumentError.value(lockedTimeLine, 'lockedTimeLine',
+          'a flexible accept has no interval to lock');
+    }
     final String body = await _post(_statusRoute, {
       'Id': assignmentId,
       'Status': 'accepted',
@@ -168,6 +184,7 @@ class TileSharePreviewApi extends AppApi {
       'OperationId': operationId,
       'AcceptanceMode': mode.wire,
       if (locking) 'SessionKey': sessionKey,
+      if (locking) 'LockedTimeLineRequest': lockedTimeLine!.toJson(),
     });
     return TileShareOperation.fromJson(readTileShareContent(body,
         tag: _tag, what: 'Accept', requiredKey: 'operationId'));
