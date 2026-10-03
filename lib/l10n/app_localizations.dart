@@ -8287,6 +8287,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deadline passed'**
   String get forecastDeadlinePassed;
+
+  /// No description provided for @broadcastParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants'**
+  String get broadcastParticipants;
+
+  /// No description provided for @broadcastViewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all ({count})'**
+  String broadcastViewAll(int count);
+
+  /// No description provided for @broadcastNoParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'No one yet. Add someone above.'**
+  String get broadcastNoParticipants;
+
+  /// No description provided for @broadcastDeliveryIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 invitation may not have arrived} other{{count} invitations may not have arrived}}'**
+  String broadcastDeliveryIssues(int count);
+
+  /// No description provided for @participantInvited.
+  ///
+  /// In en, this message translates to:
+  /// **'Invited'**
+  String get participantInvited;
+
+  /// No description provided for @participantAdding.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding…'**
+  String get participantAdding;
+
+  /// No description provided for @participantAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t add.'**
+  String get participantAddFailed;
+
+  /// No description provided for @participantRemoveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t remove.'**
+  String get participantRemoveFailed;
+
+  /// No description provided for @participantAlreadyInvited.
+  ///
+  /// In en, this message translates to:
+  /// **'{who} is already invited.'**
+  String participantAlreadyInvited(String who);
+
+  /// No description provided for @participantRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get participantRemove;
+
+  /// No description provided for @participantRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {who}?'**
+  String participantRemoveTitle(String who);
+
+  /// No description provided for @participantRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They will no longer have this task.'**
+  String get participantRemoveBody;
+
+  /// No description provided for @deliverySent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent by {channel}'**
+  String deliverySent(String channel);
+
+  /// No description provided for @deliverySentPlain.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation sent'**
+  String get deliverySentPlain;
+
+  /// No description provided for @deliveryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t send by {channel}'**
+  String deliveryFailed(String channel);
+
+  /// No description provided for @deliveryFailedPlain.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation couldn’t be sent'**
+  String get deliveryFailedPlain;
+
+  /// No description provided for @deliveryUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery unknown'**
+  String get deliveryUnknown;
+
+  /// No description provided for @channelEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'email'**
+  String get channelEmail;
+
+  /// No description provided for @channelSms.
+  ///
+  /// In en, this message translates to:
+  /// **'SMS'**
+  String get channelSms;
+
+  /// No description provided for @channelPush.
+  ///
+  /// In en, this message translates to:
+  /// **'notification'**
+  String get channelPush;
 }
 
 class _AppLocalizationsDelegate

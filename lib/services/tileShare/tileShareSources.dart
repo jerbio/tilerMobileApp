@@ -1,3 +1,4 @@
+import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
@@ -125,4 +126,18 @@ abstract class TileShareAttentionSources {
   /// Dismisses ([isDismissed] `true`) or restores one activity event. Stored
   /// server-side, so it follows the user across devices.
   Future<void> setDismissed(String eventId, bool isDismissed);
+}
+
+/// A tilette's recipients, as its owner manages them (redesign Step 9.13).
+abstract class TileShareRecipientsSource {
+  /// Invites [contact] to the tilette; answers with the tilette and its
+  /// recipients.
+  Future<TileShareTemplate> addRecipient(String tiletteId, Contact contact);
+
+  /// Removes one recipient's assignment from the tilette.
+  Future<void> removeRecipient(String tiletteId, String assignmentId);
+
+  /// The cluster's recent activity, newest first - where each recipient's
+  /// invitation delivery is read from.
+  Future<List<TileShareActivity>> clusterActivity(String clusterId);
 }

@@ -4820,4 +4820,83 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get forecastDeadlinePassed => 'Fecha límite vencida';
+
+  @override
+  String get broadcastParticipants => 'Participantes';
+
+  @override
+  String broadcastViewAll(int count) {
+    return 'Ver todos ($count)';
+  }
+
+  @override
+  String get broadcastNoParticipants =>
+      'Nadie todavía. Añade a alguien arriba.';
+
+  @override
+  String broadcastDeliveryIssues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invitaciones pueden no haber llegado',
+      one: '1 invitación puede no haber llegado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get participantInvited => 'Invitado';
+
+  @override
+  String get participantAdding => 'Añadiendo…';
+
+  @override
+  String get participantAddFailed => 'No se pudo añadir.';
+
+  @override
+  String get participantRemoveFailed => 'No se pudo eliminar.';
+
+  @override
+  String participantAlreadyInvited(String who) {
+    return '$who ya está invitado.';
+  }
+
+  @override
+  String get participantRemove => 'Eliminar';
+
+  @override
+  String participantRemoveTitle(String who) {
+    return '¿Eliminar a $who?';
+  }
+
+  @override
+  String get participantRemoveBody => 'Ya no tendrá esta tarea.';
+
+  @override
+  String deliverySent(String channel) {
+    return 'Enviado por $channel';
+  }
+
+  @override
+  String get deliverySentPlain => 'Invitación enviada';
+
+  @override
+  String deliveryFailed(String channel) {
+    return 'No se pudo enviar por $channel';
+  }
+
+  @override
+  String get deliveryFailedPlain => 'No se pudo enviar la invitación';
+
+  @override
+  String get deliveryUnknown => 'Entrega desconocida';
+
+  @override
+  String get channelEmail => 'correo';
+
+  @override
+  String get channelSms => 'SMS';
+
+  @override
+  String get channelPush => 'notificación';
 }

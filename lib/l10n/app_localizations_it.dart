@@ -4822,4 +4822,82 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get forecastDeadlinePassed => 'Deadline passed';
+
+  @override
+  String get broadcastParticipants => 'Participants';
+
+  @override
+  String broadcastViewAll(int count) {
+    return 'View all ($count)';
+  }
+
+  @override
+  String get broadcastNoParticipants => 'No one yet. Add someone above.';
+
+  @override
+  String broadcastDeliveryIssues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invitations may not have arrived',
+      one: '1 invitation may not have arrived',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get participantInvited => 'Invited';
+
+  @override
+  String get participantAdding => 'Adding…';
+
+  @override
+  String get participantAddFailed => 'Couldn’t add.';
+
+  @override
+  String get participantRemoveFailed => 'Couldn’t remove.';
+
+  @override
+  String participantAlreadyInvited(String who) {
+    return '$who is already invited.';
+  }
+
+  @override
+  String get participantRemove => 'Remove';
+
+  @override
+  String participantRemoveTitle(String who) {
+    return 'Remove $who?';
+  }
+
+  @override
+  String get participantRemoveBody => 'They will no longer have this task.';
+
+  @override
+  String deliverySent(String channel) {
+    return 'Sent by $channel';
+  }
+
+  @override
+  String get deliverySentPlain => 'Invitation sent';
+
+  @override
+  String deliveryFailed(String channel) {
+    return 'Couldn’t send by $channel';
+  }
+
+  @override
+  String get deliveryFailedPlain => 'Invitation couldn’t be sent';
+
+  @override
+  String get deliveryUnknown => 'Delivery unknown';
+
+  @override
+  String get channelEmail => 'email';
+
+  @override
+  String get channelSms => 'SMS';
+
+  @override
+  String get channelPush => 'notification';
 }

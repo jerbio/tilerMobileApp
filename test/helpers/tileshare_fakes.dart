@@ -9,7 +9,9 @@
 //   * `calls` records every call, in order, for assertions.
 import 'dart:async';
 
+import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/data/designatedUser.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareInvitation.dart';
@@ -458,4 +460,48 @@ class FakePendingAcceptStore implements TileSharePendingAcceptStore {
     log.add('clear($assignmentId)');
     _byAssignment.remove(assignmentId);
   }
+}
+
+/// A tilette's recipients in memory: an add appends a recipient (assignment
+/// `asg-<email or phone>`) and answers with the tilette, a removal drops one.
+class FakeTileShareRecipientsSource
+    with FakeSourceControls
+    implements TileShareRecipientsSource {
+  final Map<String, TileShareTemplate> tilettes;
+  final List<TileShareActivity> activity;
+
+  FakeTileShareRecipientsSource({
+    Map<String, TileShareTemplate>? tilettes,
+    List<TileShareActivity>? activity,
+  })  : tilettes = tilettes ?? <String, TileShareTemplate>{},
+        activity = activity ?? <TileShareActivity>[];
+
+  @override
+  Future<TileShareTemplate> addRecipient(String tiletteId, Contact contact) {
+    final String who = contact.email ?? contact.phoneNumber ?? '';
+    return run('addRecipient($tiletteId, $who)', () {
+      final TileShareTemplate tilette = tilettes[tiletteId]!;
+      tilette.designatedUsers = <DesignatedUser>[
+        ...tilette.designatedUsers ?? const <DesignatedUser>[],
+        DesignatedUser.fromJson({
+          'id': 'asg-$who',
+          'designatedTileTemplateId': 'asg-$who',
+          'displayedIdentifier': who,
+          'rsvpStatus': 'none',
+        }),
+      ];
+      return tilette;
+    });
+  }
+
+  @override
+  Future<void> removeRecipient(String tiletteId, String assignmentId) =>
+      run('removeRecipient($tiletteId, $assignmentId)', () {
+        tilettes[tiletteId]?.designatedUsers?.removeWhere(
+            (u) => (u.designatedTileTemplateId ?? u.id) == assignmentId);
+      });
+
+  @override
+  Future<List<TileShareActivity>> clusterActivity(String clusterId) =>
+      run('clusterActivity($clusterId)', () => activity);
 }

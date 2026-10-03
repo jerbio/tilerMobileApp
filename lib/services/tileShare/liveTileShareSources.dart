@@ -1,3 +1,5 @@
+import 'package:tiler_app/data/contact.dart';
+import 'package:tiler_app/services/api/tileShareRecipientsApi.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
@@ -230,4 +232,28 @@ class LiveTileShareAttentionSources implements TileShareAttentionSources {
   @override
   Future<void> setDismissed(String eventId, bool isDismissed) =>
       _activity.setDismissed(eventId, isDismissed);
+}
+
+class LiveTileShareRecipientsSource implements TileShareRecipientsSource {
+  final TileShareRecipientsApi _recipients;
+  final TileShareActivityApi _activity;
+
+  /// How much recent activity is read for delivery state.
+  static const int activityPageSize = 100;
+
+  LiveTileShareRecipientsSource(this._recipients, this._activity);
+
+  @override
+  Future<TileShareTemplate> addRecipient(String tiletteId, Contact contact) =>
+      _recipients.addRecipient(tiletteId, contact);
+
+  @override
+  Future<void> removeRecipient(String tiletteId, String assignmentId) =>
+      _recipients.removeRecipient(tiletteId, assignmentId);
+
+  @override
+  Future<List<TileShareActivity>> clusterActivity(String clusterId) async =>
+      (await _activity.getActivity(
+              clusterId: clusterId, pageSize: activityPageSize))
+          .items;
 }

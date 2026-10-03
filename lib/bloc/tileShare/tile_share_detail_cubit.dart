@@ -134,7 +134,9 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
       _emit(TileShareDetailState(
         phase: DetailPhase.ready,
         cluster: cluster,
-        tilettes: loadedTilettes ?? state.tilettes,
+        tilettes: loadedTilettes == null
+            ? state.tilettes
+            : List<TileShareTemplate>.unmodifiable(loadedTilettes),
         mine: mine,
         myStatus: myStatus,
         isOwner: isOwner,

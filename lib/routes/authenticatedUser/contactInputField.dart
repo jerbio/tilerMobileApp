@@ -11,11 +11,26 @@ class ContactInputFieldWidget extends StatefulWidget {
   final Function? onContactUpdate;
   final double? contentHeight;
   final bool isReadOnly;
+
+  /// Shows the entered contacts as chips (the default). A host that lists the
+  /// contacts itself - a roster - turns them off and uses [onContactAdded].
+  final bool showPills;
+
+  /// Called with each valid contact entered, whether or not it is new; the
+  /// host decides what a duplicate means.
+  final void Function(Contact contact)? onContactAdded;
+
+  /// Starts with the text field open instead of behind the + button.
+  final bool startExpanded;
+
   ContactInputFieldWidget(
       {this.onContactUpdate,
       this.contentHeight,
       this.contacts,
-      this.isReadOnly = true});
+      this.isReadOnly = true,
+      this.showPills = true,
+      this.onContactAdded,
+      this.startExpanded = false});
   @override
   _ContactInputFieldWidgetState createState() =>
       _ContactInputFieldWidgetState();
@@ -38,6 +53,7 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
     if (this.widget.contacts != null) {
       this._contacts = this.widget.contacts!;
     }
+    _isExpanded = this.widget.startExpanded;
     _controller.addListener(_handleTextChanged);
   }
 
@@ -93,6 +109,8 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _focusNode.requestFocus();
       });
+      final Contact added = _contacts.last;
+      this.widget.onContactAdded?.call(added);
       if (this.widget.onContactUpdate != null &&
           !priorContact.any((eachContact) =>
               eachContact.email == contactVal ||
@@ -146,7 +164,8 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
                     runSpacing: 4.0,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      ..._contacts.map((contact) => _buildPill(contact)),
+                      if (this.widget.showPills)
+                        ..._contacts.map((contact) => _buildPill(contact)),
                       if (!isReadOnly && _isExpanded)
                         ConstrainedBox(
                           constraints: const BoxConstraints(

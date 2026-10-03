@@ -50,6 +50,8 @@ DesignatedUser tsAssignee(
 }) =>
     DesignatedUser.fromJson({
       'id': 'asg-$email',
+      'designatedTileTemplateId': 'asg-$email',
+      'displayedIdentifier': email,
       if (status != null) 'rsvpStatus': status.name,
       if (completion != null) 'completionPct': completion,
       'userProfile': {'id': 'u-$email', 'email': email},
@@ -57,6 +59,9 @@ DesignatedUser tsAssignee(
 
 Map<String, dynamic> _assigneeJson(DesignatedUser u) => {
       'id': u.id,
+      if (u.designatedTileTemplateId != null)
+        'designatedTileTemplateId': u.designatedTileTemplateId,
+      if (u.displayedName != null) 'displayedIdentifier': u.displayedName,
       if (u.rsvpStatus != null) 'rsvpStatus': u.rsvpStatus!.name,
       if (u.completionPercentage != null) 'completionPct': u.completionPercentage,
       if (u.userProfile != null)
@@ -141,6 +146,7 @@ TileShareActivity tsActivity(
   String? actorName = 'Jordan',
   int atMsFromNow = 0,
   String? tiletteId,
+  String? assignmentId,
   Map<String, dynamic>? metadata,
 }) =>
     TileShareActivity.fromJson({
@@ -153,6 +159,7 @@ TileShareActivity tsActivity(
       if (actorId != null) 'actorId': actorId,
       if (actorId != null && actorName != null) 'actorName': actorName,
       if (tiletteId != null) 'tiletteId': tiletteId,
+      if (assignmentId != null) 'assignmentId': assignmentId,
       if (metadata != null) 'metadata': metadata,
     });
 
