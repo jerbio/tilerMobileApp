@@ -4933,4 +4933,52 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get classAddFailed => 'No se pudo añadir a todas las tareas.';
+
+  @override
+  String get projectUnassigned => 'Sin asignar';
+
+  @override
+  String projectTasksUnassigned(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tareas no tienen a nadie asignado',
+      one: '1 tarea no tiene a nadie asignado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get projectAssign => 'Asignar';
+
+  @override
+  String get projectReassign => 'Reasignar';
+
+  @override
+  String get projectReassigning => 'Reasignando…';
+
+  @override
+  String get projectReassignFailed => 'No se pudo reasignar.';
+
+  @override
+  String projectAssignTitle(String task) {
+    return 'Asignar $task';
+  }
+
+  @override
+  String projectOwnsTasks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tiene $count tareas',
+      one: 'Tiene 1 tarea',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get projectAlreadyIn => 'Ya en este proyecto';
+
+  @override
+  String get projectRemoveBody => 'Sus tareas quedarán sin asignar.';
 }

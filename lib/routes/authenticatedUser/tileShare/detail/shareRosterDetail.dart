@@ -9,8 +9,14 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/classPersonRow.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/participantRow.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/projectRows.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 import 'package:tiler_app/util.dart';
+
+/// Which owner roster: everyone their own copy of one task (Broadcast), of
+/// every task (Class), or one shared project with an assignee per task
+/// (Project).
+enum RosterMode { broadcast, classMode, project }
 
 /// The owner's Broadcast detail (Step 9.13): Overview · Participants.
 class BroadcastDetail extends StatelessWidget {
@@ -21,8 +27,8 @@ class BroadcastDetail extends StatelessWidget {
       {super.key, required this.detail, required this.recipients});
 
   @override
-  Widget build(BuildContext context) =>
-      ShareRosterDetail(detail: detail, recipients: recipients, isClass: false);
+  Widget build(BuildContext context) => ShareRosterDetail(
+      detail: detail, recipients: recipients, mode: RosterMode.broadcast);
 }
 
 /// The owner's Class detail (Step 9.14): Overview · Tasks · Participants.
@@ -30,23 +36,41 @@ class ClassDetail extends StatelessWidget {
   final TileShareDetailState detail;
   final TileShareRecipientsSource recipients;
 
-  const ClassDetail({super.key, required this.detail, required this.recipients});
+  const ClassDetail(
+      {super.key, required this.detail, required this.recipients});
 
   @override
-  Widget build(BuildContext context) =>
-      ShareRosterDetail(detail: detail, recipients: recipients, isClass: true);
+  Widget build(BuildContext context) => ShareRosterDetail(
+      detail: detail, recipients: recipients, mode: RosterMode.classMode);
+}
+
+/// The owner's Project detail (Step 9.15): Overview · Tasks (the board) ·
+/// Participants.
+class ProjectDetail extends StatelessWidget {
+  final TileShareDetailState detail;
+  final TileShareRecipientsSource recipients;
+
+  const ProjectDetail(
+      {super.key, required this.detail, required this.recipients});
+
+  @override
+  Widget build(BuildContext context) => ShareRosterDetail(
+      detail: detail, recipients: recipients, mode: RosterMode.project);
 }
 
 enum _Segment { overview, tasks, participants }
 
-/// The owner's roster detail (redesign §5.4), under the detail header, for a
-/// share where everyone gets their own copy - a **Broadcast** (one task) or a
-/// **Class** (every task):
+/// The owner's roster detail (redesign §5.4), under the detail header: a
+/// **Broadcast** (everyone their own copy of one task), a **Class** (of every
+/// task) or a **Project** (one shared project, an assignee per task):
 ///
 /// * **Overview** previews: the answers (people who accepted everything, for a
 ///   Class), who is missing from some tasks, who may not have got the
 ///   invitation, the first few people and "View all" - never the whole list.
-/// * **Tasks** (Class): each task with its own answers.
+/// * **Tasks**: each task with its own answers (Class), or the board - each
+///   task's assignee, their answer and that task's own progress, "No one
+///   assigned", Assign / Reassign (Project; no rolled-up total, no Accept
+///   all).
 /// * **Participants**: the add field and the roster. A Broadcast row shows the
 ///   answer, progress and delivery; a Class row one segment per task, "Not on
 ///   N tasks" with "Add to all tasks", and the person's tasks on tap.
@@ -57,16 +81,16 @@ enum _Segment { overview, tasks, participants }
 class ShareRosterDetail extends StatefulWidget {
   final TileShareDetailState detail;
   final TileShareRecipientsSource recipients;
-  final bool isClass;
+  final RosterMode mode;
 
-  /// How many people the Overview previews.
+  /// How many people (or tasks) the Overview previews.
   static const int previewCount = 3;
 
   const ShareRosterDetail({
     super.key,
     required this.detail,
     required this.recipients,
-    required this.isClass,
+    required this.mode,
   });
 
   @override
@@ -77,9 +101,9 @@ class _ShareRosterDetailState extends State<ShareRosterDetail> {
   TileShareRosterCubit? _roster;
   _Segment _segment = _Segment.overview;
 
-  List<TileShareTemplate> get _tilettes => widget.isClass
-      ? widget.detail.tilettes
-      : widget.detail.tilettes.take(1).toList();
+  List<TileShareTemplate> get _tilettes => widget.mode == RosterMode.broadcast
+      ? widget.detail.tilettes.take(1).toList()
+      : widget.detail.tilettes;
 
   @override
   void initState() {
@@ -124,7 +148,7 @@ class _ShareRosterDetailState extends State<ShareRosterDetail> {
     if (roster == null) return const SizedBox.shrink();
     final List<_Segment> segments = [
       _Segment.overview,
-      if (widget.isClass) _Segment.tasks,
+      if (widget.mode != RosterMode.broadcast) _Segment.tasks,
       _Segment.participants,
     ];
     String label(_Segment s) => switch (s) {
@@ -160,13 +184,17 @@ class _ShareRosterDetailState extends State<ShareRosterDetail> {
               builder: (context, state) => switch (_segment) {
                 _Segment.overview => _Overview(
                     state: state,
-                    isClass: widget.isClass,
-                    onParticipants: () => _go(_Segment.participants)),
-                _Segment.tasks => _Tasks(state: state, tilettes: _tilettes),
+                    mode: widget.mode,
+                    tilettes: _tilettes,
+                    onParticipants: () => _go(_Segment.participants),
+                    onTasks: () => _go(_Segment.tasks)),
+                _Segment.tasks => widget.mode == RosterMode.project
+                    ? _Board(state: state, roster: roster, tilettes: _tilettes)
+                    : _Tasks(state: state, tilettes: _tilettes),
                 _Segment.participants => _Participants(
                     state: state,
                     roster: roster,
-                    isClass: widget.isClass,
+                    mode: widget.mode,
                     tilettes: _tilettes),
               },
             ),
@@ -178,16 +206,33 @@ class _ShareRosterDetailState extends State<ShareRosterDetail> {
 }
 
 /// A preview row: the mode's row, without actions.
-Widget _previewRow(RosterRow row, bool isClass) =>
-    isClass ? ClassPersonRow(row: row) : ParticipantRow(row: row);
+Widget _previewRow(RosterRow row, RosterMode mode) =>
+    mode == RosterMode.classMode
+        ? ClassPersonRow(row: row)
+        : ParticipantRow(row: row);
+
+/// Whoever has task [index], with their cell for it.
+List<(RosterRow, RosterCell)> _assigneesOf(List<RosterRow> rows, int index) =>
+    <(RosterRow, RosterCell)>[
+      for (final RosterRow r in rows)
+        if (index < r.cells.length && r.cells[index].isPresent)
+          (r, r.cells[index]),
+    ];
 
 class _Overview extends StatelessWidget {
   final TileShareRosterState state;
-  final bool isClass;
+  final RosterMode mode;
+  final List<TileShareTemplate> tilettes;
   final VoidCallback onParticipants;
+  final VoidCallback onTasks;
 
-  const _Overview(
-      {required this.state, required this.isClass, required this.onParticipants});
+  const _Overview({
+    required this.state,
+    required this.mode,
+    required this.tilettes,
+    required this.onParticipants,
+    required this.onTasks,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -200,19 +245,37 @@ class _Overview extends StatelessWidget {
             r.delivery == RecipientDelivery.failed ||
             r.delivery == RecipientDelivery.unknown)
         .length;
+    final bool isProject = mode == RosterMode.project;
     final int incomplete = saved.where((r) => r.isIncomplete).length;
-    final String? answers = saved.isEmpty
-        ? null
-        : isClass
-            ? l10n.clusterRsvpPeople(
-                saved.where((r) => r.acceptedAll).length, saved.length)
-            : l10n.clusterRsvpAccepted(
-                saved.where((r) => r.rsvp == InvitationStatus.accepted).length,
-                saved.length);
+    final List<int> taskIndexes = List<int>.generate(tilettes.length, (i) => i);
+    final int unassigned = isProject
+        ? taskIndexes.where((i) => _assigneesOf(state.rows, i).isEmpty).length
+        : 0;
+    final String? answers = switch (mode) {
+      RosterMode.project => tilettes.isEmpty
+          ? null
+          : l10n.clusterRsvpTasks(
+              taskIndexes
+                  .where((i) => _assigneesOf(state.rows, i)
+                      .any((a) => a.$2.rsvp == InvitationStatus.accepted))
+                  .length,
+              tilettes.length),
+      RosterMode.classMode => saved.isEmpty
+          ? null
+          : l10n.clusterRsvpPeople(
+              saved.where((r) => r.acceptedAll).length, saved.length),
+      RosterMode.broadcast => saved.isEmpty
+          ? null
+          : l10n.clusterRsvpAccepted(
+              saved.where((r) => r.rsvp == InvitationStatus.accepted).length,
+              saved.length),
+    };
 
-    Widget alert(Key key, IconData icon, String text, Color color) => InkWell(
+    Widget alert(Key key, IconData icon, String text, Color color,
+            {VoidCallback? onTap}) =>
+        InkWell(
           key: key,
-          onTap: onParticipants,
+          onTap: onTap ?? onParticipants,
           borderRadius: BorderRadius.circular(8),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
@@ -222,7 +285,8 @@ class _Overview extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(text,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: color)),
+                      style:
+                          theme.textTheme.bodyMedium?.copyWith(color: color)),
                 ),
                 Icon(Icons.chevron_right, color: color),
               ],
@@ -235,32 +299,104 @@ class _Overview extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (answers != null) Text(answers, style: theme.textTheme.titleSmall),
-        if (isClass && incomplete > 0) ...[
+        if (isProject && unassigned > 0) ...[
           const SizedBox(height: 8),
-          alert(const Key('class_incomplete'), Icons.group_add_outlined,
-              l10n.classPeopleIncomplete(incomplete), theme.colorScheme.tertiary),
+          alert(
+              const Key('project_unassigned_alert'),
+              Icons.assignment_late_outlined,
+              l10n.projectTasksUnassigned(unassigned),
+              theme.colorScheme.tertiary,
+              onTap: onTasks),
+        ],
+        if (mode == RosterMode.classMode && incomplete > 0) ...[
+          const SizedBox(height: 8),
+          alert(
+              const Key('class_incomplete'),
+              Icons.group_add_outlined,
+              l10n.classPeopleIncomplete(incomplete),
+              theme.colorScheme.tertiary),
         ],
         if (issues > 0) ...[
           const SizedBox(height: 8),
-          alert(const Key('roster_delivery_issues'),
+          alert(
+              const Key('roster_delivery_issues'),
               Icons.mark_email_unread_outlined,
-              l10n.broadcastDeliveryIssues(issues), theme.colorScheme.error),
+              l10n.broadcastDeliveryIssues(issues),
+              theme.colorScheme.error),
         ],
         const SizedBox(height: 8),
-        for (final RosterRow row in state.rows.take(ShareRosterDetail.previewCount))
-          _previewRow(row, isClass),
-        if (state.rows.isEmpty)
-          Text(l10n.broadcastNoParticipants,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-        if (state.rows.length > ShareRosterDetail.previewCount)
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: TextButton(
-              key: const Key('roster_view_all'),
-              onPressed: onParticipants,
-              child: Text(l10n.broadcastViewAll(state.rows.length)),
+        if (isProject) ...[
+          for (int i = 0;
+              i < tilettes.length && i < ShareRosterDetail.previewCount;
+              i++)
+            ProjectTaskRow(
+                tilette: tilettes[i], assignees: _assigneesOf(state.rows, i)),
+          if (tilettes.length > ShareRosterDetail.previewCount)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton(
+                key: const Key('roster_view_all'),
+                onPressed: onTasks,
+                child: Text(l10n.broadcastViewAll(tilettes.length)),
+              ),
             ),
+        ] else ...[
+          for (final RosterRow row
+              in state.rows.take(ShareRosterDetail.previewCount))
+            _previewRow(row, mode),
+          if (state.rows.isEmpty)
+            Text(l10n.broadcastNoParticipants,
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          if (state.rows.length > ShareRosterDetail.previewCount)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton(
+                key: const Key('roster_view_all'),
+                onPressed: onParticipants,
+                child: Text(l10n.broadcastViewAll(state.rows.length)),
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+}
+
+/// A Project's board: every task with its assignee, Assign / Reassign.
+class _Board extends StatelessWidget {
+  final TileShareRosterState state;
+  final TileShareRosterCubit roster;
+  final List<TileShareTemplate> tilettes;
+
+  const _Board(
+      {required this.state, required this.roster, required this.tilettes});
+
+  Future<void> _assign(BuildContext context, int index) async {
+    final TileShareTemplate tilette = tilettes[index];
+    final List<(RosterRow, RosterCell)> current =
+        _assigneesOf(state.rows, index);
+    final contact = await showProjectAssignSheet(context, tilette, state.rows,
+        exclude: {for (final (RosterRow r, RosterCell _) in current) r.key});
+    if (contact == null || tilette.id == null) return;
+    roster.assignTask(tilette.id!, contact,
+        replacingAssignmentId:
+            current.isEmpty ? null : current.first.$2.assignmentId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      key: const Key('project_board'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (int i = 0; i < tilettes.length; i++)
+          ProjectTaskRow(
+            tilette: tilettes[i],
+            assignees: _assigneesOf(state.rows, i),
+            change: state.tasks[tilettes[i].id],
+            onAssign: () => _assign(context, i),
+            onRetry: () => roster.retryTask(tilettes[i].id ?? ''),
           ),
       ],
     );
@@ -329,13 +465,13 @@ class _Tasks extends StatelessWidget {
 class _Participants extends StatelessWidget {
   final TileShareRosterState state;
   final TileShareRosterCubit roster;
-  final bool isClass;
+  final RosterMode mode;
   final List<TileShareTemplate> tilettes;
 
   const _Participants({
     required this.state,
     required this.roster,
-    required this.isClass,
+    required this.mode,
     required this.tilettes,
   });
 
@@ -345,12 +481,16 @@ class _Participants extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.participantRemoveTitle(row.label)),
-        content: Text(
-            isClass ? l10n.classRemoveBody : l10n.participantRemoveBody),
+        content: Text(switch (mode) {
+          RosterMode.classMode => l10n.classRemoveBody,
+          RosterMode.project => l10n.projectRemoveBody,
+          RosterMode.broadcast => l10n.participantRemoveBody,
+        }),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(MaterialLocalizations.of(dialogContext).cancelButtonLabel),
+            child:
+                Text(MaterialLocalizations.of(dialogContext).cancelButtonLabel),
           ),
           TextButton(
             key: const Key('participant_remove_confirm'),
@@ -373,15 +513,17 @@ class _Participants extends StatelessWidget {
       key: const Key('roster_participants'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        KeyedSubtree(
-          key: const Key('roster_add_participant'),
-          child: ContactInputFieldWidget(
-            isReadOnly: false,
-            showPills: false,
-            startExpanded: true,
-            onContactAdded: roster.add,
+        // People join a Project through a task (Assign on the board).
+        if (mode != RosterMode.project)
+          KeyedSubtree(
+            key: const Key('roster_add_participant'),
+            child: ContactInputFieldWidget(
+              isReadOnly: false,
+              showPills: false,
+              startExpanded: true,
+              onContactAdded: roster.add,
+            ),
           ),
-        ),
         if (state.duplicate != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
@@ -398,25 +540,33 @@ class _Participants extends StatelessWidget {
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
           ),
         for (final RosterRow row in state.rows)
-          isClass
-              ? ClassPersonRow(
-                  key: ValueKey<String>('participant_${row.key}'),
-                  row: row,
-                  onTap: () => showClassPersonSheet(context, row, tilettes),
-                  onRepair: () => roster.repair(row.key),
-                  onRemove: () => _confirmRemove(context, row),
-                  onRetry: () => roster.retryAdd(row.key),
-                  onDismiss: () => roster.dismiss(row.key),
-                )
-              : ParticipantRow(
-                  key: ValueKey<String>('participant_${row.key}'),
-                  row: row,
-                  onRemove: row.assignmentId == null
-                      ? null
-                      : () => _confirmRemove(context, row),
-                  onRetry: () => roster.retryAdd(row.key),
-                  onDismiss: () => roster.dismiss(row.key),
-                ),
+          if (mode == RosterMode.project)
+            ProjectPersonRow(
+              key: ValueKey<String>('participant_${row.key}'),
+              row: row,
+              tilettes: tilettes,
+              onRemove: () => _confirmRemove(context, row),
+            )
+          else if (mode == RosterMode.classMode)
+            ClassPersonRow(
+              key: ValueKey<String>('participant_${row.key}'),
+              row: row,
+              onTap: () => showClassPersonSheet(context, row, tilettes),
+              onRepair: () => roster.repair(row.key),
+              onRemove: () => _confirmRemove(context, row),
+              onRetry: () => roster.retryAdd(row.key),
+              onDismiss: () => roster.dismiss(row.key),
+            )
+          else
+            ParticipantRow(
+              key: ValueKey<String>('participant_${row.key}'),
+              row: row,
+              onRemove: row.assignmentId == null
+                  ? null
+                  : () => _confirmRemove(context, row),
+              onRetry: () => roster.retryAdd(row.key),
+              onDismiss: () => roster.dismiss(row.key),
+            ),
       ],
     );
   }

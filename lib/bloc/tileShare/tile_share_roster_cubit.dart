@@ -10,9 +10,26 @@ import 'package:tiler_app/services/api/tileShareTransport.dart';
 import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 
+/// A change to one task's assignee (a Project) that is going out or failed.
+enum TaskChangePhase { working, failed }
+
+class TaskChange extends Equatable {
+  final TaskChangePhase phase;
+  final String? reason;
+
+  const TaskChange(this.phase, {this.reason});
+
+  @override
+  List<Object?> get props => [phase, reason];
+}
+
 class TileShareRosterState extends Equatable {
   /// The people, in order of first appearance, then adds on no task yet.
   final List<RosterRow> rows;
+
+  /// Task changes still outstanding, by task (tilette) id; a task with
+  /// nothing outstanding is absent.
+  final Map<String, TaskChange> tasks;
 
   /// Delivery has been read from the cluster's activity.
   final bool deliveryLoaded;
@@ -22,12 +39,24 @@ class TileShareRosterState extends Equatable {
 
   const TileShareRosterState({
     this.rows = const <RosterRow>[],
+    this.tasks = const <String, TaskChange>{},
     this.deliveryLoaded = false,
     this.duplicate,
   });
 
   @override
-  List<Object?> get props => [rows, deliveryLoaded, duplicate];
+  List<Object?> get props => [rows, tasks, deliveryLoaded, duplicate];
+}
+
+/// A task's assignee change, kept to retry.
+class _TaskOp {
+  final Contact contact;
+  final Set<String> keys;
+  final String? replacingAssignmentId;
+  TaskChangePhase phase = TaskChangePhase.working;
+  String? reason;
+
+  _TaskOp(this.contact, this.keys, this.replacingAssignmentId);
 }
 
 /// An add in progress or failed, for one person.
@@ -58,6 +87,10 @@ class _PendingAdd {
 /// * Someone already on the roster, or being added, is not added twice.
 /// * A person on some tasks but not all is **incomplete**; [repair] adds them
 ///   to the rest.
+/// * **Reassigning a task** (a Project, [assignTask]) adds the new person to
+///   that one task first and then removes the old one, so a failure never
+///   leaves the task with no one; a failed change stays on the task with the
+///   reason and [retryTask] (which skips what already happened).
 /// * The roster refreshes from each answer (an add answers with the task and
 ///   its recipients) and from the share's reloads ([sync]).
 class TileShareRosterCubit extends Cubit<TileShareRosterState> {
@@ -76,6 +109,8 @@ class TileShareRosterCubit extends Cubit<TileShareRosterState> {
 
   /// People a removal failed for, with the reason.
   final List<(Set<String>, String?)> _removeFailed = <(Set<String>, String?)>[];
+
+  final Map<String, _TaskOp> _taskOps = <String, _TaskOp>{};
 
   Future<void> _queue = Future<void>.value();
   int _localIds = 0;
@@ -243,6 +278,76 @@ class TileShareRosterCubit extends Cubit<TileShareRosterState> {
     });
   }
 
+  // ---- one task's assignee (a Project) -------------------------------------------
+
+  /// Gives task [tiletteId] to [contact], replacing [replacingAssignmentId]
+  /// if given: the new person is added first, the old one removed after.
+  /// Nothing is sent when [contact] already has the task.
+  Future<void> assignTask(String tiletteId, Contact contact,
+      {String? replacingAssignmentId}) {
+    final Set<String> keys = ClassFanout.identityKeys(contact);
+    final TileShareTemplate? tilette = _tilette(tiletteId);
+    if (keys.isEmpty || tilette == null) return Future<void>.value();
+    final bool holds = _holds(tilette, keys);
+    final bool replacingThem = replacingAssignmentId == null ||
+        _assignmentKeys(tilette, replacingAssignmentId).any(keys.contains);
+    if (holds && replacingThem) {
+      TileShareLog.d(
+          _tag, '${_labelOf(contact)} already has $tiletteId; nothing to send');
+      return Future<void>.value();
+    }
+    _taskOps[tiletteId] = _TaskOp(contact, keys, replacingAssignmentId);
+    _rebuild();
+    return _enqueue(() => _runTask(tiletteId));
+  }
+
+  /// Sends a failed task change again; what already happened is skipped.
+  Future<void> retryTask(String tiletteId) {
+    final _TaskOp? op = _taskOps[tiletteId];
+    if (op == null || op.phase != TaskChangePhase.failed) {
+      return Future<void>.value();
+    }
+    op.phase = TaskChangePhase.working;
+    op.reason = null;
+    _rebuild();
+    return _enqueue(() => _runTask(tiletteId));
+  }
+
+  Future<void> _runTask(String tiletteId) async {
+    final _TaskOp? op = _taskOps[tiletteId];
+    if (op == null) return;
+    try {
+      TileShareTemplate? tilette = _tilette(tiletteId);
+      if (tilette != null && !_holds(tilette, op.keys)) {
+        final TileShareTemplate updated =
+            await _source.addRecipient(tiletteId, op.contact);
+        _replaceTilette(updated);
+        TileShareLog.d(_tag, 'assigned ${_labelOf(op.contact)} to $tiletteId');
+        _rebuild();
+      }
+      final String? old = op.replacingAssignmentId;
+      tilette = _tilette(tiletteId);
+      if (old != null &&
+          tilette != null &&
+          _assignmentKeys(tilette, old).isNotEmpty &&
+          !_assignmentKeys(tilette, old).any(op.keys.contains)) {
+        try {
+          await _source.removeRecipient(tiletteId, old);
+        } on TileShareRecipientFailure catch (failure) {
+          if (failure.kind != TileShareFailureKind.notFound) rethrow;
+        }
+        _dropAssignment(tiletteId, old);
+        TileShareLog.d(_tag, 'unassigned $old from $tiletteId');
+      }
+      _taskOps.remove(tiletteId);
+    } catch (error) {
+      op.phase = TaskChangePhase.failed;
+      op.reason = _reasonOf(error);
+      TileShareLog.d(_tag, 'changing $tiletteId failed: $error');
+    }
+    _rebuild();
+  }
+
   // ---- building the rows -----------------------------------------------------------
 
   void _rebuild() {
@@ -288,7 +393,14 @@ class TileShareRosterCubit extends Cubit<TileShareRosterState> {
       ));
     }
     _emit(TileShareRosterState(
-        rows: rows, deliveryLoaded: _deliveryLoaded, duplicate: _duplicate));
+      rows: rows,
+      tasks: <String, TaskChange>{
+        for (final MapEntry<String, _TaskOp> e in _taskOps.entries)
+          e.key: TaskChange(e.value.phase, reason: e.value.reason),
+      },
+      deliveryLoaded: _deliveryLoaded,
+      duplicate: _duplicate,
+    ));
   }
 
   // ---- helpers ------------------------------------------------------------------
@@ -303,6 +415,25 @@ class TileShareRosterCubit extends Cubit<TileShareRosterState> {
       }
     }
     return false;
+  }
+
+  TileShareTemplate? _tilette(String id) =>
+      _tilettes.where((t) => t.id == id).firstOrNull;
+
+  /// The identity of whoever holds [assignmentId] on [tilette]; empty when no
+  /// one does.
+  static Set<String> _assignmentKeys(
+      TileShareTemplate tilette, String assignmentId) {
+    for (final DesignatedUser user
+        in tilette.designatedUsers ?? const <DesignatedUser>[]) {
+      if (RosterPeople.assignmentOf(user) == assignmentId) {
+        final Contact? contact = ClassFanout.contactOfUser(user);
+        return contact == null
+            ? <String>{'assignment:$assignmentId'}
+            : ClassFanout.identityKeys(contact);
+      }
+    }
+    return const <String>{};
   }
 
   void _replaceTilette(TileShareTemplate updated) {

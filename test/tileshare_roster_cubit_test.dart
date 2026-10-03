@@ -361,6 +361,117 @@ void main() {
     });
   });
 
+  // Step 9.15 (T13, T20, O10): a Project - one shared project, each task with
+  // its own assignee. Reassigning adds the new person to that one task first,
+  // then removes the old one, so a failure never leaves the task with no one.
+  group('a Project board', () {
+    FakeTileShareRecipientsSource projectSource() =>
+        FakeTileShareRecipientsSource(tilettes: {
+          't1': tsTilette('t1', clusterId: 'p', assignees: [
+            tsAssignee('ann@x.com', status: InvitationStatus.accepted),
+          ]),
+          't2': tsTilette('t2', clusterId: 'p', assignees: []),
+        });
+
+    TileShareRosterCubit projectCubit(FakeTileShareRecipientsSource source) =>
+        TileShareRosterCubit(
+          source: source,
+          clusterId: 'p',
+          tilettes: [source.tilettes['t1']!, source.tilettes['t2']!],
+        );
+
+    List<String> changes(FakeTileShareRecipientsSource s) => s.calls
+        .where((c) => c.startsWith('addRecipient') || c.startsWith('removeRecipient'))
+        .toList();
+    List<String> assignees(TileShareRosterCubit c, int task) => [
+          for (final r in c.state.rows)
+            if (r.cells[task].isPresent) r.label,
+        ];
+
+    test('reassigning adds the new person first, then removes the old one',
+        () async {
+      final source = projectSource();
+      final cubit = projectCubit(source);
+      await cubit.assignTask('t1', _email('cy@x.com'),
+          replacingAssignmentId: 'asg-ann@x.com');
+      expect(changes(source), [
+        'addRecipient(t1, cy@x.com)',
+        'removeRecipient(t1, asg-ann@x.com)',
+      ]);
+      expect(assignees(cubit, 0), ['cy@x.com']);
+      expect(cubit.state.tasks['t1'], isNull, reason: 'nothing outstanding');
+      await cubit.close();
+    });
+
+    test('assigning a task with no one adds only to that task', () async {
+      final source = projectSource();
+      final cubit = projectCubit(source);
+      await cubit.assignTask('t2', _email('ann@x.com'));
+      expect(changes(source), ['addRecipient(t2, ann@x.com)']);
+      expect(assignees(cubit, 1), ['ann@x.com']);
+      await cubit.close();
+    });
+
+    test('a refused add removes no one; the task says so and Retry sends it '
+        'again', () async {
+      final source = projectSource();
+      final cubit = projectCubit(source);
+      source.failNextOn('addRecipient',
+          const TileShareRecipientFailure(TileShareFailureKind.server,
+              reason: 'busy'));
+      await cubit.assignTask('t1', _email('cy@x.com'),
+          replacingAssignmentId: 'asg-ann@x.com');
+      expect(changes(source), ['addRecipient(t1, cy@x.com)']);
+      expect(assignees(cubit, 0), ['ann@x.com'], reason: 'never left empty');
+      expect(cubit.state.tasks['t1']!.phase, TaskChangePhase.failed);
+      expect(cubit.state.tasks['t1']!.reason, 'busy');
+      await cubit.retryTask('t1');
+      expect(assignees(cubit, 0), ['cy@x.com']);
+      expect(cubit.state.tasks['t1'], isNull);
+      await cubit.close();
+    });
+
+    test('a refused removal leaves both on the task, marked; Retry only '
+        'removes', () async {
+      final source = projectSource();
+      final cubit = projectCubit(source);
+      source.failNextOn('removeRecipient', StateError('offline'));
+      await cubit.assignTask('t1', _email('cy@x.com'),
+          replacingAssignmentId: 'asg-ann@x.com');
+      expect(assignees(cubit, 0), ['ann@x.com', 'cy@x.com']);
+      expect(cubit.state.tasks['t1']!.phase, TaskChangePhase.failed);
+      source.calls.clear();
+      await cubit.retryTask('t1');
+      expect(changes(source), ['removeRecipient(t1, asg-ann@x.com)']);
+      expect(assignees(cubit, 0), ['cy@x.com']);
+      await cubit.close();
+    });
+
+    test('while it goes out the task is busy', () async {
+      final source = projectSource();
+      final cubit = projectCubit(source);
+      source.hold();
+      final done = cubit.assignTask('t2', _email('cy@x.com'));
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.state.tasks['t2']!.phase, TaskChangePhase.working);
+      source.release();
+      await done;
+      expect(cubit.state.tasks['t2'], isNull);
+      await cubit.close();
+    });
+
+    test('reassigning to whoever already has it changes nothing', () async {
+      final source = projectSource();
+      final cubit = projectCubit(source);
+      final done = cubit.assignTask('t1', _email('ANN@x.com'),
+          replacingAssignmentId: 'asg-ann@x.com');
+      expect(cubit.state.tasks, isEmpty, reason: 'no "Reassigning…" at all');
+      await done;
+      expect(changes(source), isEmpty);
+      await cubit.close();
+    });
+  });
+
   test('a reload brings the server\'s roster and keeps adds not yet answered',
       () async {
     final rig = _Rig();

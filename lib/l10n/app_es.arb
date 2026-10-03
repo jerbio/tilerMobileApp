@@ -1860,5 +1860,15 @@
     "classAddToAll": "Añadir a todas las tareas",
     "classRemoveBody": "Se eliminará de todas las tareas.",
     "classTaskNotAdded": "No añadido",
-    "classAddFailed": "No se pudo añadir a todas las tareas."
+    "classAddFailed": "No se pudo añadir a todas las tareas.",
+    "projectUnassigned": "Sin asignar",
+    "projectTasksUnassigned": "{count, plural, =1{1 tarea no tiene a nadie asignado} other{{count} tareas no tienen a nadie asignado}}",
+    "projectAssign": "Asignar",
+    "projectReassign": "Reasignar",
+    "projectReassigning": "Reasignando…",
+    "projectReassignFailed": "No se pudo reasignar.",
+    "projectAssignTitle": "Asignar {task}",
+    "projectOwnsTasks": "{count, plural, =1{Tiene 1 tarea} other{Tiene {count} tareas}}",
+    "projectAlreadyIn": "Ya en este proyecto",
+    "projectRemoveBody": "Sus tareas quedarán sin asignar."
 }

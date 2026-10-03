@@ -2704,5 +2704,18 @@
     "classAddToAll": "Add to all tasks",
     "classRemoveBody": "They will be removed from every task.",
     "classTaskNotAdded": "Not added",
-    "classAddFailed": "Couldn’t add to every task."
+    "classAddFailed": "Couldn’t add to every task.",
+    "projectUnassigned": "No one assigned",
+    "projectTasksUnassigned": "{count, plural, =1{1 task has no one assigned} other{{count} tasks have no one assigned}}",
+    "@projectTasksUnassigned": {"placeholders": {"count": {"type": "int"}}},
+    "projectAssign": "Assign",
+    "projectReassign": "Reassign",
+    "projectReassigning": "Reassigning…",
+    "projectReassignFailed": "Couldn’t reassign.",
+    "projectAssignTitle": "Assign {task}",
+    "@projectAssignTitle": {"placeholders": {"task": {"type": "String"}}},
+    "projectOwnsTasks": "{count, plural, =1{Owns 1 task} other{Owns {count} tasks}}",
+    "@projectOwnsTasks": {"placeholders": {"count": {"type": "int"}}},
+    "projectAlreadyIn": "Already in this project",
+    "projectRemoveBody": "Their tasks will have no one assigned."
 }

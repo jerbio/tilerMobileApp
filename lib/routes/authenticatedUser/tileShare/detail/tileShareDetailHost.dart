@@ -105,7 +105,7 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
   }
 
   /// The mode's content under the header; the default task list until the
-  /// other variants are built (9.15-9.16).
+  /// commitment is built (9.16).
   Widget _content(BuildContext context, TileShareDetailState state) {
     switch (state.variant) {
       case DetailVariant.broadcast:
@@ -113,6 +113,7 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
       case DetailVariant.classMode:
         return ClassDetail(detail: state, recipients: _recipients);
       case DetailVariant.project:
+        return ProjectDetail(detail: state, recipients: _recipients);
       case DetailVariant.commitment:
         return TileShareDetailTasks(state: state, onRetry: _cubit.refresh);
     }

@@ -8443,6 +8443,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn’t add to every task.'**
   String get classAddFailed;
+
+  /// No description provided for @projectUnassigned.
+  ///
+  /// In en, this message translates to:
+  /// **'No one assigned'**
+  String get projectUnassigned;
+
+  /// No description provided for @projectTasksUnassigned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 task has no one assigned} other{{count} tasks have no one assigned}}'**
+  String projectTasksUnassigned(int count);
+
+  /// No description provided for @projectAssign.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign'**
+  String get projectAssign;
+
+  /// No description provided for @projectReassign.
+  ///
+  /// In en, this message translates to:
+  /// **'Reassign'**
+  String get projectReassign;
+
+  /// No description provided for @projectReassigning.
+  ///
+  /// In en, this message translates to:
+  /// **'Reassigning…'**
+  String get projectReassigning;
+
+  /// No description provided for @projectReassignFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t reassign.'**
+  String get projectReassignFailed;
+
+  /// No description provided for @projectAssignTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign {task}'**
+  String projectAssignTitle(String task);
+
+  /// No description provided for @projectOwnsTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Owns 1 task} other{Owns {count} tasks}}'**
+  String projectOwnsTasks(int count);
+
+  /// No description provided for @projectAlreadyIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in this project'**
+  String get projectAlreadyIn;
+
+  /// No description provided for @projectRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Their tasks will have no one assigned.'**
+  String get projectRemoveBody;
 }
 
 class _AppLocalizationsDelegate
