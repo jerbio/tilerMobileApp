@@ -4737,4 +4737,67 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get previewDetails => 'Detalles';
+
+  @override
+  String get previewOtherTimes => 'Otros horarios';
+
+  @override
+  String get previewOriginalSuggestion => 'Sugerencia original';
+
+  @override
+  String get previewFindAnotherTime => 'Buscar otro horario';
+
+  @override
+  String get previewFindingTimes => 'Buscando otros horarios…';
+
+  @override
+  String get previewNoDifferentTime => 'No se encontró un horario diferente';
+
+  @override
+  String get previewOptionsFailed => 'No se pudieron cargar otros horarios.';
+
+  @override
+  String get previewSelectFailed => 'No se pudo cambiar a ese horario.';
+
+  @override
+  String get previewNoMoves => 'No mueve nada más';
+
+  @override
+  String get previewSessions => 'Sesiones';
+
+  @override
+  String previewSessionN(int n) {
+    return 'Sesión $n';
+  }
+
+  @override
+  String get previewSessionUnplaced => 'No se pudo ubicar';
+
+  @override
+  String get previewSessionOutside => 'Fuera de los días mostrados';
+
+  @override
+  String previewIssues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count problemas de programación',
+      one: '1 problema de programación',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get previewIssueUnscheduled => 'No se pudo programar';
+
+  @override
+  String get previewIssueConflict => 'Se superpone con otro trabajo';
+
+  @override
+  String previewIssueWindow(String from, String to) {
+    return 'Puede ir $from – $to';
+  }
+
+  @override
+  String get previewViewInCalendar => 'Ver en el calendario';
 }

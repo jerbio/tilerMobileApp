@@ -76,6 +76,7 @@ class TileSharePreviewCubit extends Cubit<TileSharePreviewState> {
   /// otherwise builds the forecast.
   Future<void> load() async {
     final int generation = ++_generation;
+    TileShareLog.d(_tag, 'loading the preview of $assignmentId');
     _seen.clear();
     _emit(const TileSharePreviewState(phase: PreviewPhase.loading));
     PendingAccept? pending;

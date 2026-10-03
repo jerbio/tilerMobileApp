@@ -46,7 +46,10 @@ class _Rig {
         source,
         assignments,
         TileShareClustersCubit(
-            clusters: source, assignments: assignments, pageSize: pageSize));
+            clusters: source,
+            assignments: assignments,
+            currentUserId: () => 'me',
+            pageSize: pageSize));
   }
 
   TileShareClustersState get state => cubit.state;
@@ -397,6 +400,22 @@ void main() {
       expect(shared.mine!.pending, 2);
       expect(shared.mine!.needsAnswer, isTrue);
       expect(rig.state.items.firstWhere((i) => i.id == 'o1').mine, isNull);
+      await rig.close();
+    });
+
+    test('another person\'s assignment never counts as mine, so it is '
+        'never previewed or answered from my row', () async {
+      final rig = _Rig(
+        inbox: [_c('i1')],
+        mine: [
+          tsDesignatedTile('a', clusterId: 'i1'),
+          tsDesignatedTile('b', clusterId: 'i1', ownerId: 'someone'),
+        ],
+      );
+      await rig.cubit.load();
+      final mine = rig.state.items.single.mine!;
+      expect([mine.taskCount, mine.pending], [1, 1]);
+      expect(mine.pendingAssignmentIds, ['a']);
       await rig.close();
     });
 

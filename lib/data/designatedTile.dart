@@ -65,6 +65,22 @@ class DesignatedTile {
     }
   }
 
+  /// The designated tile template's user (`DesignatedUserId` on the server),
+  /// read as the web reads it: the `userId` (else the profile id) of this
+  /// template's entry in its tilette's `designatedUsers`; `null` without one.
+  /// The tile-level [user] is never used - on a device it was not the
+  /// template's designated user, and every recipient's own template looked
+  /// like someone else's.
+  String? get designatedUserId {
+    for (final entry in tileTemplate?.designatedUsers ?? const []) {
+      if (entry.designatedTileTemplateId == id) {
+        final String? owner = entry.userId ?? entry.userProfile?.id;
+        if (owner != null && owner.isNotEmpty) return owner;
+      }
+    }
+    return null;
+  }
+
   DateTime? get startTime {
     if (startInMs != null) {
       return DateTime.fromMillisecondsSinceEpoch(startInMs!);

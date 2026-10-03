@@ -11,6 +11,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/attention/attention
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/animatedCardList.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/listScaffolding.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/undoSnackBar.dart';
+import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 
 /// The Attention inbox (redesign T7): filter chips over an animated list of
 /// [AttentionCard]s. Reads a [TileShareAttentionCubit] from the tree.
@@ -141,7 +142,14 @@ class _TileShareAttentionViewState extends State<TileShareAttentionView> {
                       onCheckFit: widget.onPreview == null ||
                               item.assignmentIds.length != 1
                           ? null
-                          : () => widget.onPreview!(item.assignmentIds.single),
+                          : () {
+                              TileShareLog.d(
+                                  'TileShareAttention',
+                                  'check fit: card ${item.id} '
+                                  '(${item.mode?.name ?? 'mode unknown'}) -> '
+                                  'assignment ${item.assignmentIds.single}');
+                              widget.onPreview!(item.assignmentIds.single);
+                            },
                     ),
                   ),
                 ),

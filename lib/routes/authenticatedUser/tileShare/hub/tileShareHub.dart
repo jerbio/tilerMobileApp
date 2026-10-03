@@ -14,6 +14,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/attention/attention
 import 'package:tiler_app/routes/authenticatedUser/tileShare/clusters/clustersView.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/undoSnackBar.dart';
 import 'package:tiler_app/services/tileShare/tileShareHubPreferences.dart';
+import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 
 /// The TileShare hub (redesign T1, T6, T7): a slim bar — back, title, Activity,
 /// create — over two segments, **Attention** and **Clusters**.
@@ -163,7 +164,10 @@ class _TileShareHubState extends State<TileShareHub>
   }
 
   Future<void> _preview(String assignmentId) async {
+    TileShareLog.d('TileShareHub', 'opening the preview of $assignmentId');
     await widget.onPreview!(assignmentId);
+    TileShareLog.d('TileShareHub',
+        'preview of $assignmentId closed; reloading the lists');
     if (!mounted) return;
     widget.attention.refresh();
     if (_clustersVisited) widget.clusters.refresh();

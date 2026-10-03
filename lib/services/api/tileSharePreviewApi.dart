@@ -222,13 +222,24 @@ class TileSharePreviewApi extends AppApi {
     final Map<String, String> headers = await _headers('POST', route);
     // The forecast is built from where the user is and what time zone they are
     // in, so the location is asked for (as the old forecast call did).
-    final Map<String, dynamic> injected =
-        await injectRequestParams(body, includeLocationParams: true);
+    final Map<String, dynamic> injected;
+    try {
+      injected = await injectRequestParams(body, includeLocationParams: true);
+    } catch (error) {
+      // Before anything is sent: time zone, location and account fields.
+      TileShareLog.d(_tag, 'POST $route not sent: preparing it failed: $error');
+      rethrow;
+    }
+    TileShareLog.d(_tag, '-> POST $route ${_describeSent(body, injected)}');
     try {
       final response = await httpClient
           .post(Uri.https(constants.tilerDomain, route),
               headers: headers, body: jsonEncode(injected))
           .timeout(AppApi.requestTimeout);
+      TileShareLog.d(
+          _tag,
+          '<- POST $route HTTP ${response.statusCode} '
+          '(${response.body.length} bytes) ${_describeReceived(response.body)}');
       return _body('POST', route, response.statusCode, response.body);
     } on TimeoutException {
       TileShareLog.d(_tag, 'POST $route timed out');
@@ -239,11 +250,16 @@ class TileSharePreviewApi extends AppApi {
 
   Future<String> _get(String route, Map<String, String> query) async {
     final Map<String, String> headers = await _headers('GET', route);
+    TileShareLog.d(_tag, '-> GET $route $query');
     try {
       final response = await httpClient
           .get(Uri.https(constants.tilerDomain, route, query),
               headers: headers)
           .timeout(AppApi.requestTimeout);
+      TileShareLog.d(
+          _tag,
+          '<- GET $route HTTP ${response.statusCode} '
+          '(${response.body.length} bytes) ${_describeReceived(response.body)}');
       return _body('GET', route, response.statusCode, response.body);
     } on TimeoutException {
       TileShareLog.d(_tag, 'GET $route timed out');
@@ -274,6 +290,56 @@ class TileSharePreviewApi extends AppApi {
         kind = PreviewFailureKind.server;
     }
     throw TileSharePreviewFailure(kind, statusCode: status, reason: reason);
+  }
+
+  /// What a request carried, for the log: the fields this API set, with the
+  /// preview token shortened, and only the *names* of the fields
+  /// `injectRequestParams` added (they include where the user is).
+  static String _describeSent(
+      Map<String, Object?> body, Map<String, dynamic> injected) {
+    final List<String> fields = <String>[
+      for (final MapEntry<String, Object?> e in body.entries)
+        '${e.key}=${e.key == 'PreviewToken' ? _shortToken(e.value) : e.value is Map ? jsonEncode(e.value) : e.value}',
+    ];
+    final List<String> added =
+        injected.keys.where((k) => !body.containsKey(k)).toList();
+    return '{${fields.join(', ')}} + [${added.join(', ')}]';
+  }
+
+  static String _shortToken(Object? token) {
+    final String text = '${token ?? ''}';
+    return text.length <= 6 ? text : '${text.substring(0, 6)}…';
+  }
+
+  /// What a reply held, for the log: the envelope's code and message, and the
+  /// keys of its `Content` (lists with their length); raw text, shortened,
+  /// when it is not JSON.
+  static String _describeReceived(String body) {
+    final String trimmed = body.trim();
+    if (trimmed.isEmpty) return 'empty';
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(trimmed);
+    } catch (_) {
+      return 'not JSON: ${_short(trimmed)}';
+    }
+    if (decoded is! Map) return 'JSON ${decoded.runtimeType}';
+    final List<String> parts = <String>[];
+    final Object? error = decoded['Error'];
+    if (error is Map) parts.add('code ${error['Code']} (${error['Message']})');
+    final Object? content =
+        decoded.containsKey('Content') || error != null ? decoded['Content'] : decoded;
+    if (content is Map) {
+      final List<String> keys = <String>[
+        for (final MapEntry<dynamic, dynamic> e in content.entries)
+          e.value is List ? '${e.key}(${(e.value as List).length})' : '${e.key}',
+      ];
+      parts.add('content: ${keys.take(30).join(', ')}'
+          '${keys.length > 30 ? ', …' : ''}');
+    } else {
+      parts.add(content == null ? 'no content' : 'content ${content.runtimeType}');
+    }
+    return parts.join('; ');
   }
 
   /// The server's reason for a failure: the envelope's error message when the

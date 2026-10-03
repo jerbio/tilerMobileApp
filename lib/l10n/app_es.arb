@@ -1811,5 +1811,22 @@
     "previewDeclineFailed": "No se pudo rechazar. Inténtalo de nuevo.",
     "previewDone": "Listo",
     "previewCheckFit": "Ver si cabe",
-    "previewDetails": "Detalles"
+    "previewDetails": "Detalles",
+    "previewOtherTimes": "Otros horarios",
+    "previewOriginalSuggestion": "Sugerencia original",
+    "previewFindAnotherTime": "Buscar otro horario",
+    "previewFindingTimes": "Buscando otros horarios…",
+    "previewNoDifferentTime": "No se encontró un horario diferente",
+    "previewOptionsFailed": "No se pudieron cargar otros horarios.",
+    "previewSelectFailed": "No se pudo cambiar a ese horario.",
+    "previewNoMoves": "No mueve nada más",
+    "previewSessions": "Sesiones",
+    "previewSessionN": "Sesión {n}",
+    "previewSessionUnplaced": "No se pudo ubicar",
+    "previewSessionOutside": "Fuera de los días mostrados",
+    "previewIssues": "{count, plural, =1{1 problema de programación} other{{count} problemas de programación}}",
+    "previewIssueUnscheduled": "No se pudo programar",
+    "previewIssueConflict": "Se superpone con otro trabajo",
+    "previewIssueWindow": "Puede ir {from} – {to}",
+    "previewViewInCalendar": "Ver en el calendario"
 }

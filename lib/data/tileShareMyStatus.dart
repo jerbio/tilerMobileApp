@@ -52,13 +52,24 @@ class MyClusterStatus extends Equatable {
   List<Object?> get props =>
       [taskCount, accepted, declined, pending, pendingAssignmentIds];
 
-  /// One status per cluster the [tiles] belong to. A tile without a cluster is
+  /// One status per cluster the [tiles] belong to, counting only the
+  /// designated tile templates whose designated user
+  /// ([DesignatedTile.designatedUserId]) is [userId], the signed-in user. The
+  /// list can hold templates designated to someone else; previewing or
+  /// answering one of those is a request for an id that is not the user's
+  /// (the server answers 404). A template whose designated user is not known,
+  /// or with no signed-in user, is never mine. A tile without a cluster is
   /// ignored. A status the server spells unexpectedly (`tentative`, something
   /// new) counts as still to answer, never as an answer.
-  static Map<String, MyClusterStatus> byCluster(Iterable<DesignatedTile> tiles) {
+  static Map<String, MyClusterStatus> byCluster(Iterable<DesignatedTile> tiles,
+      {required String? userId}) {
+    if (userId == null || userId.isEmpty) {
+      return const <String, MyClusterStatus>{};
+    }
     final Map<String, List<int>> counts = <String, List<int>>{};
     final Map<String, List<String>> pendingIds = <String, List<String>>{};
     for (final DesignatedTile tile in tiles) {
+      if (tile.designatedUserId != userId) continue;
       final String? clusterId = tile.tileTemplate?.clusterId;
       if (clusterId == null || clusterId.isEmpty) continue;
       // [accepted, declined, pending]

@@ -7,6 +7,9 @@ class DesignatedUser {
   String? id;
   String? displayedName;
   String? designatedTileTemplateId;
+
+  /// The Tiler user this assignment is for (`userId` on the wire).
+  String? userId;
   double? completionPercentage;
   InvitationStatus? rsvpStatus;
   UserProfile? userProfile;
@@ -19,6 +22,10 @@ class DesignatedUser {
 
     if (json.containsKey('designatedTileTemplateId')) {
       designatedTileTemplateId = json['designatedTileTemplateId'];
+    }
+
+    if (json['userId'] is String) {
+      userId = json['userId'];
     }
 
     if (json.containsKey('displayedIdentifier')) {

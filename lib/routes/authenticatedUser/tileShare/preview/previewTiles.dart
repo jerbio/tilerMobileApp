@@ -57,12 +57,23 @@ abstract final class PreviewTiles {
   /// The proposed schedule's tiles that touch [day], as Daily-grid tiles: each
   /// with its own colour (none when the server sent none), the task being
   /// previewed in [proposedColor], fixed tiles rigid. Read-only.
+  ///
+  /// Scheduling issues are listed, never drawn: an unplaced session of the
+  /// task, and work the forecast could not schedule, have no real time.
   static List<SubCalendarEvent> forDay(TileSharePreview preview, DateTime day) {
     final int from = _day(day).millisecondsSinceEpoch;
     final int to = DateTime(day.year, day.month, day.day + 1).millisecondsSinceEpoch;
+    final Set<String> unscheduled = <String>{
+      for (final PreviewBlock issue in preview.conflicts)
+        if (issue.placement == PreviewPlacement.unscheduled) issue.id,
+    };
     return <SubCalendarEvent>[
       for (final PreviewBlock block in preview.proposed)
-        if (block.endMs > from && block.startMs < to) toTile(block),
+        if (block.endMs > from &&
+            block.startMs < to &&
+            !(block.isProposed && !block.viable) &&
+            !unscheduled.contains(block.id))
+          toTile(block),
     ];
   }
 
@@ -107,11 +118,28 @@ abstract final class PreviewTiles {
   }
 
   /// "Oct 9, 9:00 AM – 10:30 AM" in [locale].
-  static String when(PreviewBlock block, String locale) {
-    final DateTime start = DateTime.fromMillisecondsSinceEpoch(block.startMs);
-    final DateTime end = DateTime.fromMillisecondsSinceEpoch(block.endMs);
+  static String when(PreviewBlock block, String locale) =>
+      whenRange(block.startMs, block.endMs, locale);
+
+  /// [when] for a bare range (an arrangement that came without its preview).
+  static String whenRange(int startMs, int endMs, String locale) {
+    final DateTime start = DateTime.fromMillisecondsSinceEpoch(startMs);
+    final DateTime end = DateTime.fromMillisecondsSinceEpoch(endMs);
     final DateFormat date = DateFormat.MMMEd(locale);
     final DateFormat time = DateFormat.jm(locale);
     return '${date.format(start)}, ${time.format(start)} – ${time.format(end)}';
+  }
+
+  /// When [block] may be placed, as ("Mon, Oct 5 9:00 AM", "Fri, Oct 9
+  /// 5:00 PM"); `null` when the server sent no range.
+  static (String, String)? window(PreviewBlock block, String locale) {
+    final int? from = block.allowedStartMs;
+    final int? to = block.allowedEndMs;
+    if (from == null || to == null) return null;
+    final DateFormat format = DateFormat.MMMEd(locale).add_jm();
+    return (
+      format.format(DateTime.fromMillisecondsSinceEpoch(from)),
+      format.format(DateTime.fromMillisecondsSinceEpoch(to)),
+    );
   }
 }

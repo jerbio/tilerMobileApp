@@ -11,6 +11,7 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/preview/previewTiles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 /// The accept preview (redesign T21-T25, §5.9): how accepting one invitation
@@ -23,6 +24,11 @@ import 'package:tiler_app/util.dart';
 /// * **The sheet** is the product: the time the task lands and what it moves,
 ///   then Accept and Accept & lock (naming the time it fixes), Decline, and the
 ///   details. Both accept actions are reachable without dragging it.
+/// * **Other times** are asked for only when wanted and listed as cards, the
+///   original first; choosing one swaps the whole arrangement at once (no
+///   request) and keeps the list open. Split work lists its **sessions** (the
+///   chosen one is the lock target and moves the strip), and **scheduling
+///   issues** are a collapsed group - never drawn as appointments.
 /// * Every other state says what happened and offers the one useful next step:
 ///   a stale preview Refresh, an unconfirmed accept Try again (the same command)
 ///   and Check status, a rejection Review again.
@@ -33,7 +39,11 @@ class TileSharePreviewPage extends StatefulWidget {
   /// A fixed clock for the strip's now-line (tests); live when omitted.
   final DateTime? now;
 
-  const TileSharePreviewPage({super.key, this.now});
+  /// "View in calendar" after an accept: opens the calendar on the day the
+  /// task landed. Without it there is no link.
+  final void Function(DateTime day)? onViewInCalendar;
+
+  const TileSharePreviewPage({super.key, this.now, this.onViewInCalendar});
 
   @override
   State<TileSharePreviewPage> createState() => _TileSharePreviewPageState();
@@ -61,6 +71,10 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
 
   /// The answer going out is a decline (the cubit does not say which).
   bool _declining = false;
+
+  /// The other-times list and the scheduling-issues group are open.
+  bool _otherTimesOpen = false;
+  bool _issuesOpen = false;
 
   @override
   void initState() {
@@ -90,7 +104,8 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
           current.phase != PreviewPhase.submitting,
       listener: (context, state) => setState(() => _declining = false),
       builder: (context, state) {
-        final TileSharePreviewCubit cubit = context.read<TileSharePreviewCubit>();
+        final TileSharePreviewCubit cubit =
+            context.read<TileSharePreviewCubit>();
         final bool canRegenerate = !state.isRefreshing &&
             (state.phase == PreviewPhase.ready ||
                 state.phase == PreviewPhase.unsupported ||
@@ -141,7 +156,8 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
   }
 
   String _bodyKind(TileSharePreviewState state) {
-    if (state.phase == PreviewPhase.idle || state.phase == PreviewPhase.loading) {
+    if (state.phase == PreviewPhase.idle ||
+        state.phase == PreviewPhase.loading) {
       return 'loading';
     }
     final TileSharePreview? preview = state.preview;
@@ -174,7 +190,8 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
         return _Centered(
           key: const Key('preview_error'),
           children: [
-            Text(_problemText(l10n, state.problem), textAlign: TextAlign.center),
+            Text(_problemText(l10n, state.problem),
+                textAlign: TextAlign.center),
             if (state.problem != PreviewProblem.gone) ...[
               const SizedBox(height: 12),
               OutlinedButton(
@@ -353,32 +370,45 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       clipBehavior: Clip.antiAlias,
-      child: ListView(
+      // Not lazy: the sheet is short, and every part of it (the time at the
+      // top, the lists below) stays built while it scrolls.
+      child: SingleChildScrollView(
         controller: controller,
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        children: [
-          Center(
-            child: Container(
-              key: const Key('preview_sheet_handle'),
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                key: const Key('preview_sheet_handle'),
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color:
+                      theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          ..._banners(context, state, cubit),
-          _time(context, state),
-          const SizedBox(height: 12),
-          AnimatedSize(
-            duration: _fade,
-            alignment: Alignment.topCenter,
-            child: _answers(context, state, cubit),
-          ),
-          ..._details(context, state.preview!),
-        ],
+            const SizedBox(height: 12),
+            ..._banners(context, state, cubit),
+            _time(context, state),
+            const SizedBox(height: 12),
+            AnimatedSize(
+              duration: _fade,
+              alignment: Alignment.topCenter,
+              child: _answers(context, state, cubit),
+            ),
+            AnimatedSize(
+              duration: _fade,
+              alignment: Alignment.topCenter,
+              child: _otherTimes(context, state, cubit),
+            ),
+            ..._sessions(context, state, cubit),
+            ..._issues(context, state.preview!),
+            ..._details(context, state.preview!),
+          ],
+        ),
       ),
     );
   }
@@ -414,7 +444,9 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
               : null,
         ),
     };
-    return [if (banner != null) ...[banner, const SizedBox(height: 12)]];
+    return [
+      if (banner != null) ...[banner, const SizedBox(height: 12)]
+    ];
   }
 
   /// The time the task lands (or that it does not fit), and what it moves.
@@ -518,7 +550,8 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
               child: OutlinedButton(
                 key: const Key('preview_accept_lock'),
                 onPressed: state.canAcceptAndLock ? cubit.acceptAndLock : null,
-                child: Text(l10n.previewAcceptAndLock, textAlign: TextAlign.center),
+                child: Text(l10n.previewAcceptAndLock,
+                    textAlign: TextAlign.center),
               ),
             ),
           ],
@@ -599,21 +632,40 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
       onPressed: cubit.checkStatus,
       child: Text(l10n.previewCheckStatus),
     );
-    final (IconData icon, Color color, String title, String? detail,
-        List<Widget> actions) = switch (state.phase) {
+    final PreviewBlock? landed = _focus(state);
+    final void Function(DateTime day)? view = widget.onViewInCalendar;
+    final List<Widget> calendar = [
+      if (view != null && landed != null)
+        OutlinedButton(
+          key: const Key('preview_view_calendar'),
+          onPressed: () {
+            final DateTime start =
+                DateTime.fromMillisecondsSinceEpoch(landed.startMs);
+            view(DateTime(start.year, start.month, start.day));
+          },
+          child: Text(l10n.previewViewInCalendar),
+        ),
+    ];
+    final (
+      IconData icon,
+      Color color,
+      String title,
+      String? detail,
+      List<Widget> actions
+    ) = switch (state.phase) {
       PreviewPhase.completed => (
           Icons.check_circle_outline,
           theme.colorScheme.primary,
           l10n.previewAdded,
           null,
-          [done]
+          [...calendar, done]
         ),
       PreviewPhase.needsReview => (
           Icons.info_outline,
           theme.colorScheme.tertiary,
           l10n.previewNeedsReview,
           null,
-          [done]
+          [...calendar, done]
         ),
       PreviewPhase.declined => (
           Icons.do_not_disturb_on_outlined,
@@ -685,15 +737,330 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
     );
   }
 
+  // ---- other times ----------------------------------------------------------
+
+  /// The placed session of [preview] that follows [sessionKey] (the lock
+  /// target), else its first placed one.
+  static PreviewBlock? _placed(TileSharePreview preview, String? sessionKey) {
+    final List<PreviewBlock> placed = preview.proposedSessionBlocks;
+    for (final PreviewBlock s in placed) {
+      if (s.sessionKey == sessionKey) return s;
+    }
+    return placed.isEmpty ? null : placed.first;
+  }
+
+  Widget _otherTimes(BuildContext context, TileSharePreviewState state,
+      TileSharePreviewCubit cubit) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final ThemeData theme = Theme.of(context);
+    final String locale = Localizations.localeOf(context).toString();
+    final TileSharePreview? original = state.original;
+    if (original == null ||
+        !original.canFindOtherTimes ||
+        state.phase == PreviewPhase.submitting ||
+        _answered(state.phase)) {
+      return const SizedBox(width: double.infinity);
+    }
+    if (!_otherTimesOpen) {
+      return Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: TextButton.icon(
+          key: const Key('preview_find_times'),
+          icon: const Icon(Icons.schedule, size: 18),
+          label: Text(l10n.previewFindAnotherTime),
+          onPressed: state.canFindOtherTimes || state.optionsStarted
+              ? () {
+                  setState(() => _otherTimesOpen = true);
+                  if (!state.optionsStarted) cubit.findOtherTimes();
+                }
+              : null,
+        ),
+      );
+    }
+
+    final String? key = state.highlightedSessionKey;
+    String moves(TileSharePreview? p) {
+      if (p == null) return '';
+      final int moved = PreviewTiles.movedCount(p);
+      return moved > 0 ? l10n.previewMoves(moved) : l10n.previewNoMoves;
+    }
+
+    final PreviewBlock? originalSession = _placed(original, key);
+    final TextStyle? quiet = theme.textTheme.bodySmall
+        ?.copyWith(color: theme.colorScheme.onSurfaceVariant);
+    return Column(
+      key: const Key('preview_arrangements'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Divider(height: 24),
+        InkWell(
+          key: const Key('preview_other_times_toggle'),
+          onTap: () => setState(() => _otherTimesOpen = false),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              children: [
+                Expanded(
+                    child: Text(l10n.previewOtherTimes,
+                        style: theme.textTheme.titleSmall)),
+                const Icon(Icons.expand_less),
+              ],
+            ),
+          ),
+        ),
+        if (state.isSelecting) const LinearProgressIndicator(minHeight: 2),
+        _OptionCard(
+          key: const Key('preview_option_original'),
+          label: l10n.previewOriginalSuggestion,
+          when: originalSession == null
+              ? l10n.previewCannotFit
+              : PreviewTiles.when(originalSession, locale),
+          detail: moves(original),
+          selected: state.selectedOptionId == null,
+          onTap: cubit.selectOriginal,
+        ),
+        for (final PreviewOption option in state.options)
+          _OptionCard(
+            key: Key('preview_option_${option.optionId}'),
+            when: () {
+              final TileSharePreview? embedded = option.preview;
+              final PreviewBlock? session =
+                  embedded == null ? null : _placed(embedded, key);
+              return session == null
+                  ? PreviewTiles.whenRange(option.startMs, option.endMs, locale)
+                  : PreviewTiles.when(session, locale);
+            }(),
+            detail: moves(option.preview),
+            selected: state.selectedOptionId == option.optionId,
+            onTap: () => cubit.selectOption(option.optionId),
+          ),
+        if (state.selectionFailed)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(l10n.previewSelectFailed,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.error)),
+          ),
+        if (state.optionsLoad == OptionsLoad.loading)
+          Padding(
+            key: const Key('preview_options_loading'),
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2)),
+                const SizedBox(width: 12),
+                Flexible(child: Text(l10n.previewFindingTimes, style: quiet)),
+              ],
+            ),
+          )
+        else if (state.optionsLoad == OptionsLoad.error)
+          Row(
+            key: const Key('preview_options_failed'),
+            children: [
+              Expanded(
+                child: Text(l10n.previewOptionsFailed,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.error)),
+              ),
+              TextButton(
+                key: const Key('preview_options_retry'),
+                onPressed:
+                    state.canFindOtherTimes ? cubit.findOtherTimes : null,
+                child: Text(l10n.attentionRetry),
+              ),
+            ],
+          )
+        else ...[
+          if (state.noDifferentFound)
+            Padding(
+              key: const Key('preview_no_different'),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(l10n.previewNoDifferentTime, style: quiet),
+            ),
+          if (state.optionsStarted && state.hasMoreOptions)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                key: const Key('preview_more_times'),
+                icon: const Icon(Icons.schedule, size: 18),
+                label: Text(l10n.previewFindAnotherTime),
+                onPressed:
+                    state.canFindOtherTimes ? cubit.findOtherTimes : null,
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+
+  // ---- sessions ---------------------------------------------------------------
+
+  /// Split work: every session, the chosen one (the lock target) marked;
+  /// choosing a placed one moves the strip and the lock to it.
+  List<Widget> _sessions(BuildContext context, TileSharePreviewState state,
+      TileSharePreviewCubit cubit) {
+    final TileSharePreview preview = state.preview!;
+    if (preview.sessions.length < 2) return const <Widget>[];
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final ThemeData theme = Theme.of(context);
+    final String locale = Localizations.localeOf(context).toString();
+    final String? chosen = state.lockTarget?.sessionKey;
+    return [
+      const Divider(height: 24),
+      Text(l10n.previewSessions,
+          key: const Key('preview_sessions'),
+          style: theme.textTheme.titleSmall),
+      const SizedBox(height: 4),
+      for (int i = 0; i < preview.sessions.length; i++)
+        () {
+          final PreviewBlock session = preview.sessions[i];
+          final String key = session.sessionKey ?? '$i';
+          final bool placed = session.isProposed && session.viable;
+          final bool selected = placed && key == chosen;
+          final String when = placed
+              ? (PreviewTiles.isInWindow(session, preview)
+                  ? PreviewTiles.when(session, locale)
+                  : '${PreviewTiles.when(session, locale)} · '
+                      '${l10n.previewSessionOutside}')
+              : l10n.previewSessionUnplaced;
+          return InkWell(
+            key: Key('preview_session_$key'),
+            borderRadius: BorderRadius.circular(8),
+            onTap: placed && session.sessionKey != null
+                ? () => cubit.highlightSession(session.sessionKey!)
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                children: [
+                  Icon(
+                    !placed
+                        ? Icons.event_busy_outlined
+                        : selected
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_unchecked,
+                    size: 20,
+                    color: !placed
+                        ? TileColors.progressMedium
+                        : selected
+                            ? PreviewTiles.proposedColor
+                            : theme.colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l10n.previewSessionN(i + 1),
+                            style: theme.textTheme.bodyMedium),
+                        Text(when,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                      Duration(milliseconds: session.durationMs)
+                          .toHumanLocalized(context),
+                      style: theme.textTheme.bodySmall),
+                ],
+              ),
+            ),
+          );
+        }(),
+    ];
+  }
+
+  // ---- scheduling issues --------------------------------------------------------
+
+  /// Unscheduled work and conflicts, collapsed until asked for; never drawn
+  /// on the strip.
+  List<Widget> _issues(BuildContext context, TileSharePreview preview) {
+    if (preview.conflicts.isEmpty) return const <Widget>[];
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final ThemeData theme = Theme.of(context);
+    final String locale = Localizations.localeOf(context).toString();
+    final TextStyle? quiet = theme.textTheme.bodySmall
+        ?.copyWith(color: theme.colorScheme.onSurfaceVariant);
+    return [
+      const Divider(height: 24),
+      InkWell(
+        key: const Key('preview_issues'),
+        onTap: () => setState(() => _issuesOpen = !_issuesOpen),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded,
+                  size: 20, color: TileColors.progressMedium),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: Text(l10n.previewIssues(preview.conflicts.length),
+                      style: theme.textTheme.titleSmall)),
+              Icon(_issuesOpen ? Icons.expand_less : Icons.expand_more),
+            ],
+          ),
+        ),
+      ),
+      AnimatedSize(
+        duration: _fade,
+        alignment: Alignment.topCenter,
+        child: !_issuesOpen
+            ? const SizedBox(width: double.infinity)
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final PreviewBlock issue in preview.conflicts)
+                    () {
+                      final (String, String)? window =
+                          PreviewTiles.window(issue, locale);
+                      return Padding(
+                        key: Key('preview_issue_${issue.id}'),
+                        padding: const EdgeInsets.fromLTRB(32, 6, 0, 6),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(issue.name ?? l10n.previewTitleFallback,
+                                style: theme.textTheme.bodyMedium
+                                    ?.copyWith(fontWeight: FontWeight.w600)),
+                            Text(
+                                issue.placement == PreviewPlacement.unscheduled
+                                    ? l10n.previewIssueUnscheduled
+                                    : l10n.previewIssueConflict,
+                                style: theme.textTheme.bodySmall),
+                            Text(
+                                Duration(milliseconds: issue.durationMs)
+                                    .toHumanLocalized(context),
+                                style: quiet),
+                            if (window != null)
+                              Text(
+                                  l10n.previewIssueWindow(window.$1, window.$2),
+                                  style: quiet),
+                          ],
+                        ),
+                      );
+                    }(),
+                ],
+              ),
+      ),
+    ];
+  }
+
   List<Widget> _details(BuildContext context, TileSharePreview preview) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final String locale = Localizations.localeOf(context).toString();
     final List<String> lines = <String>[
-      if (preview.inviterName != null) l10n.clusterRoleFrom(preview.inviterName!),
+      if (preview.inviterName != null)
+        l10n.clusterRoleFrom(preview.inviterName!),
       if (preview.deadlineMs != null)
-        l10n.attentionMetaDue(DateFormat.MMMEd(locale).add_jm().format(
-            DateTime.fromMillisecondsSinceEpoch(preview.deadlineMs!))),
+        l10n.attentionMetaDue(DateFormat.MMMEd(locale)
+            .add_jm()
+            .format(DateTime.fromMillisecondsSinceEpoch(preview.deadlineMs!))),
       if (preview.description != null) preview.description!,
     ];
     if (lines.isEmpty) return const <Widget>[];
@@ -716,7 +1083,8 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final TileSharePreview preview = state.preview!;
     final String why = switch (preview.unsupportedReason) {
-      PreviewUnsupportedReason.alreadyAccepted => l10n.previewUnsupportedAccepted,
+      PreviewUnsupportedReason.alreadyAccepted =>
+        l10n.previewUnsupportedAccepted,
       PreviewUnsupportedReason.missingFutureDeadline =>
         l10n.previewUnsupportedDeadline,
       PreviewUnsupportedReason.unsupportedConstraints =>
@@ -761,11 +1129,85 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
 
   static String _reasonText(AppLocalizations l10n, String? reason) =>
       switch (reason) {
-        'scheduleChanged' || 'invalidProposal' => l10n.previewReasonScheduleChanged,
+        'scheduleChanged' ||
+        'invalidProposal' =>
+          l10n.previewReasonScheduleChanged,
         'assignmentChanged' || 'alreadyAnswered' => l10n.previewReasonAnswered,
         'previewExpired' => l10n.previewReasonExpired,
         _ => l10n.previewReasonOther,
       };
+}
+
+/// One arrangement in the other-times list: when, what it moves, and a clear
+/// selected state (an outline and a check - colour is never the only cue).
+class _OptionCard extends StatelessWidget {
+  final String? label;
+  final String when;
+  final String detail;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _OptionCard({
+    super.key,
+    this.label,
+    required this.when,
+    required this.detail,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme scheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Material(
+        color: selected
+            ? PreviewTiles.proposedColor.withValues(alpha: 0.10)
+            : scheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color:
+                selected ? PreviewTiles.proposedColor : scheme.outlineVariant,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: selected ? null : onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (label != null)
+                        Text(label!,
+                            style: theme.textTheme.labelSmall
+                                ?.copyWith(color: scheme.onSurfaceVariant)),
+                      Text(when, style: theme.textTheme.bodyMedium),
+                      if (detail.isNotEmpty)
+                        Text(detail,
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(color: scheme.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+                if (selected)
+                  const Icon(Icons.check_circle,
+                      key: Key('preview_option_selected'),
+                      color: PreviewTiles.proposedColor),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _Centered extends StatelessWidget {

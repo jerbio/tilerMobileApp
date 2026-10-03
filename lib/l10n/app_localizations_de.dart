@@ -4749,4 +4749,67 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get previewDetails => 'Details';
+
+  @override
+  String get previewOtherTimes => 'Other times';
+
+  @override
+  String get previewOriginalSuggestion => 'Original suggestion';
+
+  @override
+  String get previewFindAnotherTime => 'Find another time';
+
+  @override
+  String get previewFindingTimes => 'Looking for other times…';
+
+  @override
+  String get previewNoDifferentTime => 'No different time found';
+
+  @override
+  String get previewOptionsFailed => 'Couldn’t load other times.';
+
+  @override
+  String get previewSelectFailed => 'Couldn’t switch to that time.';
+
+  @override
+  String get previewNoMoves => 'Moves nothing else';
+
+  @override
+  String get previewSessions => 'Sessions';
+
+  @override
+  String previewSessionN(int n) {
+    return 'Session $n';
+  }
+
+  @override
+  String get previewSessionUnplaced => 'Couldn’t be placed';
+
+  @override
+  String get previewSessionOutside => 'Outside the days shown';
+
+  @override
+  String previewIssues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count scheduling issues',
+      one: '1 scheduling issue',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get previewIssueUnscheduled => 'Couldn’t be scheduled';
+
+  @override
+  String get previewIssueConflict => 'Overlaps other work';
+
+  @override
+  String previewIssueWindow(String from, String to) {
+    return 'Can go $from – $to';
+  }
+
+  @override
+  String get previewViewInCalendar => 'View in calendar';
 }

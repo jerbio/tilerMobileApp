@@ -61,7 +61,9 @@ class _TileShareHubHostState extends State<TileShareHubHost> {
       currentUserId: () => _userId,
     );
     _clusters = TileShareClustersCubit(
-        clusters: clusters, assignments: assignments);
+        clusters: clusters,
+        assignments: assignments,
+        currentUserId: () => _userId);
     _start();
   }
 

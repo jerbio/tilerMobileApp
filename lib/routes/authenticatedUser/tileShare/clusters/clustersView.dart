@@ -8,6 +8,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/clusters/clusterCar
 import 'package:tiler_app/routes/authenticatedUser/tileShare/clusters/clusterCopy.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/animatedCardList.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/listScaffolding.dart';
+import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 
 /// The Clusters list (redesign T6): filter chips over an animated list of
 /// [ClusterCard]s. Reads a [TileShareClustersCubit] from the tree; the host
@@ -302,7 +303,13 @@ class _ClusterRowState extends State<_ClusterRow> {
           context.read<TileShareClustersCubit>().retrySummary(item.id),
       onCheckFit: onPreview == null || pending.length != 1
           ? null
-          : () => onPreview(pending.single),
+          : () {
+              TileShareLog.d(
+                  'TileShareClusters',
+                  'check fit: cluster ${item.id} (${item.mode.name}) -> '
+                  'assignment ${pending.single}');
+              onPreview(pending.single);
+            },
     );
   }
 }

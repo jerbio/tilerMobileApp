@@ -70,6 +70,54 @@ void main() {
   Map<String, dynamic> sentBody() =>
       jsonDecode(client.last.body) as Map<String, dynamic>;
 
+  // Diagnosing "Check fit" on a device: every call says what it sent and what
+  // came back, without the location or the full preview token.
+  group('logging', () {
+    test('a request names its route, the assignment and the keys it sent',
+        () async {
+      client.nextBody = previewBody(previewFixture('preview_viable'));
+      await api.preview(kPreviewAssignmentId);
+      final sent = logs.firstWhere((l) => l.contains('-> POST'));
+      expect(sent, contains('api/DesignatedTile/Preview'));
+      expect(sent, contains('Id=$kPreviewAssignmentId'));
+      expect(sent, contains('TimeZone'));
+      expect(sent, isNot(contains('UserLatitude=')),
+          reason: 'where the user is never goes in a log');
+    });
+
+    test('a reply names its status, the envelope and what Content holds',
+        () async {
+      client.nextBody = previewBody(previewFixture('preview_viable'));
+      await api.preview(kPreviewAssignmentId);
+      final got = logs.firstWhere((l) => l.contains('<- POST'));
+      expect(got, contains('HTTP 200'));
+      expect(got, contains('code 0'));
+      expect(got, contains('assignmentId'));
+      expect(got, contains('sessions'));
+    });
+
+    test('a 200 carrying a Tiler error says so', () async {
+      client.nextBody =
+          previewBody(null, code: '40002', message: 'Invalid lookup');
+      await expectLater(api.preview('bogus'), throwsA(isA<StateError>()));
+      expect(logs.any((l) => l.contains('<- POST') && l.contains('code 40002')
+          && l.contains('Invalid lookup')), isTrue);
+      expect(logs.any((l) => l.contains('Id=bogus')), isTrue);
+    });
+
+    test('the preview token is shortened', () async {
+      client.nextBody = previewBody(previewFixture('options_page'));
+      await api.options(
+          assignmentId: kPreviewAssignmentId,
+          previewToken: kPreviewToken,
+          sessionKey: '0');
+      final sent = logs.firstWhere((l) => l.contains('-> POST'));
+      expect(sent, isNot(contains(kPreviewToken)));
+      expect(sent, contains('PreviewToken=${kPreviewToken.substring(0, 6)}'));
+      expect(sent, contains('SessionKey=0'));
+    });
+  });
+
   group('preview', () {
     test('POSTs the assignment id, with who and where the user is', () async {
       client.nextBody = previewBody(previewFixture('preview_viable'));
@@ -599,10 +647,13 @@ void main() {
           reason: '$logs');
     });
 
-    test('a successful call logs nothing', () async {
+    test('a successful call logs only what it sent and what came back',
+        () async {
       client.nextBody = previewBody(previewFixture('preview_viable'));
       await api.preview(kPreviewAssignmentId);
-      expect(logs, isEmpty);
+      expect(logs, hasLength(2));
+      expect(logs[0], contains('-> POST'));
+      expect(logs[1], contains('<- POST'));
     });
   });
 }

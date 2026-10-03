@@ -8149,6 +8149,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Details'**
   String get previewDetails;
+
+  /// No description provided for @previewOtherTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'Other times'**
+  String get previewOtherTimes;
+
+  /// No description provided for @previewOriginalSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Original suggestion'**
+  String get previewOriginalSuggestion;
+
+  /// No description provided for @previewFindAnotherTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Find another time'**
+  String get previewFindAnotherTime;
+
+  /// No description provided for @previewFindingTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for other times…'**
+  String get previewFindingTimes;
+
+  /// No description provided for @previewNoDifferentTime.
+  ///
+  /// In en, this message translates to:
+  /// **'No different time found'**
+  String get previewNoDifferentTime;
+
+  /// No description provided for @previewOptionsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load other times.'**
+  String get previewOptionsFailed;
+
+  /// No description provided for @previewSelectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t switch to that time.'**
+  String get previewSelectFailed;
+
+  /// No description provided for @previewNoMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves nothing else'**
+  String get previewNoMoves;
+
+  /// No description provided for @previewSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get previewSessions;
+
+  /// No description provided for @previewSessionN.
+  ///
+  /// In en, this message translates to:
+  /// **'Session {n}'**
+  String previewSessionN(int n);
+
+  /// No description provided for @previewSessionUnplaced.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t be placed'**
+  String get previewSessionUnplaced;
+
+  /// No description provided for @previewSessionOutside.
+  ///
+  /// In en, this message translates to:
+  /// **'Outside the days shown'**
+  String get previewSessionOutside;
+
+  /// No description provided for @previewIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 scheduling issue} other{{count} scheduling issues}}'**
+  String previewIssues(int count);
+
+  /// No description provided for @previewIssueUnscheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t be scheduled'**
+  String get previewIssueUnscheduled;
+
+  /// No description provided for @previewIssueConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'Overlaps other work'**
+  String get previewIssueConflict;
+
+  /// No description provided for @previewIssueWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Can go {from} – {to}'**
+  String previewIssueWindow(String from, String to);
+
+  /// No description provided for @previewViewInCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'View in calendar'**
+  String get previewViewInCalendar;
 }
 
 class _AppLocalizationsDelegate

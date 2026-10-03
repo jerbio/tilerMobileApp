@@ -37,7 +37,10 @@ class _Rig {
             inbox: inbox ?? _defaultInbox()),
         assignments = FakeTileShareAssignmentsSource(mine ?? _defaultMine()) {
     cubit = TileShareClustersCubit(
-        clusters: clusters, assignments: assignments, pageSize: pageSize);
+        clusters: clusters,
+        assignments: assignments,
+        currentUserId: () => 'me',
+        pageSize: pageSize);
   }
 }
 

@@ -17,6 +17,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.da
 import 'package:tiler_app/routes/authenticatedUser/tileShare/preview/previewTiles.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/preview/tileSharePreviewPage.dart';
 import 'package:tiler_app/services/api/tileSharePreviewApi.dart';
+import 'package:tiler_app/services/tileShare/tileSharePendingAccept.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
 import 'helpers/tileshare_fakes.dart';
@@ -39,8 +40,16 @@ class _Rig {
   late final TileSharePreviewCubit cubit;
   Object? popResult = 'not popped';
 
-  _Rig({TileSharePreview? preview, FakeTileSharePreviewSource? source})
-      : source = source ??
+  /// Days "View in calendar" was asked for; `null` = the page gets no handler.
+  final List<DateTime>? viewed;
+
+  _Rig(
+      {TileSharePreview? preview,
+      FakeTileSharePreviewSource? source,
+      FakePendingAcceptStore? pending,
+      bool viewInCalendar = false})
+      : viewed = viewInCalendar ? <DateTime>[] : null,
+        source = source ??
             FakeTileSharePreviewSource(preview ?? _viable(), optionPages: [
               PreviewOptionsPage.fromJson(previewFixture('options_page')),
             ]),
@@ -50,7 +59,7 @@ class _Rig {
       source: this.source,
       assignments: assignments,
       assignmentId: kPreviewAssignmentId,
-      pendingStore: FakePendingAcceptStore(),
+      pendingStore: pending ?? FakePendingAcceptStore(),
       clock: () => _now,
     );
   }
@@ -79,7 +88,9 @@ Widget _app(_Rig rig, {ThemeData? theme, double textScale = 1}) => MaterialApp(
                     MaterialPageRoute(
                         builder: (_) => BlocProvider.value(
                             value: rig.cubit,
-                            child: TileSharePreviewPage(now: _now))));
+                            child: TileSharePreviewPage(
+                                now: _now,
+                                onViewInCalendar: rig.viewed?.add))));
               },
               child: const Text('open preview'),
             ),
@@ -110,6 +121,63 @@ Future<void> _open(WidgetTester tester, _Rig rig,
 
 Finder _key(String k) => find.byKey(Key(k));
 bool _visible(Finder f) => f.hitTestable().evaluate().isNotEmpty;
+
+/// Scrolls the sheet until [f] is on screen.
+Future<void> _reveal(WidgetTester tester, Finder f) async {
+  await tester.ensureVisible(f);
+  await _settle(tester);
+}
+
+/// The viable preview with a second session two days later (placed, or not).
+Map<String, dynamic> _twoSessions({bool secondPlaced = true}) {
+  final base = previewFixture('preview_viable');
+  final s0 = Map<String, dynamic>.from((base['sessions'] as List).single as Map);
+  final start1 = (s0['start'] as int) + 2 * 24 * 3600000;
+  final s1 = <String, dynamic>{
+    ...s0,
+    'id': 'sub-new-2',
+    'sessionKey': '1',
+    'start': start1,
+    'end': start1 + 3600000,
+    if (!secondPlaced) 'viable': false,
+    if (!secondPlaced) 'placement': 'Unscheduled',
+  };
+  return {
+    ...base,
+    if (!secondPlaced) 'isViable': false,
+    'sessions': [s0, s1],
+    'proposed': [...(base['proposed'] as List), if (secondPlaced) s1],
+  };
+}
+
+/// The viable preview with two scheduling issues: an existing tile it overlaps,
+/// and work that could not be scheduled (also sent among the proposed blocks,
+/// at a placeholder time on the task's day - it must not be drawn).
+Map<String, dynamic> _withIssues() {
+  final base = previewFixture('preview_viable');
+  final session = (base['sessions'] as List).single as Map;
+  final at = (session['start'] as int) - 3 * 3600000;
+  final stuck = <String, dynamic>{
+    'id': 'sub-stuck',
+    'name': 'Budget review',
+    'start': at,
+    'end': at + 2 * 3600000,
+    'duration': 2 * 3600000,
+    'viable': false,
+    'isProposed': false,
+    'placement': 'Unscheduled',
+    'allowedStart': base['rangeStart'],
+    'allowedEnd': base['deadline'],
+  };
+  final groceries = Map<String, dynamic>.from((base['proposed'] as List)
+      .firstWhere((b) => (b as Map)['id'] == 'sub-groceries') as Map)
+    ..['placement'] = 'Conflict';
+  return {
+    ...base,
+    'proposed': [...(base['proposed'] as List), stuck],
+    'conflicts': [groceries, stuck],
+  };
+}
 
 DayGridWidget _grid(WidgetTester tester) =>
     tester.widget<DayGridWidget>(find.byType(DayGridWidget));
@@ -525,6 +593,290 @@ void main() {
       await _settle(tester);
       expect(find.text('open preview'), findsOneWidget);
       expect(rig.popResult, isFalse);
+      await rig.cubit.close();
+    });
+  });
+
+  // Step 9.11c (§5.9): other arrangements, sessions, scheduling issues, the
+  // way to the calendar after an accept, and resuming an unconfirmed accept.
+  group('other times', () {
+    testWidgets('are asked for only when wanted, then listed with the '
+        'original first and selected', (tester) async {
+      final rig = _Rig();
+      await _open(tester, rig);
+      expect(rig.source.calls.where((c) => c.startsWith('options(')), isEmpty,
+          reason: 'reading the preview asks for nothing more');
+      await _reveal(tester, _key('preview_find_times'));
+      await tester.tap(_key('preview_find_times'));
+      await _settle(tester);
+      expect(rig.source.calls.where((c) => c.startsWith('options(')),
+          hasLength(1));
+      await _reveal(tester, _key('preview_option_original'));
+      expect(
+          find.descendant(
+              of: _key('preview_option_original'),
+              matching: _key('preview_option_selected')),
+          findsOneWidget);
+      for (final o in rig.cubit.state.options) {
+        expect(_key('preview_option_${o.optionId}'), findsOneWidget);
+      }
+      await rig.cubit.close();
+    });
+
+    testWidgets('choosing one swaps the whole arrangement with no request, '
+        'keeps the list open and Accept beside it', (tester) async {
+      final rig = _Rig();
+      await _open(tester, rig);
+      await _reveal(tester, _key('preview_find_times'));
+      await tester.tap(_key('preview_find_times'));
+      await _settle(tester);
+      final option = rig.cubit.state.options.last;
+      final before = rig.source.calls.length;
+      await _reveal(tester, _key('preview_option_${option.optionId}'));
+      await tester.tap(_key('preview_option_${option.optionId}'));
+      await _settle(tester);
+      expect(rig.source.calls.length, before, reason: 'no request');
+      expect(find.text('Selected schedule'), findsOneWidget);
+      expect(_grid(tester).day, _dayOf(option.startMs));
+      expect(
+          find.descendant(
+              of: _key('preview_option_${option.optionId}'),
+              matching: _key('preview_option_selected')),
+          findsOneWidget);
+      expect(_key('preview_option_original'), findsOneWidget,
+          reason: 'still open');
+      expect(tester.widget<FilledButton>(_key('preview_accept')).onPressed,
+          isNotNull);
+
+      // and back to the original
+      await _reveal(tester, _key('preview_option_original'));
+      await tester.tap(_key('preview_option_original'));
+      await _settle(tester);
+      expect(find.text('Suggested schedule'), findsOneWidget);
+      await rig.cubit.close();
+    });
+
+    testWidgets('more are asked for from where the last page ended',
+        (tester) async {
+      final rig = _Rig(
+          source: FakeTileSharePreviewSource(_viable(), optionPages: [
+        PreviewOptionsPage.fromJson(previewFixture('options_page')),
+        PreviewOptionsPage.fromJson(previewFixture('options_last_page')),
+      ]));
+      await _open(tester, rig);
+      await _reveal(tester, _key('preview_find_times'));
+      await tester.tap(_key('preview_find_times'));
+      await _settle(tester);
+      await _reveal(tester, _key('preview_more_times'));
+      await tester.tap(_key('preview_more_times'));
+      await _settle(tester);
+      expect(rig.source.calls.where((c) => c.startsWith('options(')).last,
+          contains('offset: 4'));
+      expect(_key('preview_more_times'), findsNothing, reason: 'no more');
+      await rig.cubit.close();
+    });
+
+    testWidgets('"No different time found" is an answer, not an error',
+        (tester) async {
+      final rig = _Rig(
+          source: FakeTileSharePreviewSource(_viable(), optionPages: [
+        const PreviewOptionsPage(options: <PreviewOption>[])
+      ]));
+      await _open(tester, rig);
+      await _reveal(tester, _key('preview_find_times'));
+      await tester.tap(_key('preview_find_times'));
+      await _settle(tester);
+      await _reveal(tester, _key('preview_no_different'));
+      expect(find.text('No different time found'), findsOneWidget);
+      expect(_key('preview_options_failed'), findsNothing);
+      await rig.cubit.close();
+    });
+
+    testWidgets('a failure says so and can be tried again', (tester) async {
+      final rig = _Rig();
+      await _open(tester, rig);
+      rig.source.failNextOn('options', StateError('offline'));
+      await _reveal(tester, _key('preview_find_times'));
+      await tester.tap(_key('preview_find_times'));
+      await _settle(tester);
+      await _reveal(tester, _key('preview_options_failed'));
+      expect(find.text('Couldn’t load other times.'), findsOneWidget);
+      await tester.tap(_key('preview_options_retry'));
+      await _settle(tester);
+      expect(_key('preview_options_failed'), findsNothing);
+      expect(rig.cubit.state.options, isNotEmpty);
+      await rig.cubit.close();
+    });
+
+    testWidgets('are not offered for a preview that cannot be stored',
+        (tester) async {
+      final rig = _Rig(
+          preview:
+              TileSharePreview.fromJson(previewFixture('preview_not_viable')));
+      await _open(tester, rig);
+      expect(_key('preview_find_times'), findsNothing);
+      await rig.cubit.close();
+    });
+
+    testWidgets('collapsing the list keeps the choice', (tester) async {
+      final rig = _Rig();
+      await _open(tester, rig);
+      await _reveal(tester, _key('preview_find_times'));
+      await tester.tap(_key('preview_find_times'));
+      await _settle(tester);
+      final option = rig.cubit.state.options.first;
+      await _reveal(tester, _key('preview_option_${option.optionId}'));
+      await tester.tap(_key('preview_option_${option.optionId}'));
+      await _settle(tester);
+      await _reveal(tester, _key('preview_other_times_toggle'));
+      await tester.tap(_key('preview_other_times_toggle'));
+      await _settle(tester);
+      expect(_key('preview_option_original'), findsNothing);
+      expect(find.text('Selected schedule'), findsOneWidget);
+      expect(rig.cubit.state.selectedOptionId, option.optionId);
+      await rig.cubit.close();
+    });
+  });
+
+  group('sessions', () {
+    testWidgets('split work lists every session; choosing one moves the '
+        'strip and the lock to it', (tester) async {
+      final preview = TileSharePreview.fromJson(_twoSessions());
+      final rig = _Rig(preview: preview);
+      await _open(tester, rig);
+      await _reveal(tester, _key('preview_sessions'));
+      expect(find.text('Session 1'), findsOneWidget);
+      expect(find.text('Session 2'), findsOneWidget);
+      final second = preview.sessions[1];
+      await _reveal(tester, _key('preview_session_1'));
+      await tester.tap(_key('preview_session_1'));
+      await _settle(tester);
+      expect(rig.cubit.state.highlightedSessionKey, '1');
+      expect(_grid(tester).day, _dayOf(second.startMs));
+      expect(_grid(tester).selectedActionEntityId, 'sub-new-2');
+      expect(
+          find.text('Locks ${PreviewTiles.when(second, 'en')}. '
+              'Other sessions stay flexible.'),
+          findsOneWidget);
+      await rig.cubit.close();
+    });
+
+    testWidgets('a session that could not be placed says so and cannot be '
+        'chosen', (tester) async {
+      final rig = _Rig(
+          preview:
+              TileSharePreview.fromJson(_twoSessions(secondPlaced: false)));
+      await _open(tester, rig);
+      await _reveal(tester, _key('preview_session_1'));
+      expect(
+          find.descendant(
+              of: _key('preview_session_1'),
+              matching: find.text('Couldn’t be placed')),
+          findsOneWidget);
+      await tester.tap(_key('preview_session_1'));
+      await _settle(tester);
+      expect(rig.cubit.state.highlightedSessionKey, '0');
+      await rig.cubit.close();
+    });
+
+    testWidgets('a single session is not listed again', (tester) async {
+      final rig = _Rig();
+      await _open(tester, rig);
+      expect(_key('preview_sessions'), findsNothing);
+      await rig.cubit.close();
+    });
+  });
+
+  group('scheduling issues', () {
+    testWidgets('are a collapsed group that opens to each issue, with what '
+        'went wrong and when it may go', (tester) async {
+      final rig = _Rig(preview: TileSharePreview.fromJson(_withIssues()));
+      await _open(tester, rig);
+      await _reveal(tester, _key('preview_issues'));
+      expect(find.text('2 scheduling issues'), findsOneWidget);
+      expect(_key('preview_issue_sub-stuck'), findsNothing,
+          reason: 'collapsed');
+      await tester.tap(_key('preview_issues'));
+      await _settle(tester);
+      await _reveal(tester, _key('preview_issue_sub-stuck'));
+      expect(
+          find.descendant(
+              of: _key('preview_issue_sub-stuck'),
+              matching: find.text('Couldn’t be scheduled')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: _key('preview_issue_sub-stuck'),
+              matching: find.textContaining('Can go ')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: _key('preview_issue_sub-groceries'),
+              matching: find.text('Overlaps other work')),
+          findsOneWidget);
+      await rig.cubit.close();
+    });
+
+    testWidgets('unscheduled work is never drawn on the strip',
+        (tester) async {
+      final rig = _Rig(preview: TileSharePreview.fromJson(_withIssues()));
+      await _open(tester, rig);
+      expect(_grid(tester).tiles.map((t) => t.id),
+          isNot(contains('sub-stuck')));
+      await rig.cubit.close();
+    });
+  });
+
+  group('after accepting', () {
+    testWidgets('View in calendar opens the day the task landed on',
+        (tester) async {
+      final rig = _Rig(viewInCalendar: true);
+      await _open(tester, rig);
+      await tester.tap(_key('preview_accept'));
+      await _settle(tester);
+      await tester.tap(_key('preview_view_calendar'));
+      await _settle(tester);
+      expect(rig.viewed, [_dayOf(_viable().sessions.single.startMs)]);
+      await rig.cubit.close();
+    });
+
+    testWidgets('needs review offers the calendar too; without a handler '
+        'there is no link', (tester) async {
+      final review = _Rig(
+          viewInCalendar: true,
+          source: FakeTileSharePreviewSource(_viable(),
+              acceptState: OperationState.needsReview, acceptReason: 'x'));
+      await _open(tester, review);
+      await tester.tap(_key('preview_accept'));
+      await _settle(tester);
+      expect(_key('preview_view_calendar'), findsOneWidget);
+      await review.cubit.close();
+
+      final none = _Rig();
+      await _open(tester, none);
+      await tester.tap(_key('preview_accept'));
+      await _settle(tester);
+      expect(_key('preview_view_calendar'), findsNothing);
+      await none.cubit.close();
+    });
+
+    testWidgets('reopening after an unconfirmed accept shows its outcome, '
+        'with no new forecast', (tester) async {
+      final pending = PendingAccept(
+        operationId: 'feedfacefeedfacefeedfacefeedface',
+        assignmentId: kPreviewAssignmentId,
+        previewToken: kPreviewToken,
+        mode: TileShareAcceptanceMode.flexible,
+        savedAtMs: _now.millisecondsSinceEpoch - 60000,
+      );
+      final rig = _Rig(
+          pending: FakePendingAcceptStore(pending), viewInCalendar: true);
+      await _open(tester, rig);
+      expect(find.text('Added to your calendar'), findsOneWidget);
+      expect(rig.source.calls.where((c) => c.startsWith('preview(')), isEmpty);
+      expect(rig.source.accepted.single.operationId, pending.operationId);
+      expect(_key('preview_view_calendar'), findsNothing,
+          reason: 'no preview, so no day to open');
       await rig.cubit.close();
     });
   });

@@ -101,7 +101,9 @@ class _Rig {
       },
     );
     clustersCubit = TileShareClustersCubit(
-        clusters: this.clusters, assignments: assignments);
+        clusters: this.clusters,
+        assignments: assignments,
+        currentUserId: () => 'me');
   }
 
   int callsStarting(String prefix) =>

@@ -83,6 +83,7 @@ DesignatedTile tsDesignatedTile(
   bool? viable,
   int? endMs,
   String? name,
+  String? ownerId = 'me',
 }) =>
     DesignatedTile.fromJson({
       'id': id,
@@ -94,6 +95,16 @@ DesignatedTile tsDesignatedTile(
         'clusterId': clusterId,
         'name': name ?? 'Tile $id',
         if (endMs != null) 'end': endMs,
+        // whose designated tile template it is: its entry in the tilette, as
+        // `api/DesignatedTile/designated` sends it (and as the web reads it)
+        if (ownerId != null)
+          'designatedUsers': [
+            {
+              'designatedTileTemplateId': id,
+              'userId': ownerId,
+              'userProfile': {'id': ownerId},
+            }
+          ],
       },
     });
 

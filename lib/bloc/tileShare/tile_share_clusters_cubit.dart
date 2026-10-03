@@ -39,6 +39,9 @@ class TileShareClustersCubit extends Cubit<TileShareClustersState> {
 
   final TileShareClustersSource _clusters;
   final TileShareAssignmentsSource? _assignments;
+
+  /// The signed-in user: only their own assignments are "mine".
+  final String? Function() _currentUserId;
   final int pageSize;
 
   /// How many pages of my assignments are read (they only feed the status).
@@ -68,9 +71,11 @@ class TileShareClustersCubit extends Cubit<TileShareClustersState> {
   TileShareClustersCubit({
     required TileShareClustersSource clusters,
     TileShareAssignmentsSource? assignments,
+    required String? Function() currentUserId,
     this.pageSize = defaultPageSize,
   })  : _clusters = clusters,
         _assignments = assignments,
+        _currentUserId = currentUserId,
         super(const TileShareClustersState());
 
   // ---- loading -----------------------------------------------------------
@@ -152,7 +157,20 @@ class TileShareClustersCubit extends Cubit<TileShareClustersState> {
       if (result.length < pageSize) break;
     }
     _mineTiles = all.length;
-    return MyClusterStatus.byCluster(all);
+    final String? me = _currentUserId();
+    final int others =
+        all.where((t) => me == null || t.designatedUserId != me).length;
+    if (others > 0) {
+      TileShareLog.d(
+          _tag,
+          me == null
+              ? 'signed-in user unknown: none of ${all.length} designated '
+                  'tile templates counted as mine'
+              : '$others of ${all.length} designated tile templates are '
+                  'designated to someone else (or to no known user) and are '
+                  'ignored; signed in as $me, e.g. ${all.where((t) => t.designatedUserId != me).take(3).map((t) => '${t.id} -> ${t.designatedUserId ?? 'no entry'}').join('; ')}');
+    }
+    return MyClusterStatus.byCluster(all, userId: me);
   }
 
   /// Runs [body]; a failure becomes `null` but is logged with its [label].
@@ -186,8 +204,7 @@ class TileShareClustersCubit extends Cubit<TileShareClustersState> {
     final List<_Feed> feeds =
         _feedsFor(state.filter).where((f) => f.hasMore).toList();
     if (feeds.isEmpty) return Future<void>.value();
-    final Future<void> started =
-        _loadMore(feeds).whenComplete(() {
+    final Future<void> started = _loadMore(feeds).whenComplete(() {
       _moreInFlight = null;
     });
     return _moreInFlight = started;
@@ -202,7 +219,9 @@ class TileShareClustersCubit extends Cubit<TileShareClustersState> {
                 isOutbox: identical(feed, _created),
                 index: feed.nextIndex,
                 pageSize: pageSize),
-            identical(feed, _created) ? 'createdByMe page' : 'sharedWithMe page')));
+            identical(feed, _created)
+                ? 'createdByMe page'
+                : 'sharedWithMe page')));
     if (isClosed || generation != _generation) return;
 
     bool anyFailed = false;
@@ -302,8 +321,8 @@ class TileShareClustersCubit extends Cubit<TileShareClustersState> {
       return Future<void>.value();
     }
     _summaryRequested.add(clusterId);
-    final Future<void> started = _fetchSummary(clusterId, cluster)
-        .whenComplete(() {
+    final Future<void> started =
+        _fetchSummary(clusterId, cluster).whenComplete(() {
       // A block body: returning the removed future would make it wait on itself.
       _summaryInFlight.remove(clusterId);
     });
@@ -343,8 +362,7 @@ class TileShareClustersCubit extends Cubit<TileShareClustersState> {
       return false;
     }
     _deleting.add(clusterId);
-    _emit(state.copyWith(
-        items: _view(state.filter), clearDeleteFailure: true));
+    _emit(state.copyWith(items: _view(state.filter), clearDeleteFailure: true));
     try {
       await _clusters.deleteCluster(clusterId);
     } catch (error) {

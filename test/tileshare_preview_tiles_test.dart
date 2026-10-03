@@ -138,6 +138,28 @@ void main() {
       expect(PreviewTiles.forDay(p, DateTime(2030, 1, 1)), isEmpty);
     });
 
+    // Step 9.11c: scheduling issues are listed, never drawn as appointments.
+    test('an unplaced session or an unscheduled issue is never drawn', () {
+      final day = DateTime(2026, 10, 5);
+      final at = DateTime(2026, 10, 5, 9).millisecondsSinceEpoch;
+      final p = TileSharePreview.fromJson({
+        'assignmentId': 'a',
+        'proposed': [
+          {'id': 'kept', 'start': at, 'end': at + _hour, 'viable': true},
+          {'id': 'unplaced', 'start': at, 'end': at + _hour, 'isProposed': true, 'viable': false},
+          {'id': 'stuck', 'start': at + _hour, 'end': at + 2 * _hour, 'viable': false},
+          {'id': 'clash', 'start': at + 2 * _hour, 'end': at + 3 * _hour, 'viable': true},
+        ],
+        'conflicts': [
+          {'id': 'stuck', 'start': at + _hour, 'end': at + 2 * _hour, 'placement': 'Unscheduled'},
+          {'id': 'clash', 'start': at + 2 * _hour, 'end': at + 3 * _hour, 'placement': 'Conflict'},
+        ],
+      });
+      expect(PreviewTiles.forDay(p, day).map((t) => t.id), ['kept', 'clash'],
+          reason: 'a conflict is a real tile at a real time; unscheduled work '
+              'has no time to draw');
+    });
+
     test('a block that spans midnight appears on both days', () {
       final start = DateTime(2026, 10, 5, 23).millisecondsSinceEpoch;
       final p = TileSharePreview.fromJson({
@@ -181,6 +203,25 @@ void main() {
     expect(text, contains('Oct 9'));
     expect(text, contains('9:00'));
     expect(text, contains('10:30'));
+  });
+
+  test('a range reads like a block\'s time', () {
+    final start = DateTime(2026, 10, 9, 9).millisecondsSinceEpoch;
+    final end = start + 90 * 60000;
+    final b = PreviewBlock.fromJson({'id': 'x', 'start': start, 'end': end});
+    expect(PreviewTiles.whenRange(start, end, 'en'), PreviewTiles.when(b, 'en'));
+  });
+
+  test('the allowed window of a block, or nothing without one', () {
+    final from = DateTime(2026, 10, 5, 9).millisecondsSinceEpoch;
+    final to = DateTime(2026, 10, 9, 17).millisecondsSinceEpoch;
+    final withWindow = PreviewBlock.fromJson(
+        {'id': 'x', 'start': from, 'end': from, 'allowedStart': from, 'allowedEnd': to});
+    final (String, String)? window = PreviewTiles.window(withWindow, 'en');
+    expect(window, isNotNull);
+    expect(window!.$1, contains('Oct 5'));
+    expect(window.$2, contains('Oct 9'));
+    expect(PreviewTiles.window(PreviewBlock.fromJson({'id': 'y'}), 'en'), isNull);
   });
 
   test('the window constant: 1789500000000 is in it', () {

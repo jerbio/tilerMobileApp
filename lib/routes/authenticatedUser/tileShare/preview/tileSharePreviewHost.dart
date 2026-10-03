@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_preview_cubit.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/calendarViewSwitcher/calendarViewSwitcherController.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/preview/tileSharePreviewPage.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
@@ -15,6 +20,9 @@ import 'package:tiler_app/services/tileShare/tileSharePendingAccept.dart';
 ///
 /// An accept whose outcome was never seen is remembered per signed-in account
 /// ([accountKey]); without one it is not remembered across app restarts.
+///
+/// "View in calendar" goes back to the home screen, switches it to Daily and
+/// opens the day the task landed on.
 class TileSharePreviewHost extends StatefulWidget {
   final String assignmentId;
   final String? accountKey;
@@ -42,6 +50,10 @@ class _TileSharePreviewHostState extends State<TileSharePreviewHost> {
     _clusterApi = TileShareClusterApi(getContextCallBack: () => context);
     _scheduleApi = ScheduleApi(getContextCallBack: () => context);
     final String? account = widget.accountKey;
+    TileShareLog.d(
+        'TileSharePreview',
+        'opened for ${widget.assignmentId} '
+        '(signed-in user ${account == null ? 'unknown' : 'known'})');
     if (account == null) {
       TileShareLog.d('TileSharePreview',
           'signed-in user unknown: an unconfirmed accept is not remembered');
@@ -66,9 +78,28 @@ class _TileSharePreviewHostState extends State<TileSharePreviewHost> {
     super.dispose();
   }
 
+  void _viewInCalendar(DateTime day) {
+    final ScheduleBloc schedule = context.read<ScheduleBloc>();
+    final UiDateManagerBloc daily = context.read<UiDateManagerBloc>();
+    final WeeklyUiDateManagerBloc weekly = context.read<WeeklyUiDateManagerBloc>();
+    final MonthlyUiDateManagerBloc monthly =
+        context.read<MonthlyUiDateManagerBloc>();
+    TileShareLog.d('TileSharePreview', 'view in calendar: $day');
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    selectCalendarView(
+      newView: AuthorizedRouteTileListPage.Daily,
+      scheduleBloc: schedule,
+      dailyDateBloc: daily,
+      weeklyDateBloc: weekly,
+      monthlyDateBloc: monthly,
+    );
+    daily.add(DateChangeEvent(
+        selectedDate: day, dateChangeTrigger: DateChangeTrigger.buttonPress));
+  }
+
   @override
   Widget build(BuildContext context) => BlocProvider<TileSharePreviewCubit>.value(
         value: _cubit,
-        child: const TileSharePreviewPage(),
+        child: TileSharePreviewPage(onViewInCalendar: _viewInCalendar),
       );
 }
