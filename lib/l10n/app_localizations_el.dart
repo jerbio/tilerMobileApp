@@ -4813,4 +4813,23 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get previewViewInCalendar => 'View in calendar';
+
+  @override
+  String get detailLoadFailed => 'Couldn’t load this share.';
+
+  @override
+  String get detailNotFound => 'This share is no longer available.';
+
+  @override
+  String get detailRefreshFailed =>
+      'Couldn’t refresh. Showing what was loaded.';
+
+  @override
+  String get detailTasksFailed => 'Couldn’t load its tasks.';
+
+  @override
+  String get detailTasks => 'Tasks';
+
+  @override
+  String get forecastDeadlinePassed => 'Deadline passed';
 }

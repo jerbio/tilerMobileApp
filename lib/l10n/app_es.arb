@@ -1828,5 +1828,11 @@
     "previewIssueUnscheduled": "No se pudo programar",
     "previewIssueConflict": "Se superpone con otro trabajo",
     "previewIssueWindow": "Puede ir {from} – {to}",
-    "previewViewInCalendar": "Ver en el calendario"
+    "previewViewInCalendar": "Ver en el calendario",
+    "detailLoadFailed": "No se pudo cargar este elemento compartido.",
+    "detailNotFound": "Este elemento compartido ya no está disponible.",
+    "detailRefreshFailed": "No se pudo actualizar. Se muestra lo que se cargó.",
+    "detailTasksFailed": "No se pudieron cargar sus tareas.",
+    "detailTasks": "Tareas",
+    "forecastDeadlinePassed": "Fecha límite vencida"
 }

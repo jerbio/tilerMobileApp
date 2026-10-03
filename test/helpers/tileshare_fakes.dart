@@ -140,6 +140,15 @@ class FakeTileShareAssignmentsSource
       });
 
   @override
+  Future<DesignatedTile?> designatedTile(String designatedTileId) =>
+      run('designatedTile($designatedTileId)', () {
+        for (final DesignatedTile t in tiles) {
+          if (t.id == designatedTileId) return t;
+        }
+        return null;
+      });
+
+  @override
   Future<void> afterAccept() => run('afterAccept()', () {});
 }
 

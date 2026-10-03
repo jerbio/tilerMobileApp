@@ -119,7 +119,7 @@ void main() {
   });
 
   group('preview', () {
-    test('POSTs the assignment id, with who and where the user is', () async {
+    test('POSTs the assignment id, with who the user is', () async {
       client.nextBody = previewBody(previewFixture('preview_viable'));
       final p = await api.preview(kPreviewAssignmentId);
       final sent = client.last;
@@ -132,11 +132,12 @@ void main() {
       expect(p.canAccept, isTrue);
     });
 
-    test('asks for the user\'s location, because the forecast depends on it',
-        () async {
+    // Owner's decision (2026-10-03): the preview calls do not ask for the
+    // device location (the time zone and account fields are still sent).
+    test('does not ask for the user\'s location', () async {
       client.nextBody = previewBody(previewFixture('preview_viable'));
       await api.preview(kPreviewAssignmentId);
-      expect(api.locationAsks, [true]);
+      expect(api.locationAsks, [false]);
     });
 
     test('parses a preview that is not viable', () async {

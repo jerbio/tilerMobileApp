@@ -8,9 +8,12 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/bloc/tileShare/tile_share_detail_state.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/tileShareDetailHost.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/inboxMultiTiletteTileShareDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/multiTiletteTileShareDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/singleTiletteTileShareDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareFlags.dart';
 import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
@@ -18,31 +21,89 @@ import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 
-class TileShareDetailWidget extends StatefulWidget {
-  String? tileShareId;
-  String? designatedTileShareId;
-  bool isOutBox;
-  late final TileShareClusterData? tileShareClusterData;
-  TileShareDetailWidget.byId(
-      {required this.tileShareId, this.isOutBox = true}) {
-    this.tileShareClusterData = null;
+/// A cluster's detail, opened by cluster id, by one of its designated tile
+/// templates (a shared tile on the schedule) or with the cluster in hand.
+///
+/// A thin router (redesign Step 9.12): the new one-scaffold detail
+/// ([TileShareDetailHost]) behind its own switch, [useNewDetail]
+/// (`--dart-define=TILESHARE_DETAIL_V2=true`), until the mode contents
+/// (9.13-9.16) replace today's screens; otherwise today's screens. The old
+/// `isOutBox` becomes the ownership hint, used only when the signed-in user is
+/// not known.
+class TileShareDetailWidget extends StatelessWidget {
+  final String? tileShareId;
+  final String? designatedTileShareId;
+  final bool isOutBox;
+  final TileShareClusterData? tileShareClusterData;
+
+  const TileShareDetailWidget.byId(
+      {super.key, required this.tileShareId, this.isOutBox = true})
+      : designatedTileShareId = null,
+        tileShareClusterData = null;
+
+  const TileShareDetailWidget.byDesignatedTileShareId(
+      {super.key,
+      required this.designatedTileShareId,
+      this.isOutBox = false})
+      : tileShareId = null,
+        tileShareClusterData = null;
+
+  const TileShareDetailWidget.byTileShareData(
+      {super.key,
+      required TileShareClusterData this.tileShareClusterData,
+      this.isOutBox = true})
+      : tileShareId = null,
+        designatedTileShareId = null;
+
+  /// Whether the new detail is shown.
+  static bool get useNewDetail => kTileShareDetailV2;
+
+  /// Where the new detail opens from.
+  TileShareDetailTarget get target {
+    final TileShareClusterData? data = tileShareClusterData;
+    if (data != null) return TileShareDetailTarget.data(data);
+    final String? designated = designatedTileShareId;
+    if (designated != null) return TileShareDetailTarget.designatedTile(designated);
+    return TileShareDetailTarget.cluster(tileShareId ?? '');
   }
 
-  TileShareDetailWidget.byDesignatedTileShareId(
-      {required this.designatedTileShareId, this.isOutBox = false}) {
-    this.tileShareClusterData = null;
+  /// Whether the caller opened it as the owner's.
+  bool get ownerHint => isOutBox;
+
+  @override
+  Widget build(BuildContext context) {
+    if (useNewDetail) {
+      return TileShareDetailHost(target: target, ownerHint: ownerHint);
+    }
+    return LegacyTileShareDetailWidget(
+      tileShareId: tileShareId,
+      designatedTileShareId: designatedTileShareId,
+      tileShareClusterData: tileShareClusterData,
+      isOutBox: isOutBox,
+    );
   }
-  TileShareDetailWidget.byTileShareData(
-      {required final TileShareClusterData tileShareClusterData,
-      this.isOutBox = true}) {
-    this.tileShareClusterData = tileShareClusterData;
-    this.tileShareId = null;
-  }
+}
+
+/// Today's detail: a router over the three old screens. Retired in 9.17.
+class LegacyTileShareDetailWidget extends StatefulWidget {
+  final String? tileShareId;
+  final String? designatedTileShareId;
+  final bool isOutBox;
+  final TileShareClusterData? tileShareClusterData;
+
+  const LegacyTileShareDetailWidget({
+    super.key,
+    this.tileShareId,
+    this.designatedTileShareId,
+    this.tileShareClusterData,
+    required this.isOutBox,
+  });
+
   @override
   _TileShareDetailWidget createState() => _TileShareDetailWidget();
 }
 
-class _TileShareDetailWidget extends State<TileShareDetailWidget> {
+class _TileShareDetailWidget extends State<LegacyTileShareDetailWidget> {
   late final TileShareClusterApi clusterApi;
   late final DesignatedTileApi designatedTileShareApi;
   TileShareClusterData? tileShareCluster;

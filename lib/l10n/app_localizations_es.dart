@@ -4800,4 +4800,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get previewViewInCalendar => 'Ver en el calendario';
+
+  @override
+  String get detailLoadFailed => 'No se pudo cargar este elemento compartido.';
+
+  @override
+  String get detailNotFound =>
+      'Este elemento compartido ya no está disponible.';
+
+  @override
+  String get detailRefreshFailed =>
+      'No se pudo actualizar. Se muestra lo que se cargó.';
+
+  @override
+  String get detailTasksFailed => 'No se pudieron cargar sus tareas.';
+
+  @override
+  String get detailTasks => 'Tareas';
+
+  @override
+  String get forecastDeadlinePassed => 'Fecha límite vencida';
 }

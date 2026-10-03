@@ -12,6 +12,7 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/services/tileShare/tileShareForecastRequest.dart';
+import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
@@ -35,6 +36,10 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   bool _isForeCastError = false;
   bool showNotes = false;
   bool showForecasts = false;
+
+  /// The last forecast-button state logged for this tile, so the log line is
+  /// written when it changes, not on every rebuild.
+  String? _loggedForecastState;
   String _responseMessage = '';
   late DesignatedTile designatedTile;
   ForecastResponse? forecastResponse = null;
@@ -215,7 +220,6 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
     const supplementalTextStyle =
         TextStyle(fontSize: 11.6, fontFamily: TileTextStyles.rubikFontName);
     String? designatedUsename = designatedTile.user?.username;
-    print(designatedTile.invitationStatus.toString());
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -291,7 +295,12 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                   fontFamily: TileTextStyles.rubikFontName),
             ),
           spaceDivider,
-          Row(
+          // Wraps rather than overflowing: each icon button keeps Material's
+          // minimum width, and with Accept / Decline beside them a row did not
+          // fit even a 390 px phone.
+          Wrap(
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Padding(
                 padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
@@ -332,9 +341,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                     ),
                   ),
                 ),
-              if (designatedTile.invitationStatus !=
-                  InvitationStatus.accepted.name.toString())
-                renderForeCastButton(iconSize),
+              renderForeCastButton(iconSize),
               if (designatedTile.invitationStatus ==
                   InvitationStatus.accepted.name.toString()) ...[
                 Padding(
@@ -380,6 +387,19 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                 SizedBox.shrink(),
             ],
           ),
+          // With the struck-through binoculars above: why there is no forecast.
+          if (TileShareForecastRequest.isOverdue(
+              designatedTile, Utility.msCurrentTime)) ...[
+            spaceDivider,
+            Text(
+              AppLocalizations.of(context)!.forecastDeadlinePassed,
+              key: const Key('forecast_deadline_passed'),
+              style: TextStyle(
+                  fontSize: 11.6,
+                  fontFamily: TileTextStyles.rubikFontName,
+                  color: colorScheme.error),
+            ),
+          ],
           spaceDivider,
           bottomPanel()
         ],
@@ -398,18 +418,32 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
         endMs: this.designatedTile.tileTemplate?.end,
         now: Utility.currentTime(),
       );
+      if (queryParams == null) {
+        TileShareLog.d(
+            'TileShareForecast',
+            'forecast for ${designatedTile.id} not sent: '
+            '${TileShareForecastRequest.hiddenReason(designatedTile, Utility.msCurrentTime) ?? 'no request could be built'}');
+      }
       if (queryParams != null) {
+        TileShareLog.d('TileShareForecast',
+            'forecast for ${designatedTile.id} requested: $queryParams');
         setState(() {
           _isForeCastLoading = true;
           _isForeCastError = false;
         });
         whatIfApi.forecastNewTile(queryParams).then((value) {
           forecastResponse = value;
+          TileShareLog.d(
+              'TileShareForecast',
+              'forecast for ${designatedTile.id}: '
+              '${value.peekDays?.length ?? 'no'} day(s)');
           setState(() {
             _isForeCastLoading = false;
             _isForeCastError = false;
           });
         }).catchError((error) {
+          TileShareLog.d('TileShareForecast',
+              'forecast for ${designatedTile.id} failed: $error');
           setState(() {
             _isForeCastError = true;
             _isForeCastLoading = false;
@@ -419,15 +453,32 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
     }
   }
 
+  /// Logs whether the forecast button shows and, if not, why - once per change.
+  void _logForecastButton(String? hidden) {
+    final template = designatedTile.tileTemplate;
+    final String state = hidden == null ? 'shown' : 'hidden: $hidden';
+    if (state == _loggedForecastState) return;
+    _loggedForecastState = state;
+    TileShareLog.d(
+        'TileShareForecast',
+        'binoculars $state for ${designatedTile.id} "${designatedTile.name}" '
+        '(status=${designatedTile.invitationStatus}, '
+        'accept buttons=${designatedTile.isTilable == false ? 'hidden (isTilable=false)' : 'shown'}, '
+        'duration=${template?.durationInMs}, end=${template?.end}, '
+        'now=${Utility.msCurrentTime})');
+  }
+
   Widget renderForeCastButton(double iconSize) {
-    if ((this.designatedTile.tileTemplate?.durationInMs != null &&
-        this.designatedTile.tileTemplate?.end != null &&
-        this.designatedTile.tileTemplate!.end! > Utility.msCurrentTime)) {
+    final String? hidden = TileShareForecastRequest.hiddenReason(
+        designatedTile, Utility.msCurrentTime);
+    _logForecastButton(hidden);
+    if (hidden == null) {
       return Padding(
         padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
         child: _isForeCastLoading
             ? CircularProgressIndicator(color: colorScheme.tertiary)
             : ElevatedButton(
+                key: const Key('forecast_binoculars'),
                 child: FaIcon(
                   FontAwesomeIcons.binoculars,
                   color: colorScheme.primary,
@@ -438,6 +489,38 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                   padding: const EdgeInsets.all(0),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 )),
+      );
+    }
+    if (TileShareForecastRequest.isOverdue(
+        designatedTile, Utility.msCurrentTime)) {
+      // The binoculars, struck through and disabled: there is nothing left to
+      // forecast before the deadline ("Deadline passed" is said below).
+      final Color muted = colorScheme.onSurface.withValues(alpha: 0.38);
+      return Padding(
+        padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+        child: Tooltip(
+          message: AppLocalizations.of(context)!.forecastDeadlinePassed,
+          child: ElevatedButton(
+            key: const Key('forecast_binoculars_struck'),
+            onPressed: null,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.all(0),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                FaIcon(FontAwesomeIcons.binoculars,
+                    color: muted, size: iconSize),
+                Transform.rotate(
+                  angle: -0.785398,
+                  child: Container(
+                      width: iconSize * 1.5, height: 1.5, color: muted),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
     return SizedBox.shrink();

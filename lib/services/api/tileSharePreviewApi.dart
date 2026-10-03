@@ -84,9 +84,7 @@ class TileSharePreviewApi extends AppApi {
   Future<TileSharePreview> preview(String assignmentId) async {
     final String body = await _post(_previewRoute, {'Id': assignmentId});
     return TileSharePreview.fromJson(readTileShareContent(body,
-        tag: _tag,
-        what: 'Preview',
-        requiredKey: 'assignmentId'));
+        tag: _tag, what: 'Preview', requiredKey: 'assignmentId'));
   }
 
   Future<PreviewOptionsPage> options({
@@ -122,9 +120,7 @@ class TileSharePreviewApi extends AppApi {
       if (fixed != null) 'Fixed': fixed,
     });
     return TileSharePreview.fromJson(readTileShareContent(body,
-        tag: _tag,
-        what: 'Preview revision',
-        requiredKey: 'assignmentId'));
+        tag: _tag, what: 'Preview revision', requiredKey: 'assignmentId'));
   }
 
   /// Accepts exactly the previewed schedule, in [mode]. Returns the queued
@@ -150,8 +146,8 @@ class TileSharePreviewApi extends AppApi {
     TileShareLockedTimeLine? lockedTimeLine,
   }) async {
     if (previewToken.isEmpty) {
-      throw ArgumentError.value(
-          previewToken, 'previewToken', 'a preview can only be accepted with its token');
+      throw ArgumentError.value(previewToken, 'previewToken',
+          'a preview can only be accepted with its token');
     }
     if (!_operationIdFormat.hasMatch(operationId)) {
       throw ArgumentError.value(
@@ -220,11 +216,11 @@ class TileSharePreviewApi extends AppApi {
 
   Future<String> _post(String route, Map<String, Object?> body) async {
     final Map<String, String> headers = await _headers('POST', route);
-    // The forecast is built from where the user is and what time zone they are
-    // in, so the location is asked for (as the old forecast call did).
+    // The time zone and account fields are added; the device location is not
+    // asked for (owner's decision, 2026-10-03).
     final Map<String, dynamic> injected;
     try {
-      injected = await injectRequestParams(body, includeLocationParams: true);
+      injected = await injectRequestParams(body, includeLocationParams: false);
     } catch (error) {
       // Before anything is sent: time zone, location and account fields.
       TileShareLog.d(_tag, 'POST $route not sent: preparing it failed: $error');
@@ -253,8 +249,7 @@ class TileSharePreviewApi extends AppApi {
     TileShareLog.d(_tag, '-> GET $route $query');
     try {
       final response = await httpClient
-          .get(Uri.https(constants.tilerDomain, route, query),
-              headers: headers)
+          .get(Uri.https(constants.tilerDomain, route, query), headers: headers)
           .timeout(AppApi.requestTimeout);
       TileShareLog.d(
           _tag,
@@ -271,8 +266,8 @@ class TileSharePreviewApi extends AppApi {
   String _body(String verb, String route, int status, String body) {
     if (status >= 200 && status < 300) return body;
     final String? reason = _reasonOf(body);
-    TileShareLog.d(
-        _tag, '$verb $route -> HTTP $status${reason == null ? '' : ' ($reason)'}');
+    TileShareLog.d(_tag,
+        '$verb $route -> HTTP $status${reason == null ? '' : ' ($reason)'}');
     final PreviewFailureKind kind;
     switch (status) {
       case 401:
@@ -327,17 +322,21 @@ class TileSharePreviewApi extends AppApi {
     final List<String> parts = <String>[];
     final Object? error = decoded['Error'];
     if (error is Map) parts.add('code ${error['Code']} (${error['Message']})');
-    final Object? content =
-        decoded.containsKey('Content') || error != null ? decoded['Content'] : decoded;
+    final Object? content = decoded.containsKey('Content') || error != null
+        ? decoded['Content']
+        : decoded;
     if (content is Map) {
       final List<String> keys = <String>[
         for (final MapEntry<dynamic, dynamic> e in content.entries)
-          e.value is List ? '${e.key}(${(e.value as List).length})' : '${e.key}',
+          e.value is List
+              ? '${e.key}(${(e.value as List).length})'
+              : '${e.key}',
       ];
       parts.add('content: ${keys.take(30).join(', ')}'
           '${keys.length > 30 ? ', …' : ''}');
     } else {
-      parts.add(content == null ? 'no content' : 'content ${content.runtimeType}');
+      parts.add(
+          content == null ? 'no content' : 'content ${content.runtimeType}');
     }
     return parts.join('; ');
   }

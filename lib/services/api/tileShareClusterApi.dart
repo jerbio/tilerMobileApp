@@ -175,7 +175,6 @@ class TileShareClusterApi extends AppApi {
                   .map<DesignatedTile>((e) => DesignatedTile.fromJson(e))
                   .toList();
               print("jsonParseComplete");
-              print(designatedTiles);
 
               return designatedTiles;
             }

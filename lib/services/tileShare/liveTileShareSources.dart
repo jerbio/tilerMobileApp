@@ -4,6 +4,7 @@ import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareInvitation.dart';
 import 'package:tiler_app/data/tileSharePreview.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
+import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareActivityApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
@@ -52,7 +53,23 @@ class LiveTileShareAssignmentsSource implements TileShareAssignmentsSource {
   final TileShareClusterApi _api;
   final ScheduleApi _scheduleApi;
 
-  LiveTileShareAssignmentsSource(this._api, this._scheduleApi);
+  /// Reads one designated tile template; only needed by [designatedTile].
+  final DesignatedTileApi? _designatedTileApi;
+
+  LiveTileShareAssignmentsSource(this._api, this._scheduleApi,
+      {DesignatedTileApi? designatedTileApi})
+      : _designatedTileApi = designatedTileApi;
+
+  @override
+  Future<DesignatedTile?> designatedTile(String designatedTileId) async {
+    final DesignatedTileApi? api = _designatedTileApi;
+    if (api == null) {
+      throw StateError('designatedTile needs a DesignatedTileApi');
+    }
+    final List<DesignatedTile> found =
+        await api.getDesignatedTiles(designatedTileId: designatedTileId);
+    return found.isEmpty ? null : found.first;
+  }
 
   @override
   Future<List<DesignatedTile>> designatedTiles({

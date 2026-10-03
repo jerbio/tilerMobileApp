@@ -42,6 +42,9 @@ abstract class TileShareAssignmentsSource {
     int pageSize = 50,
   });
 
+  /// One designated tile template by id; `null` when it is not visible.
+  Future<DesignatedTile?> designatedTile(String designatedTileId);
+
   /// Accepts or declines an assignment; returns the updated assignment.
   Future<DesignatedTile?> respond(
       String designatedTileId, InvitationStatus status);

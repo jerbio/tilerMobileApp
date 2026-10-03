@@ -2664,5 +2664,11 @@
     "previewIssueConflict": "Overlaps other work",
     "previewIssueWindow": "Can go {from} – {to}",
     "@previewIssueWindow": {"placeholders": {"from": {"type": "String"}, "to": {"type": "String"}}},
-    "previewViewInCalendar": "View in calendar"
+    "previewViewInCalendar": "View in calendar",
+    "detailLoadFailed": "Couldn’t load this share.",
+    "detailNotFound": "This share is no longer available.",
+    "detailRefreshFailed": "Couldn’t refresh. Showing what was loaded.",
+    "detailTasksFailed": "Couldn’t load its tasks.",
+    "detailTasks": "Tasks",
+    "forecastDeadlinePassed": "Deadline passed"
 }

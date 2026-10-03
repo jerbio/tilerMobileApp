@@ -8251,6 +8251,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View in calendar'**
   String get previewViewInCalendar;
+
+  /// No description provided for @detailLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load this share.'**
+  String get detailLoadFailed;
+
+  /// No description provided for @detailNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This share is no longer available.'**
+  String get detailNotFound;
+
+  /// No description provided for @detailRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t refresh. Showing what was loaded.'**
+  String get detailRefreshFailed;
+
+  /// No description provided for @detailTasksFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load its tasks.'**
+  String get detailTasksFailed;
+
+  /// No description provided for @detailTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get detailTasks;
+
+  /// No description provided for @forecastDeadlinePassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline passed'**
+  String get forecastDeadlinePassed;
 }
 
 class _AppLocalizationsDelegate

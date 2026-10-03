@@ -23,10 +23,18 @@ TileShareClusterData tsCluster(
   int? endMs,
   List<String> contacts = const <String>[],
   bool completed = false,
+  String? creatorId,
+  String? creatorName,
 }) =>
     TileShareClusterData.fromJson({
       'id': id,
       'name': name ?? 'Cluster $id',
+      if (creatorId != null)
+        'creator': {
+          'id': creatorId,
+          'username': creatorId,
+          if (creatorName != null) 'fullName': creatorName,
+        },
       if (mode != null) 'mode': mode.wire,
       if (multi != null) 'isMultiTilette': multi,
       if (endMs != null) 'end': endMs,
