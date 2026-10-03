@@ -8407,6 +8407,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'notification'**
   String get channelPush;
+
+  /// No description provided for @classPeopleIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 person is missing from some tasks} other{{count} people are missing from some tasks}}'**
+  String classPeopleIncomplete(int count);
+
+  /// No description provided for @classMissingTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Not on 1 task} other{Not on {count} tasks}}'**
+  String classMissingTasks(int count);
+
+  /// No description provided for @classAddToAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to all tasks'**
+  String get classAddToAll;
+
+  /// No description provided for @classRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They will be removed from every task.'**
+  String get classRemoveBody;
+
+  /// No description provided for @classTaskNotAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Not added'**
+  String get classTaskNotAdded;
+
+  /// No description provided for @classAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t add to every task.'**
+  String get classAddFailed;
 }
 
 class _AppLocalizationsDelegate

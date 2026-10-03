@@ -52,8 +52,7 @@ class _Rig {
     cubit = TileShareRosterCubit(
       source: this.source,
       clusterId: 'c1',
-      tiletteId: 'tpl-1',
-      recipients: this.source.tilettes['tpl-1']!.designatedUsers!,
+      tilettes: [this.source.tilettes['tpl-1']!],
     );
   }
 
@@ -214,14 +213,164 @@ void main() {
     });
   });
 
+  // Step 9.14 (O9): a Class - everyone has their own copy of every task, and
+  // until the server does it the client adds each person to every task.
+  group('a Class roster', () {
+    FakeTileShareRecipientsSource classSource() => FakeTileShareRecipientsSource(
+          tilettes: {
+            't1': tsTilette('t1', clusterId: 'k', assignees: [
+              tsAssignee('ann@x.com', status: InvitationStatus.accepted),
+              tsAssignee('bob@x.com'),
+            ]),
+            't2': tsTilette('t2', clusterId: 'k', assignees: [
+              tsAssignee('ann@x.com', status: InvitationStatus.accepted),
+              tsAssignee('bob@x.com', status: InvitationStatus.declined),
+            ]),
+            't3': tsTilette('t3', clusterId: 'k', assignees: [
+              tsAssignee('ann@x.com'),
+            ]),
+          },
+        );
+
+    TileShareRosterCubit classCubit(FakeTileShareRecipientsSource source) =>
+        TileShareRosterCubit(
+          source: source,
+          clusterId: 'k',
+          tilettes: [
+            source.tilettes['t1']!,
+            source.tilettes['t2']!,
+            source.tilettes['t3']!
+          ],
+        );
+
+    RosterRow person(TileShareRosterCubit c, String label) =>
+        c.state.rows.firstWhere((r) => r.label == label);
+    List<String> adds(FakeTileShareRecipientsSource s) =>
+        s.calls.where((c) => c.startsWith('addRecipient')).toList();
+
+    test('one row per person across the tasks, one cell per task', () async {
+      final source = classSource();
+      final cubit = classCubit(source);
+      expect(cubit.state.rows.map((r) => r.label), ['ann@x.com', 'bob@x.com']);
+      final ann = person(cubit, 'ann@x.com');
+      expect(ann.cells.map((c) => c.tiletteId), ['t1', 't2', 't3']);
+      expect(ann.acceptedCount, 2);
+      expect(ann.isIncomplete, isFalse);
+      expect(ann.acceptedAll, isFalse);
+      final bob = person(cubit, 'bob@x.com');
+      expect(bob.isIncomplete, isTrue, reason: 'not on t3');
+      expect(bob.missingCount, 1);
+      expect(bob.cells[1].rsvp, InvitationStatus.declined);
+      await cubit.close();
+    });
+
+    test('adding a person adds them to every task, one call per task, in '
+        'order', () async {
+      final source = classSource();
+      final cubit = classCubit(source);
+      await cubit.add(_email('cy@x.com'));
+      expect(adds(source), [
+        'addRecipient(t1, cy@x.com)',
+        'addRecipient(t2, cy@x.com)',
+        'addRecipient(t3, cy@x.com)',
+      ]);
+      final cy = person(cubit, 'cy@x.com');
+      expect(cy.phase, RosterRowPhase.saved);
+      expect(cy.isIncomplete, isFalse);
+      await cubit.close();
+    });
+
+    test('an incomplete person is added only to the tasks they are missing',
+        () async {
+      final source = classSource();
+      final cubit = classCubit(source);
+      await cubit.repair(person(cubit, 'bob@x.com').key);
+      expect(adds(source), ['addRecipient(t3, bob@x.com)']);
+      expect(person(cubit, 'bob@x.com').isIncomplete, isFalse);
+      await cubit.close();
+    });
+
+    test('a task that refuses leaves the person marked with Retry; the tasks '
+        'that worked stay done; Retry sends only the missing one', () async {
+      final source = classSource();
+      final cubit = classCubit(source);
+      source.failNextOn('addRecipient(t2',
+          const TileShareRecipientFailure(TileShareFailureKind.server,
+              reason: 'busy'));
+      await cubit.add(_email('cy@x.com'));
+      var cy = person(cubit, 'cy@x.com');
+      expect(cy.phase, RosterRowPhase.addFailed, reason: 'never reported done');
+      expect(cy.failureReason, 'busy');
+      expect(cy.cells.map((c) => c.isPresent), [true, false, true]);
+      source.calls.clear();
+      await cubit.retryAdd(cy.key);
+      expect(adds(source), ['addRecipient(t2, cy@x.com)']);
+      cy = person(cubit, 'cy@x.com');
+      expect(cy.phase, RosterRowPhase.saved);
+      expect(cy.isIncomplete, isFalse);
+      await cubit.close();
+    });
+
+    test('removing a person removes them from every task they are on',
+        () async {
+      final source = classSource();
+      final cubit = classCubit(source);
+      await cubit.remove(person(cubit, 'bob@x.com').key);
+      expect(source.calls.where((c) => c.startsWith('removeRecipient')), [
+        'removeRecipient(t1, asg-bob@x.com)',
+        'removeRecipient(t2, asg-bob@x.com)',
+      ]);
+      expect(cubit.state.rows.map((r) => r.label), ['ann@x.com']);
+      await cubit.close();
+    });
+
+    test('a task that refuses a removal brings the person back, marked, on the '
+        'tasks still holding them', () async {
+      final source = classSource();
+      final cubit = classCubit(source);
+      source.failNextOn('removeRecipient(t2', StateError('offline'));
+      await cubit.remove(person(cubit, 'bob@x.com').key);
+      final bob = person(cubit, 'bob@x.com');
+      expect(bob.phase, RosterRowPhase.removeFailed);
+      expect(bob.cells.map((c) => c.isPresent), [false, true, false]);
+      await cubit.close();
+    });
+
+    test('two adds go out one after the other, task by task', () async {
+      final source = classSource();
+      final cubit = classCubit(source);
+      await Future.wait(
+          [cubit.add(_email('cy@x.com')), cubit.add(_email('di@x.com'))]);
+      expect(adds(source), [
+        'addRecipient(t1, cy@x.com)',
+        'addRecipient(t2, cy@x.com)',
+        'addRecipient(t3, cy@x.com)',
+        'addRecipient(t1, di@x.com)',
+        'addRecipient(t2, di@x.com)',
+        'addRecipient(t3, di@x.com)',
+      ]);
+      await cubit.close();
+    });
+
+    test('someone on any task is not added again', () async {
+      final source = classSource();
+      final cubit = classCubit(source);
+      expect(await cubit.add(_email('bob@x.com')), isFalse);
+      expect(adds(source), isEmpty);
+      await cubit.close();
+    });
+  });
+
   test('a reload brings the server\'s roster and keeps adds not yet answered',
       () async {
     final rig = _Rig();
     rig.source.failNextOn('addRecipient', StateError('offline'));
     await rig.cubit.add(_email('cy@x.com'));
     rig.cubit.sync([
-      tsAssignee('ann@x.com', status: InvitationStatus.accepted),
-      tsAssignee('eve@x.com'),
+      tsTilette('tpl-1', clusterId: 'c1', assignees: [
+        tsAssignee('ann@x.com', status: InvitationStatus.accepted),
+        tsAssignee('eve@x.com'),
+      ]),
     ]);
     expect(rig.labels, ['ann@x.com', 'eve@x.com', 'cy@x.com']);
     expect(rig.row('cy@x.com').phase, RosterRowPhase.addFailed);

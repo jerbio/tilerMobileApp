@@ -13,7 +13,7 @@ import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/broadcastDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/shareRosterDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/tileShareDetailScaffold.dart';
 import 'package:tiler_app/services/api/tileShareRecipientsApi.dart';
 import 'package:tiler_app/services/api/tileShareTransport.dart';
@@ -110,14 +110,14 @@ Future<void> _open(WidgetTester tester, _Rig rig,
 Finder _key(String k) => find.byKey(Key(k));
 
 Future<void> _participants(WidgetTester tester) async {
-  await tester.tap(_key('broadcast_segment_participants'));
+  await tester.tap(_key('roster_segment_participants'));
   await _settle(tester);
 }
 
 Future<void> _addContact(WidgetTester tester, String value) async {
   await tester.enterText(
       find.descendant(
-          of: _key('broadcast_add_participant'),
+          of: _key('roster_add_participant'),
           matching: find.byType(TextField)),
       value);
   await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -136,7 +136,7 @@ void main() {
       expect(_row('ann@x.com'), findsOneWidget);
       expect(_row('p2@x.com'), findsNothing, reason: 'only the first three');
       expect(find.text('View all (5)'), findsOneWidget);
-      expect(_key('broadcast_add_participant'), findsNothing);
+      expect(_key('roster_add_participant'), findsNothing);
       expect(find.byTooltip('Remove'), findsNothing,
           reason: 'Overview previews, it does not manage');
       await tester.tap(find.text('View all (5)'));
@@ -152,7 +152,7 @@ void main() {
       expect(find.text('1 invitation may not have arrived'), findsOneWidget);
       await tester.tap(find.text('1 invitation may not have arrived'));
       await _settle(tester);
-      expect(_key('broadcast_add_participant'), findsOneWidget);
+      expect(_key('roster_add_participant'), findsOneWidget);
       await rig.detail.close();
     });
   });

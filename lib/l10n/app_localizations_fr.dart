@@ -4919,4 +4919,38 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get channelPush => 'notification';
+
+  @override
+  String classPeopleIncomplete(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people are missing from some tasks',
+      one: '1 person is missing from some tasks',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String classMissingTasks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Not on $count tasks',
+      one: 'Not on 1 task',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get classAddToAll => 'Add to all tasks';
+
+  @override
+  String get classRemoveBody => 'They will be removed from every task.';
+
+  @override
+  String get classTaskNotAdded => 'Not added';
+
+  @override
+  String get classAddFailed => 'Couldn’t add to every task.';
 }

@@ -2696,5 +2696,13 @@
     "deliveryUnknown": "Delivery unknown",
     "channelEmail": "email",
     "channelSms": "SMS",
-    "channelPush": "notification"
+    "channelPush": "notification",
+    "classPeopleIncomplete": "{count, plural, =1{1 person is missing from some tasks} other{{count} people are missing from some tasks}}",
+    "@classPeopleIncomplete": {"placeholders": {"count": {"type": "int"}}},
+    "classMissingTasks": "{count, plural, =1{Not on 1 task} other{Not on {count} tasks}}",
+    "@classMissingTasks": {"placeholders": {"count": {"type": "int"}}},
+    "classAddToAll": "Add to all tasks",
+    "classRemoveBody": "They will be removed from every task.",
+    "classTaskNotAdded": "Not added",
+    "classAddFailed": "Couldn’t add to every task."
 }

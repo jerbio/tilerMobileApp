@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedUser.dart';
+import 'package:tiler_app/data/tileShareClassFanout.dart';
 import 'package:tiler_app/data/tileShareRoster.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/services/api/tileShareRecipientsApi.dart';
@@ -10,14 +11,13 @@ import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 
 class TileShareRosterState extends Equatable {
-  /// The recipients in the server's order, then adds not yet confirmed.
+  /// The people, in order of first appearance, then adds on no task yet.
   final List<RosterRow> rows;
 
   /// Delivery has been read from the cluster's activity.
   final bool deliveryLoaded;
 
-  /// The last contact refused as already on the roster (normalised), to say
-  /// so; `null` otherwise.
+  /// The last contact refused as already on the roster, to say so.
   final String? duplicate;
 
   const TileShareRosterState({
@@ -26,60 +26,71 @@ class TileShareRosterState extends Equatable {
     this.duplicate,
   });
 
-  TileShareRosterState copyWith({
-    List<RosterRow>? rows,
-    bool? deliveryLoaded,
-    String? duplicate,
-    bool clearDuplicate = false,
-  }) =>
-      TileShareRosterState(
-        rows: rows ?? this.rows,
-        deliveryLoaded: deliveryLoaded ?? this.deliveryLoaded,
-        duplicate: clearDuplicate ? null : (duplicate ?? this.duplicate),
-      );
-
   @override
   List<Object?> get props => [rows, deliveryLoaded, duplicate];
 }
 
-/// One tilette's roster as its owner manages it (redesign Step 9.13).
+/// An add in progress or failed, for one person.
+class _PendingAdd {
+  final String localKey;
+  final Contact contact;
+  final Set<String> keys;
+  RosterRowPhase phase = RosterRowPhase.adding;
+  String? reason;
+
+  _PendingAdd(this.localKey, this.contact, this.keys);
+}
+
+/// A share's roster as its owner manages it (redesign Steps 9.13 / 9.14):
+/// people matched across the share's tasks, one cell per task - a Broadcast
+/// has one task, a Class several.
 ///
-/// * Rows are the tilette's recipients - answer, progress, and how their
-///   invitation was delivered (each one's newest `invitation_*` event).
-/// * **Adding shows at once** as "being added" and is never silently lost: a
-///   refused or unanswered add stays on the roster as failed with the reason,
-///   to retry or dismiss (contact-input doc 3.3 / 3.4). The roster refreshes
-///   from the server's answer, so nothing reloads behind the user's typing.
-/// * **One change at a time**: adds and removals go out in order, never in
-///   parallel (3.5).
-/// * Someone already on the roster, or already being added, is not added
-///   twice.
-/// * **A removal disappears at once**; if the server refuses it, the row comes
-///   back where it was, marked. One the server no longer has counts as
-///   removed.
+/// * **Adding a person adds them to every task** they are not on yet (the
+///   Class fan-out, O9 - one call per task, in order, never a second call for a
+///   task they are already on). It shows at once; a task that refuses leaves
+///   the person marked with the reason and **Retry**, the tasks that worked
+///   stay done, and it is never reported as success (contact-input doc
+///   3.3 / 3.4).
+/// * **Removing a person removes them from every task**: they disappear at
+///   once; a task that refuses brings them back, marked (a 404 counts as
+///   removed).
+/// * **One change at a time** for the whole share, in order (3.5).
+/// * Someone already on the roster, or being added, is not added twice.
+/// * A person on some tasks but not all is **incomplete**; [repair] adds them
+///   to the rest.
+/// * The roster refreshes from each answer (an add answers with the task and
+///   its recipients) and from the share's reloads ([sync]).
 class TileShareRosterCubit extends Cubit<TileShareRosterState> {
   static const String _tag = 'TileShareRoster';
 
   final TileShareRecipientsSource _source;
   final String clusterId;
-  final String tiletteId;
+  List<TileShareTemplate> _tilettes;
 
-  /// Delivery per assignment, kept to apply to rows that arrive later.
   Map<String, (RecipientDelivery, String?)> _delivery =
       const <String, (RecipientDelivery, String?)>{};
+  final List<_PendingAdd> _pending = <_PendingAdd>[];
 
-  /// Every change goes out after the previous one.
+  /// People being removed (their identities), hidden meanwhile.
+  final List<Set<String>> _removing = <Set<String>>[];
+
+  /// People a removal failed for, with the reason.
+  final List<(Set<String>, String?)> _removeFailed = <(Set<String>, String?)>[];
+
   Future<void> _queue = Future<void>.value();
   int _localIds = 0;
+  bool _deliveryLoaded = false;
+  String? _duplicate;
 
   TileShareRosterCubit({
     required TileShareRecipientsSource source,
     required this.clusterId,
-    required this.tiletteId,
-    required List<DesignatedUser> recipients,
+    required List<TileShareTemplate> tilettes,
   })  : _source = source,
-        super(TileShareRosterState(
-            rows: recipients.map(RosterRow.fromRecipient).toList()));
+        _tilettes = List<TileShareTemplate>.of(tilettes),
+        super(const TileShareRosterState()) {
+    _rebuild();
+  }
 
   // ---- delivery ------------------------------------------------------------------
 
@@ -89,145 +100,241 @@ class TileShareRosterCubit extends Cubit<TileShareRosterState> {
     try {
       final events = await _source.clusterActivity(clusterId);
       _delivery = RosterDelivery.fromActivity(events);
-      TileShareLog.d(_tag,
-          'delivery for $clusterId: ${_delivery.length} of ${state.rows.length} known');
-      _emit(state.copyWith(
-          rows: state.rows.map(_withDelivery).toList(), deliveryLoaded: true));
+      _deliveryLoaded = true;
+      TileShareLog.d(_tag, 'delivery for $clusterId: ${_delivery.length} known');
+      _rebuild();
     } catch (error) {
       TileShareLog.d(_tag, 'delivery for $clusterId failed: $error');
     }
   }
 
-  RosterRow _withDelivery(RosterRow row) {
-    final (RecipientDelivery, String?)? known =
-        row.assignmentId == null ? null : _delivery[row.assignmentId];
-    if (known == null) return row;
-    return row.copyWith(delivery: known.$1, deliveryChannel: known.$2);
-  }
-
   // ---- reloading ----------------------------------------------------------------
 
-  /// The server's roster after a reload; adds not yet confirmed stay at the
-  /// end, and a removal still in flight stays hidden.
-  void sync(List<DesignatedUser> recipients) {
-    final List<RosterRow> pending =
-        state.rows.where((r) => r.assignmentId == null).toList();
-    _emit(state.copyWith(rows: [
-      ...recipients
-          .map(RosterRow.fromRecipient)
-          .where((r) => !_removing.contains(r.assignmentId))
-          .map(_withDelivery),
-      ...pending,
-    ]));
+  /// The share's tasks after a reload; adds not yet answered are kept and a
+  /// removal in flight stays hidden.
+  void sync(List<TileShareTemplate> tilettes) {
+    _tilettes = List<TileShareTemplate>.of(tilettes);
+    _rebuild();
   }
 
   // ---- adding -------------------------------------------------------------------
 
-  /// Adds [contact]; `false` when they are already on the roster or being
-  /// added. Completes when this add has been answered.
+  /// Adds [contact] to every task; `false` when they are already on the roster
+  /// or being added. Completes when every task has answered.
   Future<bool> add(Contact contact) {
-    final String? label = _labelOf(contact);
-    if (label == null) return Future<bool>.value(false);
-    final String id = RosterRow.normalise(label);
-    final bool known = state.rows.any((r) => r.identities.contains(id));
+    final Set<String> keys = ClassFanout.identityKeys(contact);
+    if (keys.isEmpty) return Future<bool>.value(false);
+    final bool known = state.rows.any((r) => r.identities.any(keys.contains)) ||
+        _pending.any((p) => p.keys.any(keys.contains));
     if (known) {
-      TileShareLog.d(_tag, 'not adding $label: already on the roster');
-      _emit(state.copyWith(duplicate: id));
+      _duplicate = _labelOf(contact);
+      TileShareLog.d(_tag, 'not adding $_duplicate: already on the roster');
+      _rebuild();
       return Future<bool>.value(false);
     }
-    final RosterRow row = RosterRow(
-      key: 'local-${++_localIds}',
-      label: label,
-      contact: contact,
-      phase: RosterRowPhase.adding,
-    );
-    _emit(state.copyWith(rows: [...state.rows, row], clearDuplicate: true));
-    return _enqueue(() => _sendAdd(row.key)).then((_) => true);
+    _duplicate = null;
+    final _PendingAdd add = _PendingAdd('local-${++_localIds}', contact, keys);
+    _pending.add(add);
+    _rebuild();
+    return _enqueue(() => _runAdd(add)).then((_) => true);
   }
 
-  /// Sends a failed add again.
+  /// Sends a failed add again, to the tasks still missing.
   Future<void> retryAdd(String key) {
-    final RosterRow? row = _row(key);
-    if (row == null || row.phase != RosterRowPhase.addFailed) {
+    final _PendingAdd? add = _pendingFor(key);
+    if (add == null || add.phase != RosterRowPhase.addFailed) {
       return Future<void>.value();
     }
-    _replace(key, row.copyWith(phase: RosterRowPhase.adding, clearFailure: true));
-    return _enqueue(() => _sendAdd(key));
+    add.phase = RosterRowPhase.adding;
+    add.reason = null;
+    _rebuild();
+    return _enqueue(() => _runAdd(add));
   }
 
-  /// Drops a failed add from the roster.
-  void dismiss(String key) {
+  /// Adds an incomplete person to the tasks they are not on.
+  Future<void> repair(String key) {
     final RosterRow? row = _row(key);
-    if (row == null || row.phase != RosterRowPhase.addFailed) return;
-    _emit(state.copyWith(
-        rows: state.rows.where((r) => r.key != key).toList()));
-  }
-
-  Future<void> _sendAdd(String key) async {
-    final RosterRow? row = _row(key);
-    if (row == null || row.contact == null) return;
-    try {
-      final TileShareTemplate tilette =
-          await _source.addRecipient(tiletteId, row.contact!);
-      TileShareLog.d(_tag, 'added ${row.label} to $tiletteId');
-      final List<RosterRow> others = state.rows
-          .where((r) => r.assignmentId == null && r.key != key)
-          .toList();
-      _emit(state.copyWith(rows: [
-        ...(tilette.designatedUsers ?? const <DesignatedUser>[])
-            .map(RosterRow.fromRecipient)
-            .where((r) => !_removing.contains(r.assignmentId))
-            .map(_withDelivery),
-        ...others,
-      ]));
-    } catch (error) {
-      TileShareLog.d(_tag, 'adding ${row.label} failed: $error');
-      _replace(
-          key,
-          row.copyWith(
-              phase: RosterRowPhase.addFailed, failureReason: _reasonOf(error)));
+    if (row == null || row.contact == null || !row.isIncomplete) {
+      return Future<void>.value();
     }
+    if (_pendingFor(key) != null) return retryAdd(key);
+    final _PendingAdd add = _PendingAdd(
+        'local-${++_localIds}', row.contact!, ClassFanout.identityKeys(row.contact!));
+    _pending.add(add);
+    _rebuild();
+    return _enqueue(() => _runAdd(add));
+  }
+
+  /// Drops a failed add; tasks it did reach keep the person.
+  void dismiss(String key) {
+    final _PendingAdd? add = _pendingFor(key);
+    if (add == null || add.phase != RosterRowPhase.addFailed) return;
+    _pending.remove(add);
+    _rebuild();
+  }
+
+  Future<void> _runAdd(_PendingAdd add) async {
+    int failed = 0;
+    String? reason;
+    for (final TileShareTemplate tilette in List<TileShareTemplate>.of(_tilettes)) {
+      if (tilette.id == null || _holds(tilette, add.keys)) continue;
+      try {
+        final TileShareTemplate updated =
+            await _source.addRecipient(tilette.id!, add.contact);
+        _replaceTilette(updated);
+        TileShareLog.d(_tag, 'added ${_labelOf(add.contact)} to ${tilette.id}');
+        _rebuild();
+      } catch (error) {
+        failed++;
+        reason ??= _reasonOf(error);
+        TileShareLog.d(
+            _tag, 'adding ${_labelOf(add.contact)} to ${tilette.id} failed: $error');
+      }
+    }
+    if (failed == 0) {
+      _pending.remove(add);
+    } else {
+      add.phase = RosterRowPhase.addFailed;
+      add.reason = reason;
+    }
+    _rebuild();
   }
 
   // ---- removing -----------------------------------------------------------------
 
-  final Set<String?> _removing = <String?>{};
-
-  /// Removes the recipient with [assignmentId]: gone at once, back in place
-  /// if the server refuses.
-  Future<void> remove(String assignmentId) {
-    final int index =
-        state.rows.indexWhere((r) => r.assignmentId == assignmentId);
-    if (index < 0) return Future<void>.value();
-    final RosterRow row = state.rows[index];
-    _removing.add(assignmentId);
-    _emit(state.copyWith(
-        rows: state.rows.where((r) => r.assignmentId != assignmentId).toList()));
+  /// Removes a person (by row key or one of their assignments) from every
+  /// task: gone at once, back if a task refuses.
+  Future<void> remove(String keyOrAssignment) {
+    final RosterRow? row = state.rows
+        .where((r) =>
+            r.key == keyOrAssignment ||
+            r.cells.any((c) => c.assignmentId == keyOrAssignment))
+        .firstOrNull;
+    if (row == null || row.assignmentId == null) return Future<void>.value();
+    final Set<String> keys = row.identities;
+    _removing.add(keys);
+    _removeFailed.removeWhere((f) => f.$1.any(keys.contains));
+    _rebuild();
     return _enqueue(() async {
-      try {
-        await _source.removeRecipient(tiletteId, assignmentId);
-        TileShareLog.d(_tag, 'removed ${row.label} from $tiletteId');
-      } catch (error) {
-        if (error is TileShareRecipientFailure &&
-            error.kind == TileShareFailureKind.notFound) {
-          TileShareLog.d(_tag, '${row.label} was already gone from $tiletteId');
-        } else {
-          TileShareLog.d(_tag, 'removing ${row.label} failed: $error');
-          final List<RosterRow> rows = [...state.rows];
-          rows.insert(
-              index.clamp(0, rows.length),
-              row.copyWith(
-                  phase: RosterRowPhase.removeFailed,
-                  failureReason: _reasonOf(error)));
-          _emit(state.copyWith(rows: rows));
+      int failed = 0;
+      String? reason;
+      for (final RosterCell cell in row.cells.where((c) => c.isPresent)) {
+        try {
+          await _source.removeRecipient(cell.tiletteId, cell.assignmentId!);
+          _dropAssignment(cell.tiletteId, cell.assignmentId!);
+          TileShareLog.d(_tag, 'removed ${row.label} from ${cell.tiletteId}');
+        } catch (error) {
+          if (error is TileShareRecipientFailure &&
+              error.kind == TileShareFailureKind.notFound) {
+            _dropAssignment(cell.tiletteId, cell.assignmentId!);
+            TileShareLog.d(
+                _tag, '${row.label} was already gone from ${cell.tiletteId}');
+          } else {
+            failed++;
+            reason ??= _reasonOf(error);
+            TileShareLog.d(_tag,
+                'removing ${row.label} from ${cell.tiletteId} failed: $error');
+          }
         }
-      } finally {
-        _removing.remove(assignmentId);
       }
+      _removing.remove(keys);
+      if (failed > 0) _removeFailed.add((keys, reason));
+      _rebuild();
     });
   }
 
+  // ---- building the rows -----------------------------------------------------------
+
+  void _rebuild() {
+    final List<RosterRow> people = RosterPeople.of(_tilettes, _delivery);
+    // An add whose person is now on every task is done.
+    _pending.removeWhere((p) {
+      final RosterRow? person =
+          people.where((r) => r.identities.any(p.keys.contains)).firstOrNull;
+      return person != null &&
+          !person.isIncomplete &&
+          p.phase == RosterRowPhase.addFailed;
+    });
+    final List<RosterRow> rows = <RosterRow>[];
+    for (final RosterRow person in people) {
+      final Set<String> keys = person.identities;
+      if (_removing.any((r) => r.any(keys.contains))) continue;
+      final _PendingAdd? add =
+          _pending.where((p) => p.keys.any(keys.contains)).firstOrNull;
+      final (Set<String>, String?)? removeFailed =
+          _removeFailed.where((f) => f.$1.any(keys.contains)).firstOrNull;
+      rows.add(RosterRow(
+        key: person.key,
+        label: person.label,
+        contact: person.contact,
+        cells: person.cells,
+        phase: add?.phase ??
+            (removeFailed != null ? RosterRowPhase.removeFailed : RosterRowPhase.saved),
+        failureReason: add?.reason ?? removeFailed?.$2,
+      ));
+    }
+    for (final _PendingAdd add in _pending) {
+      if (people.any((r) => r.identities.any(add.keys.contains))) continue;
+      rows.add(RosterRow(
+        key: add.localKey,
+        label: _labelOf(add.contact),
+        contact: add.contact,
+        cells: <RosterCell>[
+          for (final TileShareTemplate t in _tilettes)
+            RosterCell(tiletteId: t.id ?? ''),
+        ],
+        phase: add.phase,
+        failureReason: add.reason,
+      ));
+    }
+    _emit(TileShareRosterState(
+        rows: rows, deliveryLoaded: _deliveryLoaded, duplicate: _duplicate));
+  }
+
   // ---- helpers ------------------------------------------------------------------
+
+  static bool _holds(TileShareTemplate tilette, Set<String> keys) {
+    for (final DesignatedUser user
+        in tilette.designatedUsers ?? const <DesignatedUser>[]) {
+      final Contact? contact = ClassFanout.contactOfUser(user);
+      if (contact != null &&
+          ClassFanout.identityKeys(contact).any(keys.contains)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void _replaceTilette(TileShareTemplate updated) {
+    _tilettes = <TileShareTemplate>[
+      for (final TileShareTemplate t in _tilettes)
+        t.id == updated.id ? updated : t,
+    ];
+  }
+
+  void _dropAssignment(String tiletteId, String assignmentId) {
+    for (final TileShareTemplate t in _tilettes) {
+      if (t.id == tiletteId) {
+        t.designatedUsers = <DesignatedUser>[
+          for (final DesignatedUser u
+              in t.designatedUsers ?? const <DesignatedUser>[])
+            if (RosterPeople.assignmentOf(u) != assignmentId) u,
+        ];
+      }
+    }
+  }
+
+  _PendingAdd? _pendingFor(String key) {
+    final RosterRow? row = _row(key);
+    for (final _PendingAdd p in _pending) {
+      if (p.localKey == key) return p;
+      if (row != null && row.identities.any(p.keys.contains)) return p;
+    }
+    return null;
+  }
+
+  RosterRow? _row(String key) =>
+      state.rows.where((r) => r.key == key).firstOrNull;
 
   Future<void> _enqueue(Future<void> Function() change) {
     final Future<void> next = _queue.then((_) => change());
@@ -235,23 +342,11 @@ class TileShareRosterCubit extends Cubit<TileShareRosterState> {
     return next;
   }
 
-  RosterRow? _row(String key) {
-    for (final RosterRow r in state.rows) {
-      if (r.key == key) return r;
-    }
-    return null;
-  }
-
-  void _replace(String key, RosterRow row) {
-    _emit(state.copyWith(
-        rows: state.rows.map((r) => r.key == key ? row : r).toList()));
-  }
-
-  static String? _labelOf(Contact contact) {
-    for (final String? v in [contact.email, contact.phoneNumber]) {
+  static String _labelOf(Contact contact) {
+    for (final String? v in [contact.email, contact.phoneNumber, contact.username]) {
       if (v != null && v.trim().isNotEmpty) return v.trim();
     }
-    return null;
+    return '';
   }
 
   static String? _reasonOf(Object error) =>

@@ -1854,5 +1854,11 @@
     "deliveryUnknown": "Entrega desconocida",
     "channelEmail": "correo",
     "channelSms": "SMS",
-    "channelPush": "notificación"
+    "channelPush": "notificación",
+    "classPeopleIncomplete": "{count, plural, =1{1 persona falta en algunas tareas} other{{count} personas faltan en algunas tareas}}",
+    "classMissingTasks": "{count, plural, =1{No está en 1 tarea} other{No está en {count} tareas}}",
+    "classAddToAll": "Añadir a todas las tareas",
+    "classRemoveBody": "Se eliminará de todas las tareas.",
+    "classTaskNotAdded": "No añadido",
+    "classAddFailed": "No se pudo añadir a todas las tareas."
 }
