@@ -8503,6 +8503,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Their tasks will have no one assigned.'**
   String get projectRemoveBody;
+
+  /// No description provided for @tileShareActivityCommentAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment added'**
+  String get tileShareActivityCommentAdded;
+
+  /// No description provided for @tileShareActivityCommentReplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment reply added'**
+  String get tileShareActivityCommentReplied;
+
+  /// No description provided for @tileShareActivityCommentEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment edited'**
+  String get tileShareActivityCommentEdited;
+
+  /// No description provided for @tileShareActivityCommentDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment deleted'**
+  String get tileShareActivityCommentDeleted;
+
+  /// No description provided for @commitmentYourTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Your tasks'**
+  String get commitmentYourTasks;
+
+  /// No description provided for @commitmentYourTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Your task'**
+  String get commitmentYourTask;
+
+  /// No description provided for @commitmentPartialAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} answered; the rest are still pending.'**
+  String commitmentPartialAnswered(int done, int total);
+
+  /// No description provided for @commitmentOpenTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Open tile'**
+  String get commitmentOpenTile;
 }
 
 class _AppLocalizationsDelegate

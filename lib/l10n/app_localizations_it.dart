@@ -4982,4 +4982,30 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get projectRemoveBody => 'Their tasks will have no one assigned.';
+
+  @override
+  String get tileShareActivityCommentAdded => 'Comment added';
+
+  @override
+  String get tileShareActivityCommentReplied => 'Comment reply added';
+
+  @override
+  String get tileShareActivityCommentEdited => 'Comment edited';
+
+  @override
+  String get tileShareActivityCommentDeleted => 'Comment deleted';
+
+  @override
+  String get commitmentYourTasks => 'Your tasks';
+
+  @override
+  String get commitmentYourTask => 'Your task';
+
+  @override
+  String commitmentPartialAnswered(int done, int total) {
+    return '$done of $total answered; the rest are still pending.';
+  }
+
+  @override
+  String get commitmentOpenTile => 'Open tile';
 }

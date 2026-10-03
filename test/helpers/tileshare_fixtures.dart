@@ -97,17 +97,21 @@ DesignatedTile tsDesignatedTile(
   int? endMs,
   String? name,
   String? ownerId = 'me',
+  double? completion,
+  int? durationMs,
 }) =>
     DesignatedTile.fromJson({
       'id': id,
       'name': name ?? 'Tile $id',
       'invitationStatus': status.name,
+      if (completion != null) 'completionPercent': completion,
       if (viable != null) 'isViable': viable,
       'template': {
         'id': 'tpl-$id',
         'clusterId': clusterId,
         'name': name ?? 'Tile $id',
         if (endMs != null) 'end': endMs,
+        if (durationMs != null) 'duration': durationMs,
         // whose designated tile template it is: its entry in the tilette, as
         // `api/DesignatedTile/designated` sends it (and as the web reads it)
         if (ownerId != null)

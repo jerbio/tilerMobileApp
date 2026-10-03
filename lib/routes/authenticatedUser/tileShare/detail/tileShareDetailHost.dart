@@ -3,7 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_detail_cubit.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_detail_state.dart';
+import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailEntry.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tiletteDetailScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/commitmentDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/shareRosterDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/preview/tileSharePreviewHost.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/tileShareDetailScaffold.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareActivityWidget.dart';
 import 'package:tiler_app/services/api/designatedTileApi.dart';
@@ -41,6 +46,7 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
   late final TileShareRecipientsApi _recipientsApi;
   late final TileShareActivityApi _activityApi;
   late final LiveTileShareRecipientsSource _recipients;
+  late final LiveTileShareAssignmentsSource _assignments;
   late final TileShareDetailCubit _cubit;
   String? _userId;
   bool _ready = false;
@@ -55,10 +61,11 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
     _recipientsApi = TileShareRecipientsApi(getContextCallBack: () => context);
     _activityApi = TileShareActivityApi(getContextCallBack: () => context);
     _recipients = LiveTileShareRecipientsSource(_recipientsApi, _activityApi);
+    _assignments = LiveTileShareAssignmentsSource(_clusterApi, _scheduleApi,
+        designatedTileApi: _designatedTileApi);
     _cubit = TileShareDetailCubit(
       clusters: LiveTileShareClustersSource(_clusterApi),
-      assignments: LiveTileShareAssignmentsSource(_clusterApi, _scheduleApi,
-          designatedTileApi: _designatedTileApi),
+      assignments: _assignments,
       target: widget.target,
       currentUserId: () => _userId,
       ownerHint: widget.ownerHint,
@@ -104,8 +111,25 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
     super.dispose();
   }
 
-  /// The mode's content under the header; the default task list until the
-  /// commitment is built (9.16).
+  Future<void> _preview(String assignmentId) async {
+    await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => TileSharePreviewHost(
+            assignmentId: assignmentId, accountKey: _userId)));
+    if (mounted) _cubit.refresh();
+  }
+
+  void _openTile(DesignatedTile tile) {
+    final String? id = tile.id;
+    if (id == null) return;
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => TileDetailRoute.byDesignatedTileId(
+            designatedTileTemplateId: id, loadSubEvents: true)));
+  }
+
+  void _comments(DesignatedTile tile) =>
+      TiletteDetailScreen.byTilette(context: context, designatedTile: tile);
+
+  /// The mode's content under the header.
   Widget _content(BuildContext context, TileShareDetailState state) {
     switch (state.variant) {
       case DetailVariant.broadcast:
@@ -115,7 +139,14 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
       case DetailVariant.project:
         return ProjectDetail(detail: state, recipients: _recipients);
       case DetailVariant.commitment:
-        return TileShareDetailTasks(state: state, onRetry: _cubit.refresh);
+        return CommitmentDetail(
+          detail: state,
+          assignments: _assignments,
+          onAnswered: _cubit.refresh,
+          onPreview: _preview,
+          onOpenTile: _openTile,
+          onComments: _comments,
+        );
     }
   }
 

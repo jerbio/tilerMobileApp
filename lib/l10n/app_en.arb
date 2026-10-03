@@ -2717,5 +2717,14 @@
     "projectOwnsTasks": "{count, plural, =1{Owns 1 task} other{Owns {count} tasks}}",
     "@projectOwnsTasks": {"placeholders": {"count": {"type": "int"}}},
     "projectAlreadyIn": "Already in this project",
-    "projectRemoveBody": "Their tasks will have no one assigned."
+    "projectRemoveBody": "Their tasks will have no one assigned.",
+    "tileShareActivityCommentAdded": "Comment added",
+    "tileShareActivityCommentReplied": "Comment reply added",
+    "tileShareActivityCommentEdited": "Comment edited",
+    "tileShareActivityCommentDeleted": "Comment deleted",
+    "commitmentYourTasks": "Your tasks",
+    "commitmentYourTask": "Your task",
+    "commitmentPartialAnswered": "{done} of {total} answered; the rest are still pending.",
+    "@commitmentPartialAnswered": {"placeholders": {"done": {"type": "int"}, "total": {"type": "int"}}},
+    "commitmentOpenTile": "Open tile"
 }

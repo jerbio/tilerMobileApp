@@ -1870,5 +1870,9 @@
     "projectAssignTitle": "Asignar {task}",
     "projectOwnsTasks": "{count, plural, =1{Tiene 1 tarea} other{Tiene {count} tareas}}",
     "projectAlreadyIn": "Ya en este proyecto",
-    "projectRemoveBody": "Sus tareas quedarán sin asignar."
+    "projectRemoveBody": "Sus tareas quedarán sin asignar.",
+    "commitmentYourTasks": "Tus tareas",
+    "commitmentYourTask": "Tu tarea",
+    "commitmentPartialAnswered": "{done} de {total} respondidas; el resto sigue pendiente.",
+    "commitmentOpenTile": "Abrir tile"
 }

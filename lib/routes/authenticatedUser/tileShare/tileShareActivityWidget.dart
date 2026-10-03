@@ -112,6 +112,10 @@ class _TileShareActivityState extends State<TileShareActivityWidget>
     return switch (item.eventType) {
       'cluster_created' => l.tileShareActivityClusterCreated,
       'cluster_deleted' => l.tileShareActivityClusterDeleted,
+      'comment_added' => l.tileShareActivityCommentAdded,
+      'comment_replied' => l.tileShareActivityCommentReplied,
+      'comment_edited' => l.tileShareActivityCommentEdited,
+      'comment_deleted' => l.tileShareActivityCommentDeleted,
       'tilette_added' => l.tileShareActivityTiletteAdded,
       'tilette_edited' => l.tileShareActivityTiletteEdited,
       'tilette_deleted' => l.tileShareActivityTiletteDeleted,

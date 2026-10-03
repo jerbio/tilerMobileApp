@@ -4981,4 +4981,30 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get projectRemoveBody => 'Sus tareas quedarán sin asignar.';
+
+  @override
+  String get tileShareActivityCommentAdded => 'Comment added';
+
+  @override
+  String get tileShareActivityCommentReplied => 'Comment reply added';
+
+  @override
+  String get tileShareActivityCommentEdited => 'Comment edited';
+
+  @override
+  String get tileShareActivityCommentDeleted => 'Comment deleted';
+
+  @override
+  String get commitmentYourTasks => 'Tus tareas';
+
+  @override
+  String get commitmentYourTask => 'Tu tarea';
+
+  @override
+  String commitmentPartialAnswered(int done, int total) {
+    return '$done de $total respondidas; el resto sigue pendiente.';
+  }
+
+  @override
+  String get commitmentOpenTile => 'Abrir tile';
 }
