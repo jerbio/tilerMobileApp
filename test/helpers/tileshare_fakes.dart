@@ -12,6 +12,7 @@ import 'dart:async';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/designatedUser.dart';
+import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareInvitation.dart';
@@ -20,6 +21,8 @@ import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/services/api/tileSharePreviewApi.dart';
 import 'package:tiler_app/services/tileShare/tileSharePendingAccept.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
+
+import 'tileshare_fixtures.dart';
 
 /// Shared "misbehave on demand" behaviour.
 mixin FakeSourceControls {
@@ -504,4 +507,69 @@ class FakeTileShareRecipientsSource
   @override
   Future<List<TileShareActivity>> clusterActivity(String clusterId) =>
       run('clusterActivity($clusterId)', () => activity);
+}
+
+/// An owner's edits to a share in memory, applied to [clusters] so a reload
+/// shows them: rename / re-date the share, add / rename / re-date / delete a
+/// task. Each call is recorded with what it carried.
+class FakeTileShareEditSource
+    with FakeSourceControls
+    implements TileShareEditSource {
+  final FakeTileShareClustersSource clusters;
+  int _added = 0;
+
+  FakeTileShareEditSource(this.clusters);
+
+  TileShareClusterData? _cluster(String id) =>
+      [...clusters.outbox, ...clusters.inbox].where((c) => c.id == id).firstOrNull;
+
+  @override
+  Future<void> updateShare(String clusterId, {String? name, int? endMs}) =>
+      run('updateShare($clusterId, name: $name, end: $endMs)', () {
+        final TileShareClusterData? c = _cluster(clusterId);
+        if (c == null) return;
+        if (name != null) c.name = name;
+        if (endMs != null) c.endTimeInMs = endMs;
+      });
+
+  @override
+  Future<void> addTask(String clusterId, ClusterTemplateTileModel task) => run(
+          'addTask($clusterId, ${task.Name}, contacts: ${task.Contacts?.length ?? 0})',
+          () {
+        final String id = 'new-${++_added}';
+        clusters.tilettesByCluster[clusterId] = <TileShareTemplate>[
+          ...clusters.tilettesByCluster[clusterId] ?? const <TileShareTemplate>[],
+          tsTilette(id,
+              clusterId: clusterId,
+              name: task.Name,
+              durationMs: task.DurationInMs,
+              assignees: [
+                for (final c in task.Contacts ?? const [])
+                  if (c.Email != null) tsAssignee(c.Email!),
+              ]),
+        ];
+      });
+
+  @override
+  Future<void> updateTask(String tiletteId, {String? name, int? endMs}) =>
+      run('updateTask($tiletteId, name: $name, end: $endMs)', () {
+        for (final list in clusters.tilettesByCluster.values) {
+          for (final t in list) {
+            if (t.id == tiletteId) {
+              if (name != null) t.name = name;
+              if (endMs != null) t.end = endMs;
+            }
+          }
+        }
+      });
+
+  @override
+  Future<void> deleteTask(String tiletteId) =>
+      run('deleteTask($tiletteId)', () {
+        for (final key in clusters.tilettesByCluster.keys.toList()) {
+          clusters.tilettesByCluster[key] = clusters.tilettesByCluster[key]!
+              .where((t) => t.id != tiletteId)
+              .toList();
+        }
+      });
 }

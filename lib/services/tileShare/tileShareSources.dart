@@ -1,3 +1,4 @@
+import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
@@ -140,4 +141,21 @@ abstract class TileShareRecipientsSource {
   /// The cluster's recent activity, newest first - where each recipient's
   /// invitation delivery is read from.
   Future<List<TileShareActivity>> clusterActivity(String clusterId);
+}
+
+/// The owner's changes to a share and its tasks (redesign Step 9.16b). Only
+/// what is given changes. A task's length cannot change once it is shared.
+abstract class TileShareEditSource {
+  /// Renames the share or moves its deadline.
+  Future<void> updateShare(String clusterId, {String? name, int? endMs});
+
+  /// Adds a task to the share ([task] carries its name, length, deadline and
+  /// the people it is sent to).
+  Future<void> addTask(String clusterId, ClusterTemplateTileModel task);
+
+  /// Renames a task or moves its deadline.
+  Future<void> updateTask(String tiletteId, {String? name, int? endMs});
+
+  /// Deletes a task and its assignments.
+  Future<void> deleteTask(String tiletteId);
 }

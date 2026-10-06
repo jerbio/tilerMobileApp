@@ -1,6 +1,8 @@
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/services/api/tileShareRecipientsApi.dart';
 import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
+import 'package:tiler_app/data/request/tileShareClusterModel.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareInvitation.dart';
@@ -256,4 +258,35 @@ class LiveTileShareRecipientsSource implements TileShareRecipientsSource {
       (await _activity.getActivity(
               clusterId: clusterId, pageSize: activityPageSize))
           .items;
+}
+
+/// Sends only what changed, as the old edit screens did: the server keeps
+/// every field left out.
+class LiveTileShareEditSource implements TileShareEditSource {
+  final TileShareClusterApi _api;
+
+  LiveTileShareEditSource(this._api);
+
+  @override
+  Future<void> updateShare(String clusterId, {String? name, int? endMs}) =>
+      _api.updateTileShareCluster(TileShareClusterModel()
+        ..Id = clusterId
+        ..Name = name
+        ..EndTime = endMs);
+
+  @override
+  Future<void> addTask(String clusterId, ClusterTemplateTileModel task) =>
+      _api.createDesignatedTileTemplate(task..ClusterId = clusterId);
+
+  @override
+  Future<void> updateTask(String tiletteId, {String? name, int? endMs}) =>
+      _api.updateTileShareTemplate(ClusterTemplateTileModel()
+        ..Id = tiletteId
+        ..Name = name
+        ..EndTime = endMs);
+
+  @override
+  Future<void> deleteTask(String tiletteId) async {
+    await _api.deleteTileShareTemplate(tiletteId);
+  }
 }

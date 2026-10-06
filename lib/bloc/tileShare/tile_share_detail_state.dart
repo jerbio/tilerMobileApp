@@ -7,6 +7,9 @@ import 'package:tiler_app/data/tileShareTemplate.dart';
 
 enum DetailPhase { idle, loading, ready, notFound, error }
 
+/// An owner's change to the share (Step 9.16b).
+enum DetailEdit { share, addTask, editTask, deleteTask }
+
 /// Which detail a cluster opens as (T10): the owner's view of its mode, or the
 /// recipient's commitment whatever the mode.
 enum DetailVariant { broadcast, classMode, project, commitment }
@@ -55,6 +58,12 @@ class TileShareDetailState extends Equatable {
   /// The tilettes could not be loaded; the cluster itself is shown.
   final bool tilettesFailed;
 
+  /// An owner's change is going out.
+  final bool isSaving;
+
+  /// The last change the owner made was refused; nothing of it was applied.
+  final DetailEdit? editFailed;
+
   const TileShareDetailState({
     this.phase = DetailPhase.idle,
     this.cluster,
@@ -65,6 +74,8 @@ class TileShareDetailState extends Equatable {
     this.isRefreshing = false,
     this.refreshFailed = false,
     this.tilettesFailed = false,
+    this.isSaving = false,
+    this.editFailed,
   });
 
   /// The cluster's mode; a cluster that predates modes falls back to the
@@ -99,6 +110,9 @@ class TileShareDetailState extends Equatable {
     bool? isRefreshing,
     bool? refreshFailed,
     bool? tilettesFailed,
+    bool? isSaving,
+    DetailEdit? editFailed,
+    bool clearEditFailed = false,
   }) =>
       TileShareDetailState(
         phase: phase ?? this.phase,
@@ -110,6 +124,8 @@ class TileShareDetailState extends Equatable {
         isRefreshing: isRefreshing ?? this.isRefreshing,
         refreshFailed: refreshFailed ?? this.refreshFailed,
         tilettesFailed: tilettesFailed ?? this.tilettesFailed,
+        isSaving: isSaving ?? this.isSaving,
+        editFailed: clearEditFailed ? null : (editFailed ?? this.editFailed),
       );
 
   @override
@@ -123,5 +139,7 @@ class TileShareDetailState extends Equatable {
         isRefreshing,
         refreshFailed,
         tilettesFailed,
+        isSaving,
+        editFailed,
       ];
 }

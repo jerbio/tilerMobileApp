@@ -88,27 +88,30 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             durationIcon,
-            Container(
-                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    textStyle: const TextStyle(
-                      fontSize: TileDimensions.inputFontSize,
-                    ),
-                  ),
-                  onPressed: setDuration,
-                  child: Text(
-                    textButtonString,
-                    style: TextStyle(
-                      fontFamily: TileTextStyles.rubikFontName,
-                      color: colorScheme.onSurface,
-                      fontWeight: (_duration ?? Duration.zero).inSeconds >
-                              Duration.secondsPerMinute
-                          ? TileTextStyles.inputFieldFontWeight
-                          : TileTextStyles.inputFieldHintFontWeight,
-                    ),
-                  ),
-                ))
+            Flexible(
+                child: Container(
+                    padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        textStyle: const TextStyle(
+                          fontSize: TileDimensions.inputFontSize,
+                        ),
+                      ),
+                      onPressed: setDuration,
+                      child: Text(
+                        textButtonString,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: TileTextStyles.rubikFontName,
+                          color: colorScheme.onSurface,
+                          fontWeight: (_duration ?? Duration.zero).inSeconds >
+                                  Duration.secondsPerMinute
+                              ? TileTextStyles.inputFieldFontWeight
+                              : TileTextStyles.inputFieldHintFontWeight,
+                        ),
+                      ),
+                    )))
           ],
         ),
       ),

@@ -2726,5 +2726,14 @@
     "commitmentYourTask": "Your task",
     "commitmentPartialAnswered": "{done} of {total} answered; the rest are still pending.",
     "@commitmentPartialAnswered": {"placeholders": {"done": {"type": "int"}, "total": {"type": "int"}}},
-    "commitmentOpenTile": "Open tile"
+    "commitmentOpenTile": "Open tile",
+    "detailEditShare": "Edit share",
+    "detailEditTask": "Edit task",
+    "detailAddTask": "Add task",
+    "detailDeleteTask": "Delete task",
+    "detailDeleteTaskTitle": "Delete “{name}”?",
+    "@detailDeleteTaskTitle": {"placeholders": {"name": {"type": "String"}}},
+    "detailDeleteTaskBody": "Everyone on it loses it from their schedule.",
+    "detailEditFailed": "Couldn’t save your change. Try again.",
+    "detailTaskLengthFixed": "A task’s length can’t change once it’s shared."
 }

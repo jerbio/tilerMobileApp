@@ -66,6 +66,7 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
     _cubit = TileShareDetailCubit(
       clusters: LiveTileShareClustersSource(_clusterApi),
       assignments: _assignments,
+      edits: LiveTileShareEditSource(_clusterApi),
       target: widget.target,
       currentUserId: () => _userId,
       ownerHint: widget.ownerHint,

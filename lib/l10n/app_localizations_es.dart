@@ -5007,4 +5007,33 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get commitmentOpenTile => 'Abrir tile';
+
+  @override
+  String get detailEditShare => 'Editar';
+
+  @override
+  String get detailEditTask => 'Editar tarea';
+
+  @override
+  String get detailAddTask => 'Añadir tarea';
+
+  @override
+  String get detailDeleteTask => 'Eliminar tarea';
+
+  @override
+  String detailDeleteTaskTitle(String name) {
+    return '¿Eliminar “$name”?';
+  }
+
+  @override
+  String get detailDeleteTaskBody =>
+      'Todos los que la tienen la pierden de su agenda.';
+
+  @override
+  String get detailEditFailed =>
+      'No se pudo guardar el cambio. Inténtalo de nuevo.';
+
+  @override
+  String get detailTaskLengthFixed =>
+      'La duración de una tarea no puede cambiar una vez compartida.';
 }

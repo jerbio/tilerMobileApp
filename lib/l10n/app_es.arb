@@ -1874,5 +1874,13 @@
     "commitmentYourTasks": "Tus tareas",
     "commitmentYourTask": "Tu tarea",
     "commitmentPartialAnswered": "{done} de {total} respondidas; el resto sigue pendiente.",
-    "commitmentOpenTile": "Abrir tile"
+    "commitmentOpenTile": "Abrir tile",
+    "detailEditShare": "Editar",
+    "detailEditTask": "Editar tarea",
+    "detailAddTask": "Añadir tarea",
+    "detailDeleteTask": "Eliminar tarea",
+    "detailDeleteTaskTitle": "¿Eliminar “{name}”?",
+    "detailDeleteTaskBody": "Todos los que la tienen la pierden de su agenda.",
+    "detailEditFailed": "No se pudo guardar el cambio. Inténtalo de nuevo.",
+    "detailTaskLengthFixed": "La duración de una tarea no puede cambiar una vez compartida."
 }

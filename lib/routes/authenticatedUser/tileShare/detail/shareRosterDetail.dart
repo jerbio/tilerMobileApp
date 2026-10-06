@@ -8,6 +8,7 @@ import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/classPersonRow.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/ownerEdits.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/participantRow.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/projectRows.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
@@ -70,7 +71,8 @@ enum _Segment { overview, tasks, participants }
 /// * **Tasks**: each task with its own answers (Class), or the board - each
 ///   task's assignee, their answer and that task's own progress, "No one
 ///   assigned", Assign / Reassign (Project; no rolled-up total, no Accept
-///   all).
+///   all). The owner adds a task (a Class's goes to everyone in it, a
+///   Project's to no one yet), and renames or deletes one (Step 9.16b).
 /// * **Participants**: the add field and the roster. A Broadcast row shows the
 ///   answer, progress and delivery; a Class row one segment per task, "Not on
 ///   N tasks" with "Add to all tasks", and the person's tasks on tap.
@@ -386,6 +388,7 @@ class _Board extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final TaskEditor? editor = TaskEditor.of(context);
     return Column(
       key: const Key('project_board'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -397,7 +400,12 @@ class _Board extends StatelessWidget {
             change: state.tasks[tilettes[i].id],
             onAssign: () => _assign(context, i),
             onRetry: () => roster.retryTask(tilettes[i].id ?? ''),
+            menu: editor == null
+                ? null
+                : TaskMenu(tilette: tilettes[i], editor: editor),
           ),
+        // People join a Project's new task through Assign.
+        if (editor != null) AddTaskButton(onPressed: () => editor.add(context)),
       ],
     );
   }
@@ -415,6 +423,7 @@ class _Tasks extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final TextStyle? quiet = theme.textTheme.bodySmall
         ?.copyWith(color: theme.colorScheme.onSurfaceVariant);
+    final TaskEditor? editor = TaskEditor.of(context);
     return Column(
       key: const Key('class_tasks'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -453,10 +462,19 @@ class _Tasks extends StatelessWidget {
                         Duration(milliseconds: t.durationInMs!)
                             .toHumanLocalized(context),
                         style: quiet),
+                  if (editor != null) TaskMenu(tilette: t, editor: editor),
                 ],
               ),
             );
           }(),
+        // Everyone in a Class has every task, the new one too.
+        if (editor != null)
+          AddTaskButton(
+              onPressed: () => editor.add(context, contacts: [
+                    for (final RosterRow r in state.rows)
+                      if (r.assignmentId != null && r.contact != null)
+                        r.contact!,
+                  ])),
       ],
     );
   }
@@ -477,32 +495,18 @@ class _Participants extends StatelessWidget {
 
   Future<void> _confirmRemove(BuildContext context, RosterRow row) async {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
-    final bool? ok = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.participantRemoveTitle(row.label)),
-        content: Text(switch (mode) {
-          RosterMode.classMode => l10n.classRemoveBody,
-          RosterMode.project => l10n.projectRemoveBody,
-          RosterMode.broadcast => l10n.participantRemoveBody,
-        }),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child:
-                Text(MaterialLocalizations.of(dialogContext).cancelButtonLabel),
-          ),
-          TextButton(
-            key: const Key('participant_remove_confirm'),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: TextButton.styleFrom(
-                foregroundColor: Theme.of(dialogContext).colorScheme.error),
-            child: Text(l10n.participantRemove),
-          ),
-        ],
-      ),
+    final bool ok = await confirmDestructive(
+      context,
+      title: l10n.participantRemoveTitle(row.label),
+      body: switch (mode) {
+        RosterMode.classMode => l10n.classRemoveBody,
+        RosterMode.project => l10n.projectRemoveBody,
+        RosterMode.broadcast => l10n.participantRemoveBody,
+      },
+      confirmLabel: l10n.participantRemove,
+      confirmKey: const Key('participant_remove_confirm'),
     );
-    if (ok == true) roster.remove(row.key);
+    if (ok) roster.remove(row.key);
   }
 
   @override

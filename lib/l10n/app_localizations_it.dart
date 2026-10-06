@@ -5008,4 +5008,32 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get commitmentOpenTile => 'Open tile';
+
+  @override
+  String get detailEditShare => 'Edit share';
+
+  @override
+  String get detailEditTask => 'Edit task';
+
+  @override
+  String get detailAddTask => 'Add task';
+
+  @override
+  String get detailDeleteTask => 'Delete task';
+
+  @override
+  String detailDeleteTaskTitle(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String get detailDeleteTaskBody =>
+      'Everyone on it loses it from their schedule.';
+
+  @override
+  String get detailEditFailed => 'Couldn’t save your change. Try again.';
+
+  @override
+  String get detailTaskLengthFixed =>
+      'A task’s length can’t change once it’s shared.';
 }

@@ -125,13 +125,13 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
       ),
     );
     return Container(
-      alignment: Alignment.bottomCenter,
       width: MediaQuery.sizeOf(context).width,
       // height: modalHeight,
       color: Colors.transparent,
       margin: EdgeInsets.fromLTRB(
           0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           this.widget.appBar ?? SizedBox.shrink(),

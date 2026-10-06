@@ -28,6 +28,9 @@ class ProjectTaskRow extends StatelessWidget {
   final VoidCallback? onAssign;
   final VoidCallback? onRetry;
 
+  /// The owner's Edit / Delete for the task; none without it.
+  final Widget? menu;
+
   const ProjectTaskRow({
     super.key,
     required this.tilette,
@@ -35,6 +38,7 @@ class ProjectTaskRow extends StatelessWidget {
     this.change,
     this.onAssign,
     this.onRetry,
+    this.menu,
   });
 
   @override
@@ -64,6 +68,7 @@ class ProjectTaskRow extends StatelessWidget {
                     Duration(milliseconds: tilette.durationInMs!)
                         .toHumanLocalized(context),
                     style: quiet),
+              if (menu != null) menu!,
             ],
           ),
           const SizedBox(height: 6),

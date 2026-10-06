@@ -7,6 +7,7 @@ import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/clusters/clusterCopy.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/ownerEdits.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/listScaffolding.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/modeBadge.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/statusPill.dart';
@@ -15,7 +16,8 @@ import 'package:tiler_app/util.dart';
 /// The one detail frame (redesign T10, §5.4) for every mode and role: a slim
 /// bar (back, the share's name, Activity), loading, error + Retry, not found,
 /// the header summary, pull-to-refresh that never hides what is shown, and the
-/// mode's content below the header.
+/// mode's content below the header. The owner renames the share or moves its
+/// deadline from the bar (Step 9.16b); a refused change says so with Retry.
 ///
 /// [contentBuilder] draws the mode's content (Broadcast / Class / Project for
 /// the owner, the commitment for a recipient - Steps 9.13-9.16); without one
@@ -72,6 +74,13 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
             title: Text(name.isEmpty ? l10n.clusterTitleFallback : name,
                 maxLines: 1, overflow: TextOverflow.ellipsis),
             actions: [
+              if (cubit.canEdit)
+                IconButton(
+                  key: const Key('detail_edit'),
+                  tooltip: l10n.detailEditShare,
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: state.isSaving ? null : () => _editShare(context, state, cubit),
+                ),
               if (widget.onOpenActivity != null)
                 IconButton(
                   key: const Key('detail_activity'),
@@ -80,7 +89,7 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
                   onPressed: widget.onOpenActivity,
                 ),
             ],
-            bottom: state.isRefreshing
+            bottom: state.isRefreshing || state.isSaving
                 ? const PreferredSize(
                     preferredSize: Size.fromHeight(2),
                     child: LinearProgressIndicator(minHeight: 2))
@@ -96,6 +105,17 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
         );
       },
     );
+  }
+
+  Future<void> _editShare(BuildContext context, TileShareDetailState state,
+      TileShareDetailCubit cubit) async {
+    final NameDeadlineChange? change = await showNameDeadlineSheet(context,
+        sheetKey: const Key('share_edit_sheet'),
+        title: AppLocalizations.of(context)!.detailEditShare,
+        name: state.cluster?.name,
+        endMs: state.cluster?.endTimeInMs);
+    if (change == null || change.isEmpty) return;
+    await cubit.updateShare(name: change.name, endMs: change.endMs);
   }
 
   Widget _body(BuildContext context, TileShareDetailState state,
@@ -133,6 +153,15 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
                     message: l10n.detailRefreshFailed,
                     retryLabel: l10n.attentionRetry,
                     onRetry: cubit.refresh,
+                  ),
+                ),
+              if (state.editFailed != null)
+                SliverToBoxAdapter(
+                  child: TileShareErrorBanner(
+                    key: const Key('detail_edit_failed'),
+                    message: l10n.detailEditFailed,
+                    retryLabel: l10n.attentionRetry,
+                    onRetry: cubit.retryEdit,
                   ),
                 ),
               SliverPadding(

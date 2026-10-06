@@ -8551,6 +8551,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open tile'**
   String get commitmentOpenTile;
+
+  /// No description provided for @detailEditShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit share'**
+  String get detailEditShare;
+
+  /// No description provided for @detailEditTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit task'**
+  String get detailEditTask;
+
+  /// No description provided for @detailAddTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Add task'**
+  String get detailAddTask;
+
+  /// No description provided for @detailDeleteTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete task'**
+  String get detailDeleteTask;
+
+  /// No description provided for @detailDeleteTaskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{name}”?'**
+  String detailDeleteTaskTitle(String name);
+
+  /// No description provided for @detailDeleteTaskBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone on it loses it from their schedule.'**
+  String get detailDeleteTaskBody;
+
+  /// No description provided for @detailEditFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t save your change. Try again.'**
+  String get detailEditFailed;
+
+  /// No description provided for @detailTaskLengthFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'A task’s length can’t change once it’s shared.'**
+  String get detailTaskLengthFixed;
 }
 
 class _AppLocalizationsDelegate
