@@ -35,7 +35,6 @@ import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrat
 import 'package:tiler_app/routes/authenticatedUser/settings/notificationsPreferences/notificationPreferences.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/feedback/feedbackPage.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/tilePreferences.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
@@ -234,7 +233,6 @@ class _TilerAppState extends State<TilerApp> {
                   '/Integrations': (ctx) => IntegrationWidgetRoute(),
                   '/OnBoarding': (ctx) => OnboardingView(),
                   '/TileCluster': (ctx) => CreateTileShareClusterWidget(),
-                  '/DesignatedTileList': (ctx) => DesignatedTileList(),
                   '/TileShare': (ctx) => TileShareRoute(),
                   '/accountInfo': (ctx) => AccountInfo(),
                   '/notificationsPreferences': (ctx) =>

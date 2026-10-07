@@ -1,6 +1,6 @@
 // TileShare redesign Step 9.12: `TileShareDetailWidget` keeps its three entry
 // points (cluster id, designated tile template, data in hand) and becomes a
-// thin router. Each entry point maps to the new detail's target, and the old
+// thin router over the new detail (the old screens are retired in 9.17). Each entry point maps to the new detail's target, and the old
 // `isOutBox` becomes the ownership hint used only when the signed-in user is
 // not known.
 import 'package:flutter_test/flutter_test.dart';
@@ -33,9 +33,5 @@ void main() {
     expect(w.target.data, same(cluster));
     expect(w.target.clusterId, 'c9');
     expect(w.ownerHint, isTrue);
-  });
-
-  test('the new detail is behind its own switch, off by default', () {
-    expect(TileShareDetailWidget.useNewDetail, isFalse);
   });
 }

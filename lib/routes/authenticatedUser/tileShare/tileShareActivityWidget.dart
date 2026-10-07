@@ -3,9 +3,7 @@ import 'package:tiler_app/data/tileShareActivity.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/tileShareActivityApi.dart';
 import 'package:tiler_app/services/tileShareActivityChanges.dart';
-import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'tileShareDetailWidget.dart';
-import 'tileShareTemplateDetail.dart';
 
 typedef TileShareActivityLoader = Future<TileShareActivityPage> Function(
     {String? clusterId, String? tiletteId, String? cursor});
@@ -14,8 +12,16 @@ class TileShareActivityWidget extends StatefulWidget {
   final String? clusterId;
   final String? tiletteId;
   final TileShareActivityLoader? loader;
+
+  /// Opens a share's detail; pushes it unless a test says otherwise. An
+  /// activity about a task opens its share too - the task is in its Tasks.
+  final Future<void> Function(String clusterId)? onOpenShare;
   const TileShareActivityWidget(
-      {super.key, this.clusterId, this.tiletteId, this.loader});
+      {super.key,
+      this.clusterId,
+      this.tiletteId,
+      this.loader,
+      this.onOpenShare});
 
   @override
   State<TileShareActivityWidget> createState() => _TileShareActivityState();
@@ -134,21 +140,9 @@ class _TileShareActivityState extends State<TileShareActivityWidget>
 
   Future<void> _open(TileShareActivity item) async {
     final l = AppLocalizations.of(context)!;
-    final api = TileShareClusterApi(getContextCallBack: () => context);
     try {
-      if (item.tiletteId == null) {
-        await Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) =>
-                TileShareDetailWidget.byId(tileShareId: item.clusterId)));
-      } else {
-        final templates = await api.getTileShareTemplates(
-            tileShareTemplateId: item.tiletteId, clusterId: item.clusterId);
-        if (!mounted) return;
-        if (templates.isEmpty) throw StateError('Unavailable target');
-        await Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => TileShareTemplateDetailWidget(
-                tileShareTemplate: templates.first)));
-      }
+      if (item.clusterId.isEmpty) throw StateError('Unavailable target');
+      await (widget.onOpenShare ?? _push)(item.clusterId);
       if (mounted) await _load();
     } catch (_) {
       if (mounted) {
@@ -156,10 +150,12 @@ class _TileShareActivityState extends State<TileShareActivityWidget>
             SnackBar(content: Text(l.tileShareActivityUnavailable)));
         await _load();
       }
-    } finally {
-      api.dispose();
     }
   }
+
+  Future<void> _push(String clusterId) =>
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => TileShareDetailWidget.byId(tileShareId: clusterId)));
 
   @override
   Widget build(BuildContext context) {

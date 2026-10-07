@@ -28,9 +28,9 @@ void main() {
   });
 
   test('parses the server canonical event and tolerates future versions', () {
-    final fixture = File(
-            'test/fixtures/tileshare_activity/AssignmentAccepted.json')
-        .readAsStringSync();
+    final fixture =
+        File('test/fixtures/tileshare_activity/AssignmentAccepted.json')
+            .readAsStringSync();
     final json = jsonDecode(fixture) as Map<String, dynamic>;
     final event = TileShareActivity.fromJson(json);
     expect(event.eventType, 'assignment_accepted');
@@ -79,5 +79,39 @@ void main() {
     expect(find.text('Assignment accepted'), findsNothing);
     expect(find.text('This activity is no longer available to you.'),
         findsOneWidget);
+  });
+
+  testWidgets('an activity about a task opens its share (9.17)',
+      (tester) async {
+    final opened = <String>[];
+    Future<TileShareActivityPage> load(
+            {String? clusterId, String? tiletteId, String? cursor}) async =>
+        TileShareActivityPage.fromJson({
+          'items': [
+            {
+              'eventId': 'one',
+              'eventType': 'assignment_accepted',
+              'schemaVersion': 1,
+              'clusterId': 'cluster',
+              'tiletteId': 'tilette',
+              'occurredAt': 1760000000000,
+              'targetAvailable': true
+            }
+          ],
+          'nextCursor': null,
+          'historyAvailableFrom': 1,
+        });
+
+    await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+            body: TileShareActivityWidget(
+                loader: load,
+                onOpenShare: (clusterId) async => opened.add(clusterId)))));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Assignment accepted'));
+    await tester.pumpAndSettle();
+    expect(opened, ['cluster']);
   });
 }
