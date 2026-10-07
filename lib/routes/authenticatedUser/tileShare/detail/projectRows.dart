@@ -11,7 +11,8 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/statusPill.
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
-String _taskName(AppLocalizations l10n, TileShareTemplate t) =>
+/// A task's name, or the fallback for a task without one.
+String projectTaskName(AppLocalizations l10n, TileShareTemplate t) =>
     (t.name ?? '').trim().isEmpty ? l10n.clusterTitleFallback : t.name!.trim();
 
 /// One task on a Project's board (redesign §5.4): its name and length, who has
@@ -59,7 +60,7 @@ class ProjectTaskRow extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(_taskName(l10n, tilette),
+                child: Text(projectTaskName(l10n, tilette),
                     style: theme.textTheme.bodyMedium
                         ?.copyWith(fontWeight: FontWeight.w600)),
               ),
@@ -160,7 +161,7 @@ class ProjectPersonRow extends StatelessWidget {
         theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant);
     final List<String> owned = <String>[
       for (int i = 0; i < row.cells.length && i < tilettes.length; i++)
-        if (row.cells[i].isPresent) _taskName(l10n, tilettes[i]),
+        if (row.cells[i].isPresent) projectTaskName(l10n, tilettes[i]),
     ];
     final String? delivery = ParticipantRow.deliveryText(l10n, row);
     final bool deliveryProblem = row.delivery == RecipientDelivery.failed ||
@@ -215,10 +216,11 @@ class ProjectPersonRow extends StatelessWidget {
   }
 }
 
-/// Who gets [tilette]: someone already in the project, or a new contact.
-/// Completes with the chosen contact, or `null` when dismissed.
-Future<Contact?> showProjectAssignSheet(BuildContext context,
-    TileShareTemplate tilette, List<RosterRow> people,
+/// Who gets the task named [taskName] (an existing task, or one being
+/// added): someone already in the project, or a new contact. Completes with
+/// the chosen contact, or `null` when dismissed.
+Future<Contact?> showProjectAssignSheet(
+    BuildContext context, String taskName, List<RosterRow> people,
     {Set<String> exclude = const <String>{}}) {
   return showModalBottomSheet<Contact>(
     context: context,
@@ -240,7 +242,10 @@ Future<Contact?> showProjectAssignSheet(BuildContext context,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(l10n.projectAssignTitle(_taskName(l10n, tilette)),
+                Text(
+                    l10n.projectAssignTitle(taskName.trim().isEmpty
+                        ? l10n.clusterTitleFallback
+                        : taskName.trim()),
                     style: theme.textTheme.titleMedium),
                 const SizedBox(height: 8),
                 ContactInputFieldWidget(
@@ -252,7 +257,8 @@ Future<Contact?> showProjectAssignSheet(BuildContext context,
                 ),
                 if (others.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  Text(l10n.projectAlreadyIn, style: theme.textTheme.labelLarge),
+                  Text(l10n.projectAlreadyIn,
+                      style: theme.textTheme.labelLarge),
                   const SizedBox(height: 4),
                   Wrap(
                     spacing: 8,

@@ -111,11 +111,11 @@ void main() {
         'board', (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
-      expect(find.text('1 of 3 tasks accepted'), findsOneWidget);
-      expect(find.text('1 task has no one assigned'), findsOneWidget);
+      expect(find.text('1 of 3 tilettes accepted'), findsOneWidget);
+      expect(find.text('1 tilette has no one assigned'), findsOneWidget);
       expect(_task('t1'), findsOneWidget);
       expect(find.text('Accept all'), findsNothing);
-      await tester.tap(find.text('1 task has no one assigned'));
+      await tester.tap(find.text('1 tilette has no one assigned'));
       await _settle(tester);
       expect(_key('project_assign_t3'), findsOneWidget);
       await rig.detail.close();
@@ -220,7 +220,7 @@ void main() {
       await _segment(tester, 'participants');
       expect(
           find.descendant(
-              of: _key('participant_row_ann@x.com'), matching: find.text('Owns 1 task')),
+              of: _key('participant_row_ann@x.com'), matching: find.text('Owns 1 tilette')),
           findsOneWidget);
       expect(
           find.descendant(

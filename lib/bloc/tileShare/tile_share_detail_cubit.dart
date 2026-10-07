@@ -156,7 +156,9 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
       ));
     } catch (error) {
       if (_outdated(generation)) return;
-      TileShareLog.d(_tag, 'loading ${_clusterId ?? target.designatedTileId} '
+      TileShareLog.d(
+          _tag,
+          'loading ${_clusterId ?? target.designatedTileId} '
           'failed: $error');
       _emit(keep
           ? state.copyWith(isRefreshing: false, refreshFailed: true)
@@ -168,24 +170,48 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
   bool get canEdit => _edits != null && _hasContent && state.isOwner;
 
   /// Renames the share or moves its deadline.
-  Future<bool> updateShare({String? name, int? endMs}) =>
-      _edit(DetailEdit.share, 'share: name=$name end=$endMs',
-          (edits, id) => edits.updateShare(id, name: name, endMs: endMs));
+  Future<bool> updateShare({String? name, int? endMs}) => _edit(
+      DetailEdit.share,
+      'share: name=$name end=$endMs',
+      (edits, id) => edits.updateShare(id, name: name, endMs: endMs));
 
-  /// Adds [task] to the share.
-  Future<bool> addTask(ClusterTemplateTileModel task) => _edit(
-      DetailEdit.addTask,
-      'add task "${task.Name}" for ${task.Contacts?.length ?? 0}',
-      (edits, id) => edits.addTask(id, task..ClusterId = id));
+  /// Adds [task] to the share. The server saves no notes on a new task, so
+  /// [notes] are saved on it afterwards; refused, the task stays and the
+  /// failure is the notes' ([DetailEdit.editTask]), retried on their own.
+  Future<bool> addTask(ClusterTemplateTileModel task, {String? notes}) async {
+    String? added;
+    final bool ok = await _edit(
+        DetailEdit.addTask,
+        'add task "${task.Name}" for ${task.Contacts?.length ?? 0}',
+        (edits, id) async =>
+            added = await edits.addTask(id, task..ClusterId = id));
+    final String? newId = added;
+    if (!ok || newId == null || (notes ?? '').trim().isEmpty) return ok;
+    return updateTask(newId, notes: notes);
+  }
 
-  /// Renames a task or moves its deadline.
-  Future<bool> updateTask(String tiletteId, {String? name, int? endMs}) =>
-      _edit(DetailEdit.editTask, 'task $tiletteId: name=$name end=$endMs',
-          (edits, _) => edits.updateTask(tiletteId, name: name, endMs: endMs));
+  /// Renames a task, moves its deadline or replaces its notes.
+  Future<bool> updateTask(String tiletteId,
+          {String? name, int? endMs, String? notes}) =>
+      _edit(
+          DetailEdit.editTask,
+          'task $tiletteId: name=$name end=$endMs '
+          'notes=${notes == null ? 'unchanged' : '${notes.length} chars'}',
+          (edits, _) => edits.updateTask(tiletteId,
+              name: name, endMs: endMs, notes: notes));
 
   /// Deletes a task.
   Future<bool> deleteTask(String tiletteId) => _edit(DetailEdit.deleteTask,
       'delete task $tiletteId', (edits, _) => edits.deleteTask(tiletteId));
+
+  /// Forgets a refused change already shown where it was made (a sheet):
+  /// no banner, nothing to retry.
+  void dismissEditFailure() {
+    _retry = null;
+    if (state.editFailed != null) {
+      _emit(state.copyWith(clearEditFailed: true));
+    }
+  }
 
   /// Sends the last refused change again; `false` when there is none.
   Future<bool> retryEdit() {
@@ -195,8 +221,11 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
 
   /// Sends one change, then reloads. `false` when it was not sent (no edits,
   /// not the owner, another change going out) or was refused.
-  Future<bool> _edit(DetailEdit kind, String what,
-      Future<void> Function(TileShareEditSource edits, String clusterId) send) async {
+  Future<bool> _edit(
+      DetailEdit kind,
+      String what,
+      Future<void> Function(TileShareEditSource edits, String clusterId)
+          send) async {
     final TileShareEditSource? edits = _edits;
     final String? clusterId = _clusterId;
     if (!canEdit || edits == null || clusterId == null || state.isSaving) {

@@ -104,11 +104,16 @@ class AddTileFieldRow extends StatelessWidget {
     this.error,
     this.mutedIcon = false,
     this.semanticLabel,
+    this.helper,
   });
 
   final IconData icon;
   final String label;
   final String value;
+
+  /// A quiet line under the value that explains it (e.g. why a value is
+  /// shown but cannot be changed). None by default.
+  final String? helper;
   final VoidCallback? onTap;
 
   /// Replaces the chevron. Used for the locked "Auto-calculated" pill.
@@ -158,6 +163,14 @@ class AddTileFieldRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                if (helper != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    helper!,
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: tokens.textSecondary),
+                  ),
+                ],
                 if (error != null) ...[
                   const SizedBox(height: 2),
                   Text(
@@ -203,6 +216,7 @@ class AddTileFieldRow extends StatelessWidget {
       onTap: onTap,
       label: semanticLabel ??
           '$label${required ? ', required' : ''}, $value'
+              '${helper != null ? ', $helper' : ''}'
               '${error != null ? ', $error' : ''}',
       child: trailing == null
           ? ExcludeSemantics(child: body)
@@ -427,6 +441,7 @@ class AddTileTextFieldRow extends StatelessWidget {
     this.required = false,
     this.onChanged,
     this.onSubmitted,
+    this.maxLength,
   });
 
   /// Key on the inner [TextField], for rows whose row-key is already taken.
@@ -442,6 +457,10 @@ class AddTileTextFieldRow extends StatelessWidget {
 
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
+
+  /// The longest value allowed, with a counter under the field; none by
+  /// default.
+  final int? maxLength;
 
   @override
   Widget build(BuildContext context) {
@@ -479,6 +498,7 @@ class AddTileTextFieldRow extends StatelessWidget {
                   textInputAction: TextInputAction.done,
                   onChanged: onChanged,
                   onSubmitted: onSubmitted,
+                  maxLength: maxLength,
                   style: textTheme.titleMedium?.copyWith(
                     color: tokens.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -490,6 +510,8 @@ class AddTileTextFieldRow extends StatelessWidget {
                     errorText: error,
                     errorStyle:
                         textTheme.bodySmall?.copyWith(color: scheme.error),
+                    counterStyle: textTheme.bodySmall
+                        ?.copyWith(color: tokens.textSecondary),
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 6),
                     border: InputBorder.none,

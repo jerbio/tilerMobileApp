@@ -275,15 +275,19 @@ class LiveTileShareEditSource implements TileShareEditSource {
         ..EndTime = endMs);
 
   @override
-  Future<void> addTask(String clusterId, ClusterTemplateTileModel task) =>
-      _api.createDesignatedTileTemplate(task..ClusterId = clusterId);
+  Future<String?> addTask(
+          String clusterId, ClusterTemplateTileModel task) async =>
+      // The response is the new tile share template (`tileTemplate`).
+      (await _api.createDesignatedTileTemplate(task..ClusterId = clusterId)).id;
 
   @override
-  Future<void> updateTask(String tiletteId, {String? name, int? endMs}) =>
+  Future<void> updateTask(String tiletteId,
+          {String? name, int? endMs, String? notes}) =>
       _api.updateTileShareTemplate(ClusterTemplateTileModel()
         ..Id = tiletteId
         ..Name = name
-        ..EndTime = endMs);
+        ..EndTime = endMs
+        ..NoteMiscData = notes);
 
   @override
   Future<void> deleteTask(String tiletteId) async {

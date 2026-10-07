@@ -89,7 +89,8 @@ void main() {
   tearDown(() => TileShareLog.sink = originalSink);
 
   group('opening', () {
-    test('by cluster id: loading, then the cluster, its tilettes and my own '
+    test(
+        'by cluster id: loading, then the cluster, its tilettes and my own '
         'templates in it', () async {
       final rig = _Rig(const TileShareDetailTarget.cluster('shared'));
       final done = rig.cubit.load();
@@ -123,12 +124,10 @@ void main() {
       await rig.close();
     });
 
-    test('with data in hand: shown at once, then brought up to date',
-        () async {
+    test('with data in hand: shown at once, then brought up to date', () async {
       final rig = _Rig(TileShareDetailTarget.data(
           tsCluster('shared', name: 'Old name', creatorId: 'sarah')));
-      expect(rig.state.phase, DetailPhase.ready,
-          reason: 'nothing to wait for');
+      expect(rig.state.phase, DetailPhase.ready, reason: 'nothing to wait for');
       expect(rig.state.cluster!.name, 'Old name');
       await rig.cubit.load();
       expect(rig.states.any((s) => s.phase == DetailPhase.loading), isFalse,
@@ -215,8 +214,8 @@ void main() {
   group('which detail', () {
     Future<TileShareDetailState> open(String id,
         {String? me = 'me', bool? ownerHint}) async {
-      final rig = _Rig(TileShareDetailTarget.cluster(id),
-          me: me, ownerHint: ownerHint);
+      final rig =
+          _Rig(TileShareDetailTarget.cluster(id), me: me, ownerHint: ownerHint);
       await rig.cubit.load();
       final s = rig.state;
       await rig.close();
@@ -243,8 +242,8 @@ void main() {
 
     test('without a signed-in user the caller\'s hint decides', () async {
       expect((await open('shared', me: null, ownerHint: true)).isOwner, isTrue);
-      expect((await open('mine-b', me: null, ownerHint: false)).isOwner,
-          isFalse);
+      expect(
+          (await open('mine-b', me: null, ownerHint: false)).isOwner, isFalse);
       expect((await open('mine-b', me: null)).isOwner, isFalse,
           reason: 'with no hint, never assume ownership');
       expect((await open('shared', me: null)).mine, isEmpty,
@@ -253,6 +252,7 @@ void main() {
   });
 
   ownerEdits();
+  taskNotes();
 }
 
 // Step 9.16b: the owner edits the share - its name and deadline, and its
@@ -261,12 +261,13 @@ void ownerEdits() {
   group('owner edits', () {
     test('renaming the share sends it and shows the share as reloaded',
         () async {
-      final rig = _Rig(const TileShareDetailTarget.cluster('mine-b'),
-          withEdits: true);
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
       await rig.cubit.load();
       expect(rig.cubit.canEdit, isTrue);
       expect(await rig.cubit.updateShare(name: 'Moving day'), isTrue);
-      expect(rig.edits!.calls.single, 'updateShare(mine-b, name: Moving day, end: null)');
+      expect(rig.edits!.calls.single,
+          'updateShare(mine-b, name: Moving day, end: null)');
       expect(rig.state.cluster!.name, 'Moving day');
       expect(rig.state.isSaving, isFalse);
       await rig.close();
@@ -274,8 +275,8 @@ void ownerEdits() {
 
     test('a refused change says which, keeps what is shown, and is not done',
         () async {
-      final rig = _Rig(const TileShareDetailTarget.cluster('mine-b'),
-          withEdits: true);
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
       await rig.cubit.load();
       rig.edits!.failNextOn('updateShare', StateError('offline'));
       expect(await rig.cubit.updateShare(name: 'Moving day'), isFalse);
@@ -288,8 +289,8 @@ void ownerEdits() {
 
     test('Retry sends the refused change again; nothing to retry after',
         () async {
-      final rig = _Rig(const TileShareDetailTarget.cluster('mine-b'),
-          withEdits: true);
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
       await rig.cubit.load();
       rig.edits!.failNextOn('deleteTask', StateError('offline'));
       expect(await rig.cubit.deleteTask('t3'), isFalse);
@@ -304,14 +305,15 @@ void ownerEdits() {
 
     test('adding a task sends it with its people, and the task appears',
         () async {
-      final rig = _Rig(const TileShareDetailTarget.cluster('mine-b'),
-          withEdits: true);
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
       await rig.cubit.load();
       final task = ClusterTemplateTileModel()
         ..Name = 'Label boxes'
         ..Contacts = [ContactModel()..Email = 'ann@x.com'];
       expect(await rig.cubit.addTask(task), isTrue);
-      expect(rig.edits!.calls.single, 'addTask(mine-b, Label boxes, contacts: 1)');
+      expect(
+          rig.edits!.calls.single, 'addTask(mine-b, Label boxes, contacts: 1)');
       expect(task.ClusterId, 'mine-b');
       expect(rig.state.tilettes.map((t) => t.name), contains('Label boxes'));
       await rig.close();
@@ -325,15 +327,17 @@ void ownerEdits() {
       expect(rig.state.tilettes.first.name, 'Write it');
       expect(await rig.cubit.deleteTask('t2'), isTrue);
       expect(rig.state.tilettes.map((t) => t.id), ['t1']);
-      expect(rig.edits!.calls,
-          ['updateTask(t1, name: Write it, end: null)', 'deleteTask(t2)']);
+      expect(rig.edits!.calls, [
+        'updateTask(t1, name: Write it, end: null, notes: null)',
+        'deleteTask(t2)'
+      ]);
       await rig.close();
     });
 
     test('one change at a time; a recipient, or no edit source, edits nothing',
         () async {
-      final rig = _Rig(const TileShareDetailTarget.cluster('mine-b'),
-          withEdits: true);
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
       await rig.cubit.load();
       rig.edits!.hold();
       final first = rig.cubit.updateShare(name: 'A');
@@ -343,8 +347,8 @@ void ownerEdits() {
       expect(rig.edits!.calls, hasLength(1));
       await rig.close();
 
-      final recipient = _Rig(const TileShareDetailTarget.cluster('shared'),
-          withEdits: true);
+      final recipient =
+          _Rig(const TileShareDetailTarget.cluster('shared'), withEdits: true);
       await recipient.cubit.load();
       expect(recipient.cubit.canEdit, isFalse);
       expect(await recipient.cubit.updateShare(name: 'X'), isFalse);
@@ -354,6 +358,90 @@ void ownerEdits() {
       await none.cubit.load();
       expect(none.cubit.canEdit, isFalse);
       await none.close();
+    });
+  });
+}
+
+// Step 9.16f (T27): a task's notes. The server saves notes only on update,
+// so a new task with notes is created first, then its notes are saved; if
+// the notes are refused the task stays and Retry sends only the notes.
+void taskNotes() {
+  group('task notes', () {
+    test('adding a task with notes creates it, then saves its notes', () async {
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
+      await rig.cubit.load();
+      expect(
+          await rig.cubit.addTask(ClusterTemplateTileModel()..Name = 'Label',
+              notes: 'Use **tape**'),
+          isTrue);
+      expect(rig.edits!.calls, [
+        'addTask(mine-b, Label, contacts: 0)',
+        'updateTask(new-1, name: null, end: null, notes: Use **tape**)',
+      ]);
+      expect(
+          rig.state.tilettes
+              .firstWhere((t) => t.id == 'new-1')
+              .miscData
+              ?.userNote,
+          'Use **tape**');
+      await rig.close();
+    });
+
+    test('no notes, one call', () async {
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
+      await rig.cubit.load();
+      await rig.cubit
+          .addTask(ClusterTemplateTileModel()..Name = 'Label', notes: '  ');
+      expect(rig.edits!.calls, ['addTask(mine-b, Label, contacts: 0)']);
+      await rig.close();
+    });
+
+    test('refused notes keep the new task; Retry sends only the notes',
+        () async {
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
+      await rig.cubit.load();
+      rig.edits!.failNextOn('updateTask', StateError('offline'));
+      expect(
+          await rig.cubit
+              .addTask(ClusterTemplateTileModel()..Name = 'Label', notes: 'n'),
+          isFalse);
+      expect(rig.state.editFailed, DetailEdit.editTask,
+          reason: 'the task was added; its notes were not');
+      expect(rig.state.tilettes.map((t) => t.id), contains('new-1'));
+      expect(await rig.cubit.retryEdit(), isTrue);
+      expect(
+          rig.edits!.calls.where((c) => c.startsWith('addTask')), hasLength(1));
+      expect(rig.edits!.calls.last,
+          'updateTask(new-1, name: null, end: null, notes: n)');
+      await rig.close();
+    });
+
+    test("a task's notes are edited, and cleared with an empty note", () async {
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
+      await rig.cubit.load();
+      await rig.cubit.updateTask('t3', notes: 'Bring tape');
+      expect(rig.state.tilettes.single.miscData?.userNote, 'Bring tape');
+      await rig.cubit.updateTask('t3', notes: '');
+      expect(rig.state.tilettes.single.miscData?.userNote, '');
+      await rig.close();
+    });
+
+    test('a failure shown elsewhere can be dismissed; nothing to retry',
+        () async {
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
+      await rig.cubit.load();
+      rig.edits!.failNextOn('updateTask', StateError('offline'));
+      await rig.cubit.updateTask('t3', name: 'Pack');
+      expect(rig.state.editFailed, DetailEdit.editTask);
+      rig.cubit.dismissEditFailure();
+      expect(rig.state.editFailed, isNull);
+      expect(await rig.cubit.retryEdit(), isFalse);
+      await rig.close();
     });
   });
 }

@@ -150,11 +150,14 @@ abstract class TileShareEditSource {
   Future<void> updateShare(String clusterId, {String? name, int? endMs});
 
   /// Adds a task to the share ([task] carries its name, length, deadline and
-  /// the people it is sent to).
-  Future<void> addTask(String clusterId, ClusterTemplateTileModel task);
+  /// the people it is sent to); answers with the new task's id. The server
+  /// does not save notes on a new task - see [updateTask].
+  Future<String?> addTask(String clusterId, ClusterTemplateTileModel task);
 
-  /// Renames a task or moves its deadline.
-  Future<void> updateTask(String tiletteId, {String? name, int? endMs});
+  /// Renames a task, moves its deadline or replaces its notes (markdown; an
+  /// empty note clears them).
+  Future<void> updateTask(String tiletteId,
+      {String? name, int? endMs, String? notes});
 
   /// Deletes a task and its assignments.
   Future<void> deleteTask(String tiletteId);

@@ -13,6 +13,7 @@ import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/designatedUser.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
+import 'package:tiler_app/data/tileShareTemplateMiscData.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareInvitation.dart';
@@ -79,7 +80,8 @@ class FakeTileShareClustersSource
     Map<String, List<TileShareTemplate>>? tilettesByCluster,
   })  : outbox = outbox ?? <TileShareClusterData>[],
         inbox = inbox ?? <TileShareClusterData>[],
-        tilettesByCluster = tilettesByCluster ?? <String, List<TileShareTemplate>>{};
+        tilettesByCluster =
+            tilettesByCluster ?? <String, List<TileShareTemplate>>{};
 
   @override
   Future<List<TileShareClusterData>> clusters(
@@ -102,9 +104,9 @@ class FakeTileShareClustersSource
       });
 
   @override
-  Future<List<TileShareTemplate>> tilettes(String clusterId) =>
-      run('tilettes($clusterId)',
-          () => tilettesByCluster[clusterId] ?? <TileShareTemplate>[]);
+  Future<List<TileShareTemplate>> tilettes(String clusterId) => run(
+      'tilettes($clusterId)',
+      () => tilettesByCluster[clusterId] ?? <TileShareTemplate>[]);
 
   @override
   Future<void> deleteCluster(String clusterId) =>
@@ -125,13 +127,17 @@ class FakeTileShareAssignmentsSource
   @override
   Future<List<DesignatedTile>> designatedTiles(
           {String? clusterId, int index = 0, int pageSize = 50}) =>
-      run('designatedTiles(clusterId: $clusterId, index: $index, '
+      run(
+          'designatedTiles(clusterId: $clusterId, index: $index, '
           'pageSize: $pageSize)', () {
         final List<DesignatedTile> scoped = clusterId == null
             ? tiles
-            : tiles.where((t) => t.tileTemplate?.clusterId == clusterId).toList();
+            : tiles
+                .where((t) => t.tileTemplate?.clusterId == clusterId)
+                .toList();
         if (index >= scoped.length) return <DesignatedTile>[];
-        return scoped.sublist(index, (index + pageSize).clamp(0, scoped.length));
+        return scoped.sublist(
+            index, (index + pageSize).clamp(0, scoped.length));
       });
 
   @override
@@ -361,14 +367,16 @@ class _StoredOperation {
   }
 
   TileShareOperation _at(int i) {
-    final OperationState state =
-        script[i.clamp(0, script.length - 1).toInt()];
+    final OperationState state = script[i.clamp(0, script.length - 1).toInt()];
     return TileShareOperation(
       operationId: first.operationId,
       assignmentId: first.assignmentId,
       state: state,
-      calendarId: state == OperationState.completed ? first.calendarId ?? 'CalendarEvent+fake' : null,
-      reason: state == OperationState.needsReview || state == OperationState.rejected
+      calendarId: state == OperationState.completed
+          ? first.calendarId ?? 'CalendarEvent+fake'
+          : null,
+      reason: state == OperationState.needsReview ||
+              state == OperationState.rejected
           ? first.reason ?? 'scheduleChanged'
           : null,
     );
@@ -399,24 +407,23 @@ class FakeTileShareAttentionSources
             ? 0
             : invitationList.indexWhere((i) => i.assignmentId == afterId) + 1;
         final int end = (start + pageSize).clamp(0, invitationList.length);
-        final List<TileShareInvitation> slice =
-            start >= invitationList.length
-                ? <TileShareInvitation>[]
-                : invitationList.sublist(start, end);
-        return TileShareInvitationPage(
-            slice, end < invitationList.length ? slice.last.assignmentId : null);
+        final List<TileShareInvitation> slice = start >= invitationList.length
+            ? <TileShareInvitation>[]
+            : invitationList.sublist(start, end);
+        return TileShareInvitationPage(slice,
+            end < invitationList.length ? slice.last.assignmentId : null);
       });
 
   @override
-  Future<TileShareActivityPage> activity(
-          {String? cursor, int pageSize = 50}) =>
+  Future<TileShareActivityPage> activity({String? cursor, int pageSize = 50}) =>
       run('activity(cursor: $cursor, pageSize: $pageSize)', () {
         final List<TileShareActivity> visible =
             activityList.where((e) => !dismissed.contains(e.eventId)).toList();
         final int start = cursor == null ? 0 : int.parse(cursor);
         final int end = (start + pageSize).clamp(0, visible.length);
-        final List<TileShareActivity> slice =
-            start >= visible.length ? <TileShareActivity>[] : visible.sublist(start, end);
+        final List<TileShareActivity> slice = start >= visible.length
+            ? <TileShareActivity>[]
+            : visible.sublist(start, end);
         return TileShareActivityPage(
             items: slice,
             nextCursor: end < visible.length ? '$end' : null,
@@ -444,7 +451,8 @@ class FakePendingAcceptStore implements TileSharePendingAcceptStore {
     if (initial != null) _byAssignment[initial.assignmentId] = initial;
   }
 
-  PendingAccept? operator [](String assignmentId) => _byAssignment[assignmentId];
+  PendingAccept? operator [](String assignmentId) =>
+      _byAssignment[assignmentId];
 
   @override
   Future<PendingAccept?> read(String assignmentId) async {
@@ -520,8 +528,10 @@ class FakeTileShareEditSource
 
   FakeTileShareEditSource(this.clusters);
 
-  TileShareClusterData? _cluster(String id) =>
-      [...clusters.outbox, ...clusters.inbox].where((c) => c.id == id).firstOrNull;
+  TileShareClusterData? _cluster(String id) => [
+        ...clusters.outbox,
+        ...clusters.inbox
+      ].where((c) => c.id == id).firstOrNull;
 
   @override
   Future<void> updateShare(String clusterId, {String? name, int? endMs}) =>
@@ -533,12 +543,13 @@ class FakeTileShareEditSource
       });
 
   @override
-  Future<void> addTask(String clusterId, ClusterTemplateTileModel task) => run(
-          'addTask($clusterId, ${task.Name}, contacts: ${task.Contacts?.length ?? 0})',
+  Future<String?> addTask(String clusterId, ClusterTemplateTileModel task) =>
+      run('addTask($clusterId, ${task.Name}, contacts: ${task.Contacts?.length ?? 0})',
           () {
         final String id = 'new-${++_added}';
         clusters.tilettesByCluster[clusterId] = <TileShareTemplate>[
-          ...clusters.tilettesByCluster[clusterId] ?? const <TileShareTemplate>[],
+          ...clusters.tilettesByCluster[clusterId] ??
+              const <TileShareTemplate>[],
           tsTilette(id,
               clusterId: clusterId,
               name: task.Name,
@@ -548,16 +559,23 @@ class FakeTileShareEditSource
                   if (c.Email != null) tsAssignee(c.Email!),
               ]),
         ];
+        return id;
       });
 
   @override
-  Future<void> updateTask(String tiletteId, {String? name, int? endMs}) =>
-      run('updateTask($tiletteId, name: $name, end: $endMs)', () {
+  Future<void> updateTask(String tiletteId,
+          {String? name, int? endMs, String? notes}) =>
+      run('updateTask($tiletteId, name: $name, end: $endMs, notes: $notes)',
+          () {
         for (final list in clusters.tilettesByCluster.values) {
           for (final t in list) {
             if (t.id == tiletteId) {
               if (name != null) t.name = name;
               if (endMs != null) t.end = endMs;
+              if (notes != null) {
+                t.miscData =
+                    TileShareTemplateMiscData.fromJson({'userNote': notes});
+              }
             }
           }
         }

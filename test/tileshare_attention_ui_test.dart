@@ -225,7 +225,7 @@ void main() {
       expect(find.text('Sarah Kim invited you'), findsOneWidget);
       expect(find.text('Invitation'), findsOneWidget);
       expect(find.textContaining('Class'), findsOneWidget);
-      expect(find.textContaining('1 task'), findsOneWidget);
+      expect(find.textContaining('1 tilette'), findsOneWidget);
       expect(find.textContaining('Due'), findsOneWidget);
       expect(find.text('Review'), findsOneWidget);
     });
@@ -239,8 +239,8 @@ void main() {
               clusterTitle: 'Sprint',
               count: 3,
               inviterName: 'Sarah'));
-      expect(find.text('Sarah invited you to 3 tasks'), findsOneWidget);
-      expect(find.textContaining('3 tasks'), findsWidgets);
+      expect(find.text('Sarah invited you to 3 tilettes'), findsOneWidget);
+      expect(find.textContaining('3 tilettes'), findsWidgets);
 
       await _pumpCard(
           tester,
@@ -277,13 +277,13 @@ void main() {
 
       await _pumpCard(tester,
           const AttentionItem(type: AttentionType.atRisk, clusterId: 'c', clusterTitle: 'C'));
-      expect(find.text('A task no longer fits your schedule'), findsOneWidget);
+      expect(find.text('A tilette no longer fits your schedule'), findsOneWidget);
 
       await _pumpCard(
           tester,
           const AttentionItem(
               type: AttentionType.atRisk, clusterId: 'c', clusterTitle: 'C', count: 3));
-      expect(find.text('3 tasks no longer fit your schedule'), findsOneWidget);
+      expect(find.text('3 tilettes no longer fit your schedule'), findsOneWidget);
     });
 
     testWidgets('changed: each kind of edit reads differently', (tester) async {
@@ -304,7 +304,7 @@ void main() {
       }
 
       await changed(['name']);
-      expect(find.text('Jordan renamed a task'), findsOneWidget);
+      expect(find.text('Jordan renamed a tilette'), findsOneWidget);
       expect(find.text('Changed'), findsOneWidget);
       expect(find.text('Review changes'), findsOneWidget);
 
@@ -320,13 +320,13 @@ void main() {
           findsOneWidget);
 
       await changed(['name', 'note']);
-      expect(find.text('Jordan updated a task'), findsOneWidget);
+      expect(find.text('Jordan updated a tilette'), findsOneWidget);
 
       await changed(['name'], count: 3);
       expect(find.text('Jordan made 3 changes'), findsOneWidget);
 
       await changed(['name'], actor: null);
-      expect(find.text('Someone renamed a task'), findsOneWidget);
+      expect(find.text('Someone renamed a tilette'), findsOneWidget);
     });
 
     testWidgets('declined, completed and delivery problems', (tester) async {
@@ -372,7 +372,7 @@ void main() {
               clusterTitle: 'C',
               actorName: 'Marcus',
               eventIds: ['e']));
-      expect(find.text('Marcus completed a task'), findsOneWidget);
+      expect(find.text('Marcus completed a tilette'), findsOneWidget);
 
       await _pumpCard(
           tester,
@@ -382,7 +382,7 @@ void main() {
               clusterTitle: 'C',
               count: 4,
               eventIds: ['e']));
-      expect(find.text('4 tasks completed'), findsOneWidget);
+      expect(find.text('4 tilettes completed'), findsOneWidget);
 
       await _pumpCard(
           tester,
@@ -655,7 +655,7 @@ void main() {
       expect(find.text('Sarah Kim invited you'), findsOneWidget);
       expect(find.text('Jordan declined'), findsOneWidget);
       expect(find.textContaining('Jordan moved the deadline'), findsOneWidget);
-      expect(find.text('Marcus completed a task'), findsOneWidget);
+      expect(find.text('Marcus completed a tilette'), findsOneWidget);
       expect(find.text('Couldn’t send an invitation'), findsOneWidget);
       await rig.cubit.close();
     });
@@ -883,7 +883,7 @@ void main() {
       await tester.tap(accept('c-class'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.text('Accepted 2 tasks'), findsOneWidget);
+      expect(find.text('Accepted 2 tilettes'), findsOneWidget);
       await tester.pump(TileShareAttentionCubit.defaultUndoWindow +
           const Duration(seconds: 1));
       expect(sent(rig), ['respond(k1, accepted)', 'respond(k2, accepted)']);

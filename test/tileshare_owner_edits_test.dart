@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_detail_cubit.dart';
 import 'package:tiler_app/components/nameAndDateSheetWidget.dart';
@@ -80,6 +81,7 @@ Future<void> _open(WidgetTester tester, _Rig rig,
     theme: theme ?? TileThemeData.lightTheme,
     localizationsDelegates: const [
       AppLocalizations.delegate,
+      FlutterQuillLocalizations.delegate,
       GlobalMaterialLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
@@ -192,42 +194,60 @@ void main() {
   });
 
   group('tasks', () {
-    testWidgets('a Class\'s new task goes to everyone in it', (tester) async {
+    testWidgets('the Tasks tab counts the tasks, with Add task beside it',
+        (tester) async {
+      final rig = _Rig();
+      await _open(tester, rig);
+      await _tap(tester, 'roster_segment_tasks');
+      expect(find.text('Tilettes (2)'), findsOneWidget);
+      expect(_key('roster_add_task'), findsOneWidget);
+      await rig.detail.close();
+    });
+
+    testWidgets("a Class's new task goes to everyone in it", (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
       await _tap(tester, 'roster_segment_tasks');
       await _tap(tester, 'roster_add_task');
-      expect(_key('add_task_sheet'), findsOneWidget);
-      await _type(tester, 'add_task_sheet', 'Label boxes');
-      await _submit(tester, 'add_task_sheet', 'Add');
+      expect(_key('task_sheet'), findsOneWidget);
+      await tester.enterText(_key('task_sheet_name'), 'Label boxes');
+      await _tap(tester, 'task_sheet_save');
       expect(rig.edits.calls, ['addTask(k, Label boxes, contacts: 2)']);
+      expect(_key('task_sheet'), findsNothing);
       expect(_key('class_task_new-1'), findsOneWidget);
       await rig.detail.close();
     });
 
-    testWidgets('a Project\'s new task goes to no one yet', (tester) async {
+    testWidgets("a Project's new task goes to no one unless assigned",
+        (tester) async {
       final rig = _Rig(mode: TileShareMode.project);
       await _open(tester, rig);
       await _tap(tester, 'roster_segment_tasks');
       await _tap(tester, 'roster_add_task');
-      await _type(tester, 'add_task_sheet', 'Label boxes');
-      await _submit(tester, 'add_task_sheet', 'Add');
+      expect(_key('task_sheet_assignee'), findsOneWidget);
+      await tester.enterText(_key('task_sheet_name'), 'Label boxes');
+      await _tap(tester, 'task_sheet_save');
       expect(rig.edits.calls, ['addTask(k, Label boxes, contacts: 0)']);
       expect(_key('project_unassigned_new-1'), findsOneWidget);
       await rig.detail.close();
     });
 
-    testWidgets('renaming a task, which says its length stays', (tester) async {
+    testWidgets('Edit task opens the sheet; only what changed is sent',
+        (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
       await _tap(tester, 'roster_segment_tasks');
       await _tap(tester, 'task_menu_t1');
       await _tap(tester, 'task_edit_t1');
-      expect(find.text('A task’s length can’t change once it’s shared.'),
+      expect(_key('task_sheet'), findsOneWidget);
+      expect(find.text('A tilette’s length can’t change once it’s shared.'),
           findsOneWidget);
-      await _type(tester, 'task_edit_sheet', 'Write it');
-      await _submit(tester, 'task_edit_sheet', 'Update');
-      expect(rig.edits.calls, ['updateTask(t1, name: Write it, end: null)']);
+      expect(_key('task_sheet_person_ann@x.com'), findsOneWidget,
+          reason: "the share's roster reaches the sheet");
+      await tester.enterText(_key('task_sheet_name'), 'Write it');
+      await _tap(tester, 'task_sheet_save');
+      expect(rig.edits.calls,
+          ['updateTask(t1, name: Write it, end: null, notes: null)']);
       expect(
           find.descendant(
               of: _key('class_task_t1'), matching: find.text('Write it')),
@@ -235,7 +255,25 @@ void main() {
       await rig.detail.close();
     });
 
-    testWidgets('deleting a task asks first', (tester) async {
+    testWidgets('a refused change stays in the sheet, not behind it',
+        (tester) async {
+      final rig = _Rig();
+      await _open(tester, rig);
+      await _tap(tester, 'roster_segment_tasks');
+      await _tap(tester, 'task_menu_t1');
+      await _tap(tester, 'task_edit_t1');
+      rig.edits.failNextOn('updateTask', StateError('offline'));
+      await tester.enterText(_key('task_sheet_name'), 'Write it');
+      await _tap(tester, 'task_sheet_save');
+      expect(_key('task_sheet'), findsOneWidget);
+      expect(find.text('Could not save right now. Your changes are kept.'),
+          findsOneWidget);
+      expect(_key('detail_edit_failed'), findsNothing);
+      await rig.detail.close();
+    });
+
+    testWidgets('deleting a task asks first, from the menu or the sheet',
+        (tester) async {
       final rig = _Rig(mode: TileShareMode.project);
       await _open(tester, rig);
       await _tap(tester, 'roster_segment_tasks');
@@ -250,7 +288,46 @@ void main() {
       await _tap(tester, 'task_delete_confirm');
       expect(rig.edits.calls, ['deleteTask(t2)']);
       expect(_key('project_task_t2'), findsNothing);
-      expect(_key('project_task_t1'), findsOneWidget);
+
+      await _tap(tester, 'task_menu_t1');
+      await _tap(tester, 'task_edit_t1');
+      await _tap(tester, 'task_sheet_delete');
+      await _tap(tester, 'task_delete_confirm');
+      expect(rig.edits.calls.last, 'deleteTask(t1)');
+      expect(_key('task_sheet'), findsNothing);
+      await rig.detail.close();
+    });
+
+    testWidgets(
+        'a new task whose notes are refused is kept; the detail '
+        'retries the notes', (tester) async {
+      final rig = _Rig();
+      await _open(tester, rig);
+      await _tap(tester, 'roster_segment_tasks');
+      await _tap(tester, 'roster_add_task');
+      await tester.enterText(_key('task_sheet_name'), 'Label boxes');
+      await _tap(tester, 'task_sheet_notes');
+      final QuillController quill =
+          tester.widget<QuillEditor>(find.byType(QuillEditor)).controller;
+      quill.replaceText(0, quill.document.length - 1, 'Bring tape',
+          const TextSelection.collapsed(offset: 10));
+      await tester.pump();
+      await tester.tap(find.text('Done'));
+      await _settle(tester);
+      rig.edits.failNextOn('updateTask', StateError('offline'));
+      await _tap(tester, 'task_sheet_save');
+      expect(_key('task_sheet'), findsNothing,
+          reason: 'the task was added, so the sheet closes');
+      expect(_key('class_task_new-1'), findsOneWidget);
+      expect(_key('detail_edit_failed'), findsOneWidget);
+      await tester.tap(find.text('Retry'));
+      await _settle(tester);
+      expect(rig.edits.calls, [
+        'addTask(k, Label boxes, contacts: 2)',
+        'updateTask(new-1, name: null, end: null, notes: Bring tape)',
+        'updateTask(new-1, name: null, end: null, notes: Bring tape)',
+      ]);
+      await tester.pump(const Duration(seconds: 1));
       await rig.detail.close();
     });
 

@@ -173,7 +173,7 @@ void main() {
       expect(find.text('Class · From Sarah Kim'), findsOneWidget);
       expect(find.text('Needs your answer'), findsOneWidget);
       expect(find.textContaining('Due '), findsOneWidget);
-      expect(find.text('2 tasks'), findsOneWidget);
+      expect(find.text('2 tilettes'), findsOneWidget);
       await rig.cubit.close();
     });
 
@@ -183,7 +183,7 @@ void main() {
       await _open(tester, rig);
       expect(find.text('Broadcast · Created by you'), findsOneWidget);
       expect(find.text('Needs your answer'), findsNothing);
-      expect(find.text('1 task'), findsNothing,
+      expect(find.text('1 tilette'), findsNothing,
           reason: 'a Broadcast is one task; naming it adds nothing');
       await rig.cubit.close();
     });

@@ -179,7 +179,7 @@ void main() {
       expect(_key('commitment_accept_k1'), findsNothing);
       expect(_key('commitment_check_fit'), findsNothing,
           reason: 'a Class is not previewed (T23)');
-      expect(find.text('Your tasks'), findsOneWidget);
+      expect(find.text('Your tilettes'), findsOneWidget);
       expect(_task('k1'), findsOneWidget);
       expect(_task('k2'), findsOneWidget);
       await tester.tap(_key('commitment_accept'));

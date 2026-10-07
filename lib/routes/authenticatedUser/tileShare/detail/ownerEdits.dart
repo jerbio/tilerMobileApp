@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_detail_cubit.dart';
+import 'package:tiler_app/bloc/tileShare/tile_share_roster_cubit.dart';
 import 'package:tiler_app/components/nameAndDateSheetWidget.dart';
-import 'package:tiler_app/components/newTileShareSheetWidget.dart';
 import 'package:tiler_app/data/contact.dart';
-import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
+import 'package:tiler_app/data/tileShareRoster.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/taskSheet.dart';
+import 'package:tiler_app/theme/today_status_tokens.dart';
 
 /// What a name-and-deadline edit changed; a field left `null` stayed.
 class NameDeadlineChange {
@@ -65,41 +67,6 @@ Future<NameDeadlineChange?> showNameDeadlineSheet(
   );
 }
 
-/// A new task in the app's new-task sheet, sent to [contacts] unless the
-/// owner changes them; due when the share is ([endMs]) unless it says
-/// otherwise. Completes with the task, or `null` when dismissed.
-Future<ClusterTemplateTileModel?> showAddTaskSheet(
-  BuildContext context, {
-  List<Contact> contacts = const <Contact>[],
-  int? endMs,
-}) {
-  return showModalBottomSheet<ClusterTemplateTileModel>(
-    context: context,
-    isScrollControlled: true,
-    builder: (sheetContext) => Padding(
-      padding: EdgeInsets.only(
-          bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          key: const Key('add_task_sheet'),
-          child: NewTileShareSheetWidget(
-            newTile: NewTile()
-              ..contacts = contacts.map((c) => c.toContactModel()).toList(),
-            isUpdate: false,
-            title: AppLocalizations.of(sheetContext)!.detailAddTask,
-            onAddTile: (NewTile tile) {
-              final ClusterTemplateTileModel task =
-                  tile.toClusterTemplateTileModel();
-              task.EndTime ??= endMs;
-              Navigator.of(sheetContext).pop(task);
-            },
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 /// Asks before something that cannot be undone; `true` once confirmed.
 Future<bool> confirmDestructive(
   BuildContext context, {
@@ -132,38 +99,94 @@ Future<bool> confirmDestructive(
   return ok == true;
 }
 
-/// The owner's changes to the share's tasks (Step 9.16b), through the detail
-/// cubit: add a task, rename it or move its deadline, delete it.
+/// The owner's changes to the share's tasks (Steps 9.16b, 9.16f), through
+/// the detail cubit, in the task sheet (T27).
+///
+/// A change refused in the sheet is said there, so the detail's banner is
+/// dismissed - except when a new task was added but its notes were refused:
+/// the task exists, the sheet closes, and the banner retries the notes.
 class TaskEditor {
   final TileShareDetailCubit cubit;
 
-  const TaskEditor(this.cubit);
+  /// The share's roster, for the people of a tilette being edited.
+  final TileShareRosterCubit? roster;
 
-  /// The editor when the signed-in user can change this share now.
+  const TaskEditor(this.cubit, {this.roster});
+
+  /// The editor when the signed-in user can change this share now; read
+  /// under the roster detail, which provides the roster.
   static TaskEditor? of(BuildContext context) {
     final TileShareDetailCubit cubit = context.read<TileShareDetailCubit>();
-    return cubit.canEdit ? TaskEditor(cubit) : null;
+    if (!cubit.canEdit) return null;
+    return TaskEditor(cubit, roster: context.read<TileShareRosterCubit>());
   }
 
-  Future<void> add(BuildContext context,
-      {List<Contact> contacts = const <Contact>[]}) async {
-    final ClusterTemplateTileModel? task = await showAddTaskSheet(context,
-        contacts: contacts, endMs: cubit.state.cluster?.endTimeInMs);
-    if (task != null) await cubit.addTask(task);
+  int? get _shareDeadlineMs => cubit.state.cluster?.endTimeInMs;
+
+  /// Adds a task: a Class's to [everyone]; a Project's to the assignee
+  /// picked from [projectPeople], or to no one yet.
+  Future<void> add(
+    BuildContext context, {
+    required TaskSheetPeople people,
+    List<Contact> everyone = const <Contact>[],
+    List<RosterRow> projectPeople = const <RosterRow>[],
+  }) =>
+      showTaskSheet(
+        context,
+        TaskSheet(
+          people: people,
+          shareDeadlineMs: _shareDeadlineMs,
+          pickAssignee: people == TaskSheetPeople.assignee
+              ? projectAssigneePicker(projectPeople)
+              : null,
+          onSave: (TaskSheetValue value, TaskChanges _) async {
+            final Contact? assignee = value.assignee;
+            final List<Contact> to = people == TaskSheetPeople.everyone
+                ? everyone
+                : <Contact>[if (assignee != null) assignee];
+            final ClusterTemplateTileModel task = ClusterTemplateTileModel()
+              ..Name = value.name
+              ..DurationInMs = value.length.inMilliseconds
+              ..EndTime = value.deadline.millisecondsSinceEpoch
+              ..Contacts = to.map((c) => c.toContactModel()).toList();
+            if (await cubit.addTask(task, notes: value.notes)) return true;
+            // Added, but its notes were refused: the banner retries them.
+            if (cubit.state.editFailed == DetailEdit.editTask) return true;
+            cubit.dismissEditFailure();
+            return false;
+          },
+        ),
+      );
+
+  /// Edits [tilette]: only what changed is sent; its length stays.
+  Future<void> edit(BuildContext context, TileShareTemplate tilette,
+      {required TaskSheetPeople people}) {
+    final String? id = tilette.id;
+    if (id == null) return Future<void>.value();
+    return showTaskSheet(
+      context,
+      TaskSheet(
+        task: tilette,
+        people: people,
+        roster: roster,
+        shareDeadlineMs: _shareDeadlineMs,
+        onSave: (TaskSheetValue _, TaskChanges changes) async {
+          if (changes.isEmpty) return true;
+          return _kept(await cubit.updateTask(id,
+              name: changes.name, endMs: changes.endMs, notes: changes.notes));
+        },
+        onDelete: () async => _kept(await cubit.deleteTask(id)),
+      ),
+    );
   }
 
-  Future<void> edit(BuildContext context, TileShareTemplate tilette) async {
-    final AppLocalizations l10n = AppLocalizations.of(context)!;
-    final NameDeadlineChange? change = await showNameDeadlineSheet(context,
-        sheetKey: const Key('task_edit_sheet'),
-        title: l10n.detailEditTask,
-        note: l10n.detailTaskLengthFixed,
-        name: tilette.name,
-        endMs: tilette.end);
-    if (change == null || change.isEmpty || tilette.id == null) return;
-    await cubit.updateTask(tilette.id!, name: change.name, endMs: change.endMs);
+  bool _kept(bool ok) {
+    if (!ok) cubit.dismissEditFailure();
+    return ok;
   }
 
+  /// Deletes [tilette] from its menu, after asking; a refusal shows on the
+  /// detail.
   Future<void> delete(BuildContext context, TileShareTemplate tilette) async {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final String name = (tilette.name ?? '').trim().isEmpty
@@ -184,8 +207,13 @@ enum _TaskAction { edit, delete }
 class TaskMenu extends StatelessWidget {
   final TileShareTemplate tilette;
   final TaskEditor editor;
+  final TaskSheetPeople people;
 
-  const TaskMenu({super.key, required this.tilette, required this.editor});
+  const TaskMenu(
+      {super.key,
+      required this.tilette,
+      required this.editor,
+      required this.people});
 
   @override
   Widget build(BuildContext context) {
@@ -196,7 +224,7 @@ class TaskMenu extends StatelessWidget {
       tooltip: l10n.detailEditTask,
       icon: const Icon(Icons.more_vert, size: 20),
       onSelected: (action) => switch (action) {
-        _TaskAction.edit => editor.edit(context, tilette),
+        _TaskAction.edit => editor.edit(context, tilette, people: people),
         _TaskAction.delete => editor.delete(context, tilette),
       },
       itemBuilder: (_) => [
@@ -215,22 +243,58 @@ class TaskMenu extends StatelessWidget {
   }
 }
 
-/// "Add task", under a share's tasks.
-class AddTaskButton extends StatelessWidget {
-  final VoidCallback onPressed;
+/// "Tasks (N)", with "+ Add task" beside it for the owner (mock B).
+class TasksHeader extends StatelessWidget {
+  final int count;
+  final VoidCallback? onAdd;
 
-  const AddTaskButton({super.key, required this.onPressed});
+  const TasksHeader({super.key, required this.count, this.onAdd});
 
   @override
-  Widget build(BuildContext context) => Align(
-        alignment: AlignmentDirectional.centerStart,
-        child: TextButton.icon(
-          key: const Key('roster_add_task'),
-          onPressed: onPressed,
-          icon: const Icon(Icons.add),
-          label: Text(AppLocalizations.of(context)!.detailAddTask),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final VoidCallback? add = onAdd;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text('${l10n.detailTasks} ($count)',
+                style: Theme.of(context).textTheme.titleMedium),
+          ),
+          if (add != null)
+            TextButton.icon(
+              key: const Key('roster_add_task'),
+              onPressed: add,
+              icon: const Icon(Icons.add),
+              label: Text(l10n.detailAddTask),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A task as a card in the Tasks tab (mock B's task rows).
+class TaskCard extends StatelessWidget {
+  final Widget child;
+
+  const TaskCard({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final TodayStatusTokens tokens = TodayStatusTokens.of(context);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: tokens.border),
+      ),
+      child: child,
+    );
+  }
 }
 
 class _SheetTitle extends StatelessWidget implements PreferredSizeWidget {

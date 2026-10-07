@@ -243,7 +243,7 @@ void main() {
           tester,
           _card(_owner(_cluster('c1', mode: TileShareMode.project),
               rsvp: _rsvp(3, 0, 1))));
-      expect(find.text('3 of 4 tasks accepted'), findsOneWidget);
+      expect(find.text('3 of 4 tilettes accepted'), findsOneWidget);
       final segments = find.descendant(
           of: find.byKey(const Key('cluster_segments_c1')),
           matching: find.byType(DecoratedBox));
@@ -260,7 +260,7 @@ void main() {
           tester,
           _card(_owner(_cluster('c2', mode: TileShareMode.project),
               rsvp: _rsvp(0, 0, 1))));
-      expect(find.text('0 of 1 task accepted'), findsOneWidget);
+      expect(find.text('0 of 1 tilette accepted'), findsOneWidget);
     });
 
     testWidgets('nobody counted (no tilettes or no roster) is no line, not '
@@ -365,12 +365,12 @@ void main() {
           tester,
           _card(_recipient(_cluster('c1', mode: TileShareMode.class_),
               mine: _mine(accepted: 3))));
-      expect(find.text('3 tasks'), findsOneWidget);
+      expect(find.text('3 tilettes'), findsOneWidget);
       await _pump(
           tester,
           _card(_recipient(_cluster('c2', mode: TileShareMode.broadcast),
               mine: _mine(accepted: 1))));
-      expect(find.text('1 task'), findsNothing,
+      expect(find.text('1 tilette'), findsNothing,
           reason: 'a Broadcast is one task; naming it adds nothing');
     });
 
@@ -412,7 +412,7 @@ void main() {
               onDecline: () {}));
       expect(find.byKey(const Key('cluster_accept_c1')), findsNothing);
       expect(find.byKey(const Key('cluster_decline_c1')), findsNothing);
-      expect(find.text('2 tasks need your response'), findsOneWidget);
+      expect(find.text('2 tilettes need your response'), findsOneWidget);
     });
 
     testWidgets('no buttons once answered, or when no handlers are given',

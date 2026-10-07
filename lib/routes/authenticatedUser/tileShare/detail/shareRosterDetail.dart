@@ -11,6 +11,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/classPersonR
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/ownerEdits.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/participantRow.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/projectRows.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/taskSheet.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 import 'package:tiler_app/util.dart';
 
@@ -378,7 +379,8 @@ class _Board extends StatelessWidget {
     final TileShareTemplate tilette = tilettes[index];
     final List<(RosterRow, RosterCell)> current =
         _assigneesOf(state.rows, index);
-    final contact = await showProjectAssignSheet(context, tilette, state.rows,
+    final contact = await showProjectAssignSheet(context,
+        projectTaskName(AppLocalizations.of(context)!, tilette), state.rows,
         exclude: {for (final (RosterRow r, RosterCell _) in current) r.key});
     if (contact == null || tilette.id == null) return;
     roster.assignTask(tilette.id!, contact,
@@ -393,19 +395,30 @@ class _Board extends StatelessWidget {
       key: const Key('project_board'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        TasksHeader(
+          count: tilettes.length,
+          // A new Project task goes to the assignee picked, or to no one.
+          onAdd: editor == null
+              ? null
+              : () => editor.add(context,
+                  people: TaskSheetPeople.assignee, projectPeople: state.rows),
+        ),
         for (int i = 0; i < tilettes.length; i++)
-          ProjectTaskRow(
-            tilette: tilettes[i],
-            assignees: _assigneesOf(state.rows, i),
-            change: state.tasks[tilettes[i].id],
-            onAssign: () => _assign(context, i),
-            onRetry: () => roster.retryTask(tilettes[i].id ?? ''),
-            menu: editor == null
-                ? null
-                : TaskMenu(tilette: tilettes[i], editor: editor),
+          TaskCard(
+            child: ProjectTaskRow(
+              tilette: tilettes[i],
+              assignees: _assigneesOf(state.rows, i),
+              change: state.tasks[tilettes[i].id],
+              onAssign: () => _assign(context, i),
+              onRetry: () => roster.retryTask(tilettes[i].id ?? ''),
+              menu: editor == null
+                  ? null
+                  : TaskMenu(
+                      tilette: tilettes[i],
+                      editor: editor,
+                      people: TaskSheetPeople.assignee),
+            ),
           ),
-        // People join a Project's new task through Assign.
-        if (editor != null) AddTaskButton(onPressed: () => editor.add(context)),
       ],
     );
   }
@@ -428,6 +441,19 @@ class _Tasks extends StatelessWidget {
       key: const Key('class_tasks'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        TasksHeader(
+          count: tilettes.length,
+          // Everyone in a Class has every task, the new one too.
+          onAdd: editor == null
+              ? null
+              : () => editor.add(context,
+                      people: TaskSheetPeople.everyone,
+                      everyone: [
+                        for (final RosterRow r in state.rows)
+                          if (r.assignmentId != null && r.contact != null)
+                            r.contact!,
+                      ]),
+        ),
         for (int i = 0; i < tilettes.length; i++)
           () {
             final List<RosterCell> cells = <RosterCell>[
@@ -437,9 +463,8 @@ class _Tasks extends StatelessWidget {
             final int accepted =
                 cells.where((c) => c.rsvp == InvitationStatus.accepted).length;
             final TileShareTemplate t = tilettes[i];
-            return Padding(
+            return TaskCard(
               key: Key('class_task_${t.id}'),
-              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 children: [
                   Icon(Icons.task_alt,
@@ -462,19 +487,17 @@ class _Tasks extends StatelessWidget {
                         Duration(milliseconds: t.durationInMs!)
                             .toHumanLocalized(context),
                         style: quiet),
-                  if (editor != null) TaskMenu(tilette: t, editor: editor),
+                  if (editor != null)
+                    TaskMenu(
+                        tilette: t,
+                        editor: editor,
+                        people: TaskSheetPeople.everyone)
+                  else
+                    const SizedBox(width: 10, height: 48),
                 ],
               ),
             );
           }(),
-        // Everyone in a Class has every task, the new one too.
-        if (editor != null)
-          AddTaskButton(
-              onPressed: () => editor.add(context, contacts: [
-                    for (final RosterRow r in state.rows)
-                      if (r.assignmentId != null && r.contact != null)
-                        r.contact!,
-                  ])),
       ],
     );
   }

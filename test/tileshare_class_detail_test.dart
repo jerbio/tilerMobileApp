@@ -124,8 +124,8 @@ void main() {
       await _open(tester, rig);
       expect(find.text('1 of 2 people accepted'), findsOneWidget,
           reason: 'ann accepted every task; bob did not');
-      expect(find.text('1 person is missing from some tasks'), findsOneWidget);
-      await tester.tap(find.text('1 person is missing from some tasks'));
+      expect(find.text('1 person is missing from some tilettes'), findsOneWidget);
+      await tester.tap(find.text('1 person is missing from some tilettes'));
       await _settle(tester);
       expect(_key('roster_add_participant'), findsOneWidget);
       await rig.detail.close();
@@ -164,11 +164,11 @@ void main() {
           findsNWidgets(3));
       expect(
           find.descendant(
-              of: _row('ann@x.com'), matching: find.text('3 of 3 tasks accepted')),
+              of: _row('ann@x.com'), matching: find.text('3 of 3 tilettes accepted')),
           findsOneWidget);
       expect(
           find.descendant(
-              of: _row('bob@x.com'), matching: find.text('0 of 3 tasks accepted')),
+              of: _row('bob@x.com'), matching: find.text('0 of 3 tilettes accepted')),
           findsOneWidget);
       await rig.detail.close();
     });
@@ -178,14 +178,14 @@ void main() {
       final rig = _Rig();
       await _open(tester, rig);
       await _segment(tester, 'participants');
-      expect(find.descendant(of: _row('bob@x.com'), matching: find.text('Not on 1 task')),
+      expect(find.descendant(of: _row('bob@x.com'), matching: find.text('Not on 1 tilette')),
           findsOneWidget);
       await tester.tap(find.descendant(
-          of: _row('bob@x.com'), matching: find.text('Add to all tasks')));
+          of: _row('bob@x.com'), matching: find.text('Add to all tilettes')));
       await _settle(tester);
       expect(rig.recipients.calls.where((c) => c.startsWith('addRecipient')),
           ['addRecipient(t3, bob@x.com)']);
-      expect(find.descendant(of: _row('bob@x.com'), matching: find.text('Not on 1 task')),
+      expect(find.descendant(of: _row('bob@x.com'), matching: find.text('Not on 1 tilette')),
           findsNothing);
       await rig.detail.close();
     });
@@ -228,7 +228,7 @@ void main() {
       ]);
       expect(
           find.descendant(
-              of: _row('cy@x.com'), matching: find.text('0 of 3 tasks accepted')),
+              of: _row('cy@x.com'), matching: find.text('0 of 3 tilettes accepted')),
           findsOneWidget);
       await rig.detail.close();
     });
@@ -241,7 +241,7 @@ void main() {
       await tester.tap(find.descendant(
           of: _row('bob@x.com'), matching: find.byTooltip('Remove')));
       await _settle(tester);
-      expect(find.text('They will be removed from every task.'), findsOneWidget);
+      expect(find.text('They will be removed from every tilette.'), findsOneWidget);
       await tester.tap(_key('participant_remove_confirm'));
       await _settle(tester);
       expect(_row('bob@x.com'), findsNothing);

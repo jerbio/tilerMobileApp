@@ -4244,7 +4244,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String attentionReasonInvitedMany(String inviter, int count) {
-    return '$inviter te invitó a $count tareas';
+    return '$inviter te invitó a $count tilettes';
   }
 
   @override
@@ -4254,11 +4254,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get attentionReasonAtRiskUntitled =>
-      'Una tarea ya no cabe en tu agenda';
+      'Una tilette ya no cabe en tu agenda';
 
   @override
   String attentionReasonAtRiskMany(int count) {
-    return '$count tareas ya no caben en tu agenda';
+    return '$count tilettes ya no caben en tu agenda';
   }
 
   @override
@@ -4273,7 +4273,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String attentionReasonRenamed(String actor) {
-    return '$actor renombró una tarea';
+    return '$actor renombró una tilette';
   }
 
   @override
@@ -4283,7 +4283,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String attentionReasonUpdated(String actor) {
-    return '$actor actualizó una tarea';
+    return '$actor actualizó una tilette';
   }
 
   @override
@@ -4320,12 +4320,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String attentionReasonCompletedUntitled(String actor) {
-    return '$actor completó una tarea';
+    return '$actor completó una tilette';
   }
 
   @override
   String attentionReasonCompletedMany(int count) {
-    return '$count tareas completadas';
+    return '$count tilettes completadas';
   }
 
   @override
@@ -4333,8 +4333,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tareas',
-      one: '1 tarea',
+      other: '$count tilettes',
+      one: '1 tilette',
     );
     return '$_temp0';
   }
@@ -4419,7 +4419,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String attentionAcceptDoneMany(int count) {
-    return 'Aceptaste $count tareas';
+    return 'Aceptaste $count tilettes';
   }
 
   @override
@@ -4427,7 +4427,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String attentionDeclineDoneMany(int count) {
-    return 'Rechazaste $count tareas';
+    return 'Rechazaste $count tilettes';
   }
 
   @override
@@ -4476,8 +4476,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       total,
       locale: localeName,
-      other: '$total tareas',
-      one: '1 tarea',
+      other: '$total tilettes',
+      one: '1 tilette',
     );
     return '$accepted de $_temp0 aceptadas';
   }
@@ -4502,8 +4502,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tareas necesitan tu respuesta',
-      one: '1 tarea necesita tu respuesta',
+      other: '$count tilettes necesitan tu respuesta',
+      one: '1 tilette necesita tu respuesta',
     );
     return '$_temp0';
   }
@@ -4677,10 +4677,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get previewUnsupportedConstraints =>
-      'Esta tarea se repite, tiene un lugar o límites que la vista previa aún no puede mostrar. Aún puedes responderla desde la lista.';
+      'Esta tilette se repite, tiene un lugar o límites que la vista previa aún no puede mostrar. Aún puedes responderla desde la lista.';
 
   @override
-  String get previewUnsupportedOther => 'Esta tarea no se puede previsualizar.';
+  String get previewUnsupportedOther =>
+      'Esta tilette no se puede previsualizar.';
 
   @override
   String get previewAdding => 'Añadiendo a tu calendario…';
@@ -4813,10 +4814,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo actualizar. Se muestra lo que se cargó.';
 
   @override
-  String get detailTasksFailed => 'No se pudieron cargar sus tareas.';
+  String get detailTasksFailed => 'No se pudieron cargar sus tilettes.';
 
   @override
-  String get detailTasks => 'Tareas';
+  String get detailTasks => 'Tilettes';
 
   @override
   String get forecastDeadlinePassed => 'Fecha límite vencida';
@@ -4870,7 +4871,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get participantRemoveBody => 'Ya no tendrá esta tarea.';
+  String get participantRemoveBody => 'Ya no tendrá esta tilette.';
 
   @override
   String deliverySent(String channel) {
@@ -4905,8 +4906,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count personas faltan en algunas tareas',
-      one: '1 persona falta en algunas tareas',
+      other: '$count personas faltan en algunas tilettes',
+      one: '1 persona falta en algunas tilettes',
     );
     return '$_temp0';
   }
@@ -4916,23 +4917,23 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'No está en $count tareas',
-      one: 'No está en 1 tarea',
+      other: 'No está en $count tilettes',
+      one: 'No está en 1 tilette',
     );
     return '$_temp0';
   }
 
   @override
-  String get classAddToAll => 'Añadir a todas las tareas';
+  String get classAddToAll => 'Añadir a todas las tilettes';
 
   @override
-  String get classRemoveBody => 'Se eliminará de todas las tareas.';
+  String get classRemoveBody => 'Se eliminará de todas las tilettes.';
 
   @override
   String get classTaskNotAdded => 'No añadido';
 
   @override
-  String get classAddFailed => 'No se pudo añadir a todas las tareas.';
+  String get classAddFailed => 'No se pudo añadir a todas las tilettes.';
 
   @override
   String get projectUnassigned => 'Sin asignar';
@@ -4942,8 +4943,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tareas no tienen a nadie asignado',
-      one: '1 tarea no tiene a nadie asignado',
+      other: '$count tilettes no tienen a nadie asignado',
+      one: '1 tilette no tiene a nadie asignado',
     );
     return '$_temp0';
   }
@@ -4970,8 +4971,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Tiene $count tareas',
-      one: 'Tiene 1 tarea',
+      other: 'Tiene $count tilettes',
+      one: 'Tiene 1 tilette',
     );
     return '$_temp0';
   }
@@ -4980,7 +4981,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get projectAlreadyIn => 'Ya en este proyecto';
 
   @override
-  String get projectRemoveBody => 'Sus tareas quedarán sin asignar.';
+  String get projectRemoveBody => 'Sus tilettes quedarán sin asignar.';
 
   @override
   String get tileShareActivityCommentAdded => 'Comment added';
@@ -4995,10 +4996,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tileShareActivityCommentDeleted => 'Comment deleted';
 
   @override
-  String get commitmentYourTasks => 'Tus tareas';
+  String get commitmentYourTasks => 'Tus tilettes';
 
   @override
-  String get commitmentYourTask => 'Tu tarea';
+  String get commitmentYourTask => 'Tu tilette';
 
   @override
   String commitmentPartialAnswered(int done, int total) {
@@ -5012,13 +5013,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get detailEditShare => 'Editar';
 
   @override
-  String get detailEditTask => 'Editar tarea';
+  String get detailEditTask => 'Editar tilette';
 
   @override
-  String get detailAddTask => 'Añadir tarea';
+  String get detailAddTask => 'Añadir tilette';
 
   @override
-  String get detailDeleteTask => 'Eliminar tarea';
+  String get detailDeleteTask => 'Eliminar tilette';
 
   @override
   String detailDeleteTaskTitle(String name) {
@@ -5035,5 +5036,30 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get detailTaskLengthFixed =>
-      'La duración de una tarea no puede cambiar una vez compartida.';
+      'La duración de una tilette no puede cambiar una vez compartida.';
+
+  @override
+  String get taskSheetAssignee => 'ASIGNADA A';
+
+  @override
+  String get taskSheetEveryone => 'Todos en esta clase tienen esta tilette.';
+
+  @override
+  String taskSheetAfterShareDeadline(String when) {
+    return 'Esto es después de la fecha límite compartida ($when).';
+  }
+
+  @override
+  String get taskSheetNameTooShort => 'Usa al menos 3 caracteres';
+
+  @override
+  String get taskSheetPeopleHintClass =>
+      'Quien agregues aquí recibe todas las tilettes de esta clase. Los cambios de personas se guardan al instante.';
+
+  @override
+  String get taskSheetPeopleHintProject =>
+      'La nueva persona asignada se guarda al instante.';
+
+  @override
+  String get tiletteNameLabel => 'NOMBRE DE LA TILETTE';
 }

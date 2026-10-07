@@ -14,16 +14,7 @@ class NewTileShareSheetWidget extends StatefulWidget {
   final Function? onAddTile;
   final Function? onCancel;
   final NewTile? newTile;
-
-  /// Whether the button updates [newTile] rather than adds it; by default
-  /// when one is given.
-  final bool isUpdate;
-
-  /// The sheet's title; "Add Tilette" by default.
-  final String? title;
-  NewTileShareSheetWidget(
-      {this.onAddTile, this.onCancel, this.newTile, bool? isUpdate, this.title})
-      : isUpdate = isUpdate ?? newTile != null;
+  NewTileShareSheetWidget({this.onAddTile, this.onCancel, this.newTile});
   @override
   NewTileSheetState createState() => NewTileSheetState();
 }
@@ -128,7 +119,7 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
             ),
             padding: EdgeInsets.all(16),
             child: Text(
-              widget.title ?? AppLocalizations.of(context)!.addTilette,
+              AppLocalizations.of(context)!.addTilette,
               style: TextStyle(
                 color: colorScheme.onPrimary,
                 fontSize: TileDimensions.inputFontSize,
@@ -190,9 +181,9 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
                   style: TileButtonStyles.enabled(
                       borderColor: colorScheme.primary),
                   icon: Icon(Icons.check),
-                  label: Text(this.widget.isUpdate
-                      ? AppLocalizations.of(context)!.update
-                      : AppLocalizations.of(context)!.add))
+                  label: Text(this.widget.newTile == null
+                      ? AppLocalizations.of(context)!.add
+                      : AppLocalizations.of(context)!.update))
               : SizedBox.shrink(),
           SizedBox.square(
             dimension: 50,

@@ -7373,7 +7373,7 @@ abstract class AppLocalizations {
   /// No description provided for @attentionReasonInvitedMany.
   ///
   /// In en, this message translates to:
-  /// **'{inviter} invited you to {count} tasks'**
+  /// **'{inviter} invited you to {count} tilettes'**
   String attentionReasonInvitedMany(String inviter, int count);
 
   /// No description provided for @attentionReasonAtRiskOne.
@@ -7385,13 +7385,13 @@ abstract class AppLocalizations {
   /// No description provided for @attentionReasonAtRiskUntitled.
   ///
   /// In en, this message translates to:
-  /// **'A task no longer fits your schedule'**
+  /// **'A tilette no longer fits your schedule'**
   String get attentionReasonAtRiskUntitled;
 
   /// No description provided for @attentionReasonAtRiskMany.
   ///
   /// In en, this message translates to:
-  /// **'{count} tasks no longer fit your schedule'**
+  /// **'{count} tilettes no longer fit your schedule'**
   String attentionReasonAtRiskMany(int count);
 
   /// No description provided for @attentionReasonDeadlineMoved.
@@ -7409,7 +7409,7 @@ abstract class AppLocalizations {
   /// No description provided for @attentionReasonRenamed.
   ///
   /// In en, this message translates to:
-  /// **'{actor} renamed a task'**
+  /// **'{actor} renamed a tilette'**
   String attentionReasonRenamed(String actor);
 
   /// No description provided for @attentionReasonNotesUpdated.
@@ -7421,7 +7421,7 @@ abstract class AppLocalizations {
   /// No description provided for @attentionReasonUpdated.
   ///
   /// In en, this message translates to:
-  /// **'{actor} updated a task'**
+  /// **'{actor} updated a tilette'**
   String attentionReasonUpdated(String actor);
 
   /// No description provided for @attentionReasonManyChanges.
@@ -7469,19 +7469,19 @@ abstract class AppLocalizations {
   /// No description provided for @attentionReasonCompletedUntitled.
   ///
   /// In en, this message translates to:
-  /// **'{actor} completed a task'**
+  /// **'{actor} completed a tilette'**
   String attentionReasonCompletedUntitled(String actor);
 
   /// No description provided for @attentionReasonCompletedMany.
   ///
   /// In en, this message translates to:
-  /// **'{count} tasks completed'**
+  /// **'{count} tilettes completed'**
   String attentionReasonCompletedMany(int count);
 
   /// No description provided for @attentionMetaTasks.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 task} other{{count} tasks}}'**
+  /// **'{count, plural, =1{1 tilette} other{{count} tilettes}}'**
   String attentionMetaTasks(int count);
 
   /// No description provided for @attentionMetaDue.
@@ -7637,7 +7637,7 @@ abstract class AppLocalizations {
   /// No description provided for @attentionAcceptDoneMany.
   ///
   /// In en, this message translates to:
-  /// **'Accepted {count} tasks'**
+  /// **'Accepted {count} tilettes'**
   String attentionAcceptDoneMany(int count);
 
   /// No description provided for @attentionDeclineDone.
@@ -7649,7 +7649,7 @@ abstract class AppLocalizations {
   /// No description provided for @attentionDeclineDoneMany.
   ///
   /// In en, this message translates to:
-  /// **'Declined {count} tasks'**
+  /// **'Declined {count} tilettes'**
   String attentionDeclineDoneMany(int count);
 
   /// No description provided for @attentionAcceptFailed.
@@ -7709,7 +7709,7 @@ abstract class AppLocalizations {
   /// No description provided for @clusterRsvpTasks.
   ///
   /// In en, this message translates to:
-  /// **'{accepted} of {total, plural, =1{1 task} other{{total} tasks}} accepted'**
+  /// **'{accepted} of {total, plural, =1{1 tilette} other{{total} tilettes}} accepted'**
   String clusterRsvpTasks(int accepted, int total);
 
   /// No description provided for @clusterRsvpUnavailable.
@@ -7745,7 +7745,7 @@ abstract class AppLocalizations {
   /// No description provided for @clusterProjectNeedsAnswer.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 task needs your response} other{{count} tasks need your response}}'**
+  /// **'{count, plural, =1{1 tilette needs your response} other{{count} tilettes need your response}}'**
   String clusterProjectNeedsAnswer(int count);
 
   /// No description provided for @clusterOverdue.
@@ -8033,13 +8033,13 @@ abstract class AppLocalizations {
   /// No description provided for @previewUnsupportedConstraints.
   ///
   /// In en, this message translates to:
-  /// **'This task repeats, has a place, or has limits a preview can’t show yet. You can still answer it from the list.'**
+  /// **'This tilette repeats, has a place, or has limits a preview can’t show yet. You can still answer it from the list.'**
   String get previewUnsupportedConstraints;
 
   /// No description provided for @previewUnsupportedOther.
   ///
   /// In en, this message translates to:
-  /// **'This task can’t be previewed.'**
+  /// **'This tilette can’t be previewed.'**
   String get previewUnsupportedOther;
 
   /// No description provided for @previewAdding.
@@ -8273,13 +8273,13 @@ abstract class AppLocalizations {
   /// No description provided for @detailTasksFailed.
   ///
   /// In en, this message translates to:
-  /// **'Couldn’t load its tasks.'**
+  /// **'Couldn’t load its tilettes.'**
   String get detailTasksFailed;
 
   /// No description provided for @detailTasks.
   ///
   /// In en, this message translates to:
-  /// **'Tasks'**
+  /// **'Tilettes'**
   String get detailTasks;
 
   /// No description provided for @forecastDeadlinePassed.
@@ -8357,7 +8357,7 @@ abstract class AppLocalizations {
   /// No description provided for @participantRemoveBody.
   ///
   /// In en, this message translates to:
-  /// **'They will no longer have this task.'**
+  /// **'They will no longer have this tilette.'**
   String get participantRemoveBody;
 
   /// No description provided for @deliverySent.
@@ -8411,25 +8411,25 @@ abstract class AppLocalizations {
   /// No description provided for @classPeopleIncomplete.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 person is missing from some tasks} other{{count} people are missing from some tasks}}'**
+  /// **'{count, plural, =1{1 person is missing from some tilettes} other{{count} people are missing from some tilettes}}'**
   String classPeopleIncomplete(int count);
 
   /// No description provided for @classMissingTasks.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{Not on 1 task} other{Not on {count} tasks}}'**
+  /// **'{count, plural, =1{Not on 1 tilette} other{Not on {count} tilettes}}'**
   String classMissingTasks(int count);
 
   /// No description provided for @classAddToAll.
   ///
   /// In en, this message translates to:
-  /// **'Add to all tasks'**
+  /// **'Add to all tilettes'**
   String get classAddToAll;
 
   /// No description provided for @classRemoveBody.
   ///
   /// In en, this message translates to:
-  /// **'They will be removed from every task.'**
+  /// **'They will be removed from every tilette.'**
   String get classRemoveBody;
 
   /// No description provided for @classTaskNotAdded.
@@ -8441,7 +8441,7 @@ abstract class AppLocalizations {
   /// No description provided for @classAddFailed.
   ///
   /// In en, this message translates to:
-  /// **'Couldn’t add to every task.'**
+  /// **'Couldn’t add to every tilette.'**
   String get classAddFailed;
 
   /// No description provided for @projectUnassigned.
@@ -8453,7 +8453,7 @@ abstract class AppLocalizations {
   /// No description provided for @projectTasksUnassigned.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 task has no one assigned} other{{count} tasks have no one assigned}}'**
+  /// **'{count, plural, =1{1 tilette has no one assigned} other{{count} tilettes have no one assigned}}'**
   String projectTasksUnassigned(int count);
 
   /// No description provided for @projectAssign.
@@ -8489,7 +8489,7 @@ abstract class AppLocalizations {
   /// No description provided for @projectOwnsTasks.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{Owns 1 task} other{Owns {count} tasks}}'**
+  /// **'{count, plural, =1{Owns 1 tilette} other{Owns {count} tilettes}}'**
   String projectOwnsTasks(int count);
 
   /// No description provided for @projectAlreadyIn.
@@ -8501,7 +8501,7 @@ abstract class AppLocalizations {
   /// No description provided for @projectRemoveBody.
   ///
   /// In en, this message translates to:
-  /// **'Their tasks will have no one assigned.'**
+  /// **'Their tilettes will have no one assigned.'**
   String get projectRemoveBody;
 
   /// No description provided for @tileShareActivityCommentAdded.
@@ -8531,13 +8531,13 @@ abstract class AppLocalizations {
   /// No description provided for @commitmentYourTasks.
   ///
   /// In en, this message translates to:
-  /// **'Your tasks'**
+  /// **'Your tilettes'**
   String get commitmentYourTasks;
 
   /// No description provided for @commitmentYourTask.
   ///
   /// In en, this message translates to:
-  /// **'Your task'**
+  /// **'Your tilette'**
   String get commitmentYourTask;
 
   /// No description provided for @commitmentPartialAnswered.
@@ -8561,19 +8561,19 @@ abstract class AppLocalizations {
   /// No description provided for @detailEditTask.
   ///
   /// In en, this message translates to:
-  /// **'Edit task'**
+  /// **'Edit tilette'**
   String get detailEditTask;
 
   /// No description provided for @detailAddTask.
   ///
   /// In en, this message translates to:
-  /// **'Add task'**
+  /// **'Add tilette'**
   String get detailAddTask;
 
   /// No description provided for @detailDeleteTask.
   ///
   /// In en, this message translates to:
-  /// **'Delete task'**
+  /// **'Delete tilette'**
   String get detailDeleteTask;
 
   /// No description provided for @detailDeleteTaskTitle.
@@ -8597,8 +8597,50 @@ abstract class AppLocalizations {
   /// No description provided for @detailTaskLengthFixed.
   ///
   /// In en, this message translates to:
-  /// **'A task’s length can’t change once it’s shared.'**
+  /// **'A tilette’s length can’t change once it’s shared.'**
   String get detailTaskLengthFixed;
+
+  /// No description provided for @taskSheetAssignee.
+  ///
+  /// In en, this message translates to:
+  /// **'ASSIGNEE'**
+  String get taskSheetAssignee;
+
+  /// No description provided for @taskSheetEveryone.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone in this class has this tilette.'**
+  String get taskSheetEveryone;
+
+  /// No description provided for @taskSheetAfterShareDeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'This is after the share’s deadline ({when}).'**
+  String taskSheetAfterShareDeadline(String when);
+
+  /// No description provided for @taskSheetNameTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least 3 characters'**
+  String get taskSheetNameTooShort;
+
+  /// No description provided for @taskSheetPeopleHintClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone you add here gets every tilette in this class. People changes are saved right away.'**
+  String get taskSheetPeopleHintClass;
+
+  /// No description provided for @taskSheetPeopleHintProject.
+  ///
+  /// In en, this message translates to:
+  /// **'A new assignee is saved right away.'**
+  String get taskSheetPeopleHintProject;
+
+  /// No description provided for @tiletteNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TILETTE NAME'**
+  String get tiletteNameLabel;
 }
 
 class _AppLocalizationsDelegate
