@@ -3,9 +3,9 @@ import 'package:tiler_app/util.dart';
 class NotificationData {
   final int instantiationTime =
       (Utility.currentTime(minuteLimitAccuracy: false)).millisecondsSinceEpoch;
-  late final String? channelType;
-  late final String? tilerNotificationId;
-  late final String? thirdPartyId;
+  String? channelType;
+  String? tilerNotificationId;
+  String? thirdPartyId;
   bool isValid = false;
   int? expirationTime = 0;
   String? _notificationIdKey = 'notificationId';
@@ -34,9 +34,10 @@ class NotificationData {
     if (json.containsKey(_channelTypeKey)) {
       channelType = json[_channelTypeKey];
     }
-    assert(this.tilerNotificationId != null);
-    assert(this.channelType != null);
-    this.isValid = true;
+    // A saved noCredentials() record has no id; it must read back invalid
+    // so the channel lookup is retried on the next launch.
+    this.isValid =
+        tilerNotificationId != null && tilerNotificationId!.isNotEmpty;
     this.expirationTime = 999999999999999;
   }
 
