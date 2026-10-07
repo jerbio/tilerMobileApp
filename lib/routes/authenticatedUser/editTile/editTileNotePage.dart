@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
-
+import 'package:tiler_app/components/notes/markdownNoteEditor.dart';
 import 'package:tiler_app/data/notesPayload.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
@@ -13,6 +12,10 @@ import 'package:tiler_app/theme/tile_text_styles.dart';
 /// (read). Wraps [EditTileNote] in fullScreen mode so the editor expands to
 /// the available height. The chrome (save status, preview toggle, Done) is
 /// owned by this page so the body itself stays a clean writing canvas.
+///
+/// [NoteFullPage.draft] edits a note that a form saves later (a TileShare
+/// share's description or task notes, T27): the same page and editor, no
+/// saving of its own; Done pops the markdown, back pops `null`.
 class NoteFullPage extends StatefulWidget {
   final String? eventId;
   final NotesScope scope;
@@ -21,6 +24,12 @@ class NoteFullPage extends StatefulWidget {
   final bool isProcrastinate;
   final NotesApi? notesApi;
   final ValueChanged<String>? onNotePersisted;
+
+  /// Edits a draft instead of the tile's stored note.
+  final bool isDraft;
+
+  /// The longest note a draft accepts; none for tile notes.
+  final int? maxLength;
 
   const NoteFullPage({
     Key? key,
@@ -31,7 +40,22 @@ class NoteFullPage extends StatefulWidget {
     this.isProcrastinate = false,
     this.notesApi,
     this.onNotePersisted,
-  }) : super(key: key);
+  })  : isDraft = false,
+        maxLength = null,
+        super(key: key);
+
+  const NoteFullPage.draft({
+    Key? key,
+    required this.initialNote,
+    this.maxLength = defaultNoteMaxLength,
+    this.isReadOnly = false,
+  })  : isDraft = true,
+        eventId = null,
+        scope = NotesScope.auto,
+        isProcrastinate = false,
+        notesApi = null,
+        onNotePersisted = null,
+        super(key: key);
 
   @override
   State<NoteFullPage> createState() => _NoteFullPageState();
@@ -41,6 +65,8 @@ class _NoteFullPageState extends State<NoteFullPage> {
   late final ValueNotifier<bool> _previewMode;
   late final ValueNotifier<NotesSaveStatus> _status;
   late final EditTileNoteController _noteController;
+  final MarkdownNoteEditorController _draftController =
+      MarkdownNoteEditorController();
   String _latestNote = '';
   bool _saving = false;
 
@@ -64,8 +90,12 @@ class _NoteFullPageState extends State<NoteFullPage> {
   }
 
   /// Back-button handler: throw away any in-progress edits and pop with
-  /// whatever was last persisted by the server.
+  /// whatever was last persisted by the server (a draft pops nothing).
   Future<void> _discardAndPop() async {
+    if (widget.isDraft) {
+      Navigator.of(context).pop();
+      return;
+    }
     _noteController.discard();
     if (!mounted) return;
     Navigator.of(context).pop(_latestNote);
@@ -74,6 +104,10 @@ class _NoteFullPageState extends State<NoteFullPage> {
   /// Explicit Save action: flush the autosave debounce, then pop with the
   /// freshly persisted text.
   Future<void> _saveAndPop() async {
+    if (widget.isDraft) {
+      Navigator.of(context).pop(_draftController.markdown);
+      return;
+    }
     if (_saving) return;
     setState(() => _saving = true);
     final saved = await _noteController.save();
@@ -111,7 +145,9 @@ class _NoteFullPageState extends State<NoteFullPage> {
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) widget.onNotePersisted?.call(_latestNote);
+        if (didPop && !widget.isDraft) {
+          widget.onNotePersisted?.call(_latestNote);
+        }
       },
       child: Scaffold(
         backgroundColor: colorScheme.surface,
@@ -240,7 +276,9 @@ class _NoteFullPageState extends State<NoteFullPage> {
                           ),
                         )
                       : Text(
-                          localizations.notesSaveNow,
+                          widget.isDraft
+                              ? localizations.done
+                              : localizations.notesSaveNow,
                           style: TextStyle(
                             color: colorScheme.primary,
                             fontWeight: FontWeight.w600,
@@ -253,27 +291,36 @@ class _NoteFullPageState extends State<NoteFullPage> {
         ),
         body: SafeArea(
           top: false,
-          child: EditTileNote(
-            eventId: widget.eventId,
-            scope: widget.scope,
-            tileNote: widget.initialNote,
-            isReadOnly: widget.isReadOnly,
-            isProcrastinate: widget.isProcrastinate,
-            notesApi: widget.notesApi,
-            fullScreen: true,
-            hideHeader: true,
-            controller: _noteController,
-            // The previewing screen (NotePreviewTile / tile detail) already
-            // hydrated us with the latest note text; skip the redundant GET
-            // in that case so the page opens instantly.
-            skipInitialLoad: widget.initialNote.trim().isNotEmpty,
-            previewModeNotifier: _previewMode,
-            statusNotifier: _status,
-            onNotePersisted: (note) {
-              _latestNote = note;
-              widget.onNotePersisted?.call(note);
-            },
-          ),
+          child: widget.isDraft
+              ? MarkdownNoteEditor(
+                  initialMarkdown: widget.initialNote,
+                  readOnly: widget.isReadOnly,
+                  fullScreen: true,
+                  maxLength: widget.maxLength,
+                  controller: _draftController,
+                  previewMode: _previewMode,
+                )
+              : EditTileNote(
+                  eventId: widget.eventId,
+                  scope: widget.scope,
+                  tileNote: widget.initialNote,
+                  isReadOnly: widget.isReadOnly,
+                  isProcrastinate: widget.isProcrastinate,
+                  notesApi: widget.notesApi,
+                  fullScreen: true,
+                  hideHeader: true,
+                  controller: _noteController,
+                  // The previewing screen (NotePreviewTile / tile detail) already
+                  // hydrated us with the latest note text; skip the redundant GET
+                  // in that case so the page opens instantly.
+                  skipInitialLoad: widget.initialNote.trim().isNotEmpty,
+                  previewModeNotifier: _previewMode,
+                  statusNotifier: _status,
+                  onNotePersisted: (note) {
+                    _latestNote = note;
+                    widget.onNotePersisted?.call(note);
+                  },
+                ),
         ),
       ),
     );
@@ -365,19 +412,7 @@ class _NotePreviewTileState extends State<NotePreviewTile> {
     final canEdit = !widget.isReadOnly && !widget.isProcrastinate;
 
     final preview = hasContent
-        ? ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: 24.0 * widget.previewLines + 12,
-            ),
-            child: ClipRect(
-              child: MarkdownBody(
-                data: _note,
-                selectable: false,
-                shrinkWrap: true,
-                softLineBreak: true,
-              ),
-            ),
-          )
+        ? MarkdownNoteView(markdown: _note, maxLines: widget.previewLines)
         : Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Text(

@@ -1,59 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:flutter_quill/flutter_quill.dart';
-import 'package:markdown/markdown.dart' as md;
-import 'package:markdown_quill/markdown_quill.dart';
-
+import 'package:tiler_app/components/notes/markdownNoteEditor.dart';
 import 'package:tiler_app/data/notesPayload.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/notesApi.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
-
-/// Markdown parser shared by all note editors. GitHub-flavored so checklists,
-/// strikethrough and fenced code blocks round-trip through the Quill document.
-final md.Document _markdownDocument = md.Document(
-  encodeHtml: false,
-  extensionSet: md.ExtensionSet.gitHubFlavored,
-);
-final MarkdownToDelta _markdownToDelta =
-    MarkdownToDelta(markdownDocument: _markdownDocument);
-// `relaxed` only escapes markdown control characters inside formatted spans,
-// so plain prose like "in-progress + notes" round-trips without backslash
-// noise polluting the stored note.
-final DeltaToMarkdown _deltaToMarkdown = DeltaToMarkdown(
-  customContentHandler: DeltaToMarkdown.escapeSpecialCharactersRelaxed,
-);
-
-/// Builds a Quill [Document] from a markdown string. Empty/whitespace input
-/// yields an empty document (Quill cannot build a document from an empty
-/// delta), and any conversion failure falls back to treating the text as a
-/// plain paragraph so the user never loses their note.
-Document _markdownToQuillDocument(String markdown) {
-  if (markdown.trim().isEmpty) return Document();
-  try {
-    final delta = _markdownToDelta.convert(markdown);
-    if (delta.isEmpty) return Document();
-    return Document.fromDelta(delta);
-  } catch (_) {
-    final doc = Document();
-    doc.insert(0, markdown);
-    return doc;
-  }
-}
-
-/// Serializes a Quill [Document] back to markdown for persistence. The
-/// converter appends a trailing newline; we trim it so the stored value
-/// matches what the user sees.
-String _quillDocumentToMarkdown(Document document) {
-  try {
-    return _deltaToMarkdown.convert(document.toDelta()).trimRight();
-  } catch (_) {
-    return document.toPlainText().trimRight();
-  }
-}
 
 /// Save lifecycle of the auto-saving notes editor. Mirrors the
 /// `SaveStatus` union used by TilerWeb's `EditNotes` panel.
@@ -108,6 +60,9 @@ class EditTileNoteController {
 ///  * Optimistic etag handling with a conflict banner offering
 ///    "discard mine" / "keep editing".
 ///  * Live preview toggle that renders the markdown via `flutter_markdown`.
+///
+/// The editing itself is the shared [MarkdownNoteEditor] (T27); this widget
+/// adds loading, auto-saving and conflicts on top of it.
 class EditTileNote extends StatefulWidget {
   /// Tile id (sub-event id from `EditTile`, calendar event id from
   /// `TileDetail`). When `null` the widget renders as a disabled editor.
@@ -197,9 +152,8 @@ class EditTileNote extends StatefulWidget {
 }
 
 class _EditTileNoteState extends State<EditTileNote> {
-  late final QuillController _quillController;
-  late final FocusNode _focusNode;
-  late final ScrollController _scrollController;
+  final MarkdownNoteEditorController _editor = MarkdownNoteEditorController();
+  late final ValueNotifier<bool> _preview;
   late final NotesApi _notesApi;
 
   NotesPayload? _payload;
@@ -207,56 +161,38 @@ class _EditTileNoteState extends State<EditTileNote> {
   String? _errorMessage;
   String _lastSavedText = '';
   Timer? _saveTimer;
-  // Default to the rendered markdown view when there is content so users
-  // see the formatted output. The WYSIWYG editor is revealed when they tap
-  // the preview or when the note starts empty.
-  bool _isPreviewing = true;
-  bool _suppressDirty = false;
+
+  /// The editor's contents as markdown (the storage format), kept on every
+  /// edit so it outlives the editor when this widget is torn down.
+  String _draft = '';
 
   // Conflict descriptor: the server payload that rejected our last write.
   NotesPayload? _conflictPayload;
 
   /// Current editor contents serialized back to markdown (the storage format).
-  String get _currentMarkdown =>
-      _quillDocumentToMarkdown(_quillController.document);
-
-  /// Whether the rich-text document currently has any visible characters.
-  bool get _isEditorEmpty =>
-      _quillController.document.toPlainText().trim().isEmpty;
+  String get _currentMarkdown => _draft;
 
   /// Replaces the editor contents with [markdown] without tripping the dirty
-  /// listener. Places the caret at the end so typing continues naturally.
+  /// listener.
   void _setDocumentFromMarkdown(String markdown) {
-    _suppressDirty = true;
-    _quillController.document = _markdownToQuillDocument(markdown);
-    final len = _quillController.document.length;
-    _quillController.updateSelection(
-      TextSelection.collapsed(offset: (len - 1).clamp(0, len)),
-      ChangeSource.local,
-    );
-    _suppressDirty = false;
+    _editor.setMarkdown(markdown);
+    _draft = normalizeNoteMarkdown(markdown);
   }
 
   @override
   void initState() {
     super.initState();
-    _quillController = QuillController(
-      document: _markdownToQuillDocument(widget.tileNote),
-      selection: const TextSelection.collapsed(offset: 0),
-      readOnly: widget.isReadOnly,
-    );
-    _focusNode = FocusNode();
-    _scrollController = ScrollController();
-    _focusNode.addListener(_handleFocusChange);
     _notesApi = widget.notesApi ?? NotesApi(getContextCallBack: () => context);
     // Compare against the round-tripped form so markdown normalization from
     // the converter doesn't register as an unsaved edit on load.
-    _lastSavedText = _currentMarkdown;
-    final initialPreview =
-        widget.previewModeNotifier?.value ?? widget.tileNote.trim().isNotEmpty;
-    _isPreviewing = initialPreview;
-    widget.previewModeNotifier?.addListener(_handleExternalPreviewToggle);
-    _quillController.addListener(_onDocumentChanged);
+    _draft = normalizeNoteMarkdown(widget.tileNote);
+    _lastSavedText = _draft;
+    // Default to the rendered markdown view when there is content so users
+    // see the formatted output. The editor is revealed when they tap the
+    // preview or when the note starts empty.
+    _preview = widget.previewModeNotifier ??
+        ValueNotifier<bool>(widget.tileNote.trim().isNotEmpty);
+    _preview.addListener(_handlePreviewChange);
     widget.controller?._attach(this);
     if (!widget.skipInitialLoad) {
       _loadInitial();
@@ -271,34 +207,8 @@ class _EditTileNoteState extends State<EditTileNote> {
     }
   }
 
-  void _handleExternalPreviewToggle() {
-    final wanted = widget.previewModeNotifier?.value ?? _isPreviewing;
-    if (wanted == _isPreviewing) return;
-    setState(() => _isPreviewing = wanted);
-    if (!wanted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _focusNode.requestFocus();
-      });
-    }
-  }
-
-  void _handleFocusChange() {
-    // When the user leaves the editor and there is rendered markdown to
-    // show, drop back to preview so the formatting is visible. Skips the
-    // flip when the field is empty (we want the editor available for the
-    // next keystroke) or while we are still in the middle of a save.
-    if (_focusNode.hasFocus) return;
-    if (!mounted) return;
-    if (widget.isReadOnly || widget.isProcrastinate) return;
-    if (_isPreviewing) return;
-    if (_isEditorEmpty) return;
-    setState(() => _isPreviewing = true);
-    _syncPreviewNotifier();
-  }
-
-  void _syncPreviewNotifier() {
-    final n = widget.previewModeNotifier;
-    if (n != null && n.value != _isPreviewing) n.value = _isPreviewing;
+  void _handlePreviewChange() {
+    if (mounted) setState(() {});
   }
 
   void _syncStatusNotifier() {
@@ -309,10 +219,9 @@ class _EditTileNoteState extends State<EditTileNote> {
   @override
   void setState(VoidCallback fn) {
     super.setState(fn);
-    // Mirror status & preview-mode changes out to optional notifiers so a
-    // host page (e.g. NoteFullPage) can render them in its own chrome.
+    // Mirror status changes out to the optional notifier so a host page
+    // (e.g. NoteFullPage) can render them in its own chrome.
     _syncStatusNotifier();
-    _syncPreviewNotifier();
   }
 
   @override
@@ -353,10 +262,10 @@ class _EditTileNoteState extends State<EditTileNote> {
         // doesn't immediately mark the freshly loaded note as dirty.
         _lastSavedText = _currentMarkdown;
         _status = NotesSaveStatus.idle;
-        // Show the rendered markdown when the server returns content;
-        // otherwise drop straight into the editor so the user can start typing.
-        _isPreviewing = serverNote.trim().isNotEmpty;
       });
+      // Show the rendered markdown when the server returns content;
+      // otherwise drop straight into the editor so the user can start typing.
+      _preview.value = serverNote.trim().isNotEmpty;
       widget.onNotePersisted?.call(serverNote);
     } catch (e) {
       if (!mounted) return;
@@ -367,8 +276,8 @@ class _EditTileNoteState extends State<EditTileNote> {
     }
   }
 
-  void _onDocumentChanged() {
-    if (_suppressDirty) return;
+  void _onDocumentChanged(String markdown) {
+    _draft = markdown;
     if (widget.isReadOnly || widget.isProcrastinate) return;
     if (_currentMarkdown == _lastSavedText) return;
     if (_status != NotesSaveStatus.dirty) {
@@ -493,12 +402,8 @@ class _EditTileNoteState extends State<EditTileNote> {
           )
           .catchError((_) => _payload ?? NotesPayload());
     }
-    _quillController.removeListener(_onDocumentChanged);
-    _quillController.dispose();
-    _scrollController.dispose();
-    _focusNode.removeListener(_handleFocusChange);
-    _focusNode.dispose();
-    widget.previewModeNotifier?.removeListener(_handleExternalPreviewToggle);
+    _preview.removeListener(_handlePreviewChange);
+    if (widget.previewModeNotifier == null) _preview.dispose();
     widget.controller?._detach(this);
     super.dispose();
   }
@@ -518,52 +423,38 @@ class _EditTileNoteState extends State<EditTileNote> {
           colorScheme, localizations.procrastinateBlockOut);
     }
 
-    if (widget.fullScreen) {
-      // Page-style layout: minimal chrome, generous whitespace, toolbar
-      // pinned to the bottom of the canvas like a writing-app would.
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (!widget.hideHeader) _buildHeader(colorScheme, localizations),
-          if (_conflictPayload != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: _buildConflictBanner(colorScheme, localizations),
-            ),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 150),
-              child: _isPreviewing
-                  ? _buildPreview(colorScheme)
-                  : _buildEditor(colorScheme, localizations),
-            ),
-          ),
-          if (!widget.isReadOnly && !_isPreviewing)
-            _buildToolbar(colorScheme, localizations),
-        ],
-      );
-    }
+    final Widget? banner = _conflictPayload == null
+        ? null
+        : _buildConflictBanner(colorScheme, localizations);
+    final Widget editor = MarkdownNoteEditor(
+      initialMarkdown: widget.tileNote,
+      onChanged: _onDocumentChanged,
+      readOnly: widget.isReadOnly,
+      fullScreen: widget.fullScreen,
+      controller: _editor,
+      previewMode: _preview,
+      leading: widget.fullScreen
+          ? [
+              if (!widget.hideHeader) _buildHeader(colorScheme, localizations),
+              if (banner != null)
+                Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: banner),
+            ]
+          : [
+              _buildHeader(colorScheme, localizations),
+              if (banner != null) banner,
+            ],
+    );
+
+    if (widget.fullScreen) return editor;
 
     return FractionallySizedBox(
       widthFactor: 0.85,
       child: Container(
         width: 380,
         margin: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildHeader(colorScheme, localizations),
-            if (_conflictPayload != null)
-              _buildConflictBanner(colorScheme, localizations),
-            if (!widget.isReadOnly && !_isPreviewing)
-              _buildToolbar(colorScheme, localizations),
-            const SizedBox(height: 8),
-            _isPreviewing
-                ? _buildPreview(colorScheme)
-                : _buildEditor(colorScheme, localizations),
-          ],
-        ),
+        child: editor,
       ),
     );
   }
@@ -617,14 +508,14 @@ class _EditTileNoteState extends State<EditTileNote> {
                 ),
               ),
             IconButton(
-              tooltip: _isPreviewing
+              tooltip: _preview.value
                   ? localizations.notesShowEditor
                   : localizations.notesShowPreview,
               icon: Icon(
-                _isPreviewing ? Icons.edit_note : Icons.visibility_outlined,
+                _preview.value ? Icons.edit_note : Icons.visibility_outlined,
                 size: 20,
               ),
-              onPressed: () => setState(() => _isPreviewing = !_isPreviewing),
+              onPressed: () => _preview.value = !_preview.value,
             ),
           ],
         ),
@@ -747,187 +638,6 @@ class _EditTileNoteState extends State<EditTileNote> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildToolbar(
-      ColorScheme colorScheme, AppLocalizations localizations) {
-    // Only surface formatting that round-trips cleanly to markdown. Anything
-    // Quill can express but markdown cannot (font family/size, colors,
-    // underline, sub/superscript, alignment, indent) is hidden so the stored
-    // note never silently loses formatting on save.
-    final toolbar = QuillSimpleToolbar(
-      controller: _quillController,
-      config: QuillSimpleToolbarConfig(
-        multiRowsDisplay: false,
-        showDividers: false,
-        showFontFamily: false,
-        showFontSize: false,
-        showSmallButton: false,
-        showUnderLineButton: false,
-        showLineHeightButton: false,
-        showColorButton: false,
-        showBackgroundColorButton: false,
-        showClearFormat: false,
-        showAlignmentButtons: false,
-        showHeaderStyle: true,
-        showListNumbers: true,
-        showListBullets: true,
-        showListCheck: true,
-        showCodeBlock: true,
-        showQuote: true,
-        showIndent: false,
-        showLink: true,
-        showSearchButton: false,
-        showSubscript: false,
-        showSuperscript: false,
-        showDirection: false,
-        showBoldButton: true,
-        showItalicButton: true,
-        showStrikeThrough: true,
-        showInlineCode: true,
-        showUndo: true,
-        showRedo: true,
-        toolbarIconAlignment: WrapAlignment.start,
-      ),
-    );
-
-    return Material(
-      elevation: widget.fullScreen ? 4 : 0,
-      color: widget.fullScreen
-          ? colorScheme.surface
-          : colorScheme.surfaceContainerLowest,
-      borderRadius: widget.fullScreen
-          ? const BorderRadius.vertical(top: Radius.circular(12))
-          : BorderRadius.circular(8),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          child: toolbar,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEditor(ColorScheme colorScheme, AppLocalizations localizations) {
-    final editor = QuillEditor(
-      controller: _quillController,
-      focusNode: _focusNode,
-      scrollController: _scrollController,
-      config: QuillEditorConfig(
-        placeholder: widget.fullScreen
-            ? localizations.notesTapToAdd
-            : localizations.noteEllipsis,
-        padding: widget.fullScreen
-            ? const EdgeInsets.fromLTRB(24, 20, 24, 24)
-            : const EdgeInsets.fromLTRB(20, 15, 20, 15),
-        expands: widget.fullScreen,
-        scrollable: true,
-        autoFocus: false,
-        customStyles: DefaultStyles(
-          paragraph: DefaultTextBlockStyle(
-            TextStyle(
-              fontFamily: TileTextStyles.rubikFontName,
-              fontSize: widget.fullScreen ? 17 : 18,
-              fontWeight: FontWeight.w400,
-              height: 1.5,
-              color: colorScheme.onSurface,
-            ),
-            const HorizontalSpacing(0, 0),
-            const VerticalSpacing(6, 0),
-            const VerticalSpacing(0, 0),
-            null,
-          ),
-          placeHolder: DefaultTextBlockStyle(
-            TextStyle(
-              fontFamily: TileTextStyles.rubikFontName,
-              fontSize: widget.fullScreen ? 17 : 18,
-              fontWeight: FontWeight.w400,
-              height: 1.5,
-              color: colorScheme.onSurface.withValues(alpha: 0.4),
-            ),
-            const HorizontalSpacing(0, 0),
-            const VerticalSpacing(0, 0),
-            const VerticalSpacing(0, 0),
-            null,
-          ),
-        ),
-      ),
-    );
-
-    if (widget.fullScreen) {
-      return Container(
-        key: const ValueKey('notes-editor'),
-        color: Colors.transparent,
-        child: editor,
-      );
-    }
-
-    return Container(
-      key: const ValueKey('notes-editor'),
-      constraints: const BoxConstraints(minHeight: 140, maxHeight: 320),
-      decoration: BoxDecoration(
-        border: Border.all(color: colorScheme.primaryContainer, width: 1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: editor,
-    );
-  }
-
-  Widget _buildPreview(ColorScheme colorScheme) {
-    final text = _currentMarkdown;
-    final canEdit = !widget.isReadOnly && !widget.isProcrastinate;
-    final fs = widget.fullScreen;
-
-    final emptyHint = canEdit && fs
-        ? AppLocalizations.of(context)!.notesTapToAdd
-        : AppLocalizations.of(context)!.notesPreviewEmpty;
-    final inner = text.trim().isEmpty
-        ? Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Text(
-              emptyHint,
-              style: TextStyle(
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
-                fontFamily: TileTextStyles.rubikFontName,
-                fontSize: fs ? 15 : 14,
-              ),
-            ),
-          )
-        // Use `selectable: false` so a tap drops into edit mode instead of
-        // being swallowed by text selection.
-        : MarkdownBody(data: text, selectable: false);
-
-    final body = Container(
-      key: const ValueKey('notes-preview'),
-      width: double.infinity,
-      constraints: fs
-          ? const BoxConstraints.expand()
-          : const BoxConstraints(minHeight: 120),
-      padding: fs
-          ? const EdgeInsets.fromLTRB(24, 20, 24, 24)
-          : const EdgeInsets.fromLTRB(20, 15, 20, 15),
-      decoration: fs
-          ? null
-          : BoxDecoration(
-              border: Border.all(color: colorScheme.primaryContainer, width: 1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-      child: fs ? SingleChildScrollView(child: inner) : inner,
-    );
-    if (!canEdit) {
-      return body;
-    }
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        setState(() => _isPreviewing = false);
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _focusNode.requestFocus();
-        });
-      },
-      child: body,
     );
   }
 
