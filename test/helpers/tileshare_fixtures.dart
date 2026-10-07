@@ -99,6 +99,7 @@ DesignatedTile tsDesignatedTile(
   String? ownerId = 'me',
   double? completion,
   int? durationMs,
+  String? note,
 }) =>
     DesignatedTile.fromJson({
       'id': id,
@@ -112,6 +113,7 @@ DesignatedTile tsDesignatedTile(
         'name': name ?? 'Tile $id',
         if (endMs != null) 'end': endMs,
         if (durationMs != null) 'duration': durationMs,
+        if (note != null) 'miscData': {'userNote': note},
         // whose designated tile template it is: its entry in the tilette, as
         // `api/DesignatedTile/designated` sends it (and as the web reads it)
         if (ownerId != null)

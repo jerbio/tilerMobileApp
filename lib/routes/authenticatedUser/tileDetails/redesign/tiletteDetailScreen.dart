@@ -22,6 +22,7 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/comments/comments_state.dart';
 import 'package:tiler_app/components/comments/comments_section.dart';
 import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/components/notes/markdownNoteEditor.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/comments_api.dart';
 
@@ -83,7 +84,7 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
       appBar: AppBar(title: Text(title)),
       body: Column(
         children: [
-          _TiletteHeader(tilette: tile),
+          TiletteHeader(tilette: tile),
           const Divider(height: 1),
           Expanded(
             child: BlocProvider<CommentsBloc>(
@@ -194,12 +195,13 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
   }
 }
 
-/// The web-style summary header: note/description and due date.
+/// The web-style summary header: note/description (markdown, rendered as
+/// every note is - T27) and due date.
 /// The tile name is already shown in the AppBar, so it is intentionally
 /// omitted here to avoid duplication (matches the desktop layout where
 /// the page header only shows metadata).
-class _TiletteHeader extends StatelessWidget {
-  const _TiletteHeader({Key? key, required this.tilette}) : super(key: key);
+class TiletteHeader extends StatelessWidget {
+  const TiletteHeader({Key? key, required this.tilette}) : super(key: key);
 
   final DesignatedTile tilette;
 
@@ -213,12 +215,7 @@ class _TiletteHeader extends StatelessWidget {
     final DateTime? end = tilette.endTime;
 
     final rows = <Widget>[
-      if (note.isNotEmpty)
-        Text(
-          note,
-          style: textTheme.bodySmall
-              ?.copyWith(color: colorScheme.onSurfaceVariant),
-        ),
+      if (note.isNotEmpty) MarkdownNoteView(markdown: note),
       if (end != null)
         Padding(
           padding: const EdgeInsets.only(top: 4),

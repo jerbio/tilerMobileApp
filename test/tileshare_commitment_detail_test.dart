@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_detail_cubit.dart';
+import 'package:tiler_app/components/notes/markdownNoteEditor.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -32,9 +33,18 @@ class _Rig {
 
   _Rig(String clusterId)
       : clusters = FakeTileShareClustersSource(inbox: [
-          tsCluster('bc', name: 'Brunch', mode: TileShareMode.broadcast, creatorId: 'sarah'),
-          tsCluster('kc', name: 'Interview prep', mode: TileShareMode.class_, creatorId: 'sarah'),
-          tsCluster('pj', name: 'Launch prep', mode: TileShareMode.project, creatorId: 'sarah'),
+          tsCluster('bc',
+              name: 'Brunch',
+              mode: TileShareMode.broadcast,
+              creatorId: 'sarah'),
+          tsCluster('kc',
+              name: 'Interview prep',
+              mode: TileShareMode.class_,
+              creatorId: 'sarah'),
+          tsCluster('pj',
+              name: 'Launch prep',
+              mode: TileShareMode.project,
+              creatorId: 'sarah'),
         ], tilettesByCluster: {
           'bc': [tsTilette('tb', clusterId: 'bc')],
           'kc': [
@@ -49,7 +59,10 @@ class _Rig {
         }),
         assignments = FakeTileShareAssignmentsSource([
           tsDesignatedTile('b1', clusterId: 'bc', name: 'Bring pastries'),
-          tsDesignatedTile('k1', clusterId: 'kc', name: 'Write the brief'),
+          tsDesignatedTile('k1',
+              clusterId: 'kc',
+              name: 'Write the brief',
+              note: 'Use the **Q3** numbers'),
           tsDesignatedTile('k2', clusterId: 'kc', name: 'Review the deck'),
           tsDesignatedTile('p1', clusterId: 'pj', name: 'Research'),
           tsDesignatedTile('p2',
@@ -128,9 +141,13 @@ void main() {
         (tester) async {
       final rig = _Rig('bc');
       await _open(tester, rig);
-      expect(find.descendant(of: _key('commitment_accept'), matching: find.text('Accept')),
+      expect(
+          find.descendant(
+              of: _key('commitment_accept'), matching: find.text('Accept')),
           findsOneWidget);
-      expect(find.descendant(of: _key('commitment_decline'), matching: find.text('Decline')),
+      expect(
+          find.descendant(
+              of: _key('commitment_decline'), matching: find.text('Decline')),
           findsOneWidget);
       await tester.tap(_key('commitment_check_fit'));
       expect(rig.previewed, ['b1']);
@@ -152,7 +169,8 @@ void main() {
   });
 
   group('Class', () {
-    testWidgets('Accept all / Decline all for every task I hold, and my tasks '
+    testWidgets(
+        'Accept all / Decline all for every task I hold, and my tasks '
         'listed - never per-task buttons', (tester) async {
       final rig = _Rig('kc');
       await _open(tester, rig);
@@ -166,23 +184,24 @@ void main() {
       expect(_task('k2'), findsOneWidget);
       await tester.tap(_key('commitment_accept'));
       await _settle(tester);
-      expect(rig.responds(), ['respond(k1, accepted)', 'respond(k2, accepted)']);
+      expect(
+          rig.responds(), ['respond(k1, accepted)', 'respond(k2, accepted)']);
       await rig.detail.close();
     });
 
     testWidgets('one task left to answer is still not previewed (T23)',
         (tester) async {
       final rig = _Rig('kc');
-      rig.assignments.tiles
-          .firstWhere((t) => t.id == 'k2')
-          .invitationStatus = 'accepted';
+      rig.assignments.tiles.firstWhere((t) => t.id == 'k2').invitationStatus =
+          'accepted';
       await _open(tester, rig);
       expect(_key('commitment_accept'), findsOneWidget);
       expect(_key('commitment_check_fit'), findsNothing);
       await rig.detail.close();
     });
 
-    testWidgets('a task that refuses says how many went through; Retry sends '
+    testWidgets(
+        'a task that refuses says how many went through; Retry sends '
         'the rest', (tester) async {
       final rig = _Rig('kc');
       await _open(tester, rig);
@@ -200,7 +219,8 @@ void main() {
   });
 
   group('Project', () {
-    testWidgets('Accept / Decline on each of my tasks; only my tasks; no Accept '
+    testWidgets(
+        'Accept / Decline on each of my tasks; only my tasks; no Accept '
         'all, no Check fit', (tester) async {
       final rig = _Rig('pj');
       await _open(tester, rig);
@@ -254,7 +274,8 @@ void main() {
     await rig.detail.close();
   });
 
-  testWidgets('a schedule that cannot refresh yet is said, and the answer '
+  testWidgets(
+      'a schedule that cannot refresh yet is said, and the answer '
       'stands', (tester) async {
     final rig = _Rig('bc');
     await _open(tester, rig);
@@ -282,5 +303,22 @@ void main() {
         }
       }
     }
+  });
+
+  // Step 9.16d (T27): a task's notes are the owner's markdown, shown rendered
+  // and short; nothing for a task without notes.
+  testWidgets('each task shows its notes, rendered', (tester) async {
+    final rig = _Rig('kc');
+    await _open(tester, rig);
+    expect(
+        find.descendant(
+            of: _task('k1'), matching: find.byType(MarkdownNoteView)),
+        findsOneWidget);
+    expect(find.textContaining('**'), findsNothing);
+    expect(
+        find.descendant(
+            of: _task('k2'), matching: find.byType(MarkdownNoteView)),
+        findsNothing);
+    await rig.detail.close();
   });
 }

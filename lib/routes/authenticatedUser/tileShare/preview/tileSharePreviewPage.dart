@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/components/notes/markdownNoteEditor.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_preview_cubit.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_preview_state.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dayGridPage.dart';
@@ -1061,9 +1062,10 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
         l10n.attentionMetaDue(DateFormat.MMMEd(locale)
             .add_jm()
             .format(DateTime.fromMillisecondsSinceEpoch(preview.deadlineMs!))),
-      if (preview.description != null) preview.description!,
     ];
-    if (lines.isEmpty) return const <Widget>[];
+    // The description is the task's notes: markdown (T27).
+    final String notes = (preview.description ?? '').trim();
+    if (lines.isEmpty && notes.isEmpty) return const <Widget>[];
     return [
       const Divider(height: 24),
       Text(l10n.previewDetails, style: theme.textTheme.titleSmall),
@@ -1072,6 +1074,11 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
         Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text(line, style: theme.textTheme.bodyMedium),
+        ),
+      if (notes.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: MarkdownNoteView(markdown: notes),
         ),
     ];
   }

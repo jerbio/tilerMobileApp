@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_commitment_cubit.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_detail_state.dart';
+import 'package:tiler_app/components/notes/markdownNoteEditor.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -18,8 +19,9 @@ import 'package:tiler_app/util.dart';
 ///   with **Check fit** for its one task (T21-T23); Accept all / Decline all
 ///   for a Class (every task I hold, one at a time); Accept / Decline on each
 ///   of my tasks for a Project - never Accept all, never Check fit.
-/// * **My tasks**, each with my answer; once accepted, my progress and a way
-///   to the scheduled tile; and the task's comments.
+/// * **My tasks**, each with its notes (rendered, three lines at most), my
+///   answer; once accepted, my progress and a way to the scheduled tile; and
+///   the task's comments.
 /// * A refused answer says so with Retry (a partial one says how many went
 ///   through); a schedule that cannot refresh yet is said separately and
 ///   never undoes the answer.
@@ -91,7 +93,8 @@ class _CommitmentDetailState extends State<CommitmentDetail> {
       builder: (context, state) {
         final List<String> pending = state.pending;
         final bool sending = state.sending.isNotEmpty;
-        final bool answerAll = mode != TileShareMode.project && pending.isNotEmpty;
+        final bool answerAll =
+            mode != TileShareMode.project && pending.isNotEmpty;
         return Column(
           key: const Key('commitment'),
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -106,14 +109,16 @@ class _CommitmentDetailState extends State<CommitmentDetail> {
                     key: const Key('commitment_accept'),
                     onPressed: sending
                         ? null
-                        : () => _cubit.respond(pending, InvitationStatus.accepted),
+                        : () =>
+                            _cubit.respond(pending, InvitationStatus.accepted),
                     child: Text(AttentionCopy.acceptLabel(l10n, mode)),
                   ),
                   OutlinedButton(
                     key: const Key('commitment_decline'),
                     onPressed: sending
                         ? null
-                        : () => _cubit.respond(pending, InvitationStatus.declined),
+                        : () =>
+                            _cubit.respond(pending, InvitationStatus.declined),
                     child: Text(AttentionCopy.declineLabel(l10n, mode)),
                   ),
                   if (mode == TileShareMode.broadcast &&
@@ -122,7 +127,8 @@ class _CommitmentDetailState extends State<CommitmentDetail> {
                     TextButton.icon(
                       key: const Key('commitment_check_fit'),
                       onPressed: () => widget.onPreview!(pending.single),
-                      icon: const Icon(Icons.calendar_view_day_outlined, size: 18),
+                      icon: const Icon(Icons.calendar_view_day_outlined,
+                          size: 18),
                       label: Text(l10n.previewCheckFit),
                     ),
                 ],
@@ -159,7 +165,10 @@ class _CommitmentDetailState extends State<CommitmentDetail> {
                       ?.copyWith(color: TileColors.progressMedium)),
             ],
             const SizedBox(height: 16),
-            Text(mine.length > 1 ? l10n.commitmentYourTasks : l10n.commitmentYourTask,
+            Text(
+                mine.length > 1
+                    ? l10n.commitmentYourTasks
+                    : l10n.commitmentYourTask,
                 style: theme.textTheme.titleSmall),
             const SizedBox(height: 4),
             for (final DesignatedTile tile in mine)
@@ -209,6 +218,7 @@ class _TaskRow extends StatelessWidget {
     final String name = (tile.name ?? tile.tileTemplate?.name ?? '').trim();
     final int? duration = tile.tileTemplate?.durationInMs;
     final double? completion = tile.completionPercentage;
+    final String notes = (tile.tileTemplate?.miscData?.userNote ?? '').trim();
     final bool accepted = status == InvitationStatus.accepted;
     return Padding(
       key: Key('commitment_task_$id'),
@@ -224,10 +234,15 @@ class _TaskRow extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.w600)),
               ),
               if ((duration ?? 0) > 0)
-                Text(Duration(milliseconds: duration!).toHumanLocalized(context),
+                Text(
+                    Duration(milliseconds: duration!).toHumanLocalized(context),
                     style: quiet),
             ],
           ),
+          if (notes.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            MarkdownNoteView(markdown: notes, maxLines: 3),
+          ],
           const SizedBox(height: 6),
           Wrap(
             spacing: 8,
@@ -240,7 +255,8 @@ class _TaskRow extends StatelessWidget {
                 InvitationStatus.declined => TileShareStatusPill(
                     label: l10n.declined, tone: StatusPillTone.danger),
                 InvitationStatus.none => TileShareStatusPill(
-                    label: l10n.participantInvited, tone: StatusPillTone.warning),
+                    label: l10n.participantInvited,
+                    tone: StatusPillTone.warning),
               },
               if (accepted && completion != null)
                 Text('${completion.round()}%', style: quiet),
@@ -272,12 +288,16 @@ class _TaskRow extends StatelessWidget {
               if (perTask && status == InvitationStatus.none) ...[
                 FilledButton(
                   key: Key('commitment_accept_$id'),
-                  onPressed: sending ? null : () => onRespond(InvitationStatus.accepted),
+                  onPressed: sending
+                      ? null
+                      : () => onRespond(InvitationStatus.accepted),
                   child: Text(l10n.attentionAccept),
                 ),
                 OutlinedButton(
                   key: Key('commitment_decline_$id'),
-                  onPressed: sending ? null : () => onRespond(InvitationStatus.declined),
+                  onPressed: sending
+                      ? null
+                      : () => onRespond(InvitationStatus.declined),
                   child: Text(l10n.attentionDecline),
                 ),
               ],
