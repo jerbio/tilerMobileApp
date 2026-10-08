@@ -174,7 +174,8 @@ class _TilerAppState extends State<TilerApp> {
               create: (context) => ScheduleBloc(getContextCallBack: () {
                     return _navigatorKey.currentState?.overlay?.context ??
                         this.context;
-                  })),
+                  })
+                    ..startRecoveryMonitoring()),
           BlocProvider(create: (context) => WeeklyUiDateManagerBloc()),
           BlocProvider(create: (context) => MonthlyUiDateManagerBloc()),
           // Daily-view list/grid layout (restored + persisted).

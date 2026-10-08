@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -56,6 +59,13 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
   static const bool _canPreviewPlan = false;
 
   late final ScheduleApi _scheduleApi;
+  ScheduleRevisionCubit? _revisions;
+  StreamSubscription<ScheduleRevision?>? _revisionSubscription;
+  StreamSubscription<void>? _recoverySubscription;
+  bool _childRouteOpen = false;
+  int _loadGeneration = 0;
+  Future<void>? _loadTask;
+  bool _reloadRequested = false;
   TimelineSummary? _summary;
   bool _isLoading = true;
   bool _hasError = false;
@@ -69,10 +79,51 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
     super.initState();
     _scheduleApi =
         widget.scheduleApi ?? ScheduleApi(getContextCallBack: () => context);
+    try {
+      _revisions = context.read<ScheduleBloc>().revisions;
+    } on ProviderNotFoundException {
+      // Standalone screens can use the injected API without a schedule bloc.
+    }
+    _revisionSubscription = _revisions?.stream.listen((revision) {
+      if (revision != null && !_childRouteOpen && mounted) _load();
+    });
+    _recoverySubscription = _revisions?.recovery.listen((_) {
+      if (mounted && !_childRouteOpen && _hasError) _load();
+    });
     _load();
   }
 
-  Future<void> _load() async {
+  @override
+  void dispose() {
+    _revisionSubscription?.cancel();
+    _recoverySubscription?.cancel();
+    ++_loadGeneration;
+    super.dispose();
+  }
+
+  Future<void> _load() {
+    if (_loadTask != null) {
+      _reloadRequested = true;
+      return _loadTask!;
+    }
+    final task = _drainLoads();
+    _loadTask = task;
+    return task;
+  }
+
+  Future<void> _drainLoads() async {
+    try {
+      do {
+        _reloadRequested = false;
+        await _fetchSummary();
+      } while (mounted && _reloadRequested);
+    } finally {
+      _loadTask = null;
+    }
+  }
+
+  Future<void> _fetchSummary() async {
+    final generation = ++_loadGeneration;
     setState(() {
       _isLoading = true;
       _hasError = false;
@@ -81,14 +132,14 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
       final TimelineSummary? summary =
           await _scheduleApi.getTimelineSummary(widget.timeline);
       summary?.timeline ??= widget.timeline;
-      if (!mounted) return;
+      if (!mounted || generation != _loadGeneration || _reloadRequested) return;
       setState(() {
         _summary = summary;
         _isLoading = false;
       });
     } catch (error) {
       Utility.debugPrint('[TodayStatus] summary fetch failed: $error');
-      if (!mounted) return;
+      if (!mounted || generation != _loadGeneration || _reloadRequested) return;
       setState(() {
         _hasError = true;
         _isLoading = false;
@@ -256,8 +307,8 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
             Container(
               width: 56,
               height: 56,
-              decoration:
-                  BoxDecoration(shape: BoxShape.circle, color: tokens.brandTint),
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle, color: tokens.brandTint),
               child: Icon(Icons.calendar_month_outlined,
                   color: tokens.brand, size: 26),
             ),
@@ -394,6 +445,7 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
 
   void _openTile(PlanItemViewModel item) {
     final source = item.source;
+    _childRouteOpen = true;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -404,6 +456,7 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
         ),
       ),
     ).then((_) {
+      _childRouteOpen = false;
       // The edit screen can change or complete this tile; refresh so the
       // counts and lists here reflect it instead of waiting on the next poll.
       if (mounted) _load();
@@ -431,6 +484,7 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
     Utility.debugPrint(
         '[TodayStatus] completing ${selected.length} tile(s): $ids');
 
+    final baseline = _revisions?.state;
     setState(() => _isCompleting = true);
     try {
       final bool success = await BlocProvider.of<ScheduleSummaryBloc>(context)
@@ -438,6 +492,7 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
 
       if (!mounted) return;
       if (success) {
+        _revisions?.checkAfterChange(baseline: baseline);
         _exitSelectionMode();
         await _load();
       }

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:tiler_app/bloc/schedule/schedule_recovery_monitor.dart';
+import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
@@ -40,6 +42,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     final timeline = Utility.initialScheduleTimeline;
     getSubTiles(timeline).then((value) {
       _cachedRealSchedule = value;
+      revisions.observe(value.item3);
     }).catchError((_) {
       // Silently ignore — the normal GetScheduleEvent path will retry.
     });
@@ -64,6 +67,28 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     return false;
   }
 
+  late ScheduleRevisionCubit revisions;
+  ScheduleRecoveryMonitor? _recoveryMonitor;
+
+  void startRecoveryMonitoring() {
+    if (_recoveryMonitor != null) return;
+    _recoveryMonitor = ScheduleRecoveryMonitor(
+      onRecover: () {
+        if (!isClosed && !tutorialMode && state is! ScheduleLoggedOutState) {
+          revisions.recover();
+        }
+      },
+      onSuspend: revisions.suspend,
+    )..start();
+  }
+
+  @override
+  Future<void> close() async {
+    _recoveryMonitor?.close();
+    await revisions.close();
+    await super.close();
+  }
+
   late ScheduleApi scheduleApi;
   late SubCalendarEventApi subCalendarEventApi;
   Function getContextCallBack;
@@ -82,6 +107,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     ;
     on<CompleteTaskEvent>(_onCompleteTask);
     scheduleApi = ScheduleApi(getContextCallBack: getContextCallBack);
+    revisions = ScheduleRevisionCubit(
+        fetchStatus: () => scheduleApi.getScheduleStatus());
     subCalendarEventApi =
         SubCalendarEventApi(getContextCallBack: getContextCallBack);
     previewApi = PreviewApi(getContextCallBack: getContextCallBack);
@@ -99,6 +126,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   Future<bool> shouldGetRefreshedListOfTiles(ScheduleStatus currentStatus) {
     return scheduleApi.getScheduleStatus().then((value) {
+      revisions.observe(value);
       bool isAnalyisTheSame = false;
       bool isEvaluationTheSame = false;
       if (value.analysisId == currentStatus.analysisId) {
@@ -124,6 +152,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void _onLocalScheduleEvent(
       ReloadLocalScheduleEvent event, Emitter<ScheduleState> emit) {
+    revisions.observe(event.scheduleStatus);
     LocalScheduleLoadedState put = LocalScheduleLoadedState(
         subEvents: event.subEvents,
         timelines: event.timelines,
@@ -141,6 +170,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     scheduleApi = ScheduleApi(getContextCallBack: () {
       return event.getContextCallBack();
     });
+    revisions.reset();
     emit(ScheduleLoggedOutState());
   }
 
@@ -163,6 +193,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       // so we re-check here when the response arrives.
       if (tutorialMode) return;
 
+      revisions.observe(value.item3);
       List<SubCalendarEvent> updatedSubEvents = value.item2;
       if (state is ScheduleLoadedState &&
           !(state is LocalScheduleLoadedState)) {
@@ -275,6 +306,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           connectionState: ConnectionState.waiting));
     }
 
+    if (event.forceRefresh) {
+      revisions.checkAfterChange(
+        baseline: ScheduleRevision.fromStatus(scheduleStatus),
+      );
+    }
     if (event.forceRefresh || makeRemoteCall) {
       print("Force refresh on get tiles");
       await _getSubEventCallBack(

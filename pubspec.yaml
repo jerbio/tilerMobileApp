@@ -22,6 +22,7 @@ environment:
   sdk: '>=3.0.0'
 
 dependencies:
+  connectivity_plus: ^6.1.5
   dio: ^5.7.0
   faker: ^2.0.0
   flutter:
