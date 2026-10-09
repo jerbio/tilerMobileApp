@@ -7,7 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/scheduleChipInsets.dart';
 import 'package:tiler_app/components/tilelist/dailyView/motion/listMotion.dart';
+import 'package:tiler_app/components/tilelist/dailyView/scheduleChangeSummaryChip.dart';
 import 'package:tiler_app/components/tilelist/dailyView/scheduleChangeSummaryHost.dart';
+import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/services/scheduleChangeSummary.dart';
+import 'package:tiler_app/services/scheduleDelta.dart';
+import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridHandoff.dart';
@@ -81,6 +86,47 @@ void main() {
     motion.dispose();
   });
 
+  for (final dark in [false, true]) {
+    testWidgets(
+        'the Plan updated chip is solid and readable (${dark ? "dark" : "light"})',
+        (tester) async {
+      final day = DateTime(2026, 10, 9);
+      final summary = ScheduleChangeSummary.from(
+          ScheduleDelta.compute(
+              before: [tile('a', day.add(const Duration(hours: 9)))],
+              after: [tile('a', day.add(const Duration(hours: 11)))],
+              day:
+                  Timeline.fromDateTime(day, day.add(const Duration(days: 1)))),
+          const ScheduleChangeAttribution(ScheduleChangeOrigin.tilerRevise))!;
+      await tester.pumpWidget(MaterialApp(
+        theme: dark ? TileThemeData.darkTheme : TileThemeData.lightTheme,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+            body: ScheduleChangeSummaryChip(
+                summary: summary, onSeeChanges: () {})),
+      ));
+      final background = tester
+          .widget<Material>(find.byKey(ScheduleChangeSummaryChip.chipKey))
+          .color!;
+      // Opaque: nothing behind the chip shows through.
+      expect(background.a, 1.0);
+      final title = tester.widget<Text>(find.text('Plan updated'));
+      expect(contrast(title.style!.color!, background), greaterThan(4.5));
+      final action = tester
+          .widget<TextButton>(
+              find.byKey(ScheduleChangeSummaryChip.seeChangesKey))
+          .style!
+          .foregroundColor!
+          .resolve(<WidgetState>{})!;
+      expect(contrast(action, background), greaterThan(4.5));
+    });
+  }
+
   testWidgets('the summary host shares the bar height it is given',
       (tester) async {
     double? seen;
@@ -99,4 +145,11 @@ void main() {
     ));
     expect(seen, bar);
   });
+}
+
+/// WCAG contrast ratio between two opaque colours.
+double contrast(Color a, Color b) {
+  final la = a.computeLuminance(), lb = b.computeLuminance();
+  final hi = la > lb ? la : lb, lo = la > lb ? lb : la;
+  return (hi + 0.05) / (lo + 0.05);
 }

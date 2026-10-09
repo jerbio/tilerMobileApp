@@ -2301,6 +2301,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
                                 startMs: entry.key.startMs),
                     left: tileLeft,
                     width: tileWidth,
+                    yOf: (ms) => _topPx(dayStart: dayStart, startMs: ms),
                     fading: entry.value,
                     animate: animate,
                   ),

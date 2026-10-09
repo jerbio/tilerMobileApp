@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/tilelist/dailyView/scheduleChangeBeforeAfter.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/scheduleChangeSummary.dart';
 import 'package:tiler_app/services/scheduleDelta.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 /// "Plan updated · 2 Tiles moved · +31 min free   See changes".
@@ -23,7 +25,8 @@ class ScheduleChangeSummaryChip extends StatelessWidget {
   });
 
   /// The chip's second line, e.g. "2 Tiles moved · +31 min free".
-  static String details(AppLocalizations l10n, ScheduleChangeSummary summary) {
+  static String details(BuildContext context, ScheduleChangeSummary summary) {
+    final l10n = AppLocalizations.of(context)!;
     return [
       if (summary.movedCount > 0)
         l10n.scheduleChangeTilesMoved(summary.movedCount),
@@ -36,25 +39,27 @@ class ScheduleChangeSummaryChip extends StatelessWidget {
       if (summary.travelUpdatedCount > 0)
         l10n.scheduleChangeTravelUpdated(summary.travelUpdatedCount),
       if (summary.freeMinutesGained > 0)
-        l10n.scheduleChangeFreeGained(summary.freeMinutesGained),
+        l10n.scheduleChangeFreeGained(
+            Duration(minutes: summary.freeMinutesGained)
+                .toHumanLocalized(context)),
     ].join(' · ');
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colorScheme = Theme.of(context).colorScheme;
+    final chipColors = ScheduleChipColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final title = summary.isDayCleared
         ? l10n.scheduleChangeDayCleared
         : l10n.scheduleChangePlanUpdated;
-    final detail = details(l10n, summary);
+    final detail = details(context, summary);
     return Semantics(
       liveRegion: true,
       container: true,
       child: Material(
         key: chipKey,
-        color: colorScheme.inverseSurface,
+        color: chipColors.background,
         elevation: 6,
         borderRadius: BorderRadius.circular(14),
         child: Padding(
@@ -69,7 +74,7 @@ class ScheduleChangeSummaryChip extends StatelessWidget {
                     Text(
                       title,
                       style: textTheme.labelLarge?.copyWith(
-                        color: colorScheme.onInverseSurface,
+                        color: chipColors.text,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -79,8 +84,7 @@ class ScheduleChangeSummaryChip extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onInverseSurface
-                                .withValues(alpha: 0.8)),
+                            color: chipColors.text.withValues(alpha: 0.8)),
                       ),
                   ],
                 ),
@@ -88,8 +92,7 @@ class ScheduleChangeSummaryChip extends StatelessWidget {
               TextButton(
                 key: seeChangesKey,
                 onPressed: onSeeChanges,
-                style: TextButton.styleFrom(
-                    foregroundColor: colorScheme.inversePrimary),
+                style: TextButton.styleFrom(foregroundColor: chipColors.action),
                 child: Text(l10n.scheduleChangeSeeChanges),
               ),
             ],
@@ -101,11 +104,14 @@ class ScheduleChangeSummaryChip extends StatelessWidget {
 }
 
 /// "What changed": the day's changes as a list of `before → after` rows,
-/// not the resulting schedule.
-class ScheduleChangeSheet extends StatelessWidget {
+/// or the whole day before and after side by side.
+class ScheduleChangeSheet extends StatefulWidget {
   final ScheduleChangeSummary summary;
 
   const ScheduleChangeSheet({super.key, required this.summary});
+
+  static const Key changesTabKey = Key('schedule_change_tab_changes');
+  static const Key beforeAfterTabKey = Key('schedule_change_tab_before_after');
 
   static Future<void> show(
       BuildContext context, ScheduleChangeSummary summary) {
@@ -116,6 +122,15 @@ class ScheduleChangeSheet extends StatelessWidget {
       builder: (_) => ScheduleChangeSheet(summary: summary),
     );
   }
+
+  @override
+  State<ScheduleChangeSheet> createState() => _ScheduleChangeSheetState();
+}
+
+class _ScheduleChangeSheetState extends State<ScheduleChangeSheet> {
+  bool _beforeAfter = false;
+
+  ScheduleChangeSummary get summary => widget.summary;
 
   @override
   Widget build(BuildContext context) {
@@ -135,38 +150,67 @@ class ScheduleChangeSheet extends StatelessWidget {
               child: Text(l10n.scheduleChangeWhatChanged,
                   style: theme.textTheme.titleMedium),
             ),
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                itemCount: rows.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final row = rows[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child:
-                              Text(row.$1, style: theme.textTheme.bodyMedium),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          row.$2,
-                          textAlign: TextAlign.end,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+              child: SegmentedButton<bool>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment<bool>(
+                      value: false,
+                      label: Text(l10n.scheduleChangeTabChanges,
+                          key: ScheduleChangeSheet.changesTabKey)),
+                  ButtonSegment<bool>(
+                      value: true,
+                      label: Text(l10n.scheduleChangeTabBeforeAfter,
+                          key: ScheduleChangeSheet.beforeAfterTabKey)),
+                ],
+                selected: {_beforeAfter},
+                onSelectionChanged: (selection) =>
+                    setState(() => _beforeAfter = selection.first),
               ),
             ),
+            if (_beforeAfter)
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                  child: ScheduleChangeBeforeAfter(summary: summary),
+                ),
+              )
+            else
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                  itemCount: rows.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final row = rows[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child:
+                                Text(row.$1, style: theme.textTheme.bodyMedium),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            row.$2,
+                            textAlign: TextAlign.end,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
@@ -183,8 +227,7 @@ class ScheduleChangeSheet extends StatelessWidget {
         alwaysUse24HourFormat: use24h);
     String date(int ms) =>
         materialL10n.formatMediumDate(Utility.localDateTimeFromMs(ms));
-    String minutes(int ms) =>
-        l10n.scheduleChangeMinutes(ms ~/ Duration.millisecondsPerMinute);
+    String minutes(int ms) => _duration(context, l10n, ms);
     String name(SubCalendarEvent? tile) {
       final value = tile?.name;
       return value == null || value.trim().isEmpty ? l10n.untitledTile : value;
@@ -236,12 +279,18 @@ class ScheduleChangeSheet extends StatelessWidget {
     if (delta.freeMinutesDelta != 0) {
       rows.add((
         l10n.scheduleChangeFreeTime,
-        '${l10n.scheduleChangeMinutes(delta.freeMinutesBefore)} → '
-            '${l10n.scheduleChangeMinutes(delta.freeMinutesAfter)}'
+        '${minutes(delta.freeMinutesBefore * Duration.millisecondsPerMinute)} → '
+            '${minutes(delta.freeMinutesAfter * Duration.millisecondsPerMinute)}'
       ));
     }
     return rows;
   }
+
+  /// A duration in the app's short, localized form ("45m", "5h 39m"; "45
+  /// min", "5 Std 39 min" in German), the same everywhere it appears.
+  static String _duration(
+          BuildContext context, AppLocalizations l10n, int ms) =>
+      Duration(milliseconds: ms).toHumanLocalized(context);
 }
 
 /// "3 Tiles moving · 1 travel time updated": names a change while it plays
@@ -256,7 +305,7 @@ class ScheduleChangeMovingBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colorScheme = Theme.of(context).colorScheme;
+    final chipColors = ScheduleChipColors.of(context);
     final moving = summary.movedCount + summary.movedToOtherDaysCount;
     final text = [
       if (moving > 0) l10n.scheduleChangeTilesMoving(moving),
@@ -267,7 +316,7 @@ class ScheduleChangeMovingBanner extends StatelessWidget {
       liveRegion: true,
       child: Material(
         key: bannerKey,
-        color: colorScheme.inverseSurface,
+        color: chipColors.background,
         elevation: 4,
         shape: const StadiumBorder(),
         child: Padding(
@@ -279,10 +328,35 @@ class ScheduleChangeMovingBanner extends StatelessWidget {
             style: Theme.of(context)
                 .textTheme
                 .labelLarge
-                ?.copyWith(color: colorScheme.onInverseSurface),
+                ?.copyWith(color: chipColors.text),
           ),
         ),
       ),
     );
   }
+}
+
+/// Solid colours for the "Plan updated" chip and the "N Tiles moving"
+/// banner: a dark chip in the light theme and a light one in the dark
+/// theme, like a snackbar. Set here rather than taken from the theme's
+/// inverse colours, which are translucent in the light theme (content
+/// behind the chip showed through and its action was unreadable).
+class ScheduleChipColors {
+  final Color background;
+  final Color text;
+  final Color action;
+
+  const ScheduleChipColors._(this.background, this.text, this.action);
+
+  static const ScheduleChipColors _light = ScheduleChipColors._(
+      Color(0xFF2B2E36), Color(0xFFFFFFFF), TileColors.onPrimaryContainerDark);
+  static const ScheduleChipColors _dark = ScheduleChipColors._(
+      TileColors.inverseSurfaceDark,
+      TileColors.onInverseSurfaceDark,
+      // The accent, darkened to read on the light chip (the plain accent
+      // is only about 3:1 against it).
+      Color(0xFFB3002D));
+
+  static ScheduleChipColors of(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? _dark : _light;
 }

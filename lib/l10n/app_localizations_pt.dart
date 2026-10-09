@@ -4240,10 +4240,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count blocos movidos',
+      other: '$countString blocos movidos',
       one: '1 bloco movido',
     );
     return '$_temp0';
@@ -4251,10 +4255,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMovedToOtherDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count blocos movidos para outros dias',
+      other: '$countString blocos movidos para outros dias',
       one: '1 bloco movido para outro dia',
     );
     return '$_temp0';
@@ -4262,10 +4270,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String scheduleChangeTilesAdded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count blocos adicionados',
+      other: '$countString blocos adicionados',
       one: '1 bloco adicionado',
     );
     return '$_temp0';
@@ -4273,10 +4285,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String scheduleChangeTilesRemoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count blocos removidos',
+      other: '$countString blocos removidos',
       one: '1 bloco removido',
     );
     return '$_temp0';
@@ -4284,18 +4300,22 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String scheduleChangeTravelUpdated(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tempos de deslocamento atualizados',
+      other: '$countString tempos de deslocamento atualizados',
       one: '1 tempo de deslocamento atualizado',
     );
     return '$_temp0';
   }
 
   @override
-  String scheduleChangeFreeGained(int minutes) {
-    return '+$minutes min livres';
+  String scheduleChangeFreeGained(String duration) {
+    return '+$duration livres';
   }
 
   @override
@@ -4321,11 +4341,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get scheduleChangeFreeTime => 'Tempo livre';
 
   @override
-  String scheduleChangeMinutes(int minutes) {
-    return '$minutes min';
-  }
-
-  @override
   String scheduleChangeMovedTo(String time) {
     return 'Movido para $time';
   }
@@ -4337,10 +4352,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMovedTo(int count, String when) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count blocos movidos para $when',
+      other: '$countString blocos movidos para $when',
       one: '1 bloco movido para $when',
     );
     return '$_temp0';
@@ -4348,10 +4367,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMovedLater(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count blocos movidos para mais tarde',
+      other: '$countString blocos movidos para mais tarde',
       one: '1 bloco movido para mais tarde',
     );
     return '$_temp0';
@@ -4359,10 +4382,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMovedEarlier(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count blocos movidos para mais cedo',
+      other: '$countString blocos movidos para mais cedo',
       one: '1 bloco movido para mais cedo',
     );
     return '$_temp0';
@@ -4370,12 +4397,28 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMoving(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count blocos se movendo',
+      other: '$countString blocos se movendo',
       one: '1 bloco se movendo',
     );
     return '$_temp0';
   }
+
+  @override
+  String get scheduleChangeTabChanges => 'Mudanças';
+
+  @override
+  String get scheduleChangeTabBeforeAfter => 'Antes e depois';
+
+  @override
+  String get scheduleChangeBefore => 'Antes';
+
+  @override
+  String get scheduleChangeAfter => 'Depois';
 }

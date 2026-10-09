@@ -7376,11 +7376,11 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 travel time updated} other{{count} travel times updated}}'**
   String scheduleChangeTravelUpdated(int count);
 
-  /// No description provided for @scheduleChangeFreeGained.
+  /// Free time a schedule change gained, e.g. "+1h 15m free".
   ///
   /// In en, this message translates to:
-  /// **'+{minutes} min free'**
-  String scheduleChangeFreeGained(int minutes);
+  /// **'+{duration} free'**
+  String scheduleChangeFreeGained(String duration);
 
   /// No description provided for @scheduleChangeSeeChanges.
   ///
@@ -7418,12 +7418,6 @@ abstract class AppLocalizations {
   /// **'Free time'**
   String get scheduleChangeFreeTime;
 
-  /// No description provided for @scheduleChangeMinutes.
-  ///
-  /// In en, this message translates to:
-  /// **'{minutes} min'**
-  String scheduleChangeMinutes(int minutes);
-
   /// Caption on the faint outline left where a Tile was, while it slides to its new time.
   ///
   /// In en, this message translates to:
@@ -7459,6 +7453,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 Tile moving} other{{count} Tiles moving}}'**
   String scheduleChangeTilesMoving(int count);
+
+  /// No description provided for @scheduleChangeTabChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes'**
+  String get scheduleChangeTabChanges;
+
+  /// Tab in the What changed sheet showing the day before and after side by side.
+  ///
+  /// In en, this message translates to:
+  /// **'Before & after'**
+  String get scheduleChangeTabBeforeAfter;
+
+  /// No description provided for @scheduleChangeBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Before'**
+  String get scheduleChangeBefore;
+
+  /// No description provided for @scheduleChangeAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'After'**
+  String get scheduleChangeAfter;
 }
 
 class _AppLocalizationsDelegate

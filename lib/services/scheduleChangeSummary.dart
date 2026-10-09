@@ -11,7 +11,35 @@ class ScheduleChangeSummary {
   final ScheduleDelta delta;
   final ScheduleChangeAttribution attribution;
 
-  const ScheduleChangeSummary._(this.delta, this.attribution);
+  /// The day's tiles before and after the change, in time order (all-day
+  /// tiles left out), for the side-by-side view. When not given, only the
+  /// changed tiles are known.
+  final List<SubCalendarEvent> beforeDay;
+  final List<SubCalendarEvent> afterDay;
+
+  ScheduleChangeSummary._(this.delta, this.attribution,
+      {List<SubCalendarEvent>? before, List<SubCalendarEvent>? after})
+      : beforeDay = _onDay(
+            before ?? [for (final c in delta.changes) c.before].nonNulls,
+            delta),
+        afterDay = _onDay(
+            after ?? [for (final c in delta.changes) c.after].nonNulls, delta);
+
+  /// [tiles] that start on [delta]'s day, in time order.
+  static List<SubCalendarEvent> _onDay(
+      Iterable<SubCalendarEvent> tiles, ScheduleDelta delta) {
+    final day = delta.day;
+    return [
+      for (final t in tiles)
+        if (t.start != null &&
+            t.end != null &&
+            t.uniqueId.isNotEmpty &&
+            !t.isAllDay &&
+            t.start! >= day.start! &&
+            t.start! < day.end!)
+          t,
+    ]..sort((a, b) => a.start!.compareTo(b.start!));
+  }
 
   /// The summary worth showing for [delta], or null when there is nothing
   /// to tell the user:
@@ -20,8 +48,12 @@ class ScheduleChangeSummary {
   /// - a user's own change (drag, edit, complete) gets one only when it
   ///   moved other Tiles too. The user already knows what they did to the
   ///   Tile they touched.
+  ///
+  /// [before] / [after] are the loaded tiles on each side of the change,
+  /// for the side-by-side view.
   static ScheduleChangeSummary? from(
-      ScheduleDelta delta, ScheduleChangeAttribution attribution) {
+      ScheduleDelta delta, ScheduleChangeAttribution attribution,
+      {List<SubCalendarEvent>? before, List<SubCalendarEvent>? after}) {
     if (attribution.isRefresh || delta.isEmpty) return null;
     if (attribution.origin != ScheduleChangeOrigin.tilerRevise) {
       final subject = attribution.subjectId;
@@ -29,7 +61,8 @@ class ScheduleChangeSummary {
           delta.travelChanges.any((t) => t.id != subject);
       if (!knockOn) return null;
     }
-    return ScheduleChangeSummary._(delta, attribution);
+    return ScheduleChangeSummary._(delta, attribution,
+        before: before, after: after);
   }
 
   bool get isDayCleared => delta.tier == ScheduleDeltaTier.dayEmptied;
@@ -114,6 +147,7 @@ class ScheduleChangeWatcher {
       beforeWindow: beforeWindow,
       afterWindow: state.lookupTimeline,
     );
-    return ScheduleChangeSummary.from(delta, attribute(state.scheduleStatus));
+    return ScheduleChangeSummary.from(delta, attribute(state.scheduleStatus),
+        before: before, after: state.subEvents);
   }
 }

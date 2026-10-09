@@ -4257,10 +4257,14 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count πλακίδια μετακινήθηκαν',
+      other: '$countString πλακίδια μετακινήθηκαν',
       one: '1 πλακίδιο μετακινήθηκε',
     );
     return '$_temp0';
@@ -4268,10 +4272,14 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMovedToOtherDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count πλακίδια μετακινήθηκαν σε άλλες μέρες',
+      other: '$countString πλακίδια μετακινήθηκαν σε άλλες μέρες',
       one: '1 πλακίδιο μετακινήθηκε σε άλλη μέρα',
     );
     return '$_temp0';
@@ -4279,10 +4287,14 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String scheduleChangeTilesAdded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count πλακίδια προστέθηκαν',
+      other: '$countString πλακίδια προστέθηκαν',
       one: '1 πλακίδιο προστέθηκε',
     );
     return '$_temp0';
@@ -4290,10 +4302,14 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String scheduleChangeTilesRemoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count πλακίδια αφαιρέθηκαν',
+      other: '$countString πλακίδια αφαιρέθηκαν',
       one: '1 πλακίδιο αφαιρέθηκε',
     );
     return '$_temp0';
@@ -4301,18 +4317,22 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String scheduleChangeTravelUpdated(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count χρόνοι μετακίνησης ενημερώθηκαν',
+      other: '$countString χρόνοι μετακίνησης ενημερώθηκαν',
       one: '1 χρόνος μετακίνησης ενημερώθηκε',
     );
     return '$_temp0';
   }
 
   @override
-  String scheduleChangeFreeGained(int minutes) {
-    return '+$minutes λεπ. ελεύθερα';
+  String scheduleChangeFreeGained(String duration) {
+    return '+$duration ελεύθερα';
   }
 
   @override
@@ -4338,11 +4358,6 @@ class AppLocalizationsEl extends AppLocalizations {
   String get scheduleChangeFreeTime => 'Ελεύθερος χρόνος';
 
   @override
-  String scheduleChangeMinutes(int minutes) {
-    return '$minutes λεπ.';
-  }
-
-  @override
   String scheduleChangeMovedTo(String time) {
     return 'Μετακινήθηκε στις $time';
   }
@@ -4354,10 +4369,14 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMovedTo(int count, String when) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count πλακίδια μετακινήθηκαν στις $when',
+      other: '$countString πλακίδια μετακινήθηκαν στις $when',
       one: '1 πλακίδιο μετακινήθηκε στις $when',
     );
     return '$_temp0';
@@ -4365,10 +4384,14 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMovedLater(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count πλακίδια μετακινήθηκαν αργότερα',
+      other: '$countString πλακίδια μετακινήθηκαν αργότερα',
       one: '1 πλακίδιο μετακινήθηκε αργότερα',
     );
     return '$_temp0';
@@ -4376,10 +4399,14 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMovedEarlier(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count πλακίδια μετακινήθηκαν νωρίτερα',
+      other: '$countString πλακίδια μετακινήθηκαν νωρίτερα',
       one: '1 πλακίδιο μετακινήθηκε νωρίτερα',
     );
     return '$_temp0';
@@ -4387,12 +4414,28 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String scheduleChangeTilesMoving(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count πλακίδια μετακινούνται',
+      other: '$countString πλακίδια μετακινούνται',
       one: '1 πλακίδιο μετακινείται',
     );
     return '$_temp0';
   }
+
+  @override
+  String get scheduleChangeTabChanges => 'Αλλαγές';
+
+  @override
+  String get scheduleChangeTabBeforeAfter => 'Πριν & μετά';
+
+  @override
+  String get scheduleChangeBefore => 'Πριν';
+
+  @override
+  String get scheduleChangeAfter => 'Μετά';
 }

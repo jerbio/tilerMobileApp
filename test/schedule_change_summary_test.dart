@@ -231,7 +231,7 @@ void main() {
       expect(find.text('5:15 PM → 5:33 PM'), findsOneWidget);
       expect(find.text('6:11 PM → 6:20 PM'), findsOneWidget);
       expect(find.text('Travel to Pick up groceries'), findsOneWidget);
-      expect(find.text('12 min → 30 min'), findsOneWidget);
+      expect(find.text('12m → 30m'), findsOneWidget);
       expect(find.text('Free time'), findsOneWidget);
     });
 
@@ -242,13 +242,11 @@ void main() {
           ScheduleDelta.compute(
               before: thursday(), after: thursday(vitd: at(22, 0)), day: day),
           revise)!;
-      expect(summary.freeMinutesGained, greaterThan(0));
+      expect(summary.freeMinutesGained, 90);
       await tester.pumpWidget(app(
           ScheduleChangeSummaryChip(summary: summary, onSeeChanges: () {})));
-      expect(
-          find.text('1 Tile moved · '
-              '+${summary.freeMinutesGained} min free'),
-          findsOneWidget);
+      // Durations use the app's short format, like everywhere else.
+      expect(find.text('1 Tile moved · +1h 30m free'), findsOneWidget);
     });
   });
 

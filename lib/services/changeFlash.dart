@@ -14,8 +14,10 @@ enum ChangeFlash {
 }
 
 extension ChangeFlashStyle on ChangeFlash {
-  /// How long the colour holds before fading.
-  static const Duration hold = Duration(milliseconds: 900);
+  /// How long the colour holds before fading. Cues only play in the
+  /// Detailed "Schedule updates" mode (Minimal and Off have none), so this
+  /// only ever affects Detailed.
+  static const Duration hold = Duration(milliseconds: 1000);
 
   /// How long it takes to fade in or out.
   static const Duration fade = Duration(milliseconds: 300);

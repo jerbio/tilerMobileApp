@@ -445,18 +445,20 @@ class ScheduleDelta {
         final gapStart = busyUntil;
         final gapEnd = tile.start! - _travelMs(tile);
         if (gapEnd > gapStart) {
-          var busyBefore = 0;
-          for (final (s, e) in busy) {
-            final overlap =
-                (e < gapEnd ? e : gapEnd) - (s > gapStart ? s : gapStart);
-            if (overlap > 0) busyBefore += overlap;
-          }
-          // Free time gained = how much of the gap was busy before.
-          final gained = busyBefore.clamp(0, gapEnd - gapStart);
+          // The parts of the gap that were busy before: that is the time the
+          // change freed (the rest of the gap was already free).
+          final freed = _merge([
+            for (final (s, e) in busy)
+              if (e > gapStart && s < gapEnd)
+                (s < gapStart ? gapStart : s, e > gapEnd ? gapEnd : e),
+          ]);
+          final gained =
+              freed.fold<int>(0, (sum, slice) => sum + slice.$2 - slice.$1);
           if (gained >= minGapGrowth.inMilliseconds) {
             gaps.add(FreeGap(
                 startMs: gapStart,
                 endMs: gapEnd,
+                freed: freed,
                 gained: Duration(milliseconds: gained),
                 beforeTileId: tile.uniqueId));
           }
@@ -465,6 +467,21 @@ class ScheduleDelta {
       if (busyUntil == null || tile.end! > busyUntil) busyUntil = tile.end!;
     }
     return gaps;
+  }
+
+  /// [ranges] sorted and with overlaps joined.
+  static List<(int, int)> _merge(List<(int, int)> ranges) {
+    final sorted = [...ranges]..sort((a, b) => a.$1.compareTo(b.$1));
+    final merged = <(int, int)>[];
+    for (final range in sorted) {
+      if (merged.isNotEmpty && range.$1 <= merged.last.$2) {
+        final last = merged.removeLast();
+        merged.add((last.$1, range.$2 > last.$2 ? range.$2 : last.$2));
+      } else {
+        merged.add(range);
+      }
+    }
+    return merged;
   }
 
   static (int, int) _freeMinutes(List<SubCalendarEvent> tiles) {
@@ -491,7 +508,12 @@ class FreeGap {
   final int startMs;
   final int endMs;
 
-  /// How much more free time the stretch has than before.
+  /// The slices of the gap (start, end ms) the change freed, in time order:
+  /// where tiles used to be. The rest of the gap was already free.
+  final List<(int, int)> freed;
+
+  /// How much more free time the stretch has than before (the freed
+  /// slices added up).
   final Duration gained;
 
   /// The tile right after the gap.
@@ -500,6 +522,7 @@ class FreeGap {
   const FreeGap({
     required this.startMs,
     required this.endMs,
+    this.freed = const <(int, int)>[],
     required this.gained,
     required this.beforeTileId,
   });

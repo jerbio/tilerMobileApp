@@ -78,6 +78,39 @@ void main() {
       // Vit.D's 30 min plus the 7 min drive into it.
       expect(gaps.single.gained, const Duration(minutes: 37));
       expect(gaps.single.length, const Duration(minutes: 65));
+      // Only where Vit.D (and its drive) used to be was freed.
+      expect(gaps.single.freed, [(at(18, 4), at(18, 41))]);
+    });
+
+    test('a short tile leaving a long free stretch frees only its slice', () {
+      // 6:20 PM to 10:29 PM is free afterwards, but only the 16 minutes
+      // the moved tile used was freed by this change.
+      final before = [
+        tile('vitd', at(18, 0), 20),
+        tile('semantics', at(22, 13), 16),
+        tile('shopify', at(22, 29), 60),
+      ];
+      final after = [
+        tile('vitd', at(18, 0), 20),
+        tile('shopify', at(22, 29), 60),
+      ];
+      final gap = diff(before, after).grownGaps.single;
+      expect((gap.startMs, gap.endMs), (at(18, 20), at(22, 29)));
+      expect(gap.freed, [(at(22, 13), at(22, 29))]);
+      expect(gap.gained, const Duration(minutes: 16));
+    });
+
+    test('overlapping old tiles are not counted twice', () {
+      final before = [
+        tile('a', at(8, 0), 60),
+        tile('x', at(10, 0), 60),
+        tile('y', at(10, 30), 60),
+        tile('b', at(13, 0), 60),
+      ];
+      final after = [tile('a', at(8, 0), 60), tile('b', at(13, 0), 60)];
+      final gap = diff(before, after).grownGaps.single;
+      expect(gap.freed, [(at(10, 0), at(11, 30))]);
+      expect(gap.gained, const Duration(minutes: 90));
     });
 
     test('a shorter drive frees the time before the tile', () {
@@ -147,7 +180,14 @@ void main() {
       await tester.pump(ChangeFlashStyle.hold - batch.landAt);
       expect(player.travelFlashing('groc'), isFalse);
 
-      await tester.pump(ChangeFlashStyle.hold + ChangeFlashStyle.fade);
+      // The landed tiles' cue lingers a full second after landing.
+      await tester.pump(const Duration(milliseconds: 950) -
+          (ChangeFlashStyle.hold - batch.landAt));
+      expect(player.flashFor('groc'), ChangeFlash.moved);
+
+      // Then it, and the free-time band after its fade, are gone.
+      await tester
+          .pump(ChangeFlashStyle.fade + const Duration(milliseconds: 100));
       expect(player.flashFor('groc'), isNull);
       expect(player.gapFlashes, isEmpty);
     });
@@ -203,7 +243,13 @@ void main() {
       expect(gridTile('b').flash, ChangeFlash.moved);
       expect(gridTile('a').flash, isNull);
       expect(find.byType(FreeGapFlashWidget), findsOneWidget);
-      expect(find.text('+60 min free'), findsOneWidget);
+      expect(find.text('+1h free'), findsOneWidget);
+      // Only b's old hour is tinted, not the whole 9am-12pm gap.
+      final frame = tester.getSize(find.byType(FreeGapFlashWidget)).height;
+      final slice = tester
+          .getSize(find.byKey(FreeGapFlashWidget.sliceKey(at(10, 0))))
+          .height;
+      expect(slice, closeTo(frame / 3, 1));
 
       await tester.pump(const Duration(seconds: 2));
       expect(gridTile('b').flash, isNull);
