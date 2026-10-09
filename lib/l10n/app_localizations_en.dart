@@ -4165,4 +4165,178 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productTourStarting => 'Your product tour is about to begin.';
+
+  @override
+  String get scheduleUpdates => 'Schedule updates';
+
+  @override
+  String get scheduleUpdatesDescription =>
+      'How your day moves when your schedule changes.';
+
+  @override
+  String get scheduleUpdatesDetailed => 'Detailed';
+
+  @override
+  String get scheduleUpdatesDetailedDescription =>
+      'Show each change step by step.';
+
+  @override
+  String get scheduleUpdatesMinimal => 'Minimal';
+
+  @override
+  String get scheduleUpdatesMinimalDescription =>
+      'Slide Tiles to their new times.';
+
+  @override
+  String get scheduleUpdatesOff => 'Off';
+
+  @override
+  String get scheduleUpdatesOffDescription => 'Update instantly, no animation.';
+
+  @override
+  String get scheduleChangePlanUpdated => 'Plan updated';
+
+  @override
+  String get scheduleChangeDayCleared => 'Day cleared';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tiles moved',
+      one: '1 Tile moved',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tiles moved to other days',
+      one: '1 Tile moved to another day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tiles added',
+      one: '1 Tile added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tiles removed',
+      one: '1 Tile removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count travel times updated',
+      one: '1 travel time updated',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(int minutes) {
+    return '+$minutes min free';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => 'See changes';
+
+  @override
+  String get scheduleChangeWhatChanged => 'What changed';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return 'Added · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => 'Removed';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return 'Travel to $name';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => 'Free time';
+
+  @override
+  String scheduleChangeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return 'Moved to $time';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$name moved to $when';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tiles moved to $when',
+      one: '1 Tile moved to $when',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tiles moved later',
+      one: '1 Tile moved later',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tiles moved earlier',
+      one: '1 Tile moved earlier',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tiles moving',
+      one: '1 Tile moving',
+    );
+    return '$_temp0';
+  }
 }

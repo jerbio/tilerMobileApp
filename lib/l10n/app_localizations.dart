@@ -7285,6 +7285,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your product tour is about to begin.'**
   String get productTourStarting;
+
+  /// Settings row and sheet title for how much motion schedule changes get (Off / Minimal / Detailed).
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule updates'**
+  String get scheduleUpdates;
+
+  /// No description provided for @scheduleUpdatesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'How your day moves when your schedule changes.'**
+  String get scheduleUpdatesDescription;
+
+  /// No description provided for @scheduleUpdatesDetailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed'**
+  String get scheduleUpdatesDetailed;
+
+  /// No description provided for @scheduleUpdatesDetailedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Show each change step by step.'**
+  String get scheduleUpdatesDetailedDescription;
+
+  /// No description provided for @scheduleUpdatesMinimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal'**
+  String get scheduleUpdatesMinimal;
+
+  /// No description provided for @scheduleUpdatesMinimalDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide Tiles to their new times.'**
+  String get scheduleUpdatesMinimalDescription;
+
+  /// No description provided for @scheduleUpdatesOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get scheduleUpdatesOff;
+
+  /// No description provided for @scheduleUpdatesOffDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Update instantly, no animation.'**
+  String get scheduleUpdatesOffDescription;
+
+  /// Title of the chip shown after Tiler changes the day.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan updated'**
+  String get scheduleChangePlanUpdated;
+
+  /// No description provided for @scheduleChangeDayCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Day cleared'**
+  String get scheduleChangeDayCleared;
+
+  /// No description provided for @scheduleChangeTilesMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved} other{{count} Tiles moved}}'**
+  String scheduleChangeTilesMoved(int count);
+
+  /// No description provided for @scheduleChangeTilesMovedToOtherDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved to another day} other{{count} Tiles moved to other days}}'**
+  String scheduleChangeTilesMovedToOtherDays(int count);
+
+  /// No description provided for @scheduleChangeTilesAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile added} other{{count} Tiles added}}'**
+  String scheduleChangeTilesAdded(int count);
+
+  /// No description provided for @scheduleChangeTilesRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile removed} other{{count} Tiles removed}}'**
+  String scheduleChangeTilesRemoved(int count);
+
+  /// No description provided for @scheduleChangeTravelUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 travel time updated} other{{count} travel times updated}}'**
+  String scheduleChangeTravelUpdated(int count);
+
+  /// No description provided for @scheduleChangeFreeGained.
+  ///
+  /// In en, this message translates to:
+  /// **'+{minutes} min free'**
+  String scheduleChangeFreeGained(int minutes);
+
+  /// No description provided for @scheduleChangeSeeChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'See changes'**
+  String get scheduleChangeSeeChanges;
+
+  /// No description provided for @scheduleChangeWhatChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'What changed'**
+  String get scheduleChangeWhatChanged;
+
+  /// No description provided for @scheduleChangeAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added · {time}'**
+  String scheduleChangeAdded(String time);
+
+  /// No description provided for @scheduleChangeRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed'**
+  String get scheduleChangeRemoved;
+
+  /// No description provided for @scheduleChangeTravelTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel to {name}'**
+  String scheduleChangeTravelTo(String name);
+
+  /// No description provided for @scheduleChangeFreeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Free time'**
+  String get scheduleChangeFreeTime;
+
+  /// No description provided for @scheduleChangeMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String scheduleChangeMinutes(int minutes);
+
+  /// Caption on the faint outline left where a Tile was, while it slides to its new time.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved to {time}'**
+  String scheduleChangeMovedTo(String time);
+
+  /// Edge chip for a Tile that moved out of view or to another day. {when} is a time or a date.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} moved to {when}'**
+  String scheduleChangeTileMovedTo(String name, String when);
+
+  /// No description provided for @scheduleChangeTilesMovedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved to {when}} other{{count} Tiles moved to {when}}}'**
+  String scheduleChangeTilesMovedTo(int count, String when);
+
+  /// No description provided for @scheduleChangeTilesMovedLater.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved later} other{{count} Tiles moved later}}'**
+  String scheduleChangeTilesMovedLater(int count);
+
+  /// No description provided for @scheduleChangeTilesMovedEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved earlier} other{{count} Tiles moved earlier}}'**
+  String scheduleChangeTilesMovedEarlier(int count);
+
+  /// Banner while a schedule change plays step by step.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moving} other{{count} Tiles moving}}'**
+  String scheduleChangeTilesMoving(int count);
 }
 
 class _AppLocalizationsDelegate

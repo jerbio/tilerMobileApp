@@ -107,6 +107,12 @@ class EvaluateSchedule extends ScheduleEvent {
   final bool isAlreadyLoaded;
   final Future? callBack;
   final ScheduleStatus scheduleStatus;
+
+  /// What kind of change [callBack] makes, for motion attribution.
+  final ScheduleChangeOrigin origin;
+
+  /// The Tile the user acted on (`uniqueId`), when there is one.
+  final String? subjectId;
   EvaluateSchedule(
       {required this.renderedSubEvents,
       required this.renderedTimelines,
@@ -114,7 +120,9 @@ class EvaluateSchedule extends ScheduleEvent {
       required this.isAlreadyLoaded,
       required this.scheduleStatus,
       this.message,
-      this.callBack});
+      this.callBack,
+      this.origin = ScheduleChangeOrigin.userEdit,
+      this.subjectId});
 
   @override
   List<Object> get props => [];

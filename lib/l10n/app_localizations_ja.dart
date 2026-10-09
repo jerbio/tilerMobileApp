@@ -4081,4 +4081,166 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get productTourStarting => 'アプリのツアーがまもなく始まります。';
+
+  @override
+  String get scheduleUpdates => 'スケジュールの更新';
+
+  @override
+  String get scheduleUpdatesDescription => 'スケジュールが変わったときの一日の動き方。';
+
+  @override
+  String get scheduleUpdatesDetailed => '詳細';
+
+  @override
+  String get scheduleUpdatesDetailedDescription => '変更を一つずつ順に表示します。';
+
+  @override
+  String get scheduleUpdatesMinimal => 'シンプル';
+
+  @override
+  String get scheduleUpdatesMinimalDescription => 'タイルを新しい時間へスライドします。';
+
+  @override
+  String get scheduleUpdatesOff => 'オフ';
+
+  @override
+  String get scheduleUpdatesOffDescription => 'アニメーションなしですぐに更新します。';
+
+  @override
+  String get scheduleChangePlanUpdated => 'プランを更新しました';
+
+  @override
+  String get scheduleChangeDayCleared => 'この日は空になりました';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件のタイルを移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件のタイルを別の日に移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件のタイルを追加',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件のタイルを削除',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件の移動時間を更新',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(int minutes) {
+    return '空き時間 +$minutes分';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => '変更を見る';
+
+  @override
+  String get scheduleChangeWhatChanged => '変更内容';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return '追加 · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => '削除';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return '$nameへの移動';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => '空き時間';
+
+  @override
+  String scheduleChangeMinutes(int minutes) {
+    return '$minutes分';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return '$timeに移動';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$nameを$whenに移動';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件のタイルを$whenに移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件のタイルを後ろに移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件のタイルを前に移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件のタイルを移動中',
+    );
+    return '$_temp0';
+  }
 }

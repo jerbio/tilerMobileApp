@@ -13,6 +13,7 @@ import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/components/components.dart';
 import 'package:tiler_app/components/tilelist/dailyView/models/models.dart';
+import 'package:tiler_app/components/tilelist/dailyView/motion/listMotion.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart';
 import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
@@ -24,6 +25,7 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/services/scheduleMotion.dart';
 import 'package:tiler_app/util.dart';
 
 /// Enhanced WithinNowBatch matching the screen 1 design with:
@@ -94,6 +96,20 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   bool _isAutoScrolled = false;
   List<ConflictGroup> _detectedConflicts = [];
 
+  /// Schedule-change motion for today: keeps the tile the user is looking
+  /// at in place, flies moved tiles, and shows edge chips.
+  late final ListMotion _motion = ListMotion(apply: (change) {
+    if (mounted) {
+      setState(change);
+    }
+  });
+
+  /// The rows of the last build (keys and where each tile sits).
+  TileConnectorLayoutResult? _rowLayout;
+
+  /// The tiles of the last build, by uniqueId, for flying copies.
+  Map<String, TilerEvent> _tilesById = const <String, TilerEvent>{};
+
   // Theming
   late ThemeData theme;
   late ColorScheme colorScheme;
@@ -112,6 +128,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
 
   @override
   void dispose() {
+    _motion.dispose();
     _scrollController.dispose();
     _listController.dispose();
     super.dispose();
@@ -265,7 +282,78 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     );
 
     _detectedConflicts = result.conflictGroups;
-    return (result.widgets, result.selectedTileIndex, result.currentFocusIndex);
+    _rowLayout = result;
+    return (result.keyedRows, result.selectedTileIndex, result.currentFocusIndex);
+  }
+
+  /// Notes where the anchor tile sits before rows for a new schedule
+  /// revision are built.
+  void _captureAnchor(List<TilerEvent> orderedTiles) {
+    final withinNow = widget as EnhancedWithinNowBatch;
+    if (withinNow.preview ||
+        !_listController.isAttached ||
+        !_scrollController.hasClients) {
+      return;
+    }
+    final range = _listController.visibleRange;
+    final layout = _rowLayout;
+    if (range == null || layout == null) return;
+    final position = _scrollController.position;
+    double? alignmentOf(int row) => row < layout.rowKeys.length
+        ? _motion.rows.alignmentOf(layout.rowKeys[row], position)
+        : null;
+    final dayStart = Utility.currentTime().dayDate;
+    _motion.anchor.capture(
+      context,
+      tiles: orderedTiles.whereType<SubCalendarEvent>().toList(),
+      day: Timeline.fromDateTime(dayStart,
+          DateTime(dayStart.year, dayStart.month, dayStart.day + 1)),
+      visibleRows: [
+        for (var row = range.$1; row <= range.$2; row++)
+          if ((alignmentOf(row) ?? -1) >= 0) row,
+      ],
+      alignmentOf: alignmentOf,
+    );
+    // Moved tiles that were on screen: hold them for their flight.
+    _motion.beforeRows(context, layout, preview: withinNow.preview);
+  }
+
+  /// Scrolls the anchor back to its old spot once the new rows are laid
+  /// out, when rows above it came or went.
+  void _restoreAnchor(List<TilerEvent> orderedTiles) {
+    final layout = _rowLayout;
+    if (layout == null) return;
+    final restore = _motion.anchor.resolve(
+        orderedTiles.whereType<SubCalendarEvent>().toList(), layout.rowOfTile);
+    if (_motion.hasPending) {
+      // Measure where the moved tiles landed once the new rows are laid
+      // out and the anchor correction (itself after a frame) has applied.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _motion.afterLayout(layout, _listController.visibleRange);
+          }
+        });
+        WidgetsBinding.instance.scheduleFrame();
+      });
+    }
+    if (restore == null || !restore.moved) return;
+    Utility.debugPrint('DailyList::anchor ${restore.tileId} row '
+        '${restore.previousRow} -> ${restore.row} '
+        'at ${restore.alignment.toStringAsFixed(2)}');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          !_listController.isAttached ||
+          !_scrollController.hasClients) {
+        return;
+      }
+      _listController.jumpToItem(
+        index: restore.row,
+        scrollController: _scrollController,
+        alignment: restore.alignment,
+      );
+    });
   }
 
   /// Trigger schedule revise (re-optimize)
@@ -323,6 +411,9 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   /// Render empty day state
   Widget _renderEmptyDayTile() {
     _isEmptyDay = true;
+    // With schedule-update motion off the empty state shows at once.
+    final emptyFades = ScheduleMotion.modeFor(context).animates;
+    if (!emptyFades) _emptyDayOpacity = 1;
 
     if (_emptyDayOpacity == 0) {
       Timer(const Duration(milliseconds: 200), () {
@@ -337,7 +428,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     if (widget.dayIndex != null) {
       return AnimatedOpacity(
         opacity: _emptyDayOpacity,
-        duration: const Duration(milliseconds: 500),
+        duration:
+            emptyFades ? const Duration(milliseconds: 500) : Duration.zero,
         child: Container(
           height: MediaQuery.of(context).size.height - _heightMargin,
           child: EmptyDayTile(
@@ -468,10 +560,14 @@ class EnhancedWithinNowBatchState extends TileBatchState {
 
     // 4. Build tiles list or empty state
     Widget tilesContent;
+    _tilesById = viableTiles;
     if (viableTiles.isNotEmpty) {
       final orderedTiles = Utility.orderTiles(viableTiles.values.toList());
+      _captureAnchor(orderedTiles);
       final (tilesWithConnectors, targetScrollIndex, focusIndex) =
           _buildTilesWithConnectors(orderedTiles);
+      _restoreAnchor(orderedTiles);
+      final rowLayout = _rowLayout;
 
       // All tiles may have been filtered out (e.g. only all-day events which
       // are ≥16h and excluded from the timeline). Show EmptyDayTile so the
@@ -504,9 +600,15 @@ class EnhancedWithinNowBatchState extends TileBatchState {
                         .bottomLandScapePaddingForTileBatchListOfTiles
                     : TileDimensions
                         .bottomPortraitPaddingForTileBatchListOfTiles;
-              return tilesWithConnectors[index];
+              final row = tilesWithConnectors[index];
+              return rowLayout == null || index >= rowLayout.rowKeys.length
+                  ? row
+                  : _motion.wrapRow(rowLayout.rowKeys[index], row);
             },
             childCount: tilesWithConnectors.length + 1,
+            // Rows follow their key, so a row keeps its state (and its
+            // running animations) when rows above it come and go.
+            findChildIndexCallback: rowLayout?.indexOfKey,
           ),
         );
       }
@@ -517,7 +619,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     }
 
     // Use CustomScrollView with SliverAppBar for sticky action chips
-    return RefreshIndicator(
+    final Widget list = RefreshIndicator(
       color: colorScheme.tertiary,
       onRefresh: () async {
         _triggerRefresh();
@@ -573,5 +675,47 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         ],
       ),
     );
+    return ListMotionLayer(
+      motion: _motion,
+      day: Utility.currentTime().dayDate,
+      rowBuilder: _buildFlightRow,
+      scrollToTile: _scrollToTile,
+      child: list,
+    );
+  }
+
+  /// A tile's row as it is now, for its flying copy.
+  Widget _buildFlightRow(String tileId) {
+    final tile = _tilesById[tileId];
+    if (tile == null) return const SizedBox.shrink();
+    return TileRowWithHourMarker(
+      hour: tile.startTime.hour,
+      showHourMarker: false,
+      isCurrentHour: false,
+      hourMarkerWidth: _hourMarkerWidth,
+      child: _buildTileWidget(tile),
+    );
+  }
+
+  /// Brings a tile's row a third of the way down the list.
+  void _scrollToTile(String tileId) {
+    final row = _rowLayout?.rowOfTile[tileId];
+    if (row == null ||
+        !_listController.isAttached ||
+        !_scrollController.hasClients) {
+      return;
+    }
+    if (ScheduleMotion.modeFor(context, listen: false).animates) {
+      _listController.animateToItem(
+        index: row,
+        scrollController: _scrollController,
+        alignment: 0.3,
+        duration: (_) => const Duration(milliseconds: 450),
+        curve: (_) => Curves.easeInOutCubic,
+      );
+    } else {
+      _listController.jumpToItem(
+          index: row, scrollController: _scrollController, alignment: 0.3);
+    }
   }
 }

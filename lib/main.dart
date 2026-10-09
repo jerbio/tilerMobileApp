@@ -53,6 +53,7 @@ import 'components/notification_overlay.dart';
 import 'routes/authenticatedUser/settings/settingsWidget.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'bloc/dailyViewLayout/daily_view_layout_cubit.dart';
+import 'bloc/scheduleMotion/schedule_motion_cubit.dart';
 import 'bloc/dayContentFilter/day_content_filter_cubit.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -180,6 +181,9 @@ class _TilerAppState extends State<TilerApp> {
           BlocProvider(create: (context) => MonthlyUiDateManagerBloc()),
           // Daily-view list/grid layout (restored + persisted).
           BlocProvider(create: (context) => DailyViewLayoutCubit()),
+          // "Schedule updates" motion setting (Off / Minimal / Detailed),
+          // read through ScheduleMotion.modeFor.
+          BlocProvider(create: (context) => ScheduleMotionCubit()),
           BlocProvider(create: (context) => DayContentFilterCubit()),
           BlocProvider(
               create: (context) => PreviewSummaryBloc(getContextCallBack: () {

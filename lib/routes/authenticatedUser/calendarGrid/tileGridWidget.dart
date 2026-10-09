@@ -17,6 +17,9 @@ import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/services/changeFlash.dart';
+import 'package:tiler_app/services/scheduleMotion.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/tileMotionEmphasis.dart';
 
 /// The persistence outcome of the tile's most recent drag-to-reschedule,
 /// shown as a small overlay badge on the tile (no timer — the badge lingers
@@ -114,6 +117,21 @@ class TileGridWidget extends GridPositionableWidget {
   /// `error` a warning. Never alters the tile's size, caption or
   /// overlap layout (overlay-only).
   final TileSaveStatus saveStatus;
+
+  /// Holds the tile at an earlier (start, end) in ms while a schedule
+  /// change plays in steps: the tile stays put until the grid releases it,
+  /// then slides to its real time. Wins over [localStartMsOverride].
+  final (int, int)? heldRange;
+
+  /// Lifted (raised, shadowed) or receded (slightly faded) while a
+  /// schedule change plays in steps.
+  final TileMotionEmphasis emphasis;
+
+  /// How long a position change takes; 300 ms when null.
+  final Duration? moveDuration;
+
+  /// A brief colour ring after a schedule change touched this tile.
+  final ChangeFlash? flash;
   TileGridWidget(
       {Key? key,
       required this.tilerEvent,
@@ -136,6 +154,10 @@ class TileGridWidget extends GridPositionableWidget {
       this.suppressTap = false,
       this.localStartMsOverride,
       this.saveStatus = TileSaveStatus.idle,
+      this.heldRange,
+      this.emphasis = TileMotionEmphasis.none,
+      this.moveDuration,
+      this.flash,
       Duration durationPerUnitTime = GridPositionableWidget.durationPerHeight})
       : super(
             key: key,
@@ -247,8 +269,8 @@ class TileGridWidgetState extends GridPositionableState {
       return;
     }
     final w = this.widget as TileGridWidget;
-    final reduce = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final animate = (w.animate ?? true) && !reduce;
+    final animate = (w.animate ?? true) &&
+        ScheduleMotion.modeFor(context, listen: false).animates;
     if (w.exiting ?? false) {
       if (!_fading) {
         setState(() => _fading = true);
@@ -303,16 +325,19 @@ class TileGridWidgetState extends GridPositionableState {
       final dayEndMs = dayStartMs + Duration.millisecondsPerDay;
       // The local start override (optimistic drag settle) wins over the
       // model's start while it is set; the duration is preserved.
-      final overrideStartMs = grid.localStartMsOverride;
-      final modelStartMs = this.tilerEvent!.start ?? 0;
+      final held = grid.heldRange;
+      final overrideStartMs = held == null ? grid.localStartMsOverride : null;
+      final modelStartMs = held?.$1 ?? (this.tilerEvent!.start ?? 0);
       final startMs = overrideStartMs ?? modelStartMs;
       // When the start override is applied, shift the end by the same
       // delta so the tile's duration is preserved (leaving the end at the
       // model time would invert a downward-move and collapse the tile to
       // a plain color bar — no name).
-      final endMs = (overrideStartMs != null && this.tilerEvent!.end != null)
-          ? this.tilerEvent!.end! + (overrideStartMs - modelStartMs)
-          : (this.tilerEvent!.end ?? startMs);
+      final endMs = held != null
+          ? held.$2
+          : (overrideStartMs != null && this.tilerEvent!.end != null)
+              ? this.tilerEvent!.end! + (overrideStartMs - modelStartMs)
+              : (this.tilerEvent!.end ?? startMs);
       // Cross-midnight clamp into the grid day.
       final clampedStart = startMs < dayStartMs ? dayStartMs : startMs;
       final clampedEnd = endMs > dayEndMs ? dayEndMs : endMs;
@@ -371,7 +396,8 @@ class TileGridWidgetState extends GridPositionableState {
             (this.widget as TileGridWidget).dimmed ||
         oldWidget.suppressTap != (this.widget as TileGridWidget).suppressTap ||
         oldWidget.localStartMsOverride !=
-            (this.widget as TileGridWidget).localStartMsOverride;
+            (this.widget as TileGridWidget).localStartMsOverride ||
+        oldWidget.heldRange != (this.widget as TileGridWidget).heldRange;
     if (!eventChanged &&
         !zoomChanged &&
         !geometryChanged &&
@@ -518,9 +544,9 @@ class TileGridWidgetState extends GridPositionableState {
       final animateEnabled = (this.widget is TileGridWidget)
           ? ((this.widget as TileGridWidget).animate ?? true)
           : true;
-      final disableAnimations =
-          MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-      final animate = animateEnabled && !disableAnimations;
+      // The user's "Schedule updates" setting and OS reduced motion.
+      final animate =
+          animateEnabled && ScheduleMotion.modeFor(context).animates;
 
       // Enter (slide-in from a corner) / exit (fade-out) for
       // added/removed tiles. The Positioned root below is unchanged so the
@@ -545,6 +571,9 @@ class TileGridWidgetState extends GridPositionableState {
           (this.widget is TileGridWidget)
               ? (this.widget as TileGridWidget).onLongPressStart
               : null;
+      final TileMotionEmphasis emphasis = (this.widget is TileGridWidget)
+          ? (this.widget as TileGridWidget).emphasis
+          : TileMotionEmphasis.none;
       final double opacityTarget;
       final double scaleTarget;
       final Duration fadeDuration;
@@ -565,11 +594,35 @@ class TileGridWidgetState extends GridPositionableState {
         scaleTarget = 1.0;
         fadeDuration =
             animate ? const Duration(milliseconds: 150) : Duration.zero;
+      } else if (emphasis == TileMotionEmphasis.lifted) {
+        opacityTarget = 1.0;
+        scaleTarget = 1.03;
+        fadeDuration =
+            animate ? const Duration(milliseconds: 150) : Duration.zero;
+      } else if (emphasis == TileMotionEmphasis.receded) {
+        opacityTarget = 0.85;
+        scaleTarget = 1.0;
+        fadeDuration =
+            animate ? const Duration(milliseconds: 150) : Duration.zero;
       } else {
         opacityTarget = 1.0;
         scaleTarget = 1.0;
-        fadeDuration = Duration.zero;
+        fadeDuration =
+            animate ? const Duration(milliseconds: 150) : Duration.zero;
       }
+      final bool lifted = emphasis == TileMotionEmphasis.lifted &&
+          !isExiting &&
+          !hasEnter &&
+          !dimmed;
+      final ChangeFlash? flash = (this.widget is TileGridWidget)
+          ? (this.widget as TileGridWidget).flash
+          : null;
+      final Color? flashColor =
+          flash == null ? null : flash.color(colorScheme);
+      final Duration moveDuration = (this.widget is TileGridWidget)
+          ? ((this.widget as TileGridWidget).moveDuration ??
+              const Duration(milliseconds: 300))
+          : const Duration(milliseconds: 300);
 
       // Slide/resize to the new geometry instead of teleporting: top, left,
       // width AND height all animate (an overlap re-cluster narrows the
@@ -582,7 +635,7 @@ class TileGridWidgetState extends GridPositionableState {
         left: leftPosition,
         width: widgetWidth,
         height: this.widgetHeight,
-        duration: animate ? const Duration(milliseconds: 300) : Duration.zero,
+        duration: animate ? moveDuration : Duration.zero,
         curve: Curves.easeInOutCubic,
         child: AnimatedOpacity(
           opacity: opacityTarget,
@@ -592,7 +645,36 @@ class TileGridWidgetState extends GridPositionableState {
             scale: scaleTarget,
             duration: fadeDuration,
             alignment: Alignment.center,
-            child: Container(
+            child: AnimatedContainer(
+              duration: flashColor != null || !lifted
+                  ? (animate ? ChangeFlashStyle.fade : Duration.zero)
+                  : fadeDuration,
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(TileDimensions.borderRadius),
+                boxShadow: [
+                  if (lifted)
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.22),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
+                    ),
+                  if (flashColor != null)
+                    BoxShadow(
+                      color: flashColor.withValues(alpha: 0.4),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                ],
+              ),
+              // The ring sits on top without insetting the tile.
+              foregroundDecoration: flashColor == null
+                  ? null
+                  : BoxDecoration(
+                      borderRadius:
+                          BorderRadius.circular(TileDimensions.borderRadius),
+                      border: Border.all(color: flashColor, width: 2),
+                    ),
               child: GestureDetector(
                   // A plain tap that was cancelled by a drag attempt
                   // must not open the tile detail (suppressTap is held

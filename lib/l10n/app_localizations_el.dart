@@ -4221,4 +4221,178 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get productTourStarting =>
       'Η περιήγηση στην εφαρμογή σου πρόκειται να αρχίσει.';
+
+  @override
+  String get scheduleUpdates => 'Ενημερώσεις προγράμματος';
+
+  @override
+  String get scheduleUpdatesDescription =>
+      'Πώς κινείται η μέρα σου όταν αλλάζει το πρόγραμμά σου.';
+
+  @override
+  String get scheduleUpdatesDetailed => 'Λεπτομερής';
+
+  @override
+  String get scheduleUpdatesDetailedDescription =>
+      'Δείχνει κάθε αλλαγή βήμα προς βήμα.';
+
+  @override
+  String get scheduleUpdatesMinimal => 'Ελάχιστη';
+
+  @override
+  String get scheduleUpdatesMinimalDescription =>
+      'Τα πλακίδια μετακινούνται ομαλά στις νέες ώρες.';
+
+  @override
+  String get scheduleUpdatesOff => 'Απενεργοποίηση';
+
+  @override
+  String get scheduleUpdatesOffDescription => 'Άμεση ενημέρωση, χωρίς κίνηση.';
+
+  @override
+  String get scheduleChangePlanUpdated => 'Το πλάνο ενημερώθηκε';
+
+  @override
+  String get scheduleChangeDayCleared => 'Η μέρα άδειασε';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count πλακίδια μετακινήθηκαν',
+      one: '1 πλακίδιο μετακινήθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count πλακίδια μετακινήθηκαν σε άλλες μέρες',
+      one: '1 πλακίδιο μετακινήθηκε σε άλλη μέρα',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count πλακίδια προστέθηκαν',
+      one: '1 πλακίδιο προστέθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count πλακίδια αφαιρέθηκαν',
+      one: '1 πλακίδιο αφαιρέθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count χρόνοι μετακίνησης ενημερώθηκαν',
+      one: '1 χρόνος μετακίνησης ενημερώθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(int minutes) {
+    return '+$minutes λεπ. ελεύθερα';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => 'Δες τις αλλαγές';
+
+  @override
+  String get scheduleChangeWhatChanged => 'Τι άλλαξε';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return 'Προστέθηκε · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => 'Αφαιρέθηκε';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return 'Μετακίνηση προς $name';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => 'Ελεύθερος χρόνος';
+
+  @override
+  String scheduleChangeMinutes(int minutes) {
+    return '$minutes λεπ.';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return 'Μετακινήθηκε στις $time';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$name μετακινήθηκε στις $when';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count πλακίδια μετακινήθηκαν στις $when',
+      one: '1 πλακίδιο μετακινήθηκε στις $when',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count πλακίδια μετακινήθηκαν αργότερα',
+      one: '1 πλακίδιο μετακινήθηκε αργότερα',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count πλακίδια μετακινήθηκαν νωρίτερα',
+      one: '1 πλακίδιο μετακινήθηκε νωρίτερα',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count πλακίδια μετακινούνται',
+      one: '1 πλακίδιο μετακινείται',
+    );
+    return '$_temp0';
+  }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart';
 import 'package:tiler_app/bloc/schedule/schedule_recovery_monitor.dart';
 import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
 
@@ -16,6 +17,14 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../services/api/subCalendarEventApi.dart';
+
+// Callers building `EvaluateSchedule` or calling `beginChange` need the
+// origin types without a second import.
+export 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart'
+    show
+        ScheduleChangeOrigin,
+        ScheduleChangeAttribution,
+        ScheduleRevisionGate;
 
 part 'schedule_event.dart';
 part 'schedule_state.dart';
@@ -70,6 +79,27 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   late ScheduleRevisionCubit revisions;
   ScheduleRecoveryMonitor? _recoveryMonitor;
 
+  /// Attributes each new server revision to the change that caused it
+  /// (re-optimize, drag, edit, complete) or to a background refresh.
+  /// Views read it through [attributionFor] to pick how much motion a
+  /// schedule change gets.
+  final ScheduleChangeTracker changeTracker = ScheduleChangeTracker();
+  StreamSubscription<ScheduleRevision?>? _revisionAttribution;
+
+  /// Records a mutation about to be sent, so the revision it produces is
+  /// attributed to [origin]. Pass the returned token to [abandonChange] if
+  /// the request fails.
+  int beginChange(ScheduleChangeOrigin origin, {String? subjectId}) =>
+      changeTracker.begin(origin,
+          baseline: revisions.state, subjectId: subjectId);
+
+  void abandonChange(int token) => changeTracker.abandon(token);
+
+  /// What caused the schedule revision carried by [status].
+  ScheduleChangeAttribution attributionFor(ScheduleStatus? status) =>
+      changeTracker.resolve(
+          status == null ? null : ScheduleRevision.fromStatus(status));
+
   void startRecoveryMonitoring() {
     if (_recoveryMonitor != null) return;
     _recoveryMonitor = ScheduleRecoveryMonitor(
@@ -85,6 +115,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   @override
   Future<void> close() async {
     _recoveryMonitor?.close();
+    await _revisionAttribution?.cancel();
     await revisions.close();
     await super.close();
   }
@@ -109,6 +140,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     scheduleApi = ScheduleApi(getContextCallBack: getContextCallBack);
     revisions = ScheduleRevisionCubit(
         fetchStatus: () => scheduleApi.getScheduleStatus());
+    // Resolve every new revision as it is observed, so a pending change is
+    // claimed by the first revision after it even when no view asks.
+    _revisionAttribution = revisions.stream.listen(changeTracker.resolve);
     subCalendarEventApi =
         SubCalendarEventApi(getContextCallBack: getContextCallBack);
     previewApi = PreviewApi(getContextCallBack: getContextCallBack);
@@ -171,6 +205,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       return event.getContextCallBack();
     });
     revisions.reset();
+    changeTracker.reset();
     emit(ScheduleLoggedOutState());
   }
 
@@ -232,6 +267,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   Future<void> _onCompleteTask(
       CompleteTaskEvent event, Emitter<ScheduleState> emit) async {
     emit(ScheduleLoadingTaskState());
+    final changeToken = beginChange(ScheduleChangeOrigin.userComplete,
+        subjectId: event.subEvent.uniqueId);
     try {
       print("started making api call to complete");
       SubCalendarEvent completedEvent =
@@ -239,6 +276,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       print("SUCCESSFULLY COMPLETED TASK");
       emit(ScheduleCompleteTaskState(completedEvent: completedEvent));
     } catch (error) {
+      abandonChange(changeToken);
       emit(FailedScheduleLoadedState(
           evaluationTime: Utility.currentTime(),
           subEvents: [],
@@ -402,8 +440,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           scheduleStatus: scheduleStatus,
           currentView: state.currentView,
           message: message));
+      final changeToken = beginChange(ScheduleChangeOrigin.tilerRevise);
       await this.scheduleApi.reviseSchedule().catchError((onError) {
         debugPrint("emitting failed schedule loaded state onReviseSchedule");
+        abandonChange(changeToken);
         emit(FailedScheduleLoadedState(
             evaluationTime: Utility.currentTime(),
             subEvents: subEvents,
@@ -437,8 +477,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         message: event.message));
     if (event.callBack != null) {
       print("Calling _onEvaluateSchedule callback");
+      final changeToken =
+          beginChange(event.origin, subjectId: event.subjectId);
       await event.callBack!.catchError((onError) {
         debugPrint("emitting failed schedule loaded state onEvaluateSchedule");
+        abandonChange(changeToken);
         emit(FailedScheduleLoadedState(
             evaluationTime: Utility.currentTime(),
             subEvents: event.renderedSubEvents,
@@ -480,16 +523,22 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           scheduleStatus: scheduleStatus,
           currentView: state.currentView,
           message: message));
-      await this.scheduleApi.shuffleSchedule().then((value) async {
-        await this._onGetSchedule(
-            GetScheduleEvent(
-              isAlreadyLoaded: true,
-              previousSubEvents: subEvents,
-              previousTimeline: lookupTimeline,
-              scheduleTimeline: lookupTimeline,
-            ),
-            emit);
-      });
+      final changeToken = beginChange(ScheduleChangeOrigin.tilerRevise);
+      try {
+        await this.scheduleApi.shuffleSchedule().then((value) async {
+          await this._onGetSchedule(
+              GetScheduleEvent(
+                isAlreadyLoaded: true,
+                previousSubEvents: subEvents,
+                previousTimeline: lookupTimeline,
+                scheduleTimeline: lookupTimeline,
+              ),
+              emit);
+        });
+      } catch (_) {
+        abandonChange(changeToken);
+        rethrow;
+      }
     }
   }
 

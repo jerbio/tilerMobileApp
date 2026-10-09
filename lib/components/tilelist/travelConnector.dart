@@ -1,3 +1,4 @@
+import 'package:tiler_app/components/tilelist/dailyView/motion/countingDuration.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/executionEnums.dart';
@@ -162,7 +163,6 @@ class TravelConnector extends StatelessWidget {
     final travelMode = TravelMediumExtension.fromString(
         toTile.travelDetail?.before?.travelMedium);
     final isTardy = toTile.isTardy ?? false;
-    final durationText = _formatDuration(context, travelTime);
     final destination = _getDestinationName();
     final routeName = _getRouteName(context);
     final leaveByTime = _getLeaveByTime();
@@ -248,8 +248,10 @@ class TravelConnector extends StatelessWidget {
                     // Main travel info row
                     Row(
                       children: [
-                        Text(
-                          durationText,
+                        CountingDuration(
+                          value: Duration(milliseconds: travelTime.round()),
+                          format: (context, value) => _formatDuration(
+                              context, value.inMilliseconds.toDouble()),
                           style: TextStyle(
                             fontFamily: TileTextStyles.rubikFontName,
                             fontSize: 14,

@@ -36,12 +36,39 @@ class TileConnectorLayoutResult {
   final int? currentFocusIndex;
   final List<ConflictGroup> conflictGroups;
 
+  /// A stable key per row in [widgets], from what the row shows, so a row
+  /// keeps its identity — and its running animations — when rows before it
+  /// come and go. See [keyedRows].
+  final List<String> rowKeys;
+
+  /// The row index showing each tile, by uniqueId. Tiles in a conflict
+  /// group map to the group's row.
+  final Map<String, int> rowOfTile;
+
   const TileConnectorLayoutResult({
     required this.widgets,
     required this.selectedTileIndex,
     required this.currentFocusIndex,
     required this.conflictGroups,
+    this.rowKeys = const <String>[],
+    this.rowOfTile = const <String, int>{},
   });
+
+  /// [widgets], each wrapped in a [KeyedSubtree] keyed by its [rowKeys].
+  List<Widget> get keyedRows => [
+        for (var i = 0; i < widgets.length; i++)
+          i < rowKeys.length
+              ? KeyedSubtree(
+                  key: ValueKey<String>(rowKeys[i]), child: widgets[i])
+              : widgets[i],
+      ];
+
+  /// The row index for [key], for a sliver's `findChildIndexCallback`.
+  int? indexOfKey(Key key) {
+    if (key is! ValueKey<String>) return null;
+    final index = rowKeys.indexOf(key.value);
+    return index < 0 ? null : index;
+  }
 }
 
 /// Builds the ordered list of widgets for a day view, emitting each travel
@@ -63,7 +90,19 @@ TileConnectorLayoutResult buildTileListWithConnectors({
   Widget Function(FreeSlot slot)? buildFreeSlot,
 }) {
   final List<Widget> widgets = [];
+  final List<String> rowKeys = [];
+  final Map<String, int> rowOfTile = {};
+  final Map<String, int> keyUses = {};
   int? selectedTileIndex;
+
+  // Every row goes through here: keyed by what it shows, never by position.
+  void addRow(String key, Widget row) {
+    final uses = keyUses.update(key, (n) => n + 1, ifAbsent: () => 0);
+    final unique = uses == 0 ? key : '$key#$uses';
+    rowKeys.add(unique);
+    widgets.add(row);
+  }
+
   final int nowMs = now.millisecondsSinceEpoch;
   final int? endOfDayMs = endOfDayTime?.millisecondsSinceEpoch;
 
@@ -91,7 +130,7 @@ TileConnectorLayoutResult buildTileListWithConnectors({
       : const [];
   int freeSlotIndex = 0;
 
-  void emitFreeSlotsBefore(int destinationStartMs) {
+  void emitFreeSlotsBefore(int destinationStartMs, String beforeId) {
     if (buildFreeSlot == null) return;
     while (freeSlotIndex < freeSlots.length &&
         freeSlots[freeSlotIndex].startMs < destinationStartMs) {
@@ -99,7 +138,7 @@ TileConnectorLayoutResult buildTileListWithConnectors({
       if (slot.isLive && liveFreeSlotIndex == null) {
         liveFreeSlotIndex = widgets.length;
       }
-      widgets.add(buildFreeSlot(slot));
+      addRow('free:$beforeId', buildFreeSlot(slot));
       freeSlotIndex++;
     }
   }
@@ -163,7 +202,7 @@ TileConnectorLayoutResult buildTileListWithConnectors({
     }
 
     if (connector != null) {
-      widgets.add(wrapConnector(connector));
+      addRow('travel:${destinationTile.uniqueId}', wrapConnector(connector));
     }
   }
 
@@ -182,14 +221,16 @@ TileConnectorLayoutResult buildTileListWithConnectors({
     final last = prevRenderedTile;
     if (last == null && !hasSubsequentTiles) return;
     returnConnectorEmitted = true;
-    widgets.add(wrapConnector(
-      ReturnConnector(
-        lastTile: last,
-        endOfDayTime: endOfDayTime,
-        onEndOfDayUpdated: onEndOfDayUpdated,
-        hasSubsequentTiles: hasSubsequentTiles,
-      ),
-    ));
+    addRow(
+        'return',
+        wrapConnector(
+          ReturnConnector(
+            lastTile: last,
+            endOfDayTime: endOfDayTime,
+            onEndOfDayUpdated: onEndOfDayUpdated,
+            hasSubsequentTiles: hasSubsequentTiles,
+          ),
+        ));
   }
 
   for (int i = 0; i < regularTiles.length; i++) {
@@ -227,7 +268,8 @@ TileConnectorLayoutResult buildTileListWithConnectors({
         final groupTilesByStart = [...group.tiles]
           ..sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
         if (groupTilesByStart.isNotEmpty) {
-          emitFreeSlotsBefore(groupTilesByStart.first.start ?? 0);
+          emitFreeSlotsBefore(groupTilesByStart.first.start ?? 0,
+              groupTilesByStart.first.uniqueId);
           emitTravelConnectorTo(groupTilesByStart.first);
         }
 
@@ -236,12 +278,17 @@ TileConnectorLayoutResult buildTileListWithConnectors({
           recordAnchor(gt, groupIndex0);
         }
 
-        widgets.add(buildConflictGroup(
-          group,
-          hour: tileHour,
-          showHourMarker: showHourMarker,
-          isCurrentHour: isCurrentHour,
-        ));
+        for (final gt in group.tiles) {
+          rowOfTile[gt.uniqueId] = widgets.length;
+        }
+        addRow(
+            'conflict:${groupTilesByStart.isNotEmpty ? groupTilesByStart.first.uniqueId : groupIndex}',
+            buildConflictGroup(
+              group,
+              hour: tileHour,
+              showHourMarker: showHourMarker,
+              isCurrentHour: isCurrentHour,
+            ));
 
         final groupTilesByEnd = [...group.tiles]
           ..sort((a, b) => (a.end ?? 0).compareTo(b.end ?? 0));
@@ -258,18 +305,21 @@ TileConnectorLayoutResult buildTileListWithConnectors({
     }
 
     if (tile is SubCalendarEvent) {
-      emitFreeSlotsBefore(tile.start ?? 0);
+      emitFreeSlotsBefore(tile.start ?? 0, tile.uniqueId);
       emitTravelConnectorTo(tile);
     }
 
     recordAnchor(tile, widgets.length);
 
-    widgets.add(buildTile(
-      tile,
-      hour: tileHour,
-      showHourMarker: showHourMarker,
-      isCurrentHour: isCurrentHour,
-    ));
+    rowOfTile[tile.uniqueId] = widgets.length;
+    addRow(
+        'tile:${tile.uniqueId}',
+        buildTile(
+          tile,
+          hour: tileHour,
+          showHourMarker: showHourMarker,
+          isCurrentHour: isCurrentHour,
+        ));
 
     if (tile is SubCalendarEvent) {
       prevRenderedTile = tile;
@@ -287,5 +337,7 @@ TileConnectorLayoutResult buildTileListWithConnectors({
     currentFocusIndex:
         activeTileIndex ?? liveFreeSlotIndex ?? upcomingTileIndex,
     conflictGroups: conflictGroups,
+    rowKeys: rowKeys,
+    rowOfTile: rowOfTile,
   );
 }
