@@ -559,6 +559,22 @@ void main() {
     expect(_key('task_sheet_header_divider'), findsOneWidget);
   });
 
+  // The tilettes may arrive without their notes, so "no notes" is not
+  // known: the Notes row says nothing rather than "Not set" (device review,
+  // 2026-10-09).
+  testWidgets('the Notes row claims nothing about notes it does not have',
+      (tester) async {
+    await _open(tester,
+        _Rig().sheet(task: tsTilette('t1', name: 'Deck', durationMs: 3600000)));
+    expect(
+        find.descendant(
+            of: _key('task_sheet_notes'), matching: find.text('Not set')),
+        findsNothing);
+    expect(
+        find.descendant(of: _key('task_sheet_notes'), matching: find.text('Notes')),
+        findsOneWidget);
+  });
+
   testWidgets('Save changes, in sentence case', (tester) async {
     await _open(tester,
         _Rig().sheet(task: tsTilette('t1', name: 'Deck', durationMs: 3600000)));

@@ -786,7 +786,9 @@ class _TaskSheetState extends State<TaskSheet> {
                         icon: Icons.notes_rounded,
                         title: l10n.editTileNotesTitle,
                         subtitle:
-                            _notes.isEmpty ? l10n.addTileValueNotSet : _notes,
+                            // No subtitle without notes: the tilettes may arrive without
+                            // them, so "Not set" could be wrong.
+                            _notes.isEmpty ? null : _notes,
                         // A preview: the full notes are on the notes page.
                         subtitleMaxLines: 3,
                         onTap: _editNotes,
