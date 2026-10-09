@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/personAvatar.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareRoster.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
@@ -61,12 +62,7 @@ class ClassPersonRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: scheme.primaryContainer,
-            foregroundColor: scheme.onPrimaryContainer,
-            child: Text(row.label.isEmpty ? '?' : row.label[0].toUpperCase()),
-          ),
+          PersonAvatar(label: row.label),
           const SizedBox(width: 12),
           Expanded(
             child: InkWell(

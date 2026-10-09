@@ -2741,8 +2741,8 @@
     "taskSheetAfterShareDeadline": "This is after the share’s deadline ({when}).",
     "@taskSheetAfterShareDeadline": {"placeholders": {"when": {"type": "String"}}},
     "taskSheetNameTooShort": "Use at least 3 characters",
-    "taskSheetPeopleHintClass": "Anyone you add here gets every tilette in this class. People changes are saved right away.",
-    "taskSheetPeopleHintProject": "A new assignee is saved right away.",
+    "taskSheetPeopleHintClass": "Anyone you add here gets every tilette in this class. People changes are sent when you save.",
+    "taskSheetPeopleHintProject": "A new assignee is sent when you save.",
     "tiletteNameLabel": "TILETTE NAME",
     "detailEditDetails": "Edit details",
     "detailDeleteShare": "Delete share",
@@ -2759,5 +2759,12 @@
     "shareEditTilettesKeep": "{count, plural, =1{1 tilette nobody has accepted keeps its later deadline.} other{{count} tilettes nobody has accepted keep their later deadlines.}}",
     "@shareEditTilettesKeep": {"placeholders": {"count": {"type": "int"}}},
     "taskSheetMovesShareDeadline": "The share’s deadline will move to {when}.",
-    "@taskSheetMovesShareDeadline": {"placeholders": {"when": {"type": "String"}}}
+    "@taskSheetMovesShareDeadline": {"placeholders": {"when": {"type": "String"}}},
+    "taskSheetPeopleLabel": "PEOPLE",
+    "taskSheetAddPerson": "ADD PERSON",
+    "taskSheetWillBeAdded": "Will be added",
+    "taskSheetWillBeRemoved": "Will be removed",
+    "taskSheetWillBeAssigned": "Will be assigned when you save",
+    "taskSheetPeopleFailed": "Some people changes couldn’t be saved. Retry them below.",
+    "tileShareSaveChanges": "Save changes"
 }

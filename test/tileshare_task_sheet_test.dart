@@ -14,7 +14,9 @@ import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/contactFieldRow.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/taskSheet.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/personAvatar.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
 import 'helpers/tileshare_fakes.dart';
@@ -313,8 +315,10 @@ void main() {
     });
   });
 
-  // The edit sheet manages who has the tilette, by mode. People changes go
-  // out at once, one per tilette, with their own retry - not with Save.
+  // The edit sheet manages who has the tilette, by mode (Step 9.16i): people
+  // changes are staged in the sheet and sent on Save - never at once, never
+  // when the sheet is closed. The people list scrolls inside a box of its
+  // own, so the tilette's other fields stay where they are.
   group('people while editing', () {
     late FakeTileShareRecipientsSource recipients;
     late TileShareRosterCubit roster;
@@ -328,43 +332,134 @@ void main() {
           source: recipients, clusterId: 'c1', tilettes: list);
     }
 
-    testWidgets(
-        'a Class tilette lists who has it; adding someone adds them to '
-        'every tilette', (tester) async {
-      rosterOf([
-        tsTilette('t1', name: 'Brief', durationMs: 3600000, assignees: [
-          tsAssignee('ann@x.com', status: InvitationStatus.accepted),
-          tsAssignee('bob@x.com'),
-        ]),
-        tsTilette('t2', name: 'Deck', assignees: [
-          tsAssignee('ann@x.com'),
-          tsAssignee('bob@x.com'),
-        ]),
-      ]);
-      await _open(tester, _Rig().sheet(task: tilettes.first, roster: roster));
-      expect(_key('task_sheet_people'), findsOneWidget);
-      expect(
-          find.descendant(
-              of: _key('task_sheet_person_ann@x.com'),
-              matching: find.text('Accepted')),
-          findsOneWidget);
-      expect(_key('task_sheet_person_bob@x.com'), findsOneWidget);
-      expect(_key('task_sheet_people_hint'), findsOneWidget);
+    void classOf(List<String> people) => rosterOf([
+          tsTilette('t1', name: 'Brief', durationMs: 3600000, assignees: [
+            for (final p in people)
+              tsAssignee(p,
+                  status: p == people.first ? InvitationStatus.accepted : null),
+          ]),
+          tsTilette('t2', name: 'Deck', assignees: [
+            for (final p in people) tsAssignee(p),
+          ]),
+        ]);
+
+    Future<void> addPerson(WidgetTester tester, String who) async {
       await tester.ensureVisible(_key('task_sheet_add_person'));
       await tester.enterText(
           find.descendant(
               of: _key('task_sheet_add_person'),
               matching: find.byType(TextField)),
-          'cy@x.com');
+          who);
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
-      expect(recipients.calls.where((c) => c.startsWith('addRecipient')),
-          ['addRecipient(t1, cy@x.com)', 'addRecipient(t2, cy@x.com)']);
-      expect(_key('task_sheet_person_cy@x.com'), findsOneWidget);
+    }
+
+    List<String> sent() =>
+        recipients.calls.where((c) => !c.startsWith('clusterActivity')).toList();
+
+    testWidgets('a Class tilette lists who has it, under PEOPLE, with their '
+        'answers and avatars', (tester) async {
+      classOf(['ann@x.com', 'bob@x.com']);
+      await _open(tester, _Rig().sheet(task: tilettes.first, roster: roster));
+      expect(find.text('PEOPLE'), findsOneWidget);
+      expect(
+          find.descendant(
+              of: _key('task_sheet_person_ann@x.com'),
+              matching: find.text('Accepted')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: _key('task_sheet_person_ann@x.com'),
+              matching: find.byType(PersonAvatar)),
+          findsOneWidget);
+      expect(find.byType(ContactFieldRow), findsOneWidget,
+          reason: 'the add field is in the form kit');
       await roster.close();
     });
 
-    testWidgets('a Project tilette shows its assignee; Change reassigns it',
+    testWidgets('someone added waits for Save, then gets every tilette',
+        (tester) async {
+      classOf(['ann@x.com', 'bob@x.com']);
+      final rig = _Rig();
+      await _open(tester, rig.sheet(task: tilettes.first, roster: roster));
+      await addPerson(tester, 'cy@x.com');
+      expect(sent(), isEmpty, reason: 'nothing goes out before Save');
+      expect(
+          find.descendant(
+              of: _key('task_sheet_person_cy@x.com'),
+              matching: find.text('Will be added')),
+          findsOneWidget);
+      await _tap(tester, 'task_sheet_save');
+      expect(sent(), ['addRecipient(t1, cy@x.com)', 'addRecipient(t2, cy@x.com)']);
+      expect(rig.saved, isEmpty, reason: 'the tilette itself did not change');
+      expect(_key('task_sheet'), findsNothing);
+      await roster.close();
+    });
+
+    testWidgets('an addition can be undone before saving; closing sends '
+        'nothing', (tester) async {
+      classOf(['ann@x.com']);
+      await _open(tester, _Rig().sheet(task: tilettes.first, roster: roster));
+      await addPerson(tester, 'cy@x.com');
+      await _tap(tester, 'task_sheet_undo_cy@x.com');
+      expect(_key('task_sheet_person_cy@x.com'), findsNothing);
+      await addPerson(tester, 'di@x.com');
+      await _tap(tester, 'task_sheet_close');
+      expect(sent(), isEmpty);
+      await roster.close();
+    });
+
+    testWidgets('removing asks first, waits for Save, and covers every '
+        'tilette', (tester) async {
+      classOf(['ann@x.com', 'bob@x.com']);
+      await _open(tester, _Rig().sheet(task: tilettes.first, roster: roster));
+      await _tap(tester, 'task_sheet_remove_bob@x.com');
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(find.text('Will be removed'), findsNothing,
+          reason: 'cancelled, so nothing is staged');
+      await _tap(tester, 'task_sheet_remove_bob@x.com');
+      expect(find.text('Remove bob@x.com?'), findsOneWidget);
+      expect(find.text('They will be removed from every tilette.'),
+          findsOneWidget);
+      await _tap(tester, 'task_sheet_remove_confirm');
+      expect(
+          find.descendant(
+              of: _key('task_sheet_person_bob@x.com'),
+              matching: find.text('Will be removed')),
+          findsOneWidget);
+      expect(sent(), isEmpty);
+      await _tap(tester, 'task_sheet_undo_bob@x.com');
+      expect(find.text('Will be removed'), findsNothing);
+      await _tap(tester, 'task_sheet_remove_bob@x.com');
+      await _tap(tester, 'task_sheet_remove_confirm');
+      await _tap(tester, 'task_sheet_save');
+      expect(sent(), [
+        'removeRecipient(t1, asg-bob@x.com)',
+        'removeRecipient(t2, asg-bob@x.com)',
+      ]);
+      await roster.close();
+    });
+
+    testWidgets('a change that does not go through keeps the sheet, with '
+        'Retry', (tester) async {
+      classOf(['ann@x.com']);
+      await _open(tester, _Rig().sheet(task: tilettes.first, roster: roster));
+      await addPerson(tester, 'cy@x.com');
+      recipients.failNextOn('addRecipient(t2', StateError('offline'));
+      await _tap(tester, 'task_sheet_save');
+      expect(_key('task_sheet'), findsOneWidget);
+      expect(
+          find.text('Some people changes couldn’t be saved. Retry them below.'),
+          findsOneWidget);
+      await tester.tap(find.descendant(
+          of: _key('task_sheet_person_cy@x.com'), matching: find.text('Retry')));
+      await tester.pumpAndSettle();
+      expect(sent().last, 'addRecipient(t2, cy@x.com)');
+      await roster.close();
+    });
+
+    testWidgets('a Project tilette\'s new assignee waits for Save',
         (tester) async {
       rosterOf([
         tsTilette('t1', name: 'Brief', durationMs: 3600000, assignees: [
@@ -379,22 +474,95 @@ void main() {
               task: tilettes.first,
               people: TaskSheetPeople.assignee,
               roster: roster));
-      expect(
-          find.descendant(
-              of: _key('task_sheet_assignee'),
-              matching: find.text('ann@x.com')),
-          findsOneWidget);
       await _tap(tester, 'task_sheet_assignee');
-      expect(recipients.calls, contains('addRecipient(t1, bob@x.com)'));
-      expect(recipients.calls, contains('removeRecipient(t1, asg-ann@x.com)'));
       expect(
           find.descendant(
-              of: _key('task_sheet_assignee'),
-              matching: find.text('bob@x.com')),
+              of: _key('task_sheet_assignee'), matching: find.text('bob@x.com')),
           findsOneWidget);
-      expect(rig.saved, isEmpty, reason: 'people are not part of Save');
+      expect(find.text('Will be assigned when you save'), findsOneWidget);
+      expect(sent(), isEmpty);
+      await _tap(tester, 'task_sheet_save');
+      expect(sent(), contains('addRecipient(t1, bob@x.com)'));
+      expect(sent(), contains('removeRecipient(t1, asg-ann@x.com)'));
+      expect(_key('task_sheet'), findsNothing);
       await roster.close();
     });
+
+    testWidgets('someone added to a long list is scrolled into view',
+        (tester) async {
+      classOf([for (int i = 0; i < 14; i++) 'person$i@x.com']);
+      await _open(tester, _Rig().sheet(task: tilettes.first, roster: roster));
+      await addPerson(tester, 'zed@x.com');
+      final Rect list = tester.getRect(_key('task_sheet_people_list'));
+      final Rect added = tester.getRect(_key('task_sheet_person_zed@x.com'));
+      expect(added.top >= list.top && added.bottom <= list.bottom + 0.5, isTrue,
+          reason: 'the new person is at the end and in view: $added in $list');
+      await roster.close();
+    });
+
+    testWidgets('a long list scrolls in its own box; the other fields stay '
+        'put', (tester) async {
+      classOf([for (int i = 0; i < 14; i++) 'person$i@x.com']);
+      await _open(tester, _Rig().sheet(task: tilettes.first, roster: roster));
+      final list = _key('task_sheet_people_list');
+      expect(tester.getSize(list).height, lessThanOrEqualTo(peopleListMaxHeight));
+      final Offset name = tester.getTopLeft(_key('task_sheet_name'));
+      await tester.drag(list, const Offset(0, -200));
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(_key('task_sheet_name')), name,
+          reason: 'scrolling the people does not move the tilette');
+      await roster.close();
+    });
+  });
+
+  testWidgets('the people section looks right at 320 px, with large text, '
+      'in both themes, with changes staged', (tester) async {
+    for (final theme in [TileThemeData.lightTheme, TileThemeData.darkTheme]) {
+      for (final scale in [1.0, 1.6]) {
+        final list = [
+          tsTilette('t1', name: 'Brief', durationMs: 3600000, assignees: [
+            tsAssignee('ann.longname@example.com',
+                status: InvitationStatus.accepted),
+            tsAssignee('bob@x.com'),
+          ]),
+        ];
+        final roster = TileShareRosterCubit(
+            source: FakeTileShareRecipientsSource(
+                tilettes: {for (final t in list) t.id!: t}),
+            clusterId: 'c1',
+            tilettes: list);
+        await _open(tester, _Rig().sheet(task: list.first, roster: roster),
+            size: const Size(320, 640), theme: theme, textScale: scale);
+        await _tap(tester, 'task_sheet_remove_bob@x.com');
+        await _tap(tester, 'task_sheet_remove_confirm');
+        await tester.ensureVisible(_key('task_sheet_add_person'));
+        await tester.enterText(
+            find.descendant(
+                of: _key('task_sheet_add_person'),
+                matching: find.byType(TextField)),
+            'cy.longer.address@example.com');
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull,
+            reason: '${theme.brightness} x$scale');
+        await roster.close();
+      }
+    }
+  });
+
+  testWidgets('a divider appears under the title once the sheet scrolls',
+      (tester) async {
+    await _open(tester, _Rig().sheet(), size: const Size(320, 560));
+    expect(_key('task_sheet_header_divider'), findsNothing);
+    await tester.drag(_key('task_sheet_body'), const Offset(0, -200));
+    await tester.pumpAndSettle();
+    expect(_key('task_sheet_header_divider'), findsOneWidget);
+  });
+
+  testWidgets('Save changes, in sentence case', (tester) async {
+    await _open(tester,
+        _Rig().sheet(task: tsTilette('t1', name: 'Deck', durationMs: 3600000)));
+    expect(find.text('Save changes'), findsOneWidget);
   });
 
   test('only what changed is sent', () {

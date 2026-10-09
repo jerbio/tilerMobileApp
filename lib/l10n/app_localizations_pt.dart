@@ -5048,11 +5048,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get taskSheetPeopleHintClass =>
-      'Anyone you add here gets every tilette in this class. People changes are saved right away.';
+      'Anyone you add here gets every tilette in this class. People changes are sent when you save.';
 
   @override
   String get taskSheetPeopleHintProject =>
-      'A new assignee is saved right away.';
+      'A new assignee is sent when you save.';
 
   @override
   String get tiletteNameLabel => 'TILETTE NAME';
@@ -5114,4 +5114,26 @@ class AppLocalizationsPt extends AppLocalizations {
   String taskSheetMovesShareDeadline(String when) {
     return 'The share’s deadline will move to $when.';
   }
+
+  @override
+  String get taskSheetPeopleLabel => 'PEOPLE';
+
+  @override
+  String get taskSheetAddPerson => 'ADD PERSON';
+
+  @override
+  String get taskSheetWillBeAdded => 'Will be added';
+
+  @override
+  String get taskSheetWillBeRemoved => 'Will be removed';
+
+  @override
+  String get taskSheetWillBeAssigned => 'Will be assigned when you save';
+
+  @override
+  String get taskSheetPeopleFailed =>
+      'Some people changes couldn’t be saved. Retry them below.';
+
+  @override
+  String get tileShareSaveChanges => 'Save changes';
 }

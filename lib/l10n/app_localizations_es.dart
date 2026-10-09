@@ -5054,11 +5054,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get taskSheetPeopleHintClass =>
-      'Quien agregues aquí recibe todas las tilettes de esta clase. Los cambios de personas se guardan al instante.';
+      'Quien agregues aquí recibe todas las tilettes de esta clase. Los cambios de personas se envían al guardar.';
 
   @override
   String get taskSheetPeopleHintProject =>
-      'La nueva persona asignada se guarda al instante.';
+      'La nueva persona asignada se envía al guardar.';
 
   @override
   String get tiletteNameLabel => 'NOMBRE DE LA TILETTE';
@@ -5124,4 +5124,26 @@ class AppLocalizationsEs extends AppLocalizations {
   String taskSheetMovesShareDeadline(String when) {
     return 'La fecha límite compartida pasará a $when.';
   }
+
+  @override
+  String get taskSheetPeopleLabel => 'PERSONAS';
+
+  @override
+  String get taskSheetAddPerson => 'AGREGAR PERSONA';
+
+  @override
+  String get taskSheetWillBeAdded => 'Se agregará';
+
+  @override
+  String get taskSheetWillBeRemoved => 'Se eliminará';
+
+  @override
+  String get taskSheetWillBeAssigned => 'Se asignará al guardar';
+
+  @override
+  String get taskSheetPeopleFailed =>
+      'Algunos cambios de personas no se guardaron. Reinténtalos abajo.';
+
+  @override
+  String get tileShareSaveChanges => 'Guardar cambios';
 }

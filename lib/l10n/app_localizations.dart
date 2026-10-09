@@ -8627,13 +8627,13 @@ abstract class AppLocalizations {
   /// No description provided for @taskSheetPeopleHintClass.
   ///
   /// In en, this message translates to:
-  /// **'Anyone you add here gets every tilette in this class. People changes are saved right away.'**
+  /// **'Anyone you add here gets every tilette in this class. People changes are sent when you save.'**
   String get taskSheetPeopleHintClass;
 
   /// No description provided for @taskSheetPeopleHintProject.
   ///
   /// In en, this message translates to:
-  /// **'A new assignee is saved right away.'**
+  /// **'A new assignee is sent when you save.'**
   String get taskSheetPeopleHintProject;
 
   /// No description provided for @tiletteNameLabel.
@@ -8719,6 +8719,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The share’s deadline will move to {when}.'**
   String taskSheetMovesShareDeadline(String when);
+
+  /// No description provided for @taskSheetPeopleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PEOPLE'**
+  String get taskSheetPeopleLabel;
+
+  /// No description provided for @taskSheetAddPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'ADD PERSON'**
+  String get taskSheetAddPerson;
+
+  /// No description provided for @taskSheetWillBeAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Will be added'**
+  String get taskSheetWillBeAdded;
+
+  /// No description provided for @taskSheetWillBeRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Will be removed'**
+  String get taskSheetWillBeRemoved;
+
+  /// No description provided for @taskSheetWillBeAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Will be assigned when you save'**
+  String get taskSheetWillBeAssigned;
+
+  /// No description provided for @taskSheetPeopleFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Some people changes couldn’t be saved. Retry them below.'**
+  String get taskSheetPeopleFailed;
+
+  /// No description provided for @tileShareSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get tileShareSaveChanges;
 }
 
 class _AppLocalizationsDelegate

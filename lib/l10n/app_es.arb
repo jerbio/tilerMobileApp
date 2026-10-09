@@ -1887,8 +1887,8 @@
     "taskSheetEveryone": "Todos en esta clase tienen esta tilette.",
     "taskSheetAfterShareDeadline": "Esto es después de la fecha límite compartida ({when}).",
     "taskSheetNameTooShort": "Usa al menos 3 caracteres",
-    "taskSheetPeopleHintClass": "Quien agregues aquí recibe todas las tilettes de esta clase. Los cambios de personas se guardan al instante.",
-    "taskSheetPeopleHintProject": "La nueva persona asignada se guarda al instante.",
+    "taskSheetPeopleHintClass": "Quien agregues aquí recibe todas las tilettes de esta clase. Los cambios de personas se envían al guardar.",
+    "taskSheetPeopleHintProject": "La nueva persona asignada se envía al guardar.",
     "tiletteNameLabel": "NOMBRE DE LA TILETTE",
     "detailEditDetails": "Editar detalles",
     "detailDeleteShare": "Eliminar compartido",
@@ -1902,5 +1902,12 @@
     "shareEditDiscardBody": "Se perderán tus cambios a este compartido.",
     "shareEditTilettesPulledIn": "{count, plural, =1{1 tilette aceptada pasará a esta fecha límite.} other{{count} tilettes aceptadas pasarán a esta fecha límite.}}",
     "shareEditTilettesKeep": "{count, plural, =1{1 tilette que nadie ha aceptado conserva su fecha posterior.} other{{count} tilettes que nadie ha aceptado conservan sus fechas posteriores.}}",
-    "taskSheetMovesShareDeadline": "La fecha límite compartida pasará a {when}."
+    "taskSheetMovesShareDeadline": "La fecha límite compartida pasará a {when}.",
+    "taskSheetPeopleLabel": "PERSONAS",
+    "taskSheetAddPerson": "AGREGAR PERSONA",
+    "taskSheetWillBeAdded": "Se agregará",
+    "taskSheetWillBeRemoved": "Se eliminará",
+    "taskSheetWillBeAssigned": "Se asignará al guardar",
+    "taskSheetPeopleFailed": "Algunos cambios de personas no se guardaron. Reinténtalos abajo.",
+    "tileShareSaveChanges": "Guardar cambios"
 }

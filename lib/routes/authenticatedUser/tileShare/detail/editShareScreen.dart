@@ -213,7 +213,7 @@ class _EditShareScreenState extends State<EditShareScreen> {
             ),
             AddTilePrimaryButton(
               key: const Key('edit_share_save'),
-              label: l10n.editTileSave,
+              label: l10n.tileShareSaveChanges,
               busyLabel: l10n.editTileSaving,
               enabled: _nameValid && _changed,
               busy: _busy,

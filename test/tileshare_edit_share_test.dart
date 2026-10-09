@@ -142,6 +142,13 @@ void main() {
     await rig.detail.close();
   });
 
+  testWidgets('Save changes, in sentence case', (tester) async {
+    final rig = _Rig();
+    await _open(tester, rig);
+    expect(find.text('Save changes'), findsOneWidget);
+    await rig.detail.close();
+  });
+
   testWidgets('a rename sends only the name, and closes', (tester) async {
     final rig = _Rig();
     await _open(tester, rig);
