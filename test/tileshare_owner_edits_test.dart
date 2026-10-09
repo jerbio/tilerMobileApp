@@ -275,7 +275,7 @@ void main() {
       await tester.enterText(_key('task_sheet_name'), 'Write it');
       await _tap(tester, 'task_sheet_save');
       expect(rig.edits.calls,
-          ['updateTask(t1, name: Write it, end: null, notes: null)']);
+          ['updateTask(t1, name: Write it, end: null)']);
       expect(
           find.descendant(
               of: _key('class_task_t1'), matching: find.text('Write it')),
@@ -342,7 +342,7 @@ void main() {
       await tester.pump();
       await tester.tap(find.text('Done'));
       await _settle(tester);
-      rig.edits.failNextOn('updateTask', StateError('offline'));
+      rig.edits.failNextOn('saveTaskNotes', StateError('offline'));
       await _tap(tester, 'task_sheet_save');
       expect(_key('task_sheet'), findsNothing,
           reason: 'the task was added, so the sheet closes');
@@ -352,9 +352,40 @@ void main() {
       await _settle(tester);
       expect(rig.edits.calls, [
         'addTask(k, Label boxes, contacts: 2)',
-        'updateTask(new-1, name: null, end: null, notes: Bring tape)',
-        'updateTask(new-1, name: null, end: null, notes: Bring tape)',
+        'saveTaskNotes(new-1, Bring tape)',
+        'saveTaskNotes(new-1, Bring tape)',
       ]);
+      await tester.pump(const Duration(seconds: 1));
+      await rig.detail.close();
+    });
+
+    testWidgets("an existing tilette's notes save themselves through the notes "
+        'endpoint, and the share reloads', (tester) async {
+      final rig = _Rig();
+      await _open(tester, rig);
+      await _tap(tester, 'roster_segment_tasks');
+      await _tap(tester, 'task_menu_t1');
+      await _tap(tester, 'task_edit_t1');
+      await _tap(tester, 'task_sheet_notes');
+      final QuillController quill =
+          tester.widget<QuillEditor>(find.byType(QuillEditor)).controller;
+      quill.replaceText(0, quill.document.length - 1, 'Bring tape',
+          const TextSelection.collapsed(offset: 10));
+      await tester.pump();
+      await tester.tap(find.text('Save now'));
+      await _settle(tester);
+      expect(rig.edits.notes_.calls, contains('put(t1, Bring tape, e0-t1)'),
+          reason: 'written with the etag it read');
+      expect(find.descendant(of: _key('task_sheet_notes'),
+          matching: find.text('Bring tape')), findsOneWidget);
+      expect(rig.edits.calls.where((c) => c.startsWith('updateTask')), isEmpty,
+          reason: 'notes are not sent with the tilette');
+      final int loads =
+          rig.clusters.calls.where((c) => c.startsWith('tilettes(')).length;
+      await _tap(tester, 'task_sheet_close');
+      expect(rig.clusters.calls.where((c) => c.startsWith('tilettes(')).length,
+          loads + 1,
+          reason: 'the share reloaded');
       await tester.pump(const Duration(seconds: 1));
       await rig.detail.close();
     });

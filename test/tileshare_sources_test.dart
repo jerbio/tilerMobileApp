@@ -501,4 +501,33 @@ void main() {
       await outcome;
     });
   });
+
+  // Step 9.16h: a new tilette's notes go through the notes endpoint - read
+  // for the etag, then write; a conflict is not reported as saved.
+  group('LiveTileShareEditSource saves a new tilette\'s notes', () {
+    late FakeTileShareClustersSource clusters;
+    late FakeTileShareNotesApi notes;
+    late LiveTileShareEditSource source;
+
+    setUp(() {
+      clusters = FakeTileShareClustersSource(tilettesByCluster: {
+        'c': [tsTilette('t1', clusterId: 'c')],
+      });
+      notes = FakeTileShareNotesApi(clusters);
+      source = LiveTileShareEditSource(
+          TileShareClusterApi(getContextCallBack: () => null), notes);
+    });
+
+    test('reads the etag, then writes with it', () async {
+      await source.saveTaskNotes('t1', 'Bring tape');
+      expect(notes.calls, ['get(t1)', 'put(t1, Bring tape, e0-t1)']);
+      expect(source.tiletteNotes, same(notes));
+    });
+
+    test('a conflict is a failure', () async {
+      notes.conflictNext = true;
+      await expectLater(source.saveTaskNotes('t1', 'Bring tape'),
+          throwsA(isA<StateError>()));
+    });
+  });
 }

@@ -38,11 +38,13 @@ class _Rig {
     TaskSheetPeople people = TaskSheetPeople.everyone,
     bool canDelete = false,
     TileShareRosterCubit? roster,
+    bool notesSaveThemselves = false,
   }) =>
       TaskSheet(
         task: task,
         people: people,
         roster: roster,
+        notesSaveThemselves: notesSaveThemselves,
         shareDeadlineMs: _shareEnd,
         onSave: (value, changed) async {
           saved.add(value);
@@ -267,6 +269,16 @@ void main() {
           find.textContaining('The share’s deadline will move to Mon, Oct 12, 2026'),
           findsOneWidget,
           reason: 'the server moves it when someone has accepted (O27)');
+    });
+
+    testWidgets('notes saved by the notes page are not part of Save',
+        (tester) async {
+      final rig = _Rig()..editedNotes = 'Bring tape';
+      await _open(tester, rig.sheet(task: task(), notesSaveThemselves: true));
+      await _tap(tester, 'task_sheet_notes');
+      expect(find.text('Bring tape'), findsOneWidget);
+      await _tap(tester, 'task_sheet_save');
+      expect(rig.saved, isEmpty, reason: 'nothing else changed');
     });
 
     testWidgets('a rename is saved', (tester) async {

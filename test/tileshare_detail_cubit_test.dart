@@ -330,7 +330,7 @@ void ownerEdits() {
       expect(await rig.cubit.deleteTask('t2'), isTrue);
       expect(rig.state.tilettes.map((t) => t.id), ['t1']);
       expect(rig.edits!.calls, [
-        'updateTask(t1, name: Write it, end: null, notes: null)',
+        'updateTask(t1, name: Write it, end: null)',
         'deleteTask(t2)'
       ]);
       await rig.close();
@@ -379,7 +379,7 @@ void taskNotes() {
           isTrue);
       expect(rig.edits!.calls, [
         'addTask(mine-b, Label, contacts: 0)',
-        'updateTask(new-1, name: null, end: null, notes: Use **tape**)',
+        'saveTaskNotes(new-1, Use **tape**)',
       ]);
       expect(
           rig.state.tilettes
@@ -405,7 +405,7 @@ void taskNotes() {
       final rig =
           _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
       await rig.cubit.load();
-      rig.edits!.failNextOn('updateTask', StateError('offline'));
+      rig.edits!.failNextOn('saveTaskNotes', StateError('offline'));
       expect(
           await rig.cubit
               .addTask(ClusterTemplateTileModel()..Name = 'Label', notes: 'n'),
@@ -416,20 +416,20 @@ void taskNotes() {
       expect(await rig.cubit.retryEdit(), isTrue);
       expect(
           rig.edits!.calls.where((c) => c.startsWith('addTask')), hasLength(1));
-      expect(rig.edits!.calls.last,
-          'updateTask(new-1, name: null, end: null, notes: n)');
+      expect(rig.edits!.calls.last, 'saveTaskNotes(new-1, n)');
       await rig.close();
     });
 
-    test("a task's notes are edited, and cleared with an empty note", () async {
+    test("an existing tilette's notes are edited on the notes page, through "
+        "the edit source's notes endpoint", () async {
       final rig =
           _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
       await rig.cubit.load();
-      await rig.cubit.updateTask('t3', notes: 'Bring tape');
-      expect(rig.state.tilettes.single.miscData?.userNote, 'Bring tape');
-      await rig.cubit.updateTask('t3', notes: '');
-      expect(rig.state.tilettes.single.miscData?.userNote, '');
+      expect(rig.cubit.tiletteNotes, same(rig.edits!.tiletteNotes));
+      final none = _Rig(const TileShareDetailTarget.cluster('mine-b'));
+      expect(none.cubit.tiletteNotes, isNull);
       await rig.close();
+      await none.close();
     });
 
     test('a failure shown elsewhere can be dismissed; nothing to retry',

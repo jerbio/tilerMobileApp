@@ -147,6 +147,10 @@ class TaskSheet extends StatefulWidget {
   /// The share's roster: who has the tilette, and changing it (editing).
   final TileShareRosterCubit? roster;
 
+  /// The notes are saved by the notes page itself (an existing tilette's,
+  /// through the notes endpoint), so they are not part of Save.
+  final bool notesSaveThemselves;
+
   const TaskSheet({
     super.key,
     this.task,
@@ -157,10 +161,11 @@ class TaskSheet extends StatefulWidget {
     this.pickDate = platformPickDate,
     this.pickTime = platformPickTime,
     this.pickDuration = _durationScreen,
-    this.editNotes = _notesPage,
+    TaskSheetEditNotes? editNotes,
+    this.notesSaveThemselves = false,
     this.pickAssignee,
     this.roster,
-  });
+  }) : editNotes = editNotes ?? _notesPage;
 
   bool get isNew => task == null;
 
@@ -183,7 +188,7 @@ class _TaskSheetState extends State<TaskSheet> {
   late DateTime _deadline;
   late String _notes;
   Contact? _assignee;
-  late final TaskSheetValue _initial;
+  late TaskSheetValue _initial;
   String? _nameError;
   bool _busy = false;
   bool _failed = false;
@@ -305,7 +310,19 @@ class _TaskSheetState extends State<TaskSheet> {
 
   Future<void> _editNotes() async {
     final String? edited = await widget.editNotes(context, _notes);
-    if (edited != null && mounted) setState(() => _notes = edited.trim());
+    if (edited == null || !mounted) return;
+    setState(() {
+      _notes = edited.trim();
+      // Saved by the notes page already: not a change for Save.
+      if (widget.notesSaveThemselves) {
+        _initial = TaskSheetValue(
+            name: _initial.name,
+            length: _initial.length,
+            deadline: _initial.deadline,
+            notes: _notes,
+            assignee: _initial.assignee);
+      }
+    });
   }
 
   Future<void> _pickAssignee() async {

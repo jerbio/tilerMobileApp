@@ -7,6 +7,8 @@ import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/data/tileShareRoster.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotePage.dart';
+import 'package:tiler_app/services/api/notesApi.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/taskSheet.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
@@ -101,26 +103,44 @@ class TaskEditor {
         ),
       );
 
-  /// Edits [tilette]: only what changed is sent; its length stays.
+  /// Edits [tilette]: only what changed is sent; its length stays. Its notes
+  /// are edited on the notes page and save themselves (the tilette notes
+  /// endpoint, as tile notes do); the share reloads after if they changed.
   Future<void> edit(BuildContext context, TileShareTemplate tilette,
-      {required TaskSheetPeople people}) {
+      {required TaskSheetPeople people}) async {
     final String? id = tilette.id;
-    if (id == null) return Future<void>.value();
-    return showTaskSheet(
+    final NotesApi? notesApi = cubit.tiletteNotes;
+    if (id == null) return;
+    bool notesChanged = false;
+    await showTaskSheet(
       context,
       TaskSheet(
         task: tilette,
         people: people,
         roster: roster,
+        notesSaveThemselves: notesApi != null,
+        editNotes: notesApi == null
+            ? null
+            : (context, notes) => Navigator.of(context).push<String?>(
+                  MaterialPageRoute<String?>(
+                    builder: (_) => NoteFullPage(
+                      eventId: id,
+                      initialNote: notes,
+                      notesApi: notesApi,
+                      onNotePersisted: (_) => notesChanged = true,
+                    ),
+                  ),
+                ),
         shareDeadlineMs: _shareDeadlineMs,
         onSave: (TaskSheetValue _, TaskChanges changes) async {
           if (changes.isEmpty) return true;
           return _kept(await cubit.updateTask(id,
-              name: changes.name, endMs: changes.endMs, notes: changes.notes));
+              name: changes.name, endMs: changes.endMs));
         },
         onDelete: () async => _kept(await cubit.deleteTask(id)),
       ),
     );
+    if (notesChanged && !cubit.isClosed) await cubit.refresh();
   }
 
   bool _kept(bool ok) {

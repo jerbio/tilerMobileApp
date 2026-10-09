@@ -5,6 +5,7 @@ import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareMyStatus.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
+import 'package:tiler_app/services/api/notesApi.dart';
 import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 
@@ -183,9 +184,10 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
             edits.updateShare(id, name: name, endMs: endMs, startMs: startMs));
   }
 
-  /// Adds [task] to the share. The server saves no notes on a new task, so
-  /// [notes] are saved on it afterwards; refused, the task stays and the
-  /// failure is the notes' ([DetailEdit.editTask]), retried on their own.
+  /// Adds [task] to the share. The server saves no notes on a new tilette, so
+  /// [notes] are saved on it afterwards through the notes endpoint; refused,
+  /// the tilette stays and the failure is the notes' ([DetailEdit.editTask]),
+  /// retried on their own.
   Future<bool> addTask(ClusterTemplateTileModel task, {String? notes}) async {
     String? added;
     final bool ok = await _edit(
@@ -195,18 +197,18 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
             added = await edits.addTask(id, task..ClusterId = id));
     final String? newId = added;
     if (!ok || newId == null || (notes ?? '').trim().isEmpty) return ok;
-    return updateTask(newId, notes: notes);
+    return _edit(DetailEdit.editTask, 'notes of new task $newId',
+        (edits, _) => edits.saveTaskNotes(newId, notes!.trim()));
   }
 
-  /// Renames a task, moves its deadline or replaces its notes.
-  Future<bool> updateTask(String tiletteId,
-          {String? name, int? endMs, String? notes}) =>
-      _edit(
-          DetailEdit.editTask,
-          'task $tiletteId: name=$name end=$endMs '
-          'notes=${notes == null ? 'unchanged' : '${notes.length} chars'}',
-          (edits, _) => edits.updateTask(tiletteId,
-              name: name, endMs: endMs, notes: notes));
+  /// The tilettes' notes endpoint, for editing an existing tilette's notes
+  /// in the notes editor (they save themselves); none without edits.
+  NotesApi? get tiletteNotes => _edits?.tiletteNotes;
+
+  /// Renames a tilette or moves its deadline.
+  Future<bool> updateTask(String tiletteId, {String? name, int? endMs}) =>
+      _edit(DetailEdit.editTask, 'task $tiletteId: name=$name end=$endMs',
+          (edits, _) => edits.updateTask(tiletteId, name: name, endMs: endMs));
 
   /// Deletes a task.
   Future<bool> deleteTask(String tiletteId) => _edit(DetailEdit.deleteTask,

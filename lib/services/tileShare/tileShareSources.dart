@@ -1,4 +1,5 @@
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
+import 'package:tiler_app/services/api/notesApi.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
@@ -157,10 +158,17 @@ abstract class TileShareEditSource {
   /// does not save notes on a new task - see [updateTask].
   Future<String?> addTask(String clusterId, ClusterTemplateTileModel task);
 
-  /// Renames a task, moves its deadline or replaces its notes (markdown; an
-  /// empty note clears them).
-  Future<void> updateTask(String tiletteId,
-      {String? name, int? endMs, String? notes});
+  /// Renames a tilette or moves its deadline.
+  Future<void> updateTask(String tiletteId, {String? name, int? endMs});
+
+  /// Saves a tilette's notes (markdown; empty clears them) through the notes
+  /// endpoint - read for the etag, then write; a conflict is a failure. Used
+  /// for a new tilette, whose notes the create does not save.
+  Future<void> saveTaskNotes(String tiletteId, String notes);
+
+  /// The tilettes' notes endpoint, for the notes editor (auto-save, the
+  /// conflict banner) on an existing tilette.
+  NotesApi get tiletteNotes;
 
   /// Deletes a task and its assignments.
   Future<void> deleteTask(String tiletteId);

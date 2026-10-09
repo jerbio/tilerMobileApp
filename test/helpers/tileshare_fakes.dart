@@ -12,6 +12,7 @@ import 'dart:async';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/designatedUser.dart';
+import 'package:tiler_app/data/notesPayload.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareTemplateMiscData.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
@@ -21,6 +22,7 @@ import 'package:tiler_app/data/tileSharePreview.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/services/api/tileSharePreviewApi.dart';
 import 'package:tiler_app/services/tileShare/tileSharePendingAccept.dart';
+import 'package:tiler_app/services/api/notesApi.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 
 import 'tileshare_fixtures.dart';
@@ -566,23 +568,27 @@ class FakeTileShareEditSource
       });
 
   @override
-  Future<void> updateTask(String tiletteId,
-          {String? name, int? endMs, String? notes}) =>
-      run('updateTask($tiletteId, name: $name, end: $endMs, notes: $notes)',
-          () {
+  Future<void> updateTask(String tiletteId, {String? name, int? endMs}) =>
+      run('updateTask($tiletteId, name: $name, end: $endMs)', () {
         for (final list in clusters.tilettesByCluster.values) {
           for (final t in list) {
             if (t.id == tiletteId) {
               if (name != null) t.name = name;
               if (endMs != null) t.end = endMs;
-              if (notes != null) {
-                t.miscData =
-                    TileShareTemplateMiscData.fromJson({'userNote': notes});
-              }
             }
           }
         }
       });
+
+  @override
+  Future<void> saveTaskNotes(String tiletteId, String notes) =>
+      run('saveTaskNotes($tiletteId, $notes)', () => notes_.store(tiletteId, notes));
+
+  /// The tilettes' notes endpoint, in memory.
+  late final FakeTileShareNotesApi notes_ = FakeTileShareNotesApi(clusters);
+
+  @override
+  NotesApi get tiletteNotes => notes_;
 
   @override
   Future<void> deleteTask(String tiletteId) =>
@@ -593,4 +599,67 @@ class FakeTileShareEditSource
               .toList();
         }
       });
+}
+
+/// `api/TileshareTemplate/Notes` in memory: a tilette's note and an etag that
+/// changes with it; a write with a stale etag is a conflict that carries the
+/// stored note. Notes live on the tilettes in [clusters], so a reload shows
+/// them.
+class FakeTileShareNotesApi extends NotesApi {
+  final FakeTileShareClustersSource clusters;
+  final List<String> calls = <String>[];
+
+  /// The next write is a conflict, as if someone else saved first.
+  bool conflictNext = false;
+  int _version = 0;
+  final Map<String, String> _etags = <String, String>{};
+
+  FakeTileShareNotesApi(this.clusters) : super(getContextCallBack: () => null);
+
+  TileShareTemplate? _tilette(String id) {
+    for (final list in clusters.tilettesByCluster.values) {
+      for (final t in list) {
+        if (t.id == id) return t;
+      }
+    }
+    return null;
+  }
+
+  String _etagOf(String id) => _etags[id] ??= 'e0-$id';
+
+  /// Stores [note] on tilette [id] as the server would.
+  void store(String id, String note) {
+    _tilette(id)?.miscData = TileShareTemplateMiscData.fromJson({'userNote': note});
+    _etags[id] = 'e${++_version}-$id';
+  }
+
+  NotesPayload _payload(String id, {bool conflict = false}) => NotesPayload(
+        eventId: id,
+        userNote: _tilette(id)?.miscData?.userNote ?? '',
+        etag: _etagOf(id),
+        concurrencyConflict: conflict,
+      );
+
+  @override
+  Future<NotesPayload> getNotes(String eventId,
+      {NotesScope scope = NotesScope.auto}) async {
+    calls.add('get($eventId)');
+    return _payload(eventId);
+  }
+
+  @override
+  Future<NotesPayload> updateNotes({
+    required String eventId,
+    required String userNote,
+    required String etag,
+    NotesScope scope = NotesScope.auto,
+  }) async {
+    calls.add('put($eventId, $userNote, $etag)');
+    if (conflictNext || etag != _etagOf(eventId)) {
+      conflictNext = false;
+      return _payload(eventId, conflict: true);
+    }
+    store(eventId, userNote);
+    return _payload(eventId);
+  }
 }

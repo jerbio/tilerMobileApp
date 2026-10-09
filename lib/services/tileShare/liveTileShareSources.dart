@@ -1,6 +1,7 @@
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/services/api/tileShareRecipientsApi.dart';
 import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/data/notesPayload.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/request/tileShareClusterModel.dart';
 import 'package:tiler_app/data/tileShareActivity.dart';
@@ -11,6 +12,7 @@ import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareActivityApi.dart';
+import 'package:tiler_app/services/api/notesApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/services/api/tileShareInvitationsApi.dart';
 import 'package:tiler_app/services/api/tileSharePreviewApi.dart';
@@ -265,7 +267,23 @@ class LiveTileShareRecipientsSource implements TileShareRecipientsSource {
 class LiveTileShareEditSource implements TileShareEditSource {
   final TileShareClusterApi _api;
 
-  LiveTileShareEditSource(this._api);
+  /// The tilettes' notes endpoint (`TileShareNotesApi`).
+  final NotesApi _notes;
+
+  LiveTileShareEditSource(this._api, this._notes);
+
+  @override
+  NotesApi get tiletteNotes => _notes;
+
+  @override
+  Future<void> saveTaskNotes(String tiletteId, String notes) async {
+    final NotesPayload current = await _notes.getNotes(tiletteId);
+    final NotesPayload saved = await _notes.updateNotes(
+        eventId: tiletteId, userNote: notes, etag: current.etag);
+    if (saved.concurrencyConflict) {
+      throw StateError('the notes of $tiletteId changed while saving');
+    }
+  }
 
   @override
   Future<void> updateShare(String clusterId,
@@ -283,13 +301,11 @@ class LiveTileShareEditSource implements TileShareEditSource {
       (await _api.createDesignatedTileTemplate(task..ClusterId = clusterId)).id;
 
   @override
-  Future<void> updateTask(String tiletteId,
-          {String? name, int? endMs, String? notes}) =>
+  Future<void> updateTask(String tiletteId, {String? name, int? endMs}) =>
       _api.updateTileShareTemplate(ClusterTemplateTileModel()
         ..Id = tiletteId
         ..Name = name
-        ..EndTime = endMs
-        ..NoteMiscData = notes);
+        ..EndTime = endMs);
 
   @override
   Future<void> deleteTask(String tiletteId) async {

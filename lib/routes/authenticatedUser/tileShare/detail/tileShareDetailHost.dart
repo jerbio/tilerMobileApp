@@ -16,6 +16,7 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareActivityApi.dart';
 import 'package:tiler_app/services/api/tileShareRecipientsApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
+import 'package:tiler_app/services/api/tileShareNotesApi.dart';
 import 'package:tiler_app/services/api/userApi.dart';
 import 'package:tiler_app/services/tileShare/liveTileShareSources.dart';
 import 'package:tiler_app/services/tileShare/tileShareLog.dart';
@@ -66,7 +67,8 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
     _cubit = TileShareDetailCubit(
       clusters: LiveTileShareClustersSource(_clusterApi),
       assignments: _assignments,
-      edits: LiveTileShareEditSource(_clusterApi),
+      edits: LiveTileShareEditSource(
+          _clusterApi, TileShareNotesApi(getContextCallBack: () => context)),
       target: widget.target,
       currentUserId: () => _userId,
       ownerHint: widget.ownerHint,
