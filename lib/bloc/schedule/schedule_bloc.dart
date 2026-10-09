@@ -95,6 +95,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void abandonChange(int token) => changeTracker.abandon(token);
 
+  /// Names the tile the change from [beginChange] is about, once known.
+  void attachChangeSubject(int token, String subjectId) =>
+      changeTracker.attachSubject(token, subjectId);
+
   /// What caused the schedule revision carried by [status].
   ScheduleChangeAttribution attributionFor(ScheduleStatus? status) =>
       changeTracker.resolve(

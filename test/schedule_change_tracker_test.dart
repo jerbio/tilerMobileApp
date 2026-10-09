@@ -37,17 +37,17 @@ void main() {
     test('attribution is remembered per revision', () {
       tracker.begin(ScheduleChangeOrigin.tilerRevise, baseline: rev('r0'));
       tracker.resolve(rev('r1'));
-      expect(tracker.resolve(rev('r1')).origin,
-          ScheduleChangeOrigin.tilerRevise);
+      expect(
+          tracker.resolve(rev('r1')).origin, ScheduleChangeOrigin.tilerRevise);
     });
 
     test('unknown revisions are refreshes and do not claim the change', () {
       tracker.begin(ScheduleChangeOrigin.tilerRevise, baseline: rev('r0'));
       expect(tracker.resolve(null).isRefresh, isTrue);
-      expect(tracker.resolve(const ScheduleRevision(null, 'x')).isRefresh,
-          isTrue);
-      expect(tracker.resolve(rev('r1')).origin,
-          ScheduleChangeOrigin.tilerRevise);
+      expect(
+          tracker.resolve(const ScheduleRevision(null, 'x')).isRefresh, isTrue);
+      expect(
+          tracker.resolve(rev('r1')).origin, ScheduleChangeOrigin.tilerRevise);
     });
 
     test('abandon drops the pending change, but only for its token', () {
@@ -55,8 +55,8 @@ void main() {
           tracker.begin(ScheduleChangeOrigin.userEdit, baseline: rev('r0'));
       tracker.begin(ScheduleChangeOrigin.tilerRevise, baseline: rev('r0'));
       tracker.abandon(first); // stale token: the newer change survives
-      expect(tracker.resolve(rev('r1')).origin,
-          ScheduleChangeOrigin.tilerRevise);
+      expect(
+          tracker.resolve(rev('r1')).origin, ScheduleChangeOrigin.tilerRevise);
 
       final token =
           tracker.begin(ScheduleChangeOrigin.userEdit, baseline: rev('r1'));
@@ -67,8 +67,25 @@ void main() {
     test('the latest begin wins when changes fold into one revision', () {
       tracker.begin(ScheduleChangeOrigin.userEdit, baseline: rev('r0'));
       tracker.begin(ScheduleChangeOrigin.tilerRevise, baseline: rev('r0'));
-      expect(tracker.resolve(rev('r1')).origin,
-          ScheduleChangeOrigin.tilerRevise);
+      expect(
+          tracker.resolve(rev('r1')).origin, ScheduleChangeOrigin.tilerRevise);
+    });
+
+    test('a subject can be named once known (a new tile' 's id)', () {
+      final token =
+          tracker.begin(ScheduleChangeOrigin.userAdd, baseline: rev('r0'));
+      tracker.attachSubject(token, 'new-1');
+      final claimed = tracker.resolve(rev('r1'));
+      expect(claimed.origin, ScheduleChangeOrigin.userAdd);
+      expect(claimed.subjectId, 'new-1');
+    });
+
+    test('naming a subject for a change no longer pending does nothing', () {
+      final token =
+          tracker.begin(ScheduleChangeOrigin.userAdd, baseline: rev('r0'));
+      tracker.abandon(token);
+      tracker.attachSubject(token, 'new-1');
+      expect(tracker.resolve(rev('r1')).isRefresh, isTrue);
     });
 
     test('a pending change expires', () {
@@ -79,8 +96,8 @@ void main() {
 
     test('a null baseline is claimed by any known revision', () {
       tracker.begin(ScheduleChangeOrigin.userComplete, baseline: null);
-      expect(tracker.resolve(rev('r1')).origin,
-          ScheduleChangeOrigin.userComplete);
+      expect(
+          tracker.resolve(rev('r1')).origin, ScheduleChangeOrigin.userComplete);
     });
 
     test('reset clears pending and history', () {
@@ -93,8 +110,7 @@ void main() {
     });
 
     test('history is bounded', () {
-      final small =
-          ScheduleChangeTracker(clock: () => now, historyLimit: 2);
+      final small = ScheduleChangeTracker(clock: () => now, historyLimit: 2);
       small.begin(ScheduleChangeOrigin.tilerRevise, baseline: rev('r0'));
       small.resolve(rev('r1'));
       small.resolve(rev('r2'));

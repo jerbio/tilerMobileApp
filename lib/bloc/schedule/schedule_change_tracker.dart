@@ -11,6 +11,9 @@ enum ScheduleChangeOrigin {
   /// Any other user mutation that re-evaluates the schedule.
   userEdit,
 
+  /// A tile the user just added.
+  userAdd,
+
   /// Marking a Tile complete.
   userComplete,
 
@@ -75,6 +78,21 @@ class ScheduleChangeTracker {
       startedAt: _clock(),
     );
     return token;
+  }
+
+  /// Names the tile a pending change is about once it is known, e.g. a new
+  /// tile's id from the server's reply. Ignored if [token] is no longer
+  /// pending.
+  void attachSubject(int token, String subjectId) {
+    final pending = _pending;
+    if (pending == null || pending.token != token) return;
+    _pending = _PendingChange(
+      token: token,
+      baseline: pending.baseline,
+      attribution: ScheduleChangeAttribution(pending.attribution.origin,
+          subjectId: subjectId),
+      startedAt: pending.startedAt,
+    );
   }
 
   /// Drops the pending change if it is still [token] (the request failed).

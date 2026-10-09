@@ -6,8 +6,8 @@ const bool isDebug = !isProduction;
 const bool isStaging = true;
 const bool isRemote = true;
 const prodDomain = 'tiler.app';
-const stagingDomain = 'tiler-stage.conveyor.cloud';
-// const stagingDomain = '10.0.2.2:44322';
+// const stagingDomain = 'tiler-stage.conveyor.cloud';
+const stagingDomain = '10.0.2.2:44322';
 const devDomain = 'tiler-dev.conveyor.cloud';
 const String tilerDomain =
     isProduction ? prodDomain : (isStaging ? stagingDomain : devDomain);
