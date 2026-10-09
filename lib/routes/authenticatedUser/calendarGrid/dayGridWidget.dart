@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/scheduleChipInsets.dart';
 import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
 import 'package:tiler_app/constants.dart' as constant;
 import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
@@ -2550,7 +2551,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
                   onRefresh: _onGridRefresh,
                   child: gridBody,
                 ),
-                ..._handoffChips(bottomClearance),
+                ..._handoffChips(),
               ],
             );
           },
@@ -2561,7 +2562,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
 
   /// The edge chips over the viewport: earlier at the top; later and
   /// other days at the bottom, above the day's "Plan updated" chip.
-  List<Widget> _handoffChips(double bottomClearance) {
+  List<Widget> _handoffChips() {
     final visible = _handoffs.visible;
     if (visible.isEmpty) {
       return const <Widget>[];
@@ -2582,9 +2583,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
         ),
       if (bottom.isNotEmpty)
         Positioned(
-          bottom: bottomClearance + 84,
+          bottom: ScheduleChipInsets.bottomBarOf(context) +
+              ScheduleChipInsets.edgeChipGap,
           left: 16,
-          right: 16,
+          right: ScheduleChipInsets.fabClearance,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

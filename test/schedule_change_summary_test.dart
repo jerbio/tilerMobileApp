@@ -272,12 +272,39 @@ void main() {
       await tester.pump();
     }
 
-    Widget host({DateTime? date}) => app(BlocProvider<ScheduleBloc>.value(
-        value: bloc,
-        child: ScheduleChangeSummaryHost(
-            currentDate: date ?? _day,
-            visibleFor: const Duration(seconds: 6),
-            child: const SizedBox.expand())));
+    /// [bottomBar] is the navigation bar the content runs behind.
+    Widget host({DateTime? date, double bottomBar = 0}) =>
+        app(BlocProvider<ScheduleBloc>.value(
+            value: bloc,
+            child: Builder(
+              builder: (context) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(padding: EdgeInsets.only(bottom: bottomBar)),
+                child: ScheduleChangeSummaryHost(
+                    currentDate: date ?? _day,
+                    visibleFor: const Duration(seconds: 6),
+                    child: const SizedBox.expand()),
+              ),
+            )));
+
+    testWidgets(
+        'the chip sits above the navigation bar, clear of the add button',
+        (tester) async {
+      createBloc();
+      await tester.pumpWidget(host(bottomBar: 100));
+      await reload(tester, thursday(), status('r0'));
+      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      await reload(tester, thursday(vitd: at(19, 55)), status('r1'));
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+
+      final chip = find.byKey(ScheduleChangeSummaryChip.chipKey);
+      final size = tester.view.physicalSize / tester.view.devicePixelRatio;
+      expect(
+          tester.getBottomLeft(chip).dy, lessThanOrEqualTo(size.height - 116));
+      expect(tester.getTopRight(chip).dx, lessThanOrEqualTo(size.width - 88));
+      await tester.pump(const Duration(seconds: 7));
+    });
 
     testWidgets('shows after a re-optimize and hides on its own',
         (tester) async {

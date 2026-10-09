@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/scheduleChipInsets.dart';
 import 'package:tiler_app/components/tilelist/dailyView/motion/listAnchor.dart';
 import 'package:tiler_app/components/tilelist/dailyView/motion/listFlights.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart';
@@ -156,17 +157,13 @@ class ListMotion {
 
     // Tiles that were on screen and now are not: one chip per destination.
     final earlier = <SubCalendarEvent>[], later = <SubCalendarEvent>[];
-    final byDay = <DateTime, List<SubCalendarEvent>>{};
+    final otherDay = <SubCalendarEvent>[];
     for (final id in pending.seen.keys) {
       final change = pending.change.delta.changeFor(id);
       final after = change?.after;
       if (change == null || after?.start == null) continue;
       if (change.kind == TileChangeKind.movedToOtherDay) {
-        final start = Utility.localDateTimeFromMs(after!.start!);
-        byDay
-            .putIfAbsent(DateTime(start.year, start.month, start.day),
-                () => <SubCalendarEvent>[])
-            .add(after);
+        otherDay.add(after!);
         continue;
       }
       final rect = rows.rectOf('tile:$id', layer);
@@ -181,19 +178,15 @@ class ListMotion {
     }
     int byStart(SubCalendarEvent a, SubCalendarEvent b) =>
         a.start!.compareTo(b.start!);
-    final dayStartMs = pending.change.delta.day.start!;
-    final days = byDay.keys.toList()..sort();
+    // Every tile that left the day shares one chip.
+    final days =
+        GridHandoff.otherDays(otherDay, pending.change.delta.day.start!);
     final chips = <GridHandoff>[
       if (earlier.isNotEmpty)
         GridHandoff(HandoffDirection.earlier, earlier..sort(byStart)),
       if (later.isNotEmpty)
         GridHandoff(HandoffDirection.later, later..sort(byStart)),
-      for (final day in days)
-        GridHandoff(
-            day.millisecondsSinceEpoch < dayStartMs
-                ? HandoffDirection.previousDay
-                : HandoffDirection.nextDay,
-            byDay[day]!..sort(byStart)),
+      if (days != null) days,
     ];
     if (chips.isEmpty) return;
     Utility.debugPrint('DailyList::handoff '
@@ -368,9 +361,10 @@ class ListMotionLayer extends StatelessWidget {
           ),
         if (bottom.isNotEmpty)
           Positioned(
-            bottom: 84,
+            bottom: ScheduleChipInsets.bottomBarOf(context) +
+                ScheduleChipInsets.edgeChipGap,
             left: 16,
-            right: 16,
+            right: ScheduleChipInsets.fabClearance,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

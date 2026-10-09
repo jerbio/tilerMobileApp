@@ -80,23 +80,76 @@ void main() {
       expect(handoffs([tile('a', 'A', 18)], [tile('a', 'A', 21)]), isEmpty);
     });
 
-    test('tiles moved to other days group by destination day', () {
+    test('every tile that left the day shares one chip', () {
       final result = handoffs(
         [tile('a', 'A', 9), tile('b', 'B', 10), tile('c', 'C', 11)],
         [
           tile('a', 'A', 9, dayOffset: 1),
-          tile('b', 'B', 14, dayOffset: 1),
+          tile('b', 'B', 14, dayOffset: 2),
           tile('c', 'C', 9, dayOffset: -1),
         ],
       );
-      expect(result.map((h) => h.direction),
-          [HandoffDirection.previousDay, HandoffDirection.nextDay]);
-      expect(result[1].tiles.map((t) => t.uniqueId), ['a', 'b']);
+      expect(result, hasLength(1));
+      // It points at the earliest destination: yesterday.
+      expect(result.single.direction, HandoffDirection.previousDay);
+      expect(result.single.tiles.map((t) => t.uniqueId), ['c', 'a', 'b']);
+      expect(result.single.spansSeveralDays, isTrue);
+    });
+
+    test('several tiles to the same day name that day', () {
+      final result = handoffs(
+        [tile('a', 'A', 9), tile('b', 'B', 10)],
+        [tile('a', 'A', 9, dayOffset: 1), tile('b', 'B', 14, dayOffset: 1)],
+      );
+      expect(result.single.direction, HandoffDirection.nextDay);
+      expect(result.single.spansSeveralDays, isFalse);
     });
 
     test('the tile the user moved never gets a chip', () {
       expect(handoffs([tile('a', 'A', 9)], [tile('a', 'A', 20)], skipId: 'a'),
           isEmpty);
+    });
+  });
+
+  group('GridHandoffChip text', () {
+    Future<String> textOf(WidgetTester tester, GridHandoff handoff) async {
+      await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+            builder: (context) => Text(GridHandoffChip.text(context, handoff))),
+      ));
+      return tester.widget<Text>(find.byType(Text)).data!;
+    }
+
+    testWidgets('one name, several to one day, several to several days',
+        (tester) async {
+      expect(
+          await textOf(
+              tester,
+              GridHandoff(HandoffDirection.nextDay,
+                  [tile('a', 'Read', 9, dayOffset: 1)])),
+          'Read moved to Sat, May 16');
+      expect(
+          await textOf(
+              tester,
+              GridHandoff(HandoffDirection.nextDay, [
+                tile('a', 'A', 9, dayOffset: 1),
+                tile('b', 'B', 10, dayOffset: 1),
+              ])),
+          '2 Tiles moved to Sat, May 16');
+      expect(
+          await textOf(
+              tester,
+              GridHandoff(HandoffDirection.nextDay, [
+                tile('a', 'A', 9, dayOffset: 1),
+                tile('b', 'B', 10, dayOffset: 2),
+              ])),
+          '2 Tiles moved to other days');
     });
   });
 

@@ -17,8 +17,9 @@ enum HandoffDirection {
 }
 
 /// Tiles that were on screen and moved out of view (later or earlier the
-/// same day) or to another day, reported as one edge chip per destination
-/// so they never just vanish.
+/// same day) or to other days, reported as edge chips so they never just
+/// vanish: one for earlier, one for later, and one for every tile that left
+/// the day, wherever it went.
 class GridHandoff {
   final HandoffDirection direction;
 
@@ -32,8 +33,32 @@ class GridHandoff {
       direction == HandoffDirection.nextDay;
 
   /// The first tile's new start: where tapping the chip should take the
-  /// user (a time on this day, or the destination day).
+  /// user (a time on this day, or the earliest destination day).
   int get targetStartMs => tiles.first.start!;
+
+  /// The tiles went to more than one day.
+  bool get spansSeveralDays {
+    final days = {
+      for (final t in tiles)
+        (() {
+          final d = Utility.localDateTimeFromMs(t.start!);
+          return DateTime(d.year, d.month, d.day);
+        })(),
+    };
+    return days.length > 1;
+  }
+
+  /// One chip for every tile that left the day ([tiles] as they are now),
+  /// pointing at the earliest destination; null when there are none.
+  static GridHandoff? otherDays(List<SubCalendarEvent> tiles, int dayStartMs) {
+    if (tiles.isEmpty) return null;
+    final sorted = [...tiles]..sort((a, b) => a.start!.compareTo(b.start!));
+    return GridHandoff(
+        sorted.first.start! < dayStartMs
+            ? HandoffDirection.previousDay
+            : HandoffDirection.nextDay,
+        sorted);
+  }
 
   /// Builds the chips for [delta].
   ///
@@ -48,7 +73,7 @@ class GridHandoff {
   }) {
     final earlier = <SubCalendarEvent>[];
     final later = <SubCalendarEvent>[];
-    final byDay = <DateTime, List<SubCalendarEvent>>{};
+    final otherDay = <SubCalendarEvent>[];
     for (final change in delta.changes) {
       final before = change.before, after = change.after;
       if (before == null || after == null || change.id == skipId) continue;
@@ -60,11 +85,7 @@ class GridHandoff {
           if (now < 0) earlier.add(after);
           if (now > 0) later.add(after);
         case TileChangeKind.movedToOtherDay:
-          final start = Utility.localDateTimeFromMs(after.start!);
-          byDay
-              .putIfAbsent(DateTime(start.year, start.month, start.day),
-                  () => <SubCalendarEvent>[])
-              .add(after);
+          otherDay.add(after);
         case TileChangeKind.resized:
         case TileChangeKind.movedFromOtherDay:
         case TileChangeKind.added:
@@ -74,19 +95,13 @@ class GridHandoff {
     }
     int byStart(SubCalendarEvent a, SubCalendarEvent b) =>
         a.start!.compareTo(b.start!);
-    final dayStartMs = delta.day.start!;
-    final days = byDay.keys.toList()..sort();
+    final days = otherDays(otherDay, delta.day.start!);
     return [
       if (earlier.isNotEmpty)
         GridHandoff(HandoffDirection.earlier, earlier..sort(byStart)),
       if (later.isNotEmpty)
         GridHandoff(HandoffDirection.later, later..sort(byStart)),
-      for (final day in days)
-        GridHandoff(
-            day.millisecondsSinceEpoch < dayStartMs
-                ? HandoffDirection.previousDay
-                : HandoffDirection.nextDay,
-            byDay[day]!..sort(byStart)),
+      if (days != null) days,
     ];
   }
 }

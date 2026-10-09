@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/scheduleChipInsets.dart';
 import 'package:tiler_app/components/tilelist/dailyView/scheduleChangeSummaryChip.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -30,9 +31,6 @@ class ScheduleChangeSummaryHost extends StatefulWidget {
     required this.child,
     this.visibleFor = const Duration(seconds: 6),
   });
-
-  /// Room kept clear on the right for the floating add button.
-  static const double fabClearance = 88;
 
   @override
   State<ScheduleChangeSummaryHost> createState() =>
@@ -153,47 +151,54 @@ class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
   Widget build(BuildContext context) {
     final summary = _summary;
     final animates = ScheduleMotion.modeFor(context).animates;
+    // The content runs behind the bottom navigation bar; the scaffold
+    // reports the bar's height as this body's bottom padding.
+    final bottomBar = MediaQuery.paddingOf(context).bottom;
     return BlocListener<ScheduleBloc, ScheduleState>(
       listener: (context, state) => _observe(state),
-      child: Stack(
-        // The content keeps the tight size its region gives it.
-        fit: StackFit.expand,
-        children: [
-          widget.child,
-          if (_moving != null)
-            Positioned(
-              top: 8,
-              left: 16,
-              right: 16,
-              child:
-                  Center(child: ScheduleChangeMovingBanner(summary: _moving!)),
-            ),
-          Positioned(
-            left: 16,
-            right: ScheduleChangeSummaryHost.fabClearance,
-            bottom: 16,
-            child: AnimatedSwitcher(
-              duration:
-                  animates ? const Duration(milliseconds: 250) : Duration.zero,
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                          begin: const Offset(0, 0.4), end: Offset.zero)
-                      .animate(animation),
-                  child: child,
-                ),
+      child: ScheduleChipInsets(
+        bottomBar: bottomBar,
+        child: Stack(
+          // The content keeps the tight size its region gives it.
+          fit: StackFit.expand,
+          children: [
+            widget.child,
+            if (_moving != null)
+              Positioned(
+                top: 8,
+                left: 16,
+                right: 16,
+                child: Center(
+                    child: ScheduleChangeMovingBanner(summary: _moving!)),
               ),
-              child: summary == null
-                  ? const SizedBox.shrink()
-                  : ScheduleChangeSummaryChip(
-                      key: ValueKey(summary),
-                      summary: summary,
-                      onSeeChanges: () => _openDetails(summary),
-                    ),
+            Positioned(
+              left: 16,
+              right: ScheduleChipInsets.fabClearance,
+              bottom: bottomBar + ScheduleChipInsets.summaryGap,
+              child: AnimatedSwitcher(
+                duration: animates
+                    ? const Duration(milliseconds: 250)
+                    : Duration.zero,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                            begin: const Offset(0, 0.4), end: Offset.zero)
+                        .animate(animation),
+                    child: child,
+                  ),
+                ),
+                child: summary == null
+                    ? const SizedBox.shrink()
+                    : ScheduleChangeSummaryChip(
+                        key: ValueKey(summary),
+                        summary: summary,
+                        onSeeChanges: () => _openDetails(summary),
+                      ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

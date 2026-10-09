@@ -3,9 +3,10 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridHandoff.dart';
 import 'package:tiler_app/util.dart';
 
-/// Edge chip for tiles that moved out of view or to another day, e.g.
-/// "↓ Read 30 pages moved to 10:30 PM" or "→ 3 Tiles moved to Fri, Oct 9".
-/// Tapping it takes the user there.
+/// Edge chip for tiles that moved out of view or to other days, e.g.
+/// "↓ Read 30 pages moved to 10:30 PM", "→ 3 Tiles moved to Fri, Oct 9" or
+/// "→ 4 Tiles moved to other days". Tapping it takes the user there (the
+/// earliest destination day for several).
 class GridHandoffChip extends StatelessWidget {
   final GridHandoff handoff;
   final VoidCallback onTap;
@@ -51,7 +52,9 @@ class GridHandoffChip extends StatelessWidget {
         return l10n.scheduleChangeTilesMovedLater(count);
       case HandoffDirection.previousDay:
       case HandoffDirection.nextDay:
-        return l10n.scheduleChangeTilesMovedTo(count, when);
+        return handoff.spansSeveralDays
+            ? l10n.scheduleChangeTilesMovedToOtherDays(count)
+            : l10n.scheduleChangeTilesMovedTo(count, when);
     }
   }
 
