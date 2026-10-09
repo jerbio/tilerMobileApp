@@ -204,6 +204,16 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
   Future<bool> deleteTask(String tiletteId) => _edit(DetailEdit.deleteTask,
       'delete task $tiletteId', (edits, _) => edits.deleteTask(tiletteId));
 
+  /// Deletes the share; once it is gone, [TileShareDetailState.deleted] -
+  /// nothing reloads (there is nothing left to load) and the detail closes.
+  Future<bool> deleteShare() => _edit(
+        DetailEdit.deleteShare,
+        'delete share',
+        (_, clusterId) => _clusters.deleteCluster(clusterId),
+        reload: false,
+        onDone: () => _emit(state.copyWith(deleted: true)),
+      );
+
   /// Forgets a refused change already shown where it was made (a sheet):
   /// no banner, nothing to retry.
   void dismissEditFailure() {
@@ -221,11 +231,9 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
 
   /// Sends one change, then reloads. `false` when it was not sent (no edits,
   /// not the owner, another change going out) or was refused.
-  Future<bool> _edit(
-      DetailEdit kind,
-      String what,
-      Future<void> Function(TileShareEditSource edits, String clusterId)
-          send) async {
+  Future<bool> _edit(DetailEdit kind, String what,
+      Future<void> Function(TileShareEditSource edits, String clusterId) send,
+      {bool reload = true, void Function()? onDone}) async {
     final TileShareEditSource? edits = _edits;
     final String? clusterId = _clusterId;
     if (!canEdit || edits == null || clusterId == null || state.isSaving) {
@@ -236,14 +244,15 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
       await send(edits, clusterId);
     } catch (error) {
       TileShareLog.d(_tag, '$what failed: $error');
-      _retry = () => _edit(kind, what, send);
+      _retry = () => _edit(kind, what, send, reload: reload, onDone: onDone);
       _emit(state.copyWith(isSaving: false, editFailed: kind));
       return false;
     }
     _retry = null;
     TileShareLog.d(_tag, '$what sent');
     _emit(state.copyWith(isSaving: false));
-    await refresh();
+    onDone?.call();
+    if (reload) await refresh();
     return true;
   }
 

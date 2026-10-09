@@ -8,7 +8,7 @@ import 'package:tiler_app/data/tileShareTemplate.dart';
 enum DetailPhase { idle, loading, ready, notFound, error }
 
 /// An owner's change to the share (Step 9.16b).
-enum DetailEdit { share, addTask, editTask, deleteTask }
+enum DetailEdit { share, addTask, editTask, deleteTask, deleteShare }
 
 /// Which detail a cluster opens as (T10): the owner's view of its mode, or the
 /// recipient's commitment whatever the mode.
@@ -64,6 +64,9 @@ class TileShareDetailState extends Equatable {
   /// The last change the owner made was refused; nothing of it was applied.
   final DetailEdit? editFailed;
 
+  /// The owner deleted the share; the detail closes.
+  final bool deleted;
+
   const TileShareDetailState({
     this.phase = DetailPhase.idle,
     this.cluster,
@@ -76,6 +79,7 @@ class TileShareDetailState extends Equatable {
     this.tilettesFailed = false,
     this.isSaving = false,
     this.editFailed,
+    this.deleted = false,
   });
 
   /// The cluster's mode; a cluster that predates modes falls back to the
@@ -113,6 +117,7 @@ class TileShareDetailState extends Equatable {
     bool? isSaving,
     DetailEdit? editFailed,
     bool clearEditFailed = false,
+    bool? deleted,
   }) =>
       TileShareDetailState(
         phase: phase ?? this.phase,
@@ -126,6 +131,7 @@ class TileShareDetailState extends Equatable {
         tilettesFailed: tilettesFailed ?? this.tilettesFailed,
         isSaving: isSaving ?? this.isSaving,
         editFailed: clearEditFailed ? null : (editFailed ?? this.editFailed),
+        deleted: deleted ?? this.deleted,
       );
 
   @override
@@ -141,5 +147,6 @@ class TileShareDetailState extends Equatable {
         tilettesFailed,
         isSaving,
         editFailed,
+        deleted,
       ];
 }

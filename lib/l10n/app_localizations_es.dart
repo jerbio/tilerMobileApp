@@ -5062,4 +5062,51 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tiletteNameLabel => 'NOMBRE DE LA TILETTE';
+
+  @override
+  String get detailEditDetails => 'Editar detalles';
+
+  @override
+  String get detailDeleteShare => 'Eliminar compartido';
+
+  @override
+  String get detailDeleteShareBody =>
+      'Todos pierden sus tilettes de su agenda.';
+
+  @override
+  String get detailDeleteShareFailed =>
+      'No se pudo eliminar. Inténtalo de nuevo.';
+
+  @override
+  String get shareNameLabel => 'NOMBRE';
+
+  @override
+  String get shareModeLabel => 'MODO';
+
+  @override
+  String get shareEditModeFixed =>
+      'El modo no puede cambiar después de compartir.';
+
+  @override
+  String get shareEditEffort => 'ESFUERZO TOTAL';
+
+  @override
+  String get shareEditEffortHelper => 'La suma de la duración de sus tilettes.';
+
+  @override
+  String shareEditTilettesAfter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count tilettes vencen después de esta fecha límite. Conservan sus propias fechas.',
+      one:
+          '1 tilette vence después de esta fecha límite. Conserva su propia fecha.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shareEditDiscardBody =>
+      'Se perderán tus cambios a este compartido.';
 }

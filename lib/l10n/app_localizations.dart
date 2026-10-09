@@ -8641,6 +8641,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'TILETTE NAME'**
   String get tiletteNameLabel;
+
+  /// No description provided for @detailEditDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit details'**
+  String get detailEditDetails;
+
+  /// No description provided for @detailDeleteShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete share'**
+  String get detailDeleteShare;
+
+  /// No description provided for @detailDeleteShareBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone loses its tilettes from their schedule.'**
+  String get detailDeleteShareBody;
+
+  /// No description provided for @detailDeleteShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t delete the share. Try again.'**
+  String get detailDeleteShareFailed;
+
+  /// No description provided for @shareNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SHARE NAME'**
+  String get shareNameLabel;
+
+  /// No description provided for @shareModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'MODE'**
+  String get shareModeLabel;
+
+  /// No description provided for @shareEditModeFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'The mode can’t change after sharing.'**
+  String get shareEditModeFixed;
+
+  /// No description provided for @shareEditEffort.
+  ///
+  /// In en, this message translates to:
+  /// **'TOTAL EFFORT'**
+  String get shareEditEffort;
+
+  /// No description provided for @shareEditEffortHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'The sum of its tilettes’ durations.'**
+  String get shareEditEffortHelper;
+
+  /// No description provided for @shareEditTilettesAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tilette is due after this deadline. It keeps its own deadline.} other{{count} tilettes are due after this deadline. They keep their own deadlines.}}'**
+  String shareEditTilettesAfter(int count);
+
+  /// No description provided for @shareEditDiscardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your edits to this share will be lost.'**
+  String get shareEditDiscardBody;
 }
 
 class _AppLocalizationsDelegate

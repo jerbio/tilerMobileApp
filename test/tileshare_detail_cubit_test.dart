@@ -253,6 +253,7 @@ void main() {
 
   ownerEdits();
   taskNotes();
+  shareDeletion();
 }
 
 // Step 9.16b: the owner edits the share - its name and deadline, and its
@@ -441,6 +442,47 @@ void taskNotes() {
       rig.cubit.dismissEditFailure();
       expect(rig.state.editFailed, isNull);
       expect(await rig.cubit.retryEdit(), isFalse);
+      await rig.close();
+    });
+  });
+}
+
+// Step 9.16e (T27): the owner deletes the share. Once it is gone the detail
+// says so (and closes); a refusal keeps it and Retry deletes again.
+void shareDeletion() {
+  group('deleting the share', () {
+    test('deletes it and says it is gone; nothing reloads', () async {
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
+      await rig.cubit.load();
+      expect(await rig.cubit.deleteShare(), isTrue);
+      expect(rig.clusters.calls, contains('deleteCluster(mine-b)'));
+      expect(rig.state.deleted, isTrue);
+      expect(rig.state.phase, DetailPhase.ready,
+          reason: 'what was shown stays until the detail closes');
+      await rig.close();
+    });
+
+    test('a refused delete keeps the share; Retry deletes again', () async {
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
+      await rig.cubit.load();
+      rig.clusters.failNextOn('deleteCluster', StateError('offline'));
+      expect(await rig.cubit.deleteShare(), isFalse);
+      expect(rig.state.deleted, isFalse);
+      expect(rig.state.editFailed, DetailEdit.deleteShare);
+      expect(await rig.cubit.retryEdit(), isTrue);
+      expect(rig.state.deleted, isTrue);
+      await rig.close();
+    });
+
+    test('only the owner deletes', () async {
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('shared'), withEdits: true);
+      await rig.cubit.load();
+      expect(await rig.cubit.deleteShare(), isFalse);
+      expect(rig.clusters.calls.where((c) => c.startsWith('deleteCluster')),
+          isEmpty);
       await rig.close();
     });
   });

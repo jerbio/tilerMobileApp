@@ -15,6 +15,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/ownerEdits.dart'
     show confirmDestructive;
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/projectRows.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/deadlinePicker.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/statusPill.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
@@ -73,10 +74,6 @@ class TaskChanges extends Equatable {
   List<Object?> get props => [name, endMs, notes];
 }
 
-typedef TaskSheetPickDate = Future<DateTime?> Function(
-    BuildContext context, DateTime seed);
-typedef TaskSheetPickTime = Future<TimeOfDay?> Function(
-    BuildContext context, TimeOfDay seed);
 typedef TaskSheetPickDuration = Future<Duration?> Function(
     BuildContext context, Duration seed);
 typedef TaskSheetEditNotes = Future<String?> Function(
@@ -139,8 +136,8 @@ class TaskSheet extends StatefulWidget {
   final Future<bool> Function(TaskSheetValue value, TaskChanges changes) onSave;
   final Future<bool> Function()? onDelete;
 
-  final TaskSheetPickDate pickDate;
-  final TaskSheetPickTime pickTime;
+  final DeadlinePickDate pickDate;
+  final DeadlinePickTime pickTime;
   final TaskSheetPickDuration pickDuration;
   final TaskSheetEditNotes editNotes;
   final TaskSheetPickAssignee? pickAssignee;
@@ -155,8 +152,8 @@ class TaskSheet extends StatefulWidget {
     required this.shareDeadlineMs,
     required this.onSave,
     this.onDelete,
-    this.pickDate = _platformDate,
-    this.pickTime = _platformTime,
+    this.pickDate = platformPickDate,
+    this.pickTime = platformPickTime,
     this.pickDuration = _durationScreen,
     this.editNotes = _notesPage,
     this.pickAssignee,
@@ -168,17 +165,6 @@ class TaskSheet extends StatefulWidget {
   @override
   State<TaskSheet> createState() => _TaskSheetState();
 }
-
-Future<DateTime?> _platformDate(BuildContext context, DateTime seed) =>
-    showDatePicker(
-      context: context,
-      initialDate: seed,
-      firstDate: seed.subtract(const Duration(days: 365)),
-      lastDate: seed.add(const Duration(days: 365 * 2)),
-    );
-
-Future<TimeOfDay?> _platformTime(BuildContext context, TimeOfDay seed) =>
-    showTimePicker(context: context, initialTime: seed);
 
 Future<Duration?> _durationScreen(BuildContext context, Duration seed) =>
     pushDurationPicker(context, initialDuration: seed);
@@ -310,15 +296,9 @@ class _TaskSheetState extends State<TaskSheet> {
   }
 
   Future<void> _pickDeadline() async {
-    final DateTime? day = await widget.pickDate(context, _deadline);
-    if (day == null || !mounted) return;
-    final TimeOfDay? time =
-        await widget.pickTime(context, TimeOfDay.fromDateTime(_deadline));
-    if (!mounted) return;
-    // A cancelled time keeps the time of day already set.
-    final TimeOfDay at = time ?? TimeOfDay.fromDateTime(_deadline);
-    setState(() =>
-        _deadline = DateTime(day.year, day.month, day.day, at.hour, at.minute));
+    final DateTime? picked = await pickDeadline(context, _deadline,
+        pickDate: widget.pickDate, pickTime: widget.pickTime);
+    if (picked != null && mounted) setState(() => _deadline = picked);
   }
 
   Future<void> _editNotes() async {

@@ -1889,5 +1889,16 @@
     "taskSheetNameTooShort": "Usa al menos 3 caracteres",
     "taskSheetPeopleHintClass": "Quien agregues aquí recibe todas las tilettes de esta clase. Los cambios de personas se guardan al instante.",
     "taskSheetPeopleHintProject": "La nueva persona asignada se guarda al instante.",
-    "tiletteNameLabel": "NOMBRE DE LA TILETTE"
+    "tiletteNameLabel": "NOMBRE DE LA TILETTE",
+    "detailEditDetails": "Editar detalles",
+    "detailDeleteShare": "Eliminar compartido",
+    "detailDeleteShareBody": "Todos pierden sus tilettes de su agenda.",
+    "detailDeleteShareFailed": "No se pudo eliminar. Inténtalo de nuevo.",
+    "shareNameLabel": "NOMBRE",
+    "shareModeLabel": "MODO",
+    "shareEditModeFixed": "El modo no puede cambiar después de compartir.",
+    "shareEditEffort": "ESFUERZO TOTAL",
+    "shareEditEffortHelper": "La suma de la duración de sus tilettes.",
+    "shareEditTilettesAfter": "{count, plural, =1{1 tilette vence después de esta fecha límite. Conserva su propia fecha.} other{{count} tilettes vencen después de esta fecha límite. Conservan sus propias fechas.}}",
+    "shareEditDiscardBody": "Se perderán tus cambios a este compartido."
 }

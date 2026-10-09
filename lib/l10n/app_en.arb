@@ -2743,5 +2743,17 @@
     "taskSheetNameTooShort": "Use at least 3 characters",
     "taskSheetPeopleHintClass": "Anyone you add here gets every tilette in this class. People changes are saved right away.",
     "taskSheetPeopleHintProject": "A new assignee is saved right away.",
-    "tiletteNameLabel": "TILETTE NAME"
+    "tiletteNameLabel": "TILETTE NAME",
+    "detailEditDetails": "Edit details",
+    "detailDeleteShare": "Delete share",
+    "detailDeleteShareBody": "Everyone loses its tilettes from their schedule.",
+    "detailDeleteShareFailed": "Couldn’t delete the share. Try again.",
+    "shareNameLabel": "SHARE NAME",
+    "shareModeLabel": "MODE",
+    "shareEditModeFixed": "The mode can’t change after sharing.",
+    "shareEditEffort": "TOTAL EFFORT",
+    "shareEditEffortHelper": "The sum of its tilettes’ durations.",
+    "shareEditTilettesAfter": "{count, plural, =1{1 tilette is due after this deadline. It keeps its own deadline.} other{{count} tilettes are due after this deadline. They keep their own deadlines.}}",
+    "@shareEditTilettesAfter": {"placeholders": {"count": {"type": "int"}}},
+    "shareEditDiscardBody": "Your edits to this share will be lost."
 }

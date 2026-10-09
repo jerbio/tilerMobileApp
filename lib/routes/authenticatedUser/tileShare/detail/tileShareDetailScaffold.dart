@@ -7,6 +7,7 @@ import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/clusters/clusterCopy.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/editShareScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/ownerEdits.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/listScaffolding.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/modeBadge.dart';
@@ -16,8 +17,9 @@ import 'package:tiler_app/util.dart';
 /// The one detail frame (redesign T10, §5.4) for every mode and role: a slim
 /// bar (back, the share's name, Activity), loading, error + Retry, not found,
 /// the header summary, pull-to-refresh that never hides what is shown, and the
-/// mode's content below the header. The owner renames the share or moves its
-/// deadline from the bar (Step 9.16b); a refused change says so with Retry.
+/// mode's content below the header. The owner's ⋯ in the bar edits the share
+/// (Edit share) or deletes it (Steps 9.16b, 9.16e); a refused change says so
+/// with Retry, and a deleted share closes the detail.
 ///
 /// [contentBuilder] draws the mode's content (Broadcast / Class / Project for
 /// the owner, the commitment for a recipient - Steps 9.13-9.16); without one
@@ -56,7 +58,10 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final ColorScheme scheme = Theme.of(context).colorScheme;
-    return BlocBuilder<TileShareDetailCubit, TileShareDetailState>(
+    return BlocConsumer<TileShareDetailCubit, TileShareDetailState>(
+      // The share was deleted: there is nothing left to show.
+      listenWhen: (before, now) => !before.deleted && now.deleted,
+      listener: (context, _) => Navigator.of(context).maybePop(),
       builder: (context, state) {
         final TileShareDetailCubit cubit = context.read<TileShareDetailCubit>();
         final String name = (state.cluster?.name ?? '').trim();
@@ -75,11 +80,29 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
                 maxLines: 1, overflow: TextOverflow.ellipsis),
             actions: [
               if (cubit.canEdit)
-                IconButton(
-                  key: const Key('detail_edit'),
-                  tooltip: l10n.detailEditShare,
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: state.isSaving ? null : () => _editShare(context, state, cubit),
+                PopupMenuButton<_ShareAction>(
+                  key: const Key('detail_menu'),
+                  tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+                  icon: const Icon(Icons.more_horiz),
+                  enabled: !state.isSaving,
+                  onSelected: (action) => switch (action) {
+                    _ShareAction.edit => showEditShare(context, cubit),
+                    _ShareAction.delete => _deleteShare(context, state, cubit),
+                  },
+                  itemBuilder: (_) => [
+                    PopupMenuItem<_ShareAction>(
+                      key: const Key('detail_menu_edit'),
+                      value: _ShareAction.edit,
+                      child: Text(l10n.detailEditDetails),
+                    ),
+                    PopupMenuItem<_ShareAction>(
+                      key: const Key('detail_menu_delete'),
+                      value: _ShareAction.delete,
+                      child: Text(l10n.detailDeleteShare,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error)),
+                    ),
+                  ],
                 ),
               if (widget.onOpenActivity != null)
                 IconButton(
@@ -107,15 +130,19 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
     );
   }
 
-  Future<void> _editShare(BuildContext context, TileShareDetailState state,
+  /// Deletes the share after asking; once it is gone the detail closes
+  /// (the listener above), a refusal shows on the detail with Retry.
+  Future<void> _deleteShare(BuildContext context, TileShareDetailState state,
       TileShareDetailCubit cubit) async {
-    final NameDeadlineChange? change = await showNameDeadlineSheet(context,
-        sheetKey: const Key('share_edit_sheet'),
-        title: AppLocalizations.of(context)!.detailEditShare,
-        name: state.cluster?.name,
-        endMs: state.cluster?.endTimeInMs);
-    if (change == null || change.isEmpty) return;
-    await cubit.updateShare(name: change.name, endMs: change.endMs);
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final String name = (state.cluster?.name ?? '').trim();
+    final bool ok = await confirmDestructive(context,
+        title: l10n.detailDeleteTaskTitle(
+            name.isEmpty ? l10n.clusterTitleFallback : name),
+        body: l10n.detailDeleteShareBody,
+        confirmLabel: l10n.delete,
+        confirmKey: const Key('share_delete_confirm'));
+    if (ok) await cubit.deleteShare();
   }
 
   Widget _body(BuildContext context, TileShareDetailState state,
@@ -159,7 +186,9 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
                 SliverToBoxAdapter(
                   child: TileShareErrorBanner(
                     key: const Key('detail_edit_failed'),
-                    message: l10n.detailEditFailed,
+                    message: state.editFailed == DetailEdit.deleteShare
+                        ? l10n.detailDeleteShareFailed
+                        : l10n.detailEditFailed,
                     retryLabel: l10n.attentionRetry,
                     onRetry: cubit.retryEdit,
                   ),
@@ -175,7 +204,8 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                 sliver: SliverToBoxAdapter(
                   child: widget.contentBuilder?.call(context, state) ??
-                      TileShareDetailTasks(state: state, onRetry: cubit.refresh),
+                      TileShareDetailTasks(
+                          state: state, onRetry: cubit.refresh),
                 ),
               ),
             ],
@@ -340,3 +370,5 @@ class TileShareDetailTasks extends StatelessWidget {
     );
   }
 }
+
+enum _ShareAction { edit, delete }

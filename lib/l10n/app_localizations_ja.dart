@@ -4938,4 +4938,47 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tiletteNameLabel => 'TILETTE NAME';
+
+  @override
+  String get detailEditDetails => 'Edit details';
+
+  @override
+  String get detailDeleteShare => 'Delete share';
+
+  @override
+  String get detailDeleteShareBody =>
+      'Everyone loses its tilettes from their schedule.';
+
+  @override
+  String get detailDeleteShareFailed => 'Couldn’t delete the share. Try again.';
+
+  @override
+  String get shareNameLabel => 'SHARE NAME';
+
+  @override
+  String get shareModeLabel => 'MODE';
+
+  @override
+  String get shareEditModeFixed => 'The mode can’t change after sharing.';
+
+  @override
+  String get shareEditEffort => 'TOTAL EFFORT';
+
+  @override
+  String get shareEditEffortHelper => 'The sum of its tilettes’ durations.';
+
+  @override
+  String shareEditTilettesAfter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count tilettes are due after this deadline. They keep their own deadlines.',
+      one: '1 tilette is due after this deadline. It keeps its own deadline.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shareEditDiscardBody => 'Your edits to this share will be lost.';
 }

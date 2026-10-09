@@ -11,11 +11,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_detail_cubit.dart';
-import 'package:tiler_app/components/nameAndDateSheetWidget.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/ownerEdits.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/shareRosterDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/tileShareDetailScaffold.dart';
 import 'package:tiler_app/theme/theme_data.dart';
@@ -109,6 +107,45 @@ Future<void> _open(WidgetTester tester, _Rig rig,
   await _settle(tester);
 }
 
+/// The detail pushed over a page, as the hub opens it.
+Future<void> _openPushed(WidgetTester tester, _Rig rig) async {
+  tester.view.physicalSize = const Size(390, 1000);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+  await tester.pumpWidget(const SizedBox());
+  await tester.pumpWidget(MaterialApp(
+    theme: TileThemeData.lightTheme,
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      FlutterQuillLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: Builder(
+      builder: (context) => Scaffold(
+        body: Center(
+          child: TextButton(
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => BlocProvider.value(
+                      value: rig.detail,
+                      child: TileShareDetailScaffold(
+                        now: _now,
+                        contentBuilder: (context, state) => ClassDetail(
+                            detail: state, recipients: rig.recipients),
+                      ),
+                    ))),
+            child: const Text('open detail'),
+          ),
+        ),
+      ),
+    ),
+  ));
+  await tester.tap(find.text('open detail'));
+  await _settle(tester);
+}
+
 Finder _key(String k) => find.byKey(Key(k));
 
 Future<void> _tap(WidgetTester tester, String key) async {
@@ -117,51 +154,21 @@ Future<void> _tap(WidgetTester tester, String key) async {
   await _settle(tester);
 }
 
-/// Types [text] into the first field of the sheet keyed [sheet].
-Future<void> _type(WidgetTester tester, String sheet, String text) async {
-  await tester.enterText(
-      find.descendant(of: _key(sheet), matching: find.byType(TextField)).first,
-      text);
-  await _settle(tester);
-}
-
-Future<void> _submit(WidgetTester tester, String sheet, String label) async {
-  final button = find.descendant(of: _key(sheet), matching: find.text(label));
-  await tester.ensureVisible(button);
-  await tester.tap(button);
-  await _settle(tester);
-}
-
 void main() {
-  test('an edit sends only what changed', () {
-    final int end = DateTime(2026, 10, 9).millisecondsSinceEpoch;
-    NameDeadlineChange change(String? newName, DateTime? newEnd) =>
-        NameDeadlineChange.of(
-            NameAndEndTimeUpdate()
-              ..Name = newName
-              ..EndTime = newEnd,
-            name: 'Move',
-            endMs: end);
-    final moved = change(' Move ', DateTime(2026, 10, 12));
-    expect([moved.name, moved.endMs],
-        [null, DateTime(2026, 10, 12).millisecondsSinceEpoch]);
-    final renamed = change('Moving day', DateTime(2026, 10, 9));
-    expect([renamed.name, renamed.endMs], ['Moving day', null]);
-    expect(change('  ', null).isEmpty, isTrue,
-        reason: 'a blank name and a cleared deadline are not sent');
-  });
-
   group('the share', () {
-    testWidgets('the owner renames it from the bar', (tester) async {
+    testWidgets('the owner edits it from the ⋯ menu', (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
-      await _tap(tester, 'detail_edit');
-      expect(_key('share_edit_sheet'), findsOneWidget);
-      await _type(tester, 'share_edit_sheet', 'Moving day');
-      await _submit(tester, 'share_edit_sheet', 'Update');
-      expect(rig.edits.calls, ['updateShare(k, name: Moving day, end: null)'],
-          reason: 'only what changed is sent');
-      expect(_key('share_edit_sheet'), findsNothing);
+      await _tap(tester, 'detail_menu');
+      expect(find.text('Edit details'), findsOneWidget);
+      expect(find.text('Delete share'), findsOneWidget);
+      await _tap(tester, 'detail_menu_edit');
+      expect(_key('edit_share'), findsOneWidget);
+      await tester.enterText(_key('edit_share_name'), 'Moving day');
+      await tester.pump();
+      await _tap(tester, 'edit_share_save');
+      expect(rig.edits.calls, ['updateShare(k, name: Moving day, end: null)']);
+      expect(_key('edit_share'), findsNothing);
       expect(
           find.descendant(
               of: find.byType(AppBar), matching: find.text('Moving day')),
@@ -169,26 +176,47 @@ void main() {
       await rig.detail.close();
     });
 
-    testWidgets('no edit without an edit source, or for someone else\'s share',
+    testWidgets('no ⋯ without an edit source, or on someone else\'s share',
         (tester) async {
       for (final rig in [_Rig(withEdits: false), _Rig(creator: 'sarah')]) {
         await _open(tester, rig);
-        expect(_key('detail_edit'), findsNothing);
+        expect(_key('detail_menu'), findsNothing);
         await rig.detail.close();
       }
     });
 
-    testWidgets('a refused change says so and changes nothing', (tester) async {
+    testWidgets('Delete share asks first, then leaves the detail',
+        (tester) async {
       final rig = _Rig();
-      await _open(tester, rig);
-      rig.edits.failNextOn('updateShare', StateError('offline'));
-      await _tap(tester, 'detail_edit');
-      await _type(tester, 'share_edit_sheet', 'Moving day');
-      await _submit(tester, 'share_edit_sheet', 'Update');
+      await _openPushed(tester, rig);
+      await _tap(tester, 'detail_menu');
+      await _tap(tester, 'detail_menu_delete');
+      expect(find.text('Delete “Interview prep”?'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await _settle(tester);
+      expect(rig.clusters.calls.where((c) => c.startsWith('deleteCluster')),
+          isEmpty);
+      await _tap(tester, 'detail_menu');
+      await _tap(tester, 'detail_menu_delete');
+      await _tap(tester, 'share_delete_confirm');
+      expect(rig.clusters.calls, contains('deleteCluster(k)'));
+      expect(_key('detail_header'), findsNothing, reason: 'the detail closed');
+      expect(find.text('open detail'), findsOneWidget);
+      await rig.detail.close();
+    });
+
+    testWidgets('a refused delete stays, says so, and retries', (tester) async {
+      final rig = _Rig();
+      await _openPushed(tester, rig);
+      rig.clusters.failNextOn('deleteCluster', StateError('offline'));
+      await _tap(tester, 'detail_menu');
+      await _tap(tester, 'detail_menu_delete');
+      await _tap(tester, 'share_delete_confirm');
+      expect(_key('detail_header'), findsOneWidget);
       expect(_key('detail_edit_failed'), findsOneWidget);
-      expect(
-          find.text('Couldn’t save your change. Try again.'), findsOneWidget);
-      expect(find.text('Moving day'), findsNothing);
+      await tester.tap(find.text('Retry'));
+      await _settle(tester);
+      expect(_key('detail_header'), findsNothing);
       await rig.detail.close();
     });
   });

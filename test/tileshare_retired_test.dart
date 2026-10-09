@@ -22,6 +22,8 @@ const List<String> _retired = [
   '$_tileShare/designatedTileWidget.dart',
   '$_tileShare/tileShareFlags.dart',
   'lib/routes/authenticatedUser/designatedUserCircle.dart',
+  // the old name-and-date sheet, replaced by Edit share (9.16e)
+  'lib/components/nameAndDateSheetWidget.dart',
   'lib/services/tileShare/tileShareForecastRequest.dart',
 ];
 
