@@ -7871,7 +7871,7 @@ abstract class AppLocalizations {
   /// No description provided for @clustersTabTitle.
   ///
   /// In en, this message translates to:
-  /// **'Clusters'**
+  /// **'Shares'**
   String get clustersTabTitle;
 
   /// No description provided for @previewTitleFallback.
@@ -8696,17 +8696,29 @@ abstract class AppLocalizations {
   /// **'The sum of its tilettes’ durations.'**
   String get shareEditEffortHelper;
 
-  /// No description provided for @shareEditTilettesAfter.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 tilette is due after this deadline. It keeps its own deadline.} other{{count} tilettes are due after this deadline. They keep their own deadlines.}}'**
-  String shareEditTilettesAfter(int count);
-
   /// No description provided for @shareEditDiscardBody.
   ///
   /// In en, this message translates to:
   /// **'Your edits to this share will be lost.'**
   String get shareEditDiscardBody;
+
+  /// No description provided for @shareEditTilettesPulledIn.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 accepted tilette will be moved to this deadline.} other{{count} accepted tilettes will be moved to this deadline.}}'**
+  String shareEditTilettesPulledIn(int count);
+
+  /// No description provided for @shareEditTilettesKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tilette nobody has accepted keeps its later deadline.} other{{count} tilettes nobody has accepted keep their later deadlines.}}'**
+  String shareEditTilettesKeep(int count);
+
+  /// No description provided for @taskSheetMovesShareDeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'The share’s deadline will move to {when}.'**
+  String taskSheetMovesShareDeadline(String when);
 }
 
 class _AppLocalizationsDelegate

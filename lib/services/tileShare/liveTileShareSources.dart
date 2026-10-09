@@ -268,10 +268,12 @@ class LiveTileShareEditSource implements TileShareEditSource {
   LiveTileShareEditSource(this._api);
 
   @override
-  Future<void> updateShare(String clusterId, {String? name, int? endMs}) =>
+  Future<void> updateShare(String clusterId,
+          {String? name, int? endMs, int? startMs}) =>
       _api.updateTileShareCluster(TileShareClusterModel()
         ..Id = clusterId
         ..Name = name
+        ..StartTime = startMs
         ..EndTime = endMs);
 
   @override

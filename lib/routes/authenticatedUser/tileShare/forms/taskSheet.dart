@@ -16,6 +16,8 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/ownerEdits.d
     show confirmDestructive;
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/projectRows.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/deadlinePicker.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/shareDetailsForm.dart'
+    show tiletteAccepted;
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/statusPill.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
@@ -543,8 +545,12 @@ class _TaskSheetState extends State<TaskSheet> {
                     AddTileCallout(
                       key: const Key('task_sheet_late'),
                       icon: Icons.warning_amber_rounded,
-                      text: l10n.taskSheetAfterShareDeadline(
-                          _when(DateTime.fromMillisecondsSinceEpoch(shareEnd))),
+                      // Someone has accepted it: the server moves the
+                      // share's deadline out to this one (O27).
+                      text: widget.task != null && tiletteAccepted(widget.task!)
+                          ? l10n.taskSheetMovesShareDeadline(_when(_deadline))
+                          : l10n.taskSheetAfterShareDeadline(_when(
+                              DateTime.fromMillisecondsSinceEpoch(shareEnd))),
                     ),
                   ],
                   if (!isNew &&

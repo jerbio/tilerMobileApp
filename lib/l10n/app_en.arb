@@ -2595,7 +2595,7 @@
     "clusterLoadFailedAll": "Shares couldn’t load",
     "clusterLoadMore": "Load more",
     "clusterLoadMoreFailed": "Couldn’t load more",
-    "clustersTabTitle": "Clusters",
+    "clustersTabTitle": "Shares",
     "previewTitleFallback": "Review schedule",
     "previewRegenerate": "Generate new preview",
     "previewSuggested": "Suggested schedule",
@@ -2753,7 +2753,11 @@
     "shareEditModeFixed": "The mode can’t change after sharing.",
     "shareEditEffort": "TOTAL EFFORT",
     "shareEditEffortHelper": "The sum of its tilettes’ durations.",
-    "shareEditTilettesAfter": "{count, plural, =1{1 tilette is due after this deadline. It keeps its own deadline.} other{{count} tilettes are due after this deadline. They keep their own deadlines.}}",
-    "@shareEditTilettesAfter": {"placeholders": {"count": {"type": "int"}}},
-    "shareEditDiscardBody": "Your edits to this share will be lost."
+    "shareEditDiscardBody": "Your edits to this share will be lost.",
+    "shareEditTilettesPulledIn": "{count, plural, =1{1 accepted tilette will be moved to this deadline.} other{{count} accepted tilettes will be moved to this deadline.}}",
+    "@shareEditTilettesPulledIn": {"placeholders": {"count": {"type": "int"}}},
+    "shareEditTilettesKeep": "{count, plural, =1{1 tilette nobody has accepted keeps its later deadline.} other{{count} tilettes nobody has accepted keep their later deadlines.}}",
+    "@shareEditTilettesKeep": {"placeholders": {"count": {"type": "int"}}},
+    "taskSheetMovesShareDeadline": "The share’s deadline will move to {when}.",
+    "@taskSheetMovesShareDeadline": {"placeholders": {"when": {"type": "String"}}}
 }

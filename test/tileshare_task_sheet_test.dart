@@ -254,6 +254,21 @@ void main() {
       expect(_key('task_sheet'), findsOneWidget);
     });
 
+    testWidgets("a later deadline on an accepted tilette says the share's "
+        'deadline moves', (tester) async {
+      final rig = _Rig()
+        ..pickedDate = DateTime(2026, 10, 12)
+        ..pickedTime = const TimeOfDay(hour: 9, minute: 0);
+      final accepted = tsTilette('t1', name: 'Deck', durationMs: 3600000,
+          assignees: [tsAssignee('ann@x.com', status: InvitationStatus.accepted)]);
+      await _open(tester, rig.sheet(task: accepted));
+      await _tap(tester, 'task_sheet_deadline');
+      expect(
+          find.textContaining('The share’s deadline will move to Mon, Oct 12, 2026'),
+          findsOneWidget,
+          reason: 'the server moves it when someone has accepted (O27)');
+    });
+
     testWidgets('a rename is saved', (tester) async {
       final rig = _Rig();
       await _open(tester, rig.sheet(task: task()));

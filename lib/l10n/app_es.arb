@@ -1765,7 +1765,7 @@
     "clusterLoadFailedAll": "No se pudieron cargar los elementos compartidos",
     "clusterLoadMore": "Cargar más",
     "clusterLoadMoreFailed": "No se pudo cargar más",
-    "clustersTabTitle": "Clusters",
+    "clustersTabTitle": "Compartidos",
     "previewTitleFallback": "Revisar horario",
     "previewRegenerate": "Generar nueva vista previa",
     "previewSuggested": "Horario sugerido",
@@ -1899,6 +1899,8 @@
     "shareEditModeFixed": "El modo no puede cambiar después de compartir.",
     "shareEditEffort": "ESFUERZO TOTAL",
     "shareEditEffortHelper": "La suma de la duración de sus tilettes.",
-    "shareEditTilettesAfter": "{count, plural, =1{1 tilette vence después de esta fecha límite. Conserva su propia fecha.} other{{count} tilettes vencen después de esta fecha límite. Conservan sus propias fechas.}}",
-    "shareEditDiscardBody": "Se perderán tus cambios a este compartido."
+    "shareEditDiscardBody": "Se perderán tus cambios a este compartido.",
+    "shareEditTilettesPulledIn": "{count, plural, =1{1 tilette aceptada pasará a esta fecha límite.} other{{count} tilettes aceptadas pasarán a esta fecha límite.}}",
+    "shareEditTilettesKeep": "{count, plural, =1{1 tilette que nadie ha aceptado conserva su fecha posterior.} other{{count} tilettes que nadie ha aceptado conservan sus fechas posteriores.}}",
+    "taskSheetMovesShareDeadline": "La fecha límite compartida pasará a {when}."
 }

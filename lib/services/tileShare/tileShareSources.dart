@@ -146,8 +146,11 @@ abstract class TileShareRecipientsSource {
 /// The owner's changes to a share and its tasks (redesign Step 9.16b). Only
 /// what is given changes. A task's length cannot change once it is shared.
 abstract class TileShareEditSource {
-  /// Renames the share or moves its deadline.
-  Future<void> updateShare(String clusterId, {String? name, int? endMs});
+  /// Renames the share or moves its deadline. The server writes the share's
+  /// start with every deadline change (`DateTimeOffset.MinValue` when none is
+  /// sent - O27), so a new deadline goes with [startMs].
+  Future<void> updateShare(String clusterId,
+      {String? name, int? endMs, int? startMs});
 
   /// Adds a task to the share ([task] carries its name, length, deadline and
   /// the people it is sent to); answers with the new task's id. The server

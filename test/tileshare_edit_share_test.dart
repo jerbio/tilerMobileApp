@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_detail_cubit.dart';
+import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/editShareScreen.dart';
@@ -43,7 +44,10 @@ class _Rig {
         tsTilette('t2',
             clusterId: 'k',
             durationMs: 5400000,
-            endMs: DateTime(2026, 10, 10, 12).millisecondsSinceEpoch),
+            endMs: DateTime(2026, 10, 10, 12).millisecondsSinceEpoch,
+            assignees: [
+              tsAssignee('ann@x.com', status: InvitationStatus.accepted)
+            ]),
         tsTilette('t3', clusterId: 'k', durationMs: 1800000),
       ],
     });
@@ -174,8 +178,11 @@ void main() {
     await _tap(tester, 'edit_share_deadline');
     expect(_key('edit_share_late'), findsOneWidget);
     expect(
-        find.text('2 tilettes are due after this deadline. They keep their '
-            'own deadlines.'),
+        find.text('1 accepted tilette will be moved to this deadline.'),
+        findsOneWidget,
+        reason: 'the server pulls accepted tilettes in (O27)');
+    expect(
+        find.text('1 tilette nobody has accepted keeps its later deadline.'),
         findsOneWidget);
     await _tap(tester, 'edit_share_save');
     expect(rig.edits.calls, [
@@ -247,7 +254,8 @@ void main() {
       tsTilette('b', endMs: DateTime(2026, 10, 12).millisecondsSinceEpoch),
       tsTilette('c'),
     ];
-    expect(tilettesDueAfter(tilettes, DateTime(2026, 10, 10)), 1,
+    expect(tilettesDueAfter(tilettes, DateTime(2026, 10, 10)),
+        (accepted: 0, notAccepted: 1),
         reason: 'a tilette without its own deadline follows the share');
     expect(
         totalEffort(

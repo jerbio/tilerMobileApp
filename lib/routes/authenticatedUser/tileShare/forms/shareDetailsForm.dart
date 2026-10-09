@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/data/designatedUser.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -50,12 +52,30 @@ class ShareChanges extends Equatable {
   List<Object?> get props => [name, endMs];
 }
 
-/// How many [tilettes] are due after [deadline]. A tilette without its own
-/// deadline follows the share's, so it is never one of them.
-int tilettesDueAfter(List<TileShareTemplate> tilettes, DateTime deadline) =>
-    tilettes
-        .where((t) => t.end != null && t.end! > deadline.millisecondsSinceEpoch)
-        .length;
+/// The [tilettes] due after [deadline], by whether anyone has accepted them:
+/// when the share's deadline moves earlier, the server moves accepted ones to
+/// it and leaves the others (O27). A tilette without its own deadline follows
+/// the share's, so it is never one of them.
+({int accepted, int notAccepted}) tilettesDueAfter(
+    List<TileShareTemplate> tilettes, DateTime deadline) {
+  int accepted = 0;
+  int notAccepted = 0;
+  for (final TileShareTemplate t in tilettes) {
+    if (t.end == null || t.end! <= deadline.millisecondsSinceEpoch) continue;
+    if (tiletteAccepted(t)) {
+      accepted++;
+    } else {
+      notAccepted++;
+    }
+  }
+  return (accepted: accepted, notAccepted: notAccepted);
+}
+
+/// Whether anyone has accepted [tilette] - the server's line for moving
+/// deadlines (O27).
+bool tiletteAccepted(TileShareTemplate tilette) =>
+    (tilette.designatedUsers ?? const <DesignatedUser>[])
+        .any((u) => u.rsvpStatus == InvitationStatus.accepted);
 
 /// The share's total effort: the sum of its tilettes' durations (a
 /// Broadcast has one tilette - everyone their own copy of it).
@@ -81,8 +101,8 @@ class ShareDetailsFields extends StatelessWidget {
   final TileShareMode mode;
   final Duration effort;
 
-  /// Tilettes due after [deadline]; a warning when any.
-  final int dueAfter;
+  /// Tilettes due after [deadline]; what will happen to them when any.
+  final ({int accepted, int notAccepted}) dueAfter;
 
   const ShareDetailsFields({
     super.key,
@@ -143,12 +163,25 @@ class ShareDetailsFields extends StatelessWidget {
             helper: l10n.shareEditModeFixed,
           ),
         ]),
-        if (dueAfter > 0) ...[
+        if (dueAfter.accepted > 0 || dueAfter.notAccepted > 0) ...[
           const SizedBox(height: 12),
-          AddTileCallout(
+          Column(
             key: const Key('edit_share_late'),
-            icon: Icons.warning_amber_rounded,
-            text: l10n.shareEditTilettesAfter(dueAfter),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (dueAfter.accepted > 0)
+                AddTileCallout(
+                  icon: Icons.warning_amber_rounded,
+                  text: l10n.shareEditTilettesPulledIn(dueAfter.accepted),
+                ),
+              if (dueAfter.accepted > 0 && dueAfter.notAccepted > 0)
+                const SizedBox(height: 8),
+              if (dueAfter.notAccepted > 0)
+                AddTileCallout(
+                  icon: Icons.info_outline,
+                  text: l10n.shareEditTilettesKeep(dueAfter.notAccepted),
+                ),
+            ],
           ),
         ],
       ],

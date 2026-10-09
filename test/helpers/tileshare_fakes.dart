@@ -534,8 +534,11 @@ class FakeTileShareEditSource
       ].where((c) => c.id == id).firstOrNull;
 
   @override
-  Future<void> updateShare(String clusterId, {String? name, int? endMs}) =>
-      run('updateShare($clusterId, name: $name, end: $endMs)', () {
+  Future<void> updateShare(String clusterId,
+          {String? name, int? endMs, int? startMs}) =>
+      run(
+          'updateShare($clusterId, name: $name, end: $endMs'
+          '${startMs == null ? '' : ', start: $startMs'})', () {
         final TileShareClusterData? c = _cluster(clusterId);
         if (c == null) return;
         if (name != null) c.name = name;

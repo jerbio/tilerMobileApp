@@ -169,11 +169,19 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
   /// Whether the signed-in user can change this share now.
   bool get canEdit => _edits != null && _hasContent && state.isOwner;
 
-  /// Renames the share or moves its deadline.
-  Future<bool> updateShare({String? name, int? endMs}) => _edit(
-      DetailEdit.share,
-      'share: name=$name end=$endMs',
-      (edits, id) => edits.updateShare(id, name: name, endMs: endMs));
+  /// Renames the share or moves its deadline. A new deadline goes with the
+  /// share's current start, which the server would otherwise overwrite
+  /// (O27).
+  Future<bool> updateShare({String? name, int? endMs}) {
+    final int? start = state.cluster?.startTimeInMs;
+    final int? startMs =
+        endMs != null && start != null && start < endMs ? start : null;
+    return _edit(
+        DetailEdit.share,
+        'share: name=$name end=$endMs start=$startMs',
+        (edits, id) =>
+            edits.updateShare(id, name: name, endMs: endMs, startMs: startMs));
+  }
 
   /// Adds [task] to the share. The server saves no notes on a new task, so
   /// [notes] are saved on it afterwards; refused, the task stays and the

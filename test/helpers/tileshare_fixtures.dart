@@ -21,6 +21,7 @@ TileShareClusterData tsCluster(
   TileShareMode? mode,
   bool? multi,
   int? endMs,
+  int? startMs,
   List<String> contacts = const <String>[],
   bool completed = false,
   String? creatorId,
@@ -38,6 +39,7 @@ TileShareClusterData tsCluster(
       if (mode != null) 'mode': mode.wire,
       if (multi != null) 'isMultiTilette': multi,
       if (endMs != null) 'end': endMs,
+      if (startMs != null) 'start': startMs,
       if (contacts.isNotEmpty) 'truncatedUser': contacts,
       'isCompleted': completed,
     });

@@ -233,7 +233,7 @@ void main() {
       final rig = _Rig();
       await _openHub(tester, rig);
       expect(find.text('Attention'), findsOneWidget);
-      expect(find.text('Clusters'), findsOneWidget);
+      expect(find.text('Shares'), findsOneWidget);
       expect(_attentionVisible(), isTrue);
       await rig.close();
     });

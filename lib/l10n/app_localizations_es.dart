@@ -4578,7 +4578,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get clusterLoadMoreFailed => 'No se pudo cargar más';
 
   @override
-  String get clustersTabTitle => 'Clusters';
+  String get clustersTabTitle => 'Compartidos';
 
   @override
   String get previewTitleFallback => 'Revisar horario';
@@ -5094,19 +5094,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get shareEditEffortHelper => 'La suma de la duración de sus tilettes.';
 
   @override
-  String shareEditTilettesAfter(int count) {
+  String get shareEditDiscardBody =>
+      'Se perderán tus cambios a este compartido.';
+
+  @override
+  String shareEditTilettesPulledIn(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          '$count tilettes vencen después de esta fecha límite. Conservan sus propias fechas.',
-      one:
-          '1 tilette vence después de esta fecha límite. Conserva su propia fecha.',
+      other: '$count tilettes aceptadas pasarán a esta fecha límite.',
+      one: '1 tilette aceptada pasará a esta fecha límite.',
     );
     return '$_temp0';
   }
 
   @override
-  String get shareEditDiscardBody =>
-      'Se perderán tus cambios a este compartido.';
+  String shareEditTilettesKeep(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count tilettes que nadie ha aceptado conservan sus fechas posteriores.',
+      one: '1 tilette que nadie ha aceptado conserva su fecha posterior.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String taskSheetMovesShareDeadline(String when) {
+    return 'La fecha límite compartida pasará a $when.';
+  }
 }

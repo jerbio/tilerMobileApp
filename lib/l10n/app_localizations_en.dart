@@ -4542,7 +4542,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clusterLoadMoreFailed => 'Couldn’t load more';
 
   @override
-  String get clustersTabTitle => 'Clusters';
+  String get clustersTabTitle => 'Shares';
 
   @override
   String get previewTitleFallback => 'Review schedule';
@@ -5047,17 +5047,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareEditEffortHelper => 'The sum of its tilettes’ durations.';
 
   @override
-  String shareEditTilettesAfter(int count) {
+  String get shareEditDiscardBody => 'Your edits to this share will be lost.';
+
+  @override
+  String shareEditTilettesPulledIn(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          '$count tilettes are due after this deadline. They keep their own deadlines.',
-      one: '1 tilette is due after this deadline. It keeps its own deadline.',
+      other: '$count accepted tilettes will be moved to this deadline.',
+      one: '1 accepted tilette will be moved to this deadline.',
     );
     return '$_temp0';
   }
 
   @override
-  String get shareEditDiscardBody => 'Your edits to this share will be lost.';
+  String shareEditTilettesKeep(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tilettes nobody has accepted keep their later deadlines.',
+      one: '1 tilette nobody has accepted keeps its later deadline.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String taskSheetMovesShareDeadline(String when) {
+    return 'The share’s deadline will move to $when.';
+  }
 }

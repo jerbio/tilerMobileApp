@@ -254,6 +254,7 @@ void main() {
   ownerEdits();
   taskNotes();
   shareDeletion();
+  shareStart();
 }
 
 // Step 9.16b: the owner edits the share - its name and deadline, and its
@@ -487,3 +488,28 @@ void shareDeletion() {
     });
   });
 }
+
+// Step 9.16g (O27 C): the server writes the share's start with every deadline
+// change, using DateTimeOffset.MinValue when none is sent - so a new deadline
+// goes out with the share's current start; a rename sends neither.
+void shareStart() {
+  test('a new deadline is sent with the share\'s start; a rename is not',
+      () async {
+    final int start = DateTime(2026, 10, 1).millisecondsSinceEpoch;
+    final int end = DateTime(2026, 10, 9).millisecondsSinceEpoch;
+    final clusters = FakeTileShareClustersSource(outbox: [
+      tsCluster('s', creatorId: 'me', startMs: start, endMs: end),
+    ]);
+    final rig = _Rig(const TileShareDetailTarget.cluster('s'),
+        clusters: clusters, withEdits: true);
+    await rig.cubit.load();
+    await rig.cubit.updateShare(name: 'Renamed');
+    await rig.cubit.updateShare(endMs: end + 1000);
+    expect(rig.edits!.calls, [
+      'updateShare(s, name: Renamed, end: null)',
+      'updateShare(s, name: null, end: ${end + 1000}, start: $start)',
+    ]);
+    await rig.close();
+  });
+}
+
