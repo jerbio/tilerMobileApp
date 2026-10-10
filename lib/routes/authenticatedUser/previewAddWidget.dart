@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/bloc/schedule/pending_schedule_change.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
@@ -89,6 +90,8 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           renderedSubEvents: currentState.subEvents,
           renderedTimelines: currentState.timelines));
     }
+    final change =
+        PendingScheduleChange.begin(context, ScheduleChangeOrigin.userAdd);
     Future retValue = scheduleApi.addNewTile(newTile);
     setState(() {
       isPendingAdd = true;
@@ -97,6 +100,9 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
       if (newlyAddedTile.item1 != null) {
         SubCalendarEvent subEvent = newlyAddedTile.item1;
         print(subEvent.name);
+        change?.attachSubject(subEvent.uniqueId);
+      } else {
+        change?.abandon();
       }
 
       AnalysticsSignal.send('ADD_TILE_NEWTILE_ADD_SUCCESS_RESPONSE');
@@ -119,6 +125,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         this.widget.onSubmit!(retValue);
       }
     }).onError((error, stackTrace) {
+      change?.abandon();
       AnalysticsSignal.send('ADD_TILE_NEWTILE_ADD_ERROR_RESPONSE');
       if (error != null) {
         String message = error.toString();

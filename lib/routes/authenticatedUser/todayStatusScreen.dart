@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:tiler_app/bloc/schedule/pending_schedule_change.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
 import 'package:flutter/material.dart';
@@ -486,9 +487,19 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
 
     final baseline = _revisions?.state;
     setState(() => _isCompleting = true);
+    final change = PendingScheduleChange.begin(
+        context, ScheduleChangeOrigin.userComplete,
+        subjectId: selected.length == 1 ? selected.first.source.uniqueId : null);
     try {
-      final bool success = await BlocProvider.of<ScheduleSummaryBloc>(context)
-          .completeTasks(ids, types, userIds);
+      final bool success;
+      try {
+        success = await BlocProvider.of<ScheduleSummaryBloc>(context)
+            .completeTasks(ids, types, userIds);
+      } catch (_) {
+        change?.abandon();
+        rethrow;
+      }
+      if (!success) change?.abandon();
 
       if (!mounted) return;
       if (success) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/bloc/schedule/pending_schedule_change.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
@@ -64,6 +65,8 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
     // Busy from the first frame: the picker dims and shows a spinner so the
     // tap is visibly acknowledged while the request is in flight.
     setState(() => _submitting = true);
+    final change =
+        PendingScheduleChange.begin(context, ScheduleChangeOrigin.userEdit);
     try {
       await _scheduleApi.procrastinateAll(duration);
       AnalysticsSignal.send('PROCRASTINATE_ALL_SUCCESS');
@@ -72,6 +75,7 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
           AppLocalizations.of(context)!.clearedColon + duration.toHuman);
       Navigator.of(context).pop();
     } catch (e) {
+      change?.abandon();
       if (!mounted) return;
       setState(() => _submitting = false);
       showErrorMessage(AppLocalizations.of(context)!.errorOccurred);

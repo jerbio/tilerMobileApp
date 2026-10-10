@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:tiler_app/bloc/schedule/pending_schedule_change.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -73,6 +74,8 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
       _responseMessage = '';
     });
 
+    final change =
+        PendingScheduleChange.begin(context, ScheduleChangeOrigin.userEdit);
     try {
       if (this.designatedTile.id != null) {
         DesignatedTile? updatedDesignatedTile =
@@ -84,6 +87,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
         }
       }
     } catch (e) {
+      change?.abandon();
       setState(() {
         _responseMessage = 'Error: $e';
       });
