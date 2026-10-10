@@ -4,7 +4,8 @@ import 'package:tiler_app/theme/tile_colors.dart';
 /// A brief colour cue on something a schedule change touched. Shown only in
 /// the Detailed "Schedule updates" mode, then fades back to normal.
 enum ChangeFlash {
-  /// A tile Tiler moved (the app's accent).
+  /// A tile Tiler moved (the theme's accent, kept apart from the brand red
+  /// so it never reads as a problem).
   moved,
 
   /// Free time the change opened up.
@@ -31,7 +32,9 @@ extension ChangeFlashStyle on ChangeFlash {
     final dark = scheme.brightness == Brightness.dark;
     switch (this) {
       case ChangeFlash.moved:
-        return scheme.primary;
+        // The accent is too dark to show on the dark theme; its lighter
+        // container shade is used there.
+        return dark ? scheme.tertiaryContainer : scheme.tertiary;
       case ChangeFlash.freeGained:
         return dark ? const Color(0xFF3CC28C) : const Color(0xFF1C9466);
       case ChangeFlash.travel:

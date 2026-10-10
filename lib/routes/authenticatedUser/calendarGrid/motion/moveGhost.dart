@@ -4,6 +4,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridChoreography.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tiler_app/services/changeFlash.dart';
 
 /// The outline left at a moving tile's old spot.
 class MoveGhost {
@@ -38,6 +39,7 @@ class MoveGhostWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final moved = ChangeFlash.moved.color(colorScheme);
     final time = MaterialLocalizations.of(context).formatTimeOfDay(
         TimeOfDay.fromDateTime(Utility.localDateTimeFromMs(ghost.toStartMs)),
         alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
@@ -55,18 +57,16 @@ class MoveGhostWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             alignment: Alignment.topLeft,
             decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.05),
+              color: moved.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
-              border: Border.all(
-                  color: colorScheme.primary.withValues(alpha: 0.55),
-                  width: 1.5),
+              border:
+                  Border.all(color: moved.withValues(alpha: 0.55), width: 1.5),
             ),
             child: Text(
               caption,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.labelSmall
-                  ?.copyWith(color: colorScheme.primary),
+              style: theme.textTheme.labelSmall?.copyWith(color: moved),
             ),
           ),
         ),

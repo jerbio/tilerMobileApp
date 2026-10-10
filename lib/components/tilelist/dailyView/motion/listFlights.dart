@@ -5,6 +5,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridChoreography.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tiler_app/services/changeFlash.dart';
 
 /// A copy of a moving tile drawn over the list, flying from its old row to
 /// its new one while the real row stays hidden.
@@ -220,23 +221,20 @@ class _Ghost extends StatelessWidget {
     final time = MaterialLocalizations.of(context).formatTimeOfDay(
         TimeOfDay.fromDateTime(Utility.localDateTimeFromMs(ghost.toStartMs)),
         alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
+    final moved = ChangeFlash.moved.color(colorScheme);
     return Container(
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: colorScheme.primary.withValues(alpha: 0.05),
+        color: moved.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
-        border: Border.all(
-            color: colorScheme.primary.withValues(alpha: 0.55), width: 1.5),
+        border: Border.all(color: moved.withValues(alpha: 0.55), width: 1.5),
       ),
       child: Text(
         AppLocalizations.of(context)!.scheduleChangeMovedTo(time),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context)
-            .textTheme
-            .labelMedium
-            ?.copyWith(color: colorScheme.primary),
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(color: moved),
       ),
     );
   }

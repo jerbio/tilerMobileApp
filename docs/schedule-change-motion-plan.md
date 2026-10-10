@@ -155,7 +155,7 @@ Each phase applies to a whole **batch** of up to 3 Tiles at once (§3.1):
 | **Ghost** | at lift | Each lifted Tile leaves a 15 % opacity outline at its old spot, labelled "Moved to 7:20 PM". |
 | **Move** | 250–450 ms (longest move in the batch sets it, capped) | The *same* Tiles slide to their new spots together. Connectors stretch/morph with it. |
 | **Settle** | 150–250 ms | Unbatched neighbours slide into place, the lift drops, the ghost collapses, a small confirmation pulse plays. |
-| **Flash** | ~1 s, decaying | Semantic tint: pink = moved by Tiler, green = free time created, amber = travel changed, red = new conflict. |
+| **Flash** | ~1 s, decaying | Semantic tint: accent purple = moved by Tiler, green = free time created, amber = travel changed, red = new conflict. |
 
 Budget: about 600 ms per batch. The next batch lifts while the previous one settles (about
 150 ms overlap). At most **3 batches (9 Tiles)** are played, which keeps the whole sequence

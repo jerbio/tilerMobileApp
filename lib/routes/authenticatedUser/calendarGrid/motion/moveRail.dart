@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridChoreography.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tiler_app/services/changeFlash.dart';
 
 /// A line in the time gutter from where a tile was to where it went.
 class MoveRail {
@@ -51,7 +52,7 @@ class MoveRailWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
+    final color = ChangeFlash.moved.color(Theme.of(context).colorScheme);
     final top = fromY < toY ? fromY : toY;
     final height = (toY - fromY).abs();
     final downward = toY >= fromY;
