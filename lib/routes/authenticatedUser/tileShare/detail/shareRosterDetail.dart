@@ -12,6 +12,8 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/ownerEdits.d
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/participantRow.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/projectRows.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/taskSheet.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/animatedKeyedColumn.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/revealSlot.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 import 'package:tiler_app/util.dart';
 
@@ -276,23 +278,27 @@ class _Overview extends StatelessWidget {
 
     Widget alert(Key key, IconData icon, String text, Color color,
             {VoidCallback? onTap}) =>
-        InkWell(
+        Padding(
           key: key,
-          onTap: onTap ?? onParticipants,
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Row(
-              children: [
-                Icon(icon, size: 18, color: color),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(text,
-                      style:
-                          theme.textTheme.bodyMedium?.copyWith(color: color)),
-                ),
-                Icon(Icons.chevron_right, color: color),
-              ],
+          // The space above it comes and goes with it.
+          padding: const EdgeInsets.only(top: 8),
+          child: InkWell(
+            onTap: onTap ?? onParticipants,
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                children: [
+                  Icon(icon, size: 18, color: color),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(text,
+                        style:
+                            theme.textTheme.bodyMedium?.copyWith(color: color)),
+                  ),
+                  Icon(Icons.chevron_right, color: color),
+                ],
+              ),
             ),
           ),
         );
@@ -302,64 +308,90 @@ class _Overview extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (answers != null) Text(answers, style: theme.textTheme.titleSmall),
-        if (isProject && unassigned > 0) ...[
-          const SizedBox(height: 8),
-          alert(
-              const Key('project_unassigned_alert'),
-              Icons.assignment_late_outlined,
-              l10n.projectTasksUnassigned(unassigned),
-              theme.colorScheme.tertiary,
-              onTap: onTasks),
-        ],
-        if (mode == RosterMode.classMode && incomplete > 0) ...[
-          const SizedBox(height: 8),
-          alert(
-              const Key('class_incomplete'),
-              Icons.group_add_outlined,
-              l10n.classPeopleIncomplete(incomplete),
-              theme.colorScheme.tertiary),
-        ],
-        if (issues > 0) ...[
-          const SizedBox(height: 8),
-          alert(
-              const Key('roster_delivery_issues'),
-              Icons.mark_email_unread_outlined,
-              l10n.broadcastDeliveryIssues(issues),
-              theme.colorScheme.error),
-        ],
+        // Alerts come and go with the roster; they grow in and shrink out so
+        // the preview below slides (T11).
+        RevealSlot(
+          child: isProject && unassigned > 0
+              ? alert(
+                  const Key('project_unassigned_alert'),
+                  Icons.assignment_late_outlined,
+                  l10n.projectTasksUnassigned(unassigned),
+                  theme.colorScheme.tertiary,
+                  onTap: onTasks)
+              : null,
+        ),
+        RevealSlot(
+          child: mode == RosterMode.classMode && incomplete > 0
+              ? alert(
+                  const Key('class_incomplete'),
+                  Icons.group_add_outlined,
+                  l10n.classPeopleIncomplete(incomplete),
+                  theme.colorScheme.tertiary)
+              : null,
+        ),
+        RevealSlot(
+          child: issues > 0
+              ? alert(
+                  const Key('roster_delivery_issues'),
+                  Icons.mark_email_unread_outlined,
+                  l10n.broadcastDeliveryIssues(issues),
+                  theme.colorScheme.error)
+              : null,
+        ),
         const SizedBox(height: 8),
         if (isProject) ...[
-          for (int i = 0;
-              i < tilettes.length && i < ShareRosterDetail.previewCount;
-              i++)
-            ProjectTaskRow(
-                tilette: tilettes[i], assignees: _assigneesOf(state.rows, i)),
-          if (tilettes.length > ShareRosterDetail.previewCount)
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: TextButton(
-                key: const Key('roster_view_all'),
-                onPressed: onTasks,
-                child: Text(l10n.broadcastViewAll(tilettes.length)),
+          AnimatedKeyedColumn(children: [
+            for (int i = 0;
+                i < tilettes.length && i < ShareRosterDetail.previewCount;
+                i++)
+              KeyedSubtree(
+                key: ValueKey<String>('preview_task_${tilettes[i].id}'),
+                child: ProjectTaskRow(
+                    tilette: tilettes[i],
+                    assignees: _assigneesOf(state.rows, i)),
               ),
-            ),
+          ]),
+          RevealSlot(
+            child: tilettes.length > ShareRosterDetail.previewCount
+                ? Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(
+                      key: const Key('roster_view_all'),
+                      onPressed: onTasks,
+                      child: Text(l10n.broadcastViewAll(tilettes.length)),
+                    ),
+                  )
+                : null,
+          ),
         ] else ...[
-          for (final RosterRow row
-              in state.rows.take(ShareRosterDetail.previewCount))
-            _previewRow(row, mode),
-          if (state.rows.isEmpty)
-            Text(l10n.broadcastNoParticipants,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-          if (state.rows.length > ShareRosterDetail.previewCount)
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: TextButton(
-                key: const Key('roster_view_all'),
-                onPressed: onParticipants,
-                child: Text(l10n.broadcastViewAll(state.rows.length)),
+          AnimatedKeyedColumn(children: [
+            for (final RosterRow row
+                in state.rows.take(ShareRosterDetail.previewCount))
+              KeyedSubtree(
+                key: ValueKey<String>('preview_person_${row.key}'),
+                child: _previewRow(row, mode),
               ),
-            ),
+          ]),
+          RevealSlot(
+            child: state.rows.isEmpty
+                ? Text(l10n.broadcastNoParticipants,
+                    key: const Key('roster_preview_empty'),
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant))
+                : null,
+          ),
+          RevealSlot(
+            child: state.rows.length > ShareRosterDetail.previewCount
+                ? Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(
+                      key: const Key('roster_view_all'),
+                      onPressed: onParticipants,
+                      child: Text(l10n.broadcastViewAll(state.rows.length)),
+                    ),
+                  )
+                : null,
+          ),
         ],
       ],
     );
@@ -403,22 +435,25 @@ class _Board extends StatelessWidget {
               : () => editor.add(context,
                   people: TaskSheetPeople.assignee, projectPeople: state.rows),
         ),
-        for (int i = 0; i < tilettes.length; i++)
-          TaskCard(
-            child: ProjectTaskRow(
-              tilette: tilettes[i],
-              assignees: _assigneesOf(state.rows, i),
-              change: state.tasks[tilettes[i].id],
-              onAssign: () => _assign(context, i),
-              onRetry: () => roster.retryTask(tilettes[i].id ?? ''),
-              menu: editor == null
-                  ? null
-                  : TaskMenu(
-                      tilette: tilettes[i],
-                      editor: editor,
-                      people: TaskSheetPeople.assignee),
+        AnimatedKeyedColumn(children: [
+          for (int i = 0; i < tilettes.length; i++)
+            TaskCard(
+              key: ValueKey<String>('project_card_${tilettes[i].id}'),
+              child: ProjectTaskRow(
+                tilette: tilettes[i],
+                assignees: _assigneesOf(state.rows, i),
+                change: state.tasks[tilettes[i].id],
+                onAssign: () => _assign(context, i),
+                onRetry: () => roster.retryTask(tilettes[i].id ?? ''),
+                menu: editor == null
+                    ? null
+                    : TaskMenu(
+                        tilette: tilettes[i],
+                        editor: editor,
+                        people: TaskSheetPeople.assignee),
+              ),
             ),
-          ),
+        ]),
       ],
     );
   }
@@ -454,50 +489,53 @@ class _Tasks extends StatelessWidget {
                             r.contact!,
                       ]),
         ),
-        for (int i = 0; i < tilettes.length; i++)
-          () {
-            final List<RosterCell> cells = <RosterCell>[
-              for (final RosterRow r in state.rows)
-                if (i < r.cells.length && r.cells[i].isPresent) r.cells[i],
-            ];
-            final int accepted =
-                cells.where((c) => c.rsvp == InvitationStatus.accepted).length;
-            final TileShareTemplate t = tilettes[i];
-            return TaskCard(
-              key: Key('class_task_${t.id}'),
-              child: Row(
-                children: [
-                  Icon(Icons.task_alt,
-                      size: 18, color: theme.colorScheme.onSurfaceVariant),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text((t.name ?? '').trim().isEmpty
-                            ? l10n.clusterTitleFallback
-                            : t.name!.trim()),
-                        Text(l10n.clusterRsvpAccepted(accepted, cells.length),
-                            style: quiet),
-                      ],
+        AnimatedKeyedColumn(children: [
+          for (int i = 0; i < tilettes.length; i++)
+            () {
+              final List<RosterCell> cells = <RosterCell>[
+                for (final RosterRow r in state.rows)
+                  if (i < r.cells.length && r.cells[i].isPresent) r.cells[i],
+              ];
+              final int accepted = cells
+                  .where((c) => c.rsvp == InvitationStatus.accepted)
+                  .length;
+              final TileShareTemplate t = tilettes[i];
+              return TaskCard(
+                key: Key('class_task_${t.id}'),
+                child: Row(
+                  children: [
+                    Icon(Icons.task_alt,
+                        size: 18, color: theme.colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text((t.name ?? '').trim().isEmpty
+                              ? l10n.clusterTitleFallback
+                              : t.name!.trim()),
+                          Text(l10n.clusterRsvpAccepted(accepted, cells.length),
+                              style: quiet),
+                        ],
+                      ),
                     ),
-                  ),
-                  if ((t.durationInMs ?? 0) > 0)
-                    Text(
-                        Duration(milliseconds: t.durationInMs!)
-                            .toHumanLocalized(context),
-                        style: quiet),
-                  if (editor != null)
-                    TaskMenu(
-                        tilette: t,
-                        editor: editor,
-                        people: TaskSheetPeople.everyone)
-                  else
-                    const SizedBox(width: 10, height: 48),
-                ],
-              ),
-            );
-          }(),
+                    if ((t.durationInMs ?? 0) > 0)
+                      Text(
+                          Duration(milliseconds: t.durationInMs!)
+                              .toHumanLocalized(context),
+                          style: quiet),
+                    if (editor != null)
+                      TaskMenu(
+                          tilette: t,
+                          editor: editor,
+                          people: TaskSheetPeople.everyone)
+                    else
+                      const SizedBox(width: 10, height: 48),
+                  ],
+                ),
+              );
+            }(),
+        ]),
       ],
     );
   }
@@ -566,34 +604,36 @@ class _Participants extends StatelessWidget {
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
           ),
-        for (final RosterRow row in state.rows)
-          if (mode == RosterMode.project)
-            ProjectPersonRow(
-              key: ValueKey<String>('participant_${row.key}'),
-              row: row,
-              tilettes: tilettes,
-              onRemove: () => _confirmRemove(context, row),
-            )
-          else if (mode == RosterMode.classMode)
-            ClassPersonRow(
-              key: ValueKey<String>('participant_${row.key}'),
-              row: row,
-              onTap: () => showClassPersonSheet(context, row, tilettes),
-              onRepair: () => roster.repair(row.key),
-              onRemove: () => _confirmRemove(context, row),
-              onRetry: () => roster.retryAdd(row.key),
-              onDismiss: () => roster.dismiss(row.key),
-            )
-          else
-            ParticipantRow(
-              key: ValueKey<String>('participant_${row.key}'),
-              row: row,
-              onRemove: row.assignmentId == null
-                  ? null
-                  : () => _confirmRemove(context, row),
-              onRetry: () => roster.retryAdd(row.key),
-              onDismiss: () => roster.dismiss(row.key),
-            ),
+        AnimatedKeyedColumn(children: [
+          for (final RosterRow row in state.rows)
+            if (mode == RosterMode.project)
+              ProjectPersonRow(
+                key: ValueKey<String>('participant_${row.key}'),
+                row: row,
+                tilettes: tilettes,
+                onRemove: () => _confirmRemove(context, row),
+              )
+            else if (mode == RosterMode.classMode)
+              ClassPersonRow(
+                key: ValueKey<String>('participant_${row.key}'),
+                row: row,
+                onTap: () => showClassPersonSheet(context, row, tilettes),
+                onRepair: () => roster.repair(row.key),
+                onRemove: () => _confirmRemove(context, row),
+                onRetry: () => roster.retryAdd(row.key),
+                onDismiss: () => roster.dismiss(row.key),
+              )
+            else
+              ParticipantRow(
+                key: ValueKey<String>('participant_${row.key}'),
+                row: row,
+                onRemove: row.assignmentId == null
+                    ? null
+                    : () => _confirmRemove(context, row),
+                onRetry: () => roster.retryAdd(row.key),
+                onDismiss: () => roster.dismiss(row.key),
+              ),
+        ]),
       ],
     );
   }

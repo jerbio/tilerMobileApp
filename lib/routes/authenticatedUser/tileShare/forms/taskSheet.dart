@@ -19,7 +19,9 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/contactFieldR
 import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/deadlinePicker.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/shareDetailsForm.dart'
     show tiletteAccepted;
+import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/animatedKeyedColumn.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/personAvatar.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/revealSlot.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/statusPill.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
@@ -448,31 +450,25 @@ class _TaskSheetState extends State<TaskSheet> {
     if (!known) _showLastPerson();
   }
 
-  /// Scrolls the people list to its end - where someone just added is - so
-  /// they are seen; at once when animations are off.
+  /// Keeps the end of the people list - where someone just added is - in
+  /// view while their row grows in, so the rows above slide up with it.
   void _showLastPerson() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    Duration? start;
+    void follow(Duration now) {
       if (!mounted || !_peopleScroll.hasClients) return;
-      final double end = _peopleScroll.position.maxScrollExtent;
-      if (MediaQuery.of(context).disableAnimations) {
-        _peopleScroll.jumpTo(end);
-      } else {
-        _peopleScroll.animateTo(end,
-            duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+      _peopleScroll.jumpTo(_peopleScroll.position.maxScrollExtent);
+      start ??= now;
+      if (now - start! <= AnimatedKeyedColumn.inDuration) {
+        WidgetsBinding.instance.addPostFrameCallback(follow);
       }
-    });
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback(follow);
   }
 
-  /// Asks, as Participants does, then stages the removal.
-  Future<void> _stageRemoval(RosterRow row) async {
-    final AppLocalizations l10n = AppLocalizations.of(context)!;
-    final bool ok = await confirmDestructive(context,
-        title: l10n.participantRemoveTitle(row.label),
-        body: l10n.classRemoveBody,
-        confirmLabel: l10n.participantRemove,
-        confirmKey: const Key('task_sheet_remove_confirm'));
-    if (ok && mounted) setState(() => _removals.add(row.key));
-  }
+  /// Stages the removal. Nothing is sent before Save, and Undo takes it
+  /// back, so there is nothing to confirm (owner).
+  void _stageRemoval(RosterRow row) => setState(() => _removals.add(row.key));
 
   /// Stages a new assignee for the Project tilette, as Reassign would.
   Future<void> _stageAssignee(
@@ -531,23 +527,31 @@ class _TaskSheetState extends State<TaskSheet> {
                       : () => _stageAssignee(roster, current),
                 ),
               ]),
-              if (working)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
-                  child: Text(l10n.projectReassigning, style: quiet),
-                )
-              else if (change?.phase == TaskChangePhase.failed)
-                Row(children: [
-                  Expanded(
-                    child: Text(l10n.projectReassignFailed,
-                        style: textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.error)),
-                  ),
-                  TextButton(
-                    onPressed: () => roster.retryTask(tiletteId),
-                    child: Text(l10n.attentionRetry),
-                  ),
-                ]),
+              RevealSlot(
+                child: working
+                    ? Padding(
+                        key: const Key('task_sheet_reassigning'),
+                        padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
+                        child: Text(l10n.projectReassigning, style: quiet),
+                      )
+                    : change?.phase == TaskChangePhase.failed
+                        ? Row(
+                            key: const Key('task_sheet_reassign_failed'),
+                            children: [
+                                Expanded(
+                                  child: Text(l10n.projectReassignFailed,
+                                      style: textTheme.bodySmall?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .error)),
+                                ),
+                                TextButton(
+                                  onPressed: () => roster.retryTask(tiletteId),
+                                  child: Text(l10n.attentionRetry),
+                                ),
+                              ])
+                        : null,
+              ),
               Padding(
                 key: const Key('task_sheet_people_hint'),
                 padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
@@ -590,26 +594,23 @@ class _TaskSheetState extends State<TaskSheet> {
           children: [
             heading,
             AddTileSection(children: [
-              if (rows.isNotEmpty)
-                // Its own scroll, so a long list never moves the tilette's
-                // other fields.
-                ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(maxHeight: peopleListMaxHeight),
-                  child: Scrollbar(
+              // Its own scroll, so a long list never moves the tilette's
+              // other fields; people added or taken back grow in and shrink
+              // out (T11). Empty, it takes no space.
+              ConstrainedBox(
+                constraints:
+                    const BoxConstraints(maxHeight: peopleListMaxHeight),
+                child: Scrollbar(
+                  controller: _peopleScroll,
+                  // All the rows are built (a roster is short), so the end
+                  // of the list is exact when someone is added to it.
+                  child: SingleChildScrollView(
+                    key: const Key('task_sheet_people_list'),
                     controller: _peopleScroll,
-                    // All the rows are built (a roster is short), so the end
-                    // of the list is exact when someone is added to it.
-                    child: SingleChildScrollView(
-                      key: const Key('task_sheet_people_list'),
-                      controller: _peopleScroll,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: rows,
-                      ),
-                    ),
+                    child: AnimatedKeyedColumn(children: rows),
                   ),
                 ),
+              ),
               KeyedSubtree(
                 key: const Key('task_sheet_add_person'),
                 child: ContactFieldRow(
@@ -743,33 +744,45 @@ class _TaskSheetState extends State<TaskSheet> {
                           onTap: _pickAssignee,
                         ),
                     ]),
-                    if (_late && shareEnd != null) ...[
-                      const SizedBox(height: 12),
-                      AddTileCallout(
-                        key: const Key('task_sheet_late'),
-                        icon: Icons.warning_amber_rounded,
-                        // Someone has accepted it: the server moves the
-                        // share's deadline out to this one (O27).
-                        text: widget.task != null &&
-                                tiletteAccepted(widget.task!)
-                            ? l10n.taskSheetMovesShareDeadline(_when(_deadline))
-                            : l10n.taskSheetAfterShareDeadline(_when(
-                                DateTime.fromMillisecondsSinceEpoch(shareEnd))),
-                      ),
-                    ],
+                    // Warnings and refusals grow in and shrink out, so the
+                    // fields below slide (T11).
+                    RevealSlot(
+                      child: _late && shareEnd != null
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: AddTileCallout(
+                                key: const Key('task_sheet_late'),
+                                icon: Icons.warning_amber_rounded,
+                                // Someone has accepted it: the server moves the
+                                // share's deadline out to this one (O27).
+                                text: widget.task != null &&
+                                        tiletteAccepted(widget.task!)
+                                    ? l10n.taskSheetMovesShareDeadline(
+                                        _when(_deadline))
+                                    : l10n.taskSheetAfterShareDeadline(_when(
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                            shareEnd))),
+                              ),
+                            )
+                          : null,
+                    ),
                     if (!isNew &&
                         widget.roster != null &&
                         widget.task?.id != null) ...[
                       const SizedBox(height: 16),
                       _people(context, widget.roster!, widget.task!.id!),
-                      if (_peopleFailed) ...[
-                        const SizedBox(height: 12),
-                        AddTileCallout(
-                          key: const Key('task_sheet_people_failed'),
-                          icon: Icons.error_outline,
-                          text: l10n.taskSheetPeopleFailed,
-                        ),
-                      ],
+                      RevealSlot(
+                        child: _peopleFailed
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: AddTileCallout(
+                                  key: const Key('task_sheet_people_failed'),
+                                  icon: Icons.error_outline,
+                                  text: l10n.taskSheetPeopleFailed,
+                                ),
+                              )
+                            : null,
+                      ),
                     ],
                     if (widget.people == TaskSheetPeople.everyone && isNew) ...[
                       const SizedBox(height: 12),
@@ -794,14 +807,18 @@ class _TaskSheetState extends State<TaskSheet> {
                         onTap: _editNotes,
                       ),
                     ]),
-                    if (_failed) ...[
-                      const SizedBox(height: 12),
-                      AddTileCallout(
-                        key: const Key('task_sheet_failed'),
-                        icon: Icons.error_outline,
-                        text: l10n.editTileSaveFailed,
-                      ),
-                    ],
+                    RevealSlot(
+                      child: _failed
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: AddTileCallout(
+                                key: const Key('task_sheet_failed'),
+                                icon: Icons.error_outline,
+                                text: l10n.editTileSaveFailed,
+                              ),
+                            )
+                          : null,
+                    ),
                     if (!isNew && widget.onDelete != null) ...[
                       const SizedBox(height: 8),
                       Align(

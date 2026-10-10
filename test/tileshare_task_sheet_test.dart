@@ -21,6 +21,7 @@ import 'package:tiler_app/theme/theme_data.dart';
 
 import 'helpers/tileshare_fakes.dart';
 import 'helpers/tileshare_fixtures.dart';
+import 'helpers/tileshare_no_snap.dart';
 
 final int _shareEnd = DateTime(2026, 10, 10, 17).millisecondsSinceEpoch;
 
@@ -409,20 +410,14 @@ void main() {
       await roster.close();
     });
 
-    testWidgets('removing asks first, waits for Save, and covers every '
-        'tilette', (tester) async {
+    testWidgets('removing is staged at once (nothing to confirm before '
+        'Save), waits for Save, and covers every tilette', (tester) async {
       classOf(['ann@x.com', 'bob@x.com']);
       await _open(tester, _Rig().sheet(task: tilettes.first, roster: roster));
       await _tap(tester, 'task_sheet_remove_bob@x.com');
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-      expect(find.text('Will be removed'), findsNothing,
-          reason: 'cancelled, so nothing is staged');
-      await _tap(tester, 'task_sheet_remove_bob@x.com');
-      expect(find.text('Remove bob@x.com?'), findsOneWidget);
-      expect(find.text('They will be removed from every tilette.'),
-          findsOneWidget);
-      await _tap(tester, 'task_sheet_remove_confirm');
+      expect(find.byType(AlertDialog), findsNothing,
+          reason: 'nothing is sent until Save, so there is nothing to confirm');
+      expect(find.text('Remove bob@x.com?'), findsNothing);
       expect(
           find.descendant(
               of: _key('task_sheet_person_bob@x.com'),
@@ -432,7 +427,6 @@ void main() {
       await _tap(tester, 'task_sheet_undo_bob@x.com');
       expect(find.text('Will be removed'), findsNothing);
       await _tap(tester, 'task_sheet_remove_bob@x.com');
-      await _tap(tester, 'task_sheet_remove_confirm');
       await _tap(tester, 'task_sheet_save');
       expect(sent(), [
         'removeRecipient(t1, asg-bob@x.com)',
@@ -513,6 +507,86 @@ void main() {
           reason: 'scrolling the people does not move the tilette');
       await roster.close();
     });
+
+    // No snapping (T11): what is staged, refused or warned about grows in and
+    // shrinks out; the sheet's other fields slide, never jump.
+    group('no snap', () {
+      Map<String, Rect> fields(WidgetTester tester) =>
+          keyedRects(tester, 'task_sheet_');
+
+      Future<void> expectSlides(
+          WidgetTester tester, Map<String, Rect> before) async {
+        await tester.pump();
+        expectNoJump(before, fields(tester), mayAnimate: true);
+        await expectGlides(tester, () => fields(tester));
+      }
+
+      testWidgets('(S1) someone added grows into the list', (tester) async {
+        classOf(['ann@x.com']);
+        await _open(tester, _Rig().sheet(task: tilettes.first, roster: roster));
+        await tester.ensureVisible(_key('task_sheet_add_person'));
+        await tester.pumpAndSettle();
+        final before = fields(tester);
+        await tester.enterText(
+            find.descendant(
+                of: _key('task_sheet_add_person'),
+                matching: find.byType(TextField)),
+            'cy@x.com');
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await expectSlides(tester, before);
+        await roster.close();
+      });
+
+      testWidgets('(S2) an add taken back shrinks out of the list',
+          (tester) async {
+        classOf(['ann@x.com']);
+        await _open(tester, _Rig().sheet(task: tilettes.first, roster: roster));
+        await addPerson(tester, 'cy@x.com');
+        final before = fields(tester);
+        await tester.tap(_key('task_sheet_undo_cy@x.com'));
+        await expectSlides(tester, before);
+        await roster.close();
+      });
+
+      testWidgets('(S3) people changes that fail say so without a jump',
+          (tester) async {
+        classOf(['ann@x.com']);
+        await _open(tester, _Rig().sheet(task: tilettes.first, roster: roster));
+        await addPerson(tester, 'cy@x.com');
+        recipients.failNextOn('addRecipient(t2', StateError('offline'));
+        // The fields under the people, where the message appears, in view.
+        await tester.ensureVisible(_key('task_sheet_notes'));
+        await tester.pumpAndSettle();
+        final before = fields(tester);
+        await tester.tap(_key('task_sheet_save'));
+        await expectSlides(tester, before);
+        await roster.close();
+      });
+
+      testWidgets('(S4) a refused save says so without a jump',
+          (tester) async {
+        classOf(['ann@x.com']);
+        final rig = _Rig()..saveOk = false;
+        await _open(tester, rig.sheet(task: tilettes.first, roster: roster));
+        await _name(tester, 'Renamed');
+        final before = fields(tester);
+        await tester.tap(_key('task_sheet_save'));
+        await expectSlides(tester, before);
+        await roster.close();
+      });
+
+      testWidgets('(S5) a late deadline\'s warning grows in', (tester) async {
+        classOf(['ann@x.com']);
+        final rig = _Rig()
+          ..pickedDate = DateTime(2026, 10, 12)
+          ..pickedTime = const TimeOfDay(hour: 9, minute: 0);
+        await _open(tester, rig.sheet(task: tilettes.first, roster: roster));
+        final before = fields(tester);
+        await tester.tap(_key('task_sheet_deadline'));
+        await expectSlides(tester, before);
+        await roster.close();
+      });
+    });
   });
 
   testWidgets('the people section looks right at 320 px, with large text, '
@@ -534,7 +608,6 @@ void main() {
         await _open(tester, _Rig().sheet(task: list.first, roster: roster),
             size: const Size(320, 640), theme: theme, textScale: scale);
         await _tap(tester, 'task_sheet_remove_bob@x.com');
-        await _tap(tester, 'task_sheet_remove_confirm');
         await tester.ensureVisible(_key('task_sheet_add_person'));
         await tester.enterText(
             find.descendant(

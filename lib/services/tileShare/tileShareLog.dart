@@ -1,3 +1,4 @@
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/util.dart';
 
 /// The one place TileShare writes diagnostic lines, so they are tagged with
@@ -21,4 +22,10 @@ abstract final class TileShareLog {
       sink('$tag: $message');
     } catch (_) {}
   }
+
+  /// [error] as a log line can read it: a [TilerError] by its code and the
+  /// server's message (its own `toString` says only "Instance of ...").
+  static String describe(Object error) => error is TilerError
+      ? 'TilerError(${error.Code ?? '-'}): ${error.Message ?? ''}'
+      : '$error';
 }

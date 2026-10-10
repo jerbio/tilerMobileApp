@@ -595,12 +595,14 @@ class TileShareClusterApi extends AppApi {
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
+        // The server confirms with code 0 and no content
+        // ({"Error":{"Code":"0","Message":"Tilette deleted"},"Content":null}).
         if (isJsonResponseOk(jsonResult)) {
           tileShareActivityChanges.value++;
-          if (isContentInResponse(jsonResult)) {
-            return;
-          }
+          return;
         }
+        Utility.debugPrint('deleteTileShareTemplate $tileShareTemplateId '
+            'not accepted: ${response.statusCode} ${response.body}');
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];
           error = TilerError.fromJson(errorJson);

@@ -11,6 +11,7 @@ import 'package:tiler_app/bloc/tileShare/tile_share_detail_state.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/request/contactModel.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 
@@ -302,6 +303,23 @@ void ownerEdits() {
       expect(rig.state.tilettes, isEmpty);
       expect(await rig.cubit.retryEdit(), isFalse);
       expect(rig.edits!.calls, hasLength(2));
+      await rig.close();
+    });
+
+    test('a refused change logs the server\'s message, not the error type',
+        () async {
+      final rig =
+          _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
+      await rig.cubit.load();
+      final List<String> logs = <String>[];
+      final void Function(String) originalSink = TileShareLog.sink;
+      TileShareLog.sink = logs.add;
+      addTearDown(() => TileShareLog.sink = originalSink);
+      rig.edits!.failNextOn(
+          'deleteTask', TilerError(Message: 'Invalid TileShare template id'));
+      await rig.cubit.deleteTask('t3');
+      expect(logs.last, contains('Invalid TileShare template id'));
+      expect(logs.last, isNot(contains("Instance of 'TilerError'")));
       await rig.close();
     });
 

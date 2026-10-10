@@ -11,6 +11,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/editShareScr
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/ownerEdits.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/listScaffolding.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/modeBadge.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/revealSlot.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/statusPill.dart';
 import 'package:tiler_app/util.dart';
 
@@ -173,26 +174,34 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              if (state.refreshFailed)
-                SliverToBoxAdapter(
-                  child: TileShareErrorBanner(
-                    key: const Key('detail_refresh_failed'),
-                    message: l10n.detailRefreshFailed,
-                    retryLabel: l10n.attentionRetry,
-                    onRetry: cubit.refresh,
-                  ),
+              // The banners grow in and shrink out instead of pushing the
+              // page down in one frame (T11, no snapping).
+              SliverToBoxAdapter(
+                child: RevealSlot(
+                  child: state.refreshFailed
+                      ? TileShareErrorBanner(
+                          key: const Key('detail_refresh_failed'),
+                          message: l10n.detailRefreshFailed,
+                          retryLabel: l10n.attentionRetry,
+                          onRetry: cubit.refresh,
+                        )
+                      : null,
                 ),
-              if (state.editFailed != null)
-                SliverToBoxAdapter(
-                  child: TileShareErrorBanner(
-                    key: const Key('detail_edit_failed'),
-                    message: state.editFailed == DetailEdit.deleteShare
-                        ? l10n.detailDeleteShareFailed
-                        : l10n.detailEditFailed,
-                    retryLabel: l10n.attentionRetry,
-                    onRetry: cubit.retryEdit,
-                  ),
+              ),
+              SliverToBoxAdapter(
+                child: RevealSlot(
+                  child: state.editFailed != null
+                      ? TileShareErrorBanner(
+                          key: const Key('detail_edit_failed'),
+                          message: state.editFailed == DetailEdit.deleteShare
+                              ? l10n.detailDeleteShareFailed
+                              : l10n.detailEditFailed,
+                          retryLabel: l10n.attentionRetry,
+                          onRetry: cubit.retryEdit,
+                        )
+                      : null,
                 ),
+              ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 sliver: SliverToBoxAdapter(

@@ -7,6 +7,8 @@ import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/attention/attentionCopy.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/animatedKeyedColumn.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/revealSlot.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/statusPill.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
@@ -99,71 +101,86 @@ class _CommitmentDetailState extends State<CommitmentDetail> {
           key: const Key('commitment'),
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (answerAll)
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  FilledButton(
-                    key: const Key('commitment_accept'),
-                    onPressed: sending
-                        ? null
-                        : () =>
-                            _cubit.respond(pending, InvitationStatus.accepted),
-                    child: Text(AttentionCopy.acceptLabel(l10n, mode)),
-                  ),
-                  OutlinedButton(
-                    key: const Key('commitment_decline'),
-                    onPressed: sending
-                        ? null
-                        : () =>
-                            _cubit.respond(pending, InvitationStatus.declined),
-                    child: Text(AttentionCopy.declineLabel(l10n, mode)),
-                  ),
-                  if (mode == TileShareMode.broadcast &&
-                      pending.length == 1 &&
-                      widget.onPreview != null)
-                    TextButton.icon(
-                      key: const Key('commitment_check_fit'),
-                      onPressed: () => widget.onPreview!(pending.single),
-                      icon: const Icon(Icons.calendar_view_day_outlined,
-                          size: 18),
-                      label: Text(l10n.previewCheckFit),
-                    ),
-                ],
-              ),
-            if (state.failure != null) ...[
-              const SizedBox(height: 8),
-              Row(
-                key: const Key('commitment_failure'),
-                children: [
-                  Expanded(
-                    child: Text(
-                        state.failure!.total > 1
-                            ? l10n.commitmentPartialAnswered(
-                                state.failure!.answered, state.failure!.total)
-                            : state.failure!.status == InvitationStatus.accepted
-                                ? l10n.attentionAcceptFailed
-                                : l10n.attentionDeclineFailed,
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: theme.colorScheme.error)),
-                  ),
-                  TextButton(
-                    key: const Key('commitment_retry'),
-                    onPressed: sending ? null : _cubit.retry,
-                    child: Text(l10n.attentionRetry),
-                  ),
-                ],
-              ),
-            ],
-            if (state.scheduleRefreshFailed) ...[
-              const SizedBox(height: 8),
-              Text(l10n.attentionScheduleRefreshFailed,
-                  key: const Key('commitment_refresh_failed'),
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: TileColors.progressMedium)),
-            ],
+            // The answers, a refusal and a late schedule come and go; they
+            // grow in and shrink out so the tasks below slide (T11).
+            RevealSlot(
+              child: answerAll
+                  ? Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        FilledButton(
+                          key: const Key('commitment_accept'),
+                          onPressed: sending
+                              ? null
+                              : () => _cubit.respond(
+                                  pending, InvitationStatus.accepted),
+                          child: Text(AttentionCopy.acceptLabel(l10n, mode)),
+                        ),
+                        OutlinedButton(
+                          key: const Key('commitment_decline'),
+                          onPressed: sending
+                              ? null
+                              : () => _cubit.respond(
+                                  pending, InvitationStatus.declined),
+                          child: Text(AttentionCopy.declineLabel(l10n, mode)),
+                        ),
+                        if (mode == TileShareMode.broadcast &&
+                            pending.length == 1 &&
+                            widget.onPreview != null)
+                          TextButton.icon(
+                            key: const Key('commitment_check_fit'),
+                            onPressed: () => widget.onPreview!(pending.single),
+                            icon: const Icon(Icons.calendar_view_day_outlined,
+                                size: 18),
+                            label: Text(l10n.previewCheckFit),
+                          ),
+                      ],
+                    )
+                  : null,
+            ),
+            RevealSlot(
+              child: state.failure != null
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        key: const Key('commitment_failure'),
+                        children: [
+                          Expanded(
+                            child: Text(
+                                state.failure!.total > 1
+                                    ? l10n.commitmentPartialAnswered(
+                                        state.failure!.answered,
+                                        state.failure!.total)
+                                    : state.failure!.status ==
+                                            InvitationStatus.accepted
+                                        ? l10n.attentionAcceptFailed
+                                        : l10n.attentionDeclineFailed,
+                                style: theme.textTheme.bodySmall
+                                    ?.copyWith(color: theme.colorScheme.error)),
+                          ),
+                          TextButton(
+                            key: const Key('commitment_retry'),
+                            onPressed: sending ? null : _cubit.retry,
+                            child: Text(l10n.attentionRetry),
+                          ),
+                        ],
+                      ),
+                    )
+                  : null,
+            ),
+            RevealSlot(
+              child: state.scheduleRefreshFailed
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(l10n.attentionScheduleRefreshFailed,
+                          key: const Key('commitment_refresh_failed'),
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: TileColors.progressMedium)),
+                    )
+                  : null,
+            ),
             const SizedBox(height: 16),
             Text(
                 mine.length > 1
@@ -171,16 +188,19 @@ class _CommitmentDetailState extends State<CommitmentDetail> {
                     : l10n.commitmentYourTask,
                 style: theme.textTheme.titleSmall),
             const SizedBox(height: 4),
-            for (final DesignatedTile tile in mine)
-              _TaskRow(
-                tile: tile,
-                status: state.statuses[tile.id] ?? InvitationStatus.none,
-                sending: state.sending.contains(tile.id),
-                perTask: mode == TileShareMode.project,
-                onRespond: (status) => _cubit.respond([tile.id!], status),
-                onOpenTile: widget.onOpenTile,
-                onComments: widget.onComments,
-              ),
+            AnimatedKeyedColumn(children: [
+              for (final DesignatedTile tile in mine)
+                _TaskRow(
+                  key: ValueKey<String>('commitment_row_${tile.id}'),
+                  tile: tile,
+                  status: state.statuses[tile.id] ?? InvitationStatus.none,
+                  sending: state.sending.contains(tile.id),
+                  perTask: mode == TileShareMode.project,
+                  onRespond: (status) => _cubit.respond([tile.id!], status),
+                  onOpenTile: widget.onOpenTile,
+                  onComments: widget.onComments,
+                ),
+            ]),
           ],
         );
       },
@@ -198,6 +218,7 @@ class _TaskRow extends StatelessWidget {
   final void Function(DesignatedTile tile)? onComments;
 
   const _TaskRow({
+    super.key,
     required this.tile,
     required this.status,
     required this.sending,

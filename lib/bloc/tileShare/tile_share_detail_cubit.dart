@@ -160,7 +160,7 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
       TileShareLog.d(
           _tag,
           'loading ${_clusterId ?? target.designatedTileId} '
-          'failed: $error');
+          'failed: ${TileShareLog.describe(error)}');
       _emit(keep
           ? state.copyWith(isRefreshing: false, refreshFailed: true)
           : const TileShareDetailState(phase: DetailPhase.error));
@@ -253,7 +253,7 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
     try {
       await send(edits, clusterId);
     } catch (error) {
-      TileShareLog.d(_tag, '$what failed: $error');
+      TileShareLog.d(_tag, '$what failed: ${TileShareLog.describe(error)}');
       _retry = () => _edit(kind, what, send, reload: reload, onDone: onDone);
       _emit(state.copyWith(isSaving: false, editFailed: kind));
       return false;
@@ -271,7 +271,8 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
     try {
       return await body();
     } catch (error) {
-      TileShareLog.d(_tag, 'loading $what failed: $error');
+      TileShareLog.d(
+          _tag, 'loading $what failed: ${TileShareLog.describe(error)}');
       return null;
     }
   }
