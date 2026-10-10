@@ -40,6 +40,9 @@ class GridStepPlayer {
   final Map<String, ChangeFlash> _tileFlashes = <String, ChangeFlash>{};
   final Set<String> _travelFlashes = <String>{};
 
+  /// Moving tiles that end up out of view, and whether they leave upwards.
+  final Map<String, bool> _departing = <String, bool>{};
+
   /// Free gaps the change opened up, and whether each is fading out.
   final Map<FreeGap, bool> _gapFlashes = <FreeGap, bool>{};
 
@@ -65,6 +68,13 @@ class GridStepPlayer {
   Iterable<MapEntry<FreeGap, bool>> get gapFlashes => _gapFlashes.entries;
 
   TileMotionEmphasis emphasisFor(String id) {
+    final up = _departing[id];
+    if (up != null && isPlaying && !_held.containsKey(id)) {
+      // Once it starts sliding, it shrinks toward its edge chip.
+      return up
+          ? TileMotionEmphasis.departingUp
+          : TileMotionEmphasis.departingDown;
+    }
     if (_lifted.contains(id)) return TileMotionEmphasis.lifted;
     return isPlaying ? TileMotionEmphasis.receded : TileMotionEmphasis.none;
   }
@@ -84,6 +94,7 @@ class GridStepPlayer {
     required Map<String, SubCalendarEvent> after,
     required (double, double) Function(String id) layoutOf,
     List<FreeGap> grownGaps = const <FreeGap>[],
+    Set<String> conflicts = const <String>{},
   }) {
     stop(notify: false);
     _steps = steps;
@@ -128,12 +139,16 @@ class GridStepPlayer {
         for (final id in batch.ids) {
           _ghosts[id]?.fading = true;
           _rails[id]?.fading = true;
-          _tileFlashes[id] = ChangeFlash.moved;
+          _tileFlashes[id] =
+              conflicts.contains(id) ? ChangeFlash.conflict : ChangeFlash.moved;
         }
       });
       _after(batch.landAt + ChangeFlashStyle.hold,
           () => _tileFlashes.removeWhere((id, _) => batch.ids.contains(id)));
     }
+    // Clashing tiles that did not move themselves light up once all have
+    // landed.
+    _flashConflicts(conflicts.difference(steps.ids), steps.batches.last.landAt);
     if (grownGaps.isNotEmpty) {
       // What the change gained, once everything has landed.
       final landed = steps.batches.last.landAt;
@@ -148,9 +163,39 @@ class GridStepPlayer {
           _gapFlashes.clear);
     }
     _after(steps.end, () {
+      _departing.clear();
       _ghosts.clear();
       _rails.clear();
       _steps = null;
+    });
+  }
+
+  /// Shows [conflicts] for a change with nothing to step through (e.g. a
+  /// new tile dropped onto busy time), once it has had [after] to appear.
+  void flashConflicts(Set<String> conflicts,
+      {Duration after = const Duration(milliseconds: 300)}) {
+    stop(notify: false);
+    _flashConflicts(conflicts, after);
+  }
+
+  void _flashConflicts(Set<String> ids, Duration at) {
+    if (ids.isEmpty) return;
+    _after(at, () {
+      for (final id in ids) {
+        _tileFlashes[id] = ChangeFlash.conflict;
+      }
+    });
+    _after(at + ChangeFlashStyle.hold,
+        () => _tileFlashes.removeWhere((id, _) => ids.contains(id)));
+  }
+
+  /// Marks moving tiles that will end up out of view, by uniqueId: true for
+  /// above the view, false for below. Call after [start].
+  void depart(Map<String, bool> upById) {
+    if (!isPlaying) return;
+    _departing.addAll({
+      for (final e in upById.entries)
+        if (_steps!.ids.contains(e.key)) e.key: e.value
     });
   }
 
@@ -167,6 +212,7 @@ class GridStepPlayer {
     _gapFlashes.clear();
     _held.clear();
     _lifted.clear();
+    _departing.clear();
     _ghosts.clear();
     _rails.clear();
     _steps = null;

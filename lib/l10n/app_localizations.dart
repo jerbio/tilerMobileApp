@@ -3493,6 +3493,18 @@ abstract class AppLocalizations {
   /// **'{hours}h {minutes}m'**
   String durationHoursMinutesShort(int hours, int minutes);
 
+  /// Duration of days and hours in short format
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d {hours}h'**
+  String durationDaysHoursShort(int days, int hours);
+
+  /// Duration in days short format
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d'**
+  String durationDaysShort(int days);
+
   /// Duration in hours short format
   ///
   /// In en, this message translates to:
@@ -7417,6 +7429,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Free time'**
   String get scheduleChangeFreeTime;
+
+  /// Caption on a Tile in the daily list that moved into view from a time that was off screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved from {time}'**
+  String scheduleChangeMovedFrom(String time);
 
   /// Caption on the faint outline left where a Tile was, while it slides to its new time.
   ///

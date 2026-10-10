@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 /// A brief colour cue on something a schedule change touched. Shown only in
 /// the Detailed "Schedule updates" mode, then fades back to normal.
@@ -11,6 +12,10 @@ enum ChangeFlash {
 
   /// A travel time that changed, shown before the tiles it pushed move.
   travel,
+
+  /// A tile that now clashes: it overlaps a tile it did not before, or it
+  /// became late.
+  conflict,
 }
 
 extension ChangeFlashStyle on ChangeFlash {
@@ -31,6 +36,8 @@ extension ChangeFlashStyle on ChangeFlash {
         return dark ? const Color(0xFF3CC28C) : const Color(0xFF1C9466);
       case ChangeFlash.travel:
         return dark ? const Color(0xFFF0A92A) : const Color(0xFFC98200);
+      case ChangeFlash.conflict:
+        return dark ? const Color(0xFFFF6B6B) : TileColors.late;
     }
   }
 }

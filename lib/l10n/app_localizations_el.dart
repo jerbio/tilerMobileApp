@@ -1936,6 +1936,16 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '$daysημ $hoursω';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '$daysημ';
+  }
+
+  @override
   String durationHoursShort(int hours) {
     return '$hoursω';
   }
@@ -4356,6 +4366,11 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get scheduleChangeFreeTime => 'Ελεύθερος χρόνος';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return 'Μετακινήθηκε από τις $time';
+  }
 
   @override
   String scheduleChangeMovedTo(String time) {

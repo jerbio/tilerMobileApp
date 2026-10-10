@@ -594,6 +594,14 @@ class TileGridWidgetState extends GridPositionableState {
         scaleTarget = 1.0;
         fadeDuration =
             animate ? const Duration(milliseconds: 150) : Duration.zero;
+      } else if (emphasis.isDeparting) {
+        // Shrinks and fades as it slides off toward its edge chip.
+        opacityTarget = 0.0;
+        scaleTarget = 0.5;
+        fadeDuration = animate
+            ? ((this.widget as TileGridWidget).moveDuration ??
+                const Duration(milliseconds: 300))
+            : Duration.zero;
       } else if (emphasis == TileMotionEmphasis.lifted) {
         opacityTarget = 1.0;
         scaleTarget = 1.03;
@@ -644,7 +652,11 @@ class TileGridWidgetState extends GridPositionableState {
           child: AnimatedScale(
             scale: scaleTarget,
             duration: fadeDuration,
-            alignment: Alignment.center,
+            alignment: switch (emphasis) {
+              TileMotionEmphasis.departingUp => Alignment.topCenter,
+              TileMotionEmphasis.departingDown => Alignment.bottomCenter,
+              _ => Alignment.center,
+            },
             child: AnimatedContainer(
               duration: flashColor != null || !lifted
                   ? (animate ? ChangeFlashStyle.fade : Duration.zero)

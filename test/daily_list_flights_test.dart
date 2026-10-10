@@ -13,6 +13,7 @@ import 'package:tiler_app/bloc/scheduleMotion/schedule_motion_cubit.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/motion/listFlights.dart';
+import 'package:tiler_app/components/tilelist/dailyView/motion/listMotion.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -215,6 +216,49 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(ghost, findsNothing);
       expect(later, findsNothing);
+    });
+
+    testWidgets('a tile that moves into view says where it came from',
+        (tester) async {
+      final rebuild = await mount(tester);
+      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      final moved = [
+        for (final t in [for (var i = 0; i < 12; i++) tile('T$i', 8.0 + i)])
+          t.uniqueId == 'T10' ? tile('T10', 9.5) : t
+      ];
+      await serve(tester, rebuild, moved, moved);
+      await tester.pump();
+      expect(find.byKey(ListFlightOverlay.flightKey('T10')), findsNothing);
+      expect(find.text('Moved from 6:00 PM'), findsNothing);
+
+      // Cued as it lands, then gone with the cue.
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.text('Moved from 6:00 PM'), findsOneWidget);
+      for (var i = 0; i < 14; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.text('Moved from 6:00 PM'), findsNothing);
+    });
+
+    testWidgets('a day swapped for new tiles fades in as one', (tester) async {
+      final rebuild = await mount(tester);
+      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      final fresh = [for (var i = 0; i < 12; i++) tile('N$i', 8.0 + i)];
+      await serve(tester, rebuild, fresh, fresh);
+      double opacity() => tester
+          .widget<AnimatedOpacity>(find
+              .descendant(
+                  of: find.byType(ListMotionLayer),
+                  matching: find.byType(AnimatedOpacity))
+              .first)
+          .opacity;
+      expect(opacity(), 0);
+      await tester.pump();
+      expect(opacity(), 1);
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('N0'), findsOneWidget);
     });
 
     testWidgets('a tile that moves below the view gets a chip, no flight',

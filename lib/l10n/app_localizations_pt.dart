@@ -1937,6 +1937,16 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '${days}d ${hours}h';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '${days}d';
+  }
+
+  @override
   String durationHoursShort(int hours) {
     return '${hours}h';
   }
@@ -4339,6 +4349,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get scheduleChangeFreeTime => 'Tempo livre';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return 'Movido de $time';
+  }
 
   @override
   String scheduleChangeMovedTo(String time) {

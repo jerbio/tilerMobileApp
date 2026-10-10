@@ -193,6 +193,42 @@ void main() {
     });
   });
 
+  group('GridStepPlayer conflict cues', () {
+    testWidgets('a tile moved onto another lands red, and so does the other',
+        (tester) async {
+      final before = thursday();
+      final after = thursday(vitd: at(19, 10));
+      final delta = diff(before, after);
+      final steps = GridChoreography.plan(delta)!;
+      final player = GridStepPlayer(apply: (change) => change());
+      player.start(
+        steps,
+        before: {for (final t in before) t.uniqueId: t},
+        after: {for (final t in after) t.uniqueId: t},
+        layoutOf: (_) => (0.0, 100.0),
+        conflicts: delta.newConflicts,
+      );
+      await tester.pump(steps.batches.single.landAt);
+      expect(player.flashFor('vitd'), ChangeFlash.conflict);
+      expect(player.flashFor('dinner'), ChangeFlash.conflict);
+      await tester.pump(ChangeFlashStyle.hold);
+      expect(player.flashFor('vitd'), isNull);
+      expect(player.flashFor('dinner'), isNull);
+    });
+
+    testWidgets('with nothing to step through, the clash still shows',
+        (tester) async {
+      final player = GridStepPlayer(apply: (change) => change());
+      player.flashConflicts({'new', 'sync'});
+      expect(player.flashFor('new'), isNull);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(player.flashFor('new'), ChangeFlash.conflict);
+      expect(player.flashFor('sync'), ChangeFlash.conflict);
+      await tester.pump(ChangeFlashStyle.hold);
+      expect(player.flashFor('new'), isNull);
+    });
+  });
+
   group('DayGridWidget flashes', () {
     testWidgets('the moved tile pulses and the opened gap turns green',
         (tester) async {

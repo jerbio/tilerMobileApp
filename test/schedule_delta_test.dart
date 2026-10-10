@@ -25,7 +25,8 @@ SubCalendarEvent tile(String id, int start, int minutes,
 final Timeline day = Timeline(at(0, 0), at(0, 0, dayOffset: 1));
 
 /// The storyboard's Thursday: sync, groceries, Vit.D, dinner, read, plan.
-List<SubCalendarEvent> base({Map<String, int>? starts, Map<String, int>? travel}) {
+List<SubCalendarEvent> base(
+    {Map<String, int>? starts, Map<String, int>? travel}) {
   SubCalendarEvent t(String id, int h, int m, int minutes, [int tr = 0]) =>
       tile(id, starts?[id] ?? at(h, m), minutes, travel: travel?[id] ?? tr);
   return [
@@ -87,8 +88,7 @@ void main() {
       expect(diff(base(), after).isEmpty, isTrue);
     });
 
-    test('a travel change without a move is reported but not a TileChange',
-        () {
+    test('a travel change without a move is reported but not a TileChange', () {
       final delta = diff(base(), base(travel: {'groc': 20}));
       expect(delta.changes, isEmpty);
       expect(delta.travelChanges.single.id, 'groc');
@@ -108,11 +108,12 @@ void main() {
 
     test('a missing Tile is removed only when the new window covers it', () {
       final after = base()..removeWhere((t) => t.uniqueId == 'plan');
-      expect(diff(base(), after).changeFor('plan')!.kind,
-          TileChangeKind.removed);
+      expect(
+          diff(base(), after).changeFor('plan')!.kind, TileChangeKind.removed);
 
       // The new snapshot no longer loads this day: unloaded, not removed.
-      final elsewhere = Timeline(at(0, 0, dayOffset: 1), at(0, 0, dayOffset: 3));
+      final elsewhere =
+          Timeline(at(0, 0, dayOffset: 1), at(0, 0, dayOffset: 3));
       expect(diff(base(), after, afterWindow: elsewhere).isEmpty, isTrue);
     });
 
@@ -234,8 +235,8 @@ void main() {
     test('emptied and filled', () {
       final out = [
         for (final t in base())
-          tile(t.uniqueId, t.start! + const Duration(days: 1).inMilliseconds,
-              30)
+          tile(
+              t.uniqueId, t.start! + const Duration(days: 1).inMilliseconds, 30)
       ];
       expect(diff(base(), out).tier, ScheduleDeltaTier.dayEmptied);
       expect(diff(out, base()).tier, ScheduleDeltaTier.dayFilled);
@@ -274,8 +275,7 @@ void main() {
     });
 
     test('2. the stable Tile just before the first visible change', () {
-      expect(
-          moveVitD.anchorFor(visibleIds: ['sync', 'groc', 'vitd', 'dinner']),
+      expect(moveVitD.anchorFor(visibleIds: ['sync', 'groc', 'vitd', 'dinner']),
           'groc');
     });
 
@@ -288,19 +288,73 @@ void main() {
     });
 
     test('4. every visible Tile changed: the first one still on the day', () {
-      final delta = diff(
-          base(), base(starts: {'groc': at(17, 33), 'vitd': at(18, 20)}));
+      final delta =
+          diff(base(), base(starts: {'groc': at(17, 33), 'vitd': at(18, 20)}));
       expect(delta.anchorFor(visibleIds: ['groc', 'vitd']), 'groc');
     });
 
     test('5. no anchor when the day was empty or is now empty', () {
       final out = [
         for (final t in base())
-          tile(t.uniqueId, t.start! + const Duration(days: 1).inMilliseconds,
-              30)
+          tile(
+              t.uniqueId, t.start! + const Duration(days: 1).inMilliseconds, 30)
       ];
       expect(diff(base(), out).anchorFor(visibleIds: ['sync']), isNull);
       expect(diff(out, base()).anchorFor(visibleIds: const []), isNull);
+    });
+  });
+
+  group('mostly replaced', () {
+    test('a day swapped for new tiles is mostly replaced', () {
+      final fresh = [
+        for (final t in base()) tile('${t.id}-new', t.start!, 30),
+      ];
+      expect(diff(base(), fresh).isMostlyReplaced, isTrue);
+    });
+
+    test('a few new tiles among the old ones are not', () {
+      final some = [
+        ...base().take(4),
+        tile('a', at(21, 0), 15),
+        tile('b', at(22, 0), 15),
+      ];
+      expect(diff(base(), some).isMostlyReplaced, isFalse);
+    });
+
+    test('emptying or filling a day is not a replacement', () {
+      expect(diff(base(), const []).isMostlyReplaced, isFalse);
+      expect(diff(const [], base()).isMostlyReplaced, isFalse);
+    });
+  });
+
+  group('new conflicts', () {
+    test('a move onto another tile clashes both', () {
+      // Vit.D (18:11, 30 min) moves onto dinner (19:00).
+      final delta = diff(base(), base(starts: {'vitd': at(19, 10)}));
+      expect(delta.newConflicts, {'vitd', 'dinner'});
+    });
+
+    test('an overlap that was already there is not new', () {
+      final clash = base(starts: {'vitd': at(19, 10)});
+      final delta = diff(clash, base(starts: {'vitd': at(19, 5)}));
+      expect(delta.newConflicts, isEmpty);
+    });
+
+    test('a new tile dropped onto busy time clashes', () {
+      final delta = diff(base(), [...base(), tile('new', at(16, 30), 30)]);
+      expect(delta.newConflicts, {'new', 'sync'});
+    });
+
+    test('back-to-back tiles do not clash', () {
+      final delta = diff(base(), base(starts: {'vitd': at(18, 30)}));
+      expect(delta.newConflicts, isEmpty);
+    });
+
+    test('a tile that became late clashes, one already late does not', () {
+      List<SubCalendarEvent> late(bool readLate, bool planLate) => base()
+        ..firstWhere((t) => t.id == 'read').isTardy = readLate
+        ..firstWhere((t) => t.id == 'plan').isTardy = planLate;
+      expect(diff(late(false, true), late(true, true)).newConflicts, {'read'});
     });
   });
 }

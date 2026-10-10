@@ -57,6 +57,11 @@ Future<void> _openMenu(
   await tester.pump(const Duration(milliseconds: 400));
 }
 
+// Text inside the pop-out only: the nav bar itself labels the active view.
+Finder _inMenu(String text) => find.descendant(
+    of: find.byWidgetPredicate((w) => w is PopupMenuItem),
+    matching: find.text(text));
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -96,9 +101,9 @@ void main() {
 
       await _openMenu(tester, AuthorizedRouteTileListPage.Daily);
 
-      expect(find.text('Weekly'), findsOneWidget);
-      expect(find.text('Monthly'), findsOneWidget);
-      expect(find.text('Daily'), findsNothing,
+      expect(_inMenu('Weekly'), findsOneWidget);
+      expect(_inMenu('Monthly'), findsOneWidget);
+      expect(_inMenu('Daily'), findsNothing,
           reason: 'The active view is skipped in the pop-out.');
     });
 
@@ -110,9 +115,9 @@ void main() {
 
       await _openMenu(tester, AuthorizedRouteTileListPage.Monthly);
 
-      expect(find.text('Daily'), findsOneWidget);
-      expect(find.text('Weekly'), findsOneWidget);
-      expect(find.text('Monthly'), findsNothing);
+      expect(_inMenu('Daily'), findsOneWidget);
+      expect(_inMenu('Weekly'), findsOneWidget);
+      expect(_inMenu('Monthly'), findsNothing);
     });
   });
 
@@ -126,7 +131,7 @@ void main() {
       await tester.pump();
 
       await _openMenu(tester, AuthorizedRouteTileListPage.Daily);
-      await tester.tap(find.text('Monthly'));
+      await tester.tap(_inMenu('Monthly'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
 

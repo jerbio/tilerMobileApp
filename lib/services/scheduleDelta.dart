@@ -153,6 +153,10 @@ class ScheduleDelta {
   /// longer, in time order.
   final List<FreeGap> grownGaps;
 
+  /// Tiles on the day that clash now and did not before: they overlap a
+  /// tile they did not overlap, or the server newly marks them late.
+  final Set<String> newConflicts;
+
   final Set<String> _afterIdsOnDay;
   final Map<String, TileChange> _changeById;
 
@@ -169,6 +173,7 @@ class ScheduleDelta {
     required this.longestFreeMinutesBefore,
     required this.longestFreeMinutesAfter,
     required this.grownGaps,
+    required this.newConflicts,
     required Set<String> afterIdsOnDay,
   })  : _afterIdsOnDay = afterIdsOnDay,
         _changeById = {for (final c in changes) c.id: c};
@@ -182,6 +187,23 @@ class ScheduleDelta {
   int get freeMinutesDelta => freeMinutesAfter - freeMinutesBefore;
 
   TileChange? changeFor(String id) => _changeById[id];
+
+  /// Whether most of the day was swapped for other tiles: more than half
+  /// of its tiles went and more than half of the new ones are new, as when
+  /// Tiler re-plans a day with fresh tiles. Such a change cross-fades
+  /// instead of playing tile by tile.
+  static bool mostlyReplaced(
+          {required int before,
+          required int after,
+          required int added,
+          required int removed}) =>
+      before >= 2 && after >= 2 && removed * 2 > before && added * 2 > after;
+
+  bool get isMostlyReplaced => mostlyReplaced(
+      before: tileCountBefore,
+      after: tileCountAfter,
+      added: changes.where((c) => c.kind == TileChangeKind.added).length,
+      removed: changes.where((c) => c.kind == TileChangeKind.removed).length);
 
   ScheduleDeltaTier get tier {
     if (changes.isNotEmpty && tileCountBefore > 0 && tileCountAfter == 0) {
@@ -285,6 +307,7 @@ class ScheduleDelta {
       longestFreeMinutesBefore: beforeFree.$2,
       longestFreeMinutesAfter: afterFree.$2,
       grownGaps: _grownGaps(beforeOnDay, afterOnDay),
+      newConflicts: _newConflicts(beforeById.values, beforeOnDay, afterOnDay),
       afterIdsOnDay: afterOnDay.map((e) => e.uniqueId).toSet(),
     );
   }
@@ -327,6 +350,43 @@ class ScheduleDelta {
     }
     // 5. None.
     return null;
+  }
+
+  static Set<String> _newConflicts(Iterable<SubCalendarEvent> beforeAll,
+      List<SubCalendarEvent> beforeOnDay, List<SubCalendarEvent> afterOnDay) {
+    final overlappedBefore = _overlaps(beforeOnDay);
+    final ids = <String>{};
+    for (final pair in _overlaps(afterOnDay)) {
+      if (overlappedBefore.contains(pair)) continue;
+      ids
+        ..add(pair.$1)
+        ..add(pair.$2);
+    }
+    final lateBefore = {
+      for (final tile in beforeAll)
+        if (tile.isTardy ?? false) tile.uniqueId,
+    };
+    for (final tile in afterOnDay) {
+      if ((tile.isTardy ?? false) && !lateBefore.contains(tile.uniqueId)) {
+        ids.add(tile.uniqueId);
+      }
+    }
+    return ids;
+  }
+
+  /// Every pair of overlapping tiles, as (smaller id, larger id).
+  static Set<(String, String)> _overlaps(List<SubCalendarEvent> tiles) {
+    final sorted = [...tiles]..sort((a, b) => a.start!.compareTo(b.start!));
+    final pairs = <(String, String)>{};
+    for (var i = 0; i < sorted.length; i++) {
+      for (var j = i + 1;
+          j < sorted.length && sorted[j].start! < sorted[i].end!;
+          j++) {
+        final a = sorted[i].uniqueId, b = sorted[j].uniqueId;
+        pairs.add(a.compareTo(b) < 0 ? (a, b) : (b, a));
+      }
+    }
+    return pairs;
   }
 
   static Map<String, SubCalendarEvent> _byId(List<SubCalendarEvent> tiles) {

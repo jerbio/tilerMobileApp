@@ -697,13 +697,21 @@ class DayGridWidgetState extends State<DayGridWidget> {
     final Set<String> prevIds = _lastTilesById.keys.toSet();
     final Set<String> curIds = newTiles.map((t) => t.uniqueId).toSet();
 
-    // Added: staggered enter (~40ms each, capped ~400ms total).
+    // Added: staggered enter (~40ms each, capped ~400ms total). When most
+    // of the day was replaced, the new tiles come in together as the old
+    // ones fade out: one cross-fade rather than a cascade.
+    final bool crossFade = ScheduleDelta.mostlyReplaced(
+        before: prevIds.length,
+        after: curIds.length,
+        added: curIds.difference(prevIds).length,
+        removed: prevIds.difference(curIds).length);
     _enterDelays.clear();
     int i = 0;
     for (final t in newTiles) {
       if (!prevIds.contains(t.uniqueId)) {
-        _enterDelays[t.uniqueId] =
-            Duration(milliseconds: (i * 40).clamp(0, 400));
+        _enterDelays[t.uniqueId] = crossFade
+            ? Duration.zero
+            : Duration(milliseconds: (i * 40).clamp(0, 400));
         i++;
       }
     }
@@ -811,7 +819,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
       if (steps != null) {
         Utility.debugPrint('DayGrid::steps ${attribution.origin.name}: '
             '${steps.batches.map((b) => b.ids.length).join('+')} tiles');
-        _startSteps(steps, grownGaps: delta.grownGaps);
+        _startSteps(steps,
+            grownGaps: delta.grownGaps, conflicts: delta.newConflicts);
+      } else if (delta.newConflicts.isNotEmpty) {
+        _stepPlayer.flashConflicts(delta.newConflicts);
       }
     }
     _queueHandoffs(delta, dayStart,
@@ -849,6 +860,13 @@ class DayGridWidgetState extends State<DayGridWidget> {
       Utility.debugPrint('DayGrid::handoff '
           '${handoffs.map((h) => '${h.direction.name}:${h.tiles.length}').join(' ')}');
     }
+    // Tiles stepping out of view shrink into their chip as they go.
+    _stepPlayer.depart({
+      for (final handoff in handoffs)
+        if (!handoff.isOtherDay)
+          for (final tile in handoff.tiles)
+            tile.uniqueId: handoff.direction == HandoffDirection.earlier,
+    });
     _handoffs.show(handoffs, delay: delay);
   }
 
@@ -891,9 +909,11 @@ class DayGridWidgetState extends State<DayGridWidget> {
   }
 
   void _startSteps(GridChoreography steps,
-      {List<FreeGap> grownGaps = const <FreeGap>[]}) {
+      {List<FreeGap> grownGaps = const <FreeGap>[],
+      Set<String> conflicts = const <String>{}}) {
     _stepPlayer.start(
       grownGaps: grownGaps,
+      conflicts: conflicts,
       steps,
       before: _lastTilesById,
       after: {for (final t in widget.tiles) t.uniqueId: t},

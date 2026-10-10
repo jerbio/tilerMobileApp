@@ -300,6 +300,8 @@
         }
       }
     },
+    "durationDaysHoursShort": "{days}d {hours}h",
+    "durationDaysShort": "{days}d",
     "durationHoursShort": "{hours}h",
     "@durationHoursShort": {
       "description": "Duration in hours short format",
@@ -1720,6 +1722,7 @@
   "scheduleChangeRemoved": "Eliminado",
   "scheduleChangeTravelTo": "Viaje a {name}",
   "scheduleChangeFreeTime": "Tiempo libre",
+  "scheduleChangeMovedFrom": "Movido desde las {time}",
   "scheduleChangeMovedTo": "Movido a las {time}",
   "scheduleChangeTileMovedTo": "{name} movido a {when}",
   "scheduleChangeTilesMovedTo": "{count, plural, =1{1 bloque movido a {when}} other{{count} bloques movidos a {when}}}",

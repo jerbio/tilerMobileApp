@@ -11,6 +11,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridChoreography.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridHandoff.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridHandoffChip.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/changeFlash.dart';
 import 'package:tiler_app/services/scheduleDelta.dart';
@@ -46,8 +47,23 @@ class ListMotion {
   final Map<String, ChangeFlash> _rowFlashes = <String, ChangeFlash>{};
   final List<Timer> _flashTimers = <Timer>[];
 
+  /// Where tiles that moved into view from off screen came from (their
+  /// old start), shown on their row with its cue, by row key.
+  final Map<String, int> _rowMovedFrom = <String, int>{};
+
   /// The colour cue on a row right now, if any.
   ChangeFlash? flashOf(String rowKey) => _rowFlashes[rowKey];
+
+  /// The old start of a tile that moved into view, while it is cued.
+  int? movedFromOf(String rowKey) => _rowMovedFrom[rowKey];
+
+  /// Most of the day was just replaced: the new rows are hidden for a
+  /// frame, then fade in together.
+  bool get fadingIn => _fadingIn;
+  bool _fadingIn = false;
+
+  /// How long a replaced day takes to fade in.
+  static const Duration crossFade = Duration(milliseconds: 300);
 
   /// True between [beforeRows] finding a change to show and [afterLayout].
   bool get hasPending => _pending != null;
@@ -62,6 +78,7 @@ class ListMotion {
       registry: rows,
       child: _FlashFrame(
         flash: _rowFlashes[rowKey],
+        movedFromMs: _rowMovedFrom[rowKey],
         child: Opacity(
             key: ValueKey<String>('list_row_opacity_$rowKey'),
             opacity: hidden ? 0 : 1,
@@ -102,6 +119,11 @@ class ListMotion {
     final mode = ScheduleMotion.modeFor(context,
         origin: change.attribution.origin, listen: false);
     final subject = change.attribution.subjectId;
+    if (mode.animates && change.delta.isMostlyReplaced) {
+      _fadingIn = true;
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => apply(() => _fadingIn = false));
+    }
 
     // Tiles that were on screen and are leaving their row.
     final seen = <String, Rect>{};
@@ -152,7 +174,23 @@ class ListMotion {
     final steps = pending.steps;
     if (steps != null) {
       if (flights.flights.isNotEmpty) flights.launch(targets, steps);
-      _scheduleFlashes(steps, targets.keys.toSet(), pending.change.delta);
+      // Tiles that moved here from a time that was off screen.
+      final arrived = <String, int>{};
+      for (final id in steps.ids) {
+        if (targets.containsKey(id) || pending.seen.containsKey(id)) continue;
+        final change = pending.change.delta.changeFor(id);
+        final from = change?.before?.start;
+        if (from == null || !_leaving.contains(change!.kind)) continue;
+        if (_rowOnScreen('tile:$id', layer)) arrived[id] = from;
+      }
+      _scheduleFlashes(steps, targets.keys.toSet(), pending.change.delta,
+          arrived: arrived);
+    } else if (pending.mode.choreographs) {
+      // Nothing to step through, but a new clash still gets its cue.
+      for (final id in pending.change.delta.newConflicts) {
+        _flashRow('tile:$id', ChangeFlash.conflict,
+            const Duration(milliseconds: 300));
+      }
     }
 
     // Tiles that were on screen and now are not: one chip per destination.
@@ -206,26 +244,64 @@ class ListMotion {
   /// Colour cues for a change played in steps: the travel that pushed a
   /// batch (before it lifts), each tile that flew in (as it lands), and the
   /// free time gained (once everything has landed).
+  ///
+  /// [arrived] are tiles that moved into view from off screen, with their
+  /// old start: they are cued as they land and say where they came from.
   void _scheduleFlashes(
-      GridChoreography steps, Set<String> flown, ScheduleDelta delta) {
+      GridChoreography steps, Set<String> flown, ScheduleDelta delta,
+      {Map<String, int> arrived = const <String, int>{}}) {
     for (final batch in steps.batches) {
       for (final id in batch.causeIds) {
         _flashRow('travel:$id', ChangeFlash.travel, batch.causeAt);
       }
+      for (final id in batch.ids.where(arrived.containsKey)) {
+        _flashRow(
+            'tile:$id',
+            delta.newConflicts.contains(id)
+                ? ChangeFlash.conflict
+                : ChangeFlash.moved,
+            batch.landAt,
+            movedFromMs: arrived[id]);
+      }
       for (final id in batch.ids.where(flown.contains)) {
-        _flashRow('tile:$id', ChangeFlash.moved, batch.landAt);
+        _flashRow(
+            'tile:$id',
+            delta.newConflicts.contains(id)
+                ? ChangeFlash.conflict
+                : ChangeFlash.moved,
+            batch.landAt);
       }
     }
     final landed = steps.batches.last.landAt;
+    // Clashing tiles that did not fly in light up once all have landed.
+    for (final id
+        in delta.newConflicts.difference({...flown, ...arrived.keys})) {
+      _flashRow('tile:$id', ChangeFlash.conflict, landed);
+    }
     for (final gap in delta.grownGaps) {
       _flashRow('free:${gap.beforeTileId}', ChangeFlash.freeGained, landed);
     }
   }
 
-  void _flashRow(String rowKey, ChangeFlash flash, Duration at) {
-    _flashTimers.add(Timer(at, () => apply(() => _rowFlashes[rowKey] = flash)));
-    _flashTimers.add(Timer(at + ChangeFlashStyle.hold,
-        () => apply(() => _rowFlashes.remove(rowKey))));
+  void _flashRow(String rowKey, ChangeFlash flash, Duration at,
+      {int? movedFromMs}) {
+    _flashTimers.add(Timer(
+        at,
+        () => apply(() {
+              _rowFlashes[rowKey] = flash;
+              if (movedFromMs != null) _rowMovedFrom[rowKey] = movedFromMs;
+            })));
+    _flashTimers.add(Timer(
+        at + ChangeFlashStyle.hold,
+        () => apply(() {
+              _rowFlashes.remove(rowKey);
+              _rowMovedFrom.remove(rowKey);
+            })));
+  }
+
+  bool _rowOnScreen(String rowKey, RenderBox layer) {
+    final rect = rows.rectOf(rowKey, layer);
+    return rect != null && _onScreen(rect, layer.size);
   }
 
   /// Switches to the day a chip's tiles went to.
@@ -249,17 +325,23 @@ class ListMotion {
     }
     _flashTimers.clear();
     _rowFlashes.clear();
+    _rowMovedFrom.clear();
     flights.stop(notify: false);
     handoffs.stop(notify: false);
   }
 }
 
-/// Tints and rings a row while it carries a colour cue.
+/// Tints and rings a row while it carries a colour cue, and says where a
+/// tile that moved into view came from.
 class _FlashFrame extends StatelessWidget {
   final ChangeFlash? flash;
+
+  /// The old start of a tile that moved into view from off screen.
+  final int? movedFromMs;
   final Widget child;
 
-  const _FlashFrame({required this.flash, required this.child});
+  const _FlashFrame(
+      {required this.flash, this.movedFromMs, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -277,7 +359,45 @@ class _FlashFrame extends StatelessWidget {
           ? null
           : BoxDecoration(
               borderRadius: radius, border: Border.all(color: color, width: 2)),
-      child: child,
+      child: color == null || movedFromMs == null
+          ? child
+          : Stack(clipBehavior: Clip.none, children: [
+              child,
+              Positioned(
+                  top: -9,
+                  right: 12,
+                  child: _MovedFromLabel(startMs: movedFromMs!, color: color)),
+            ]),
+    );
+  }
+}
+
+/// "Moved from 3:15 PM", pinned to the top edge of a row's cue.
+class _MovedFromLabel extends StatelessWidget {
+  final int startMs;
+  final Color color;
+
+  const _MovedFromLabel({required this.startMs, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final time = MaterialLocalizations.of(context).formatTimeOfDay(
+        TimeOfDay.fromDateTime(Utility.localDateTimeFromMs(startMs)),
+        alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
+    return Container(
+      key: const ValueKey<String>('list_row_moved_from'),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration:
+          BoxDecoration(color: color, borderRadius: BorderRadius.circular(9)),
+      child: Text(
+        AppLocalizations.of(context)!.scheduleChangeMovedFrom(time),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color:
+                ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+            fontWeight: FontWeight.w600),
+      ),
     );
   }
 }
@@ -344,7 +464,16 @@ class ListMotionLayer extends StatelessWidget {
         // remounted copy the old one is deactivated before the new one
         // mounts (a Stack would mount the new one first, and both would
         // claim the same scroll controller).
-        KeyedSubtree(child: child),
+        KeyedSubtree(
+          child: AnimatedOpacity(
+            // Drops at once, then fades back in (see [ListMotion.fadingIn]).
+            opacity: motion.fadingIn ? 0 : 1,
+            duration: motion.fadingIn || !animate
+                ? Duration.zero
+                : ListMotion.crossFade,
+            child: child,
+          ),
+        ),
         Positioned.fill(
           child: ListFlightOverlay(
             player: motion.flights,

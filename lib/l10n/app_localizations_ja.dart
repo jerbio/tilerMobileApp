@@ -1887,6 +1887,16 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '$days日$hours時間';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '$days日';
+  }
+
+  @override
   String durationHoursShort(int hours) {
     return '$hours時間';
   }
@@ -4208,6 +4218,11 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get scheduleChangeFreeTime => '空き時間';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return '$timeから移動';
+  }
 
   @override
   String scheduleChangeMovedTo(String time) {

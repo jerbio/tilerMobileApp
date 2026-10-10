@@ -56,13 +56,20 @@ void main() {
       return out;
     }
 
-    const values = [Duration(minutes: 45), Duration(minutes: 339)];
+    const values = [
+      Duration(minutes: 45),
+      Duration(minutes: 339),
+      Duration(days: 2, hours: 3),
+      Duration(days: 2),
+    ];
 
     testWidgets('German', (tester) async {
       final out = await render(tester, 'de', values);
       expect(out['45'], '45 min');
       expect(out['339'], '5 Std 39 min');
       expect(out['free'], '+16 min frei');
+      expect(out['3060'], '2 T 3 Std');
+      expect(out['2880'], '2 T');
     });
 
     testWidgets('Japanese uses 時間 for hours', (tester) async {
@@ -70,6 +77,7 @@ void main() {
       expect(out['45'], '45分');
       expect(out['339'], '5時間39分');
       expect(out['free'], '空き時間 +16分');
+      expect(out['3060'], '2日3時間');
     });
 
     testWidgets('Greek', (tester) async {
@@ -82,6 +90,7 @@ void main() {
       final out = await render(tester, 'es', values);
       expect(out['339'], '5h 39m');
       expect(out['free'], '+16m libres');
+      expect(out['3060'], '2d 3h');
     });
   });
 }

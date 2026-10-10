@@ -1321,6 +1321,21 @@
             }
           }
         },
+        "durationDaysHoursShort": "{days}d {hours}h",
+        "@durationDaysHoursShort": {
+          "description": "Duration of days and hours in short format",
+          "placeholders": {
+            "days": {"type": "int", "example": "2"},
+            "hours": {"type": "int", "example": "3"}
+          }
+        },
+        "durationDaysShort": "{days}d",
+        "@durationDaysShort": {
+          "description": "Duration in days short format",
+          "placeholders": {
+            "days": {"type": "int", "example": "2"}
+          }
+        },
         "durationHoursShort": "{hours}h",
         "@durationHoursShort": {
           "description": "Duration in hours short format",
@@ -2505,6 +2520,8 @@
   "scheduleChangeTravelTo": "Travel to {name}",
   "@scheduleChangeTravelTo": {"placeholders":{"name":{"type":"String"}}},
   "scheduleChangeFreeTime": "Free time",
+  "scheduleChangeMovedFrom": "Moved from {time}",
+  "@scheduleChangeMovedFrom": {"description": "Caption on a Tile in the daily list that moved into view from a time that was off screen.", "placeholders": {"time": {"type": "String"}}},
   "scheduleChangeMovedTo": "Moved to {time}",
   "@scheduleChangeMovedTo": {"description": "Caption on the faint outline left where a Tile was, while it slides to its new time.", "placeholders": {"time": {"type": "String"}}},
   "scheduleChangeTileMovedTo": "{name} moved to {when}",

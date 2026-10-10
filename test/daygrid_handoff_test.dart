@@ -16,6 +16,8 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridHandoff.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridHandoffChip.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/tileMotionEmphasis.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.dart';
 import 'package:tiler_app/services/scheduleDelta.dart';
 import 'package:tiler_app/services/scheduleMotionPreferences.dart';
 import 'package:tiler_app/theme/theme_data.dart';
@@ -262,6 +264,40 @@ void main() {
       await tester.pumpAndSettle();
       expect(later, findsNothing);
       expect(onScreen(tester, find.text('Beta')), isTrue);
+    });
+
+    testWidgets('a tile leaving the view shrinks toward its chip',
+        (tester) async {
+      final rebuild = await mount(tester);
+      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      final moved = [tile('a', 'Alpha', 8), tile('b', 'Beta', 21)];
+      await serve(tester, rebuild, moved, moved);
+      TileMotionEmphasis emphasis(String id) => tester
+          .widgetList<TileGridWidget>(find.byType(TileGridWidget))
+          .firstWhere((w) => w.tilerEvent.uniqueId == id)
+          .emphasis;
+
+      await tester.pump(Duration.zero); // lift
+      expect(emphasis('b'), TileMotionEmphasis.lifted);
+      await tester.pump(const Duration(milliseconds: 200)); // sliding
+      expect(emphasis('b'), TileMotionEmphasis.departingDown);
+      // Back to normal (out of view) once the sequence is over.
+      await tester.pump(const Duration(seconds: 1));
+      expect(emphasis('b'), TileMotionEmphasis.none);
+    });
+
+    testWidgets('a tile moving within view does not shrink', (tester) async {
+      final rebuild = await mount(tester);
+      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      final moved = [tile('a', 'Alpha', 8), tile('b', 'Beta', 12)];
+      await serve(tester, rebuild, moved, moved);
+      await tester.pump(Duration.zero);
+      await tester.pump(const Duration(milliseconds: 200));
+      final b = tester
+          .widgetList<TileGridWidget>(find.byType(TileGridWidget))
+          .firstWhere((w) => w.tilerEvent.uniqueId == 'b');
+      expect(b.emphasis.isDeparting, isFalse);
+      await tester.pump(const Duration(seconds: 2));
     });
 
     testWidgets('the chip hides on its own', (tester) async {
