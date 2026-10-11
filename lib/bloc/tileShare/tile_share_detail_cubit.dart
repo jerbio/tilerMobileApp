@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_detail_state.dart';
 import 'package:tiler_app/data/designatedTile.dart';
-import 'package:tiler_app/data/designatedUser.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareMyStatus.dart';
@@ -143,9 +142,6 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
           _tag,
           'loaded $clusterId: ${isOwner ? 'owner' : 'recipient'}, '
           'tilettes=${loadedTilettes?.length ?? 'failed'}, mine=${mine.length}');
-      if (loadedTilettes != null) {
-        TileShareLog.d(_tag, _deadlines(clusterId, cluster, loadedTilettes));
-      }
       _emit(TileShareDetailState(
         phase: DetailPhase.ready,
         cluster: cluster,
@@ -268,25 +264,6 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
     onDone?.call();
     if (reload) await refresh();
     return true;
-  }
-
-  /// The share's start and deadline and each tilette's deadline with how
-  /// many accepted it - what the deadline checks read (O27). UTC.
-  static String _deadlines(String clusterId, TileShareClusterData cluster,
-      List<TileShareTemplate> tilettes) {
-    String at(int? ms) => ms == null
-        ? 'none'
-        : DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true)
-            .toIso8601String();
-    final String each = tilettes.map((t) {
-      final List<DesignatedUser> people =
-          t.designatedUsers ?? const <DesignatedUser>[];
-      final int accepted =
-          people.where((u) => u.rsvpStatus == InvitationStatus.accepted).length;
-      return '"${t.name}" end=${at(t.end)} accepted=$accepted/${people.length}';
-    }).join('; ');
-    return 'deadlines $clusterId: start=${at(cluster.startTimeInMs)} '
-        'end=${at(cluster.endTimeInMs)} | $each';
   }
 
   /// Runs [body]; a failure is logged under [what] and becomes `null`.

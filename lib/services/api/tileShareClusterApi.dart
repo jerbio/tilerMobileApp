@@ -486,13 +486,6 @@ class TileShareClusterApi extends AppApi {
           },
         );
 
-        if (response.statusCode != 200) {
-          // Seen on-device: a reply that is not JSON (9.16v); say what it was.
-          final String body = response.body;
-          Utility.debugPrint('updateTileShareTemplate ${templateTileModel.Id}: '
-              '${response.statusCode} '
-              '${body.length > 500 ? '${body.substring(0, 500)}...' : body}');
-        }
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
@@ -608,8 +601,6 @@ class TileShareClusterApi extends AppApi {
           tileShareActivityChanges.value++;
           return;
         }
-        Utility.debugPrint('deleteTileShareTemplate $tileShareTemplateId '
-            'not accepted: ${response.statusCode} ${response.body}');
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];
           error = TilerError.fromJson(errorJson);

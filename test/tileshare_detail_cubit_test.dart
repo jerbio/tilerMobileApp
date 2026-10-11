@@ -107,34 +107,6 @@ void main() {
       await rig.close();
     });
 
-    test(
-        'a load logs the share\'s start and deadline and each tilette\'s '
-        'deadline with how many accepted it (deadline checks, O27)', () async {
-      final start = DateTime.utc(2026, 10, 1, 9).millisecondsSinceEpoch;
-      final end = DateTime.utc(2026, 10, 10, 17).millisecondsSinceEpoch;
-      final later = DateTime.utc(2026, 10, 12, 9).millisecondsSinceEpoch;
-      final rig = _Rig(const TileShareDetailTarget.cluster('k'),
-          clusters: FakeTileShareClustersSource(outbox: [
-            tsCluster('k', creatorId: 'me', startMs: start, endMs: end),
-          ], tilettesByCluster: {
-            'k': [
-              tsTilette('t1', clusterId: 'k', name: 'Brief', endMs: later,
-                  assignees: [
-                    tsAssignee('ann@x.com', status: InvitationStatus.accepted),
-                    tsAssignee('bob@x.com'),
-                  ]),
-              tsTilette('t2', clusterId: 'k', name: 'Deck'),
-            ],
-          }));
-      await rig.cubit.load();
-      final line = logs.singleWhere((l) => l.contains('deadlines k'));
-      expect(line, contains('start=2026-10-01T09:00:00.000Z'));
-      expect(line, contains('end=2026-10-10T17:00:00.000Z'));
-      expect(line, contains('"Brief" end=2026-10-12T09:00:00.000Z accepted=1/2'));
-      expect(line, contains('"Deck" end=none accepted=0/0'));
-      await rig.close();
-    });
-
     test('by designated tile template: its cluster is looked up first',
         () async {
       final rig = _Rig(const TileShareDetailTarget.designatedTile('d1'));
