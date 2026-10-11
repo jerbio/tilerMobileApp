@@ -161,9 +161,20 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     });
   }
 
-  void _onShareTap() {
-    AnalysticsSignal.send('TILE_SHARE_BUTTON');
-    Navigator.pushNamed(context, '/TileShare');
+  void _onGetScheduleRequestTap() {
+    // Navigator.pushNamed(context, '/TileShare');
+    this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+          previousSubEvents: [],
+          previousTimeline: Utility.initialScheduleTimeline,
+          // isAlreadyLoaded: !forceRenderingPage,
+          scheduleTimeline:  Utility.initialScheduleTimeline,
+        ));
+  }
+
+    void _onReviseScheduleTap() {
+    // Navigator.pushNamed(context, '/TileShare');
+    this.context.read<ScheduleBloc>().add(ReviseScheduleEvent(
+        ));
   }
 
   void _onSearchTap() {
@@ -330,8 +341,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               previous.currentView != current.currentView,
           builder: (context, scheduleState) {
             return HomeBottomNav(
-              onShare: _onShareTap,
-              onAddTile: () => displayDialog(MediaQuery.of(context).size),
+              onShare: _onGetScheduleRequestTap,
+              onAddTile: _onReviseScheduleTap,
               currentView: scheduleState.currentView,
               onSelectView: _onSelectCalendarView,
             );
