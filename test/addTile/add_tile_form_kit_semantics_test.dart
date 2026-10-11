@@ -206,4 +206,39 @@ void main() {
     expect(taps, 1);
     handle.dispose();
   });
+
+  testWidgets('a checkbox row reads as one checkbox and toggles from it',
+      (tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    final List<bool> changes = <bool>[];
+    await pumpControl(
+      tester,
+      AddTileCheckboxRow(
+        key: const ValueKey('move'),
+        label: 'Also move the deadline',
+        value: false,
+        onChanged: changes.add,
+      ),
+    );
+
+    expect(
+        tester.getSemantics(find.byKey(const ValueKey('move'))),
+        matchesSemantics(
+          label: 'Also move the deadline',
+          hasCheckedState: true,
+          isChecked: false,
+          hasEnabledState: true,
+          isEnabled: true,
+          isFocusable: true,
+          hasTapAction: true,
+          hasFocusAction: true,
+        ));
+    activate(tester, find.byKey(const ValueKey('move')));
+    await tester.pump();
+    expect(changes, [true]);
+    await tester.tap(find.text('Also move the deadline'));
+    await tester.pump();
+    expect(changes, [true, true], reason: 'the whole row toggles it');
+    handle.dispose();
+  });
 }

@@ -33,9 +33,12 @@ class _Rig {
   _Rig(
       {this.mode = TileShareMode.class_,
       bool withEdits = true,
-      String creator = 'me'}) {
+      String creator = 'me',
+      int? shareEndMs,
+      int? t1EndMs}) {
     final tilettes = [
-      tsTilette('t1', clusterId: 'k', name: 'Write the brief', assignees: [
+      tsTilette('t1', clusterId: 'k', name: 'Write the brief', endMs: t1EndMs,
+          assignees: [
         tsAssignee('ann@x.com', status: InvitationStatus.accepted),
         if (mode != TileShareMode.project) tsAssignee('bob@x.com'),
       ]),
@@ -45,7 +48,11 @@ class _Rig {
       ]),
     ];
     clusters = FakeTileShareClustersSource(outbox: [
-      tsCluster('k', name: 'Interview prep', mode: mode, creatorId: creator),
+      tsCluster('k',
+          name: 'Interview prep',
+          mode: mode,
+          creatorId: creator,
+          endMs: shareEndMs),
     ], tilettesByCluster: {
       'k': tilettes,
     });
@@ -280,6 +287,24 @@ void main() {
           find.descendant(
               of: _key('class_task_t1'), matching: find.text('Write it')),
           findsOneWidget);
+      await rig.detail.close();
+    });
+
+    testWidgets(
+        "ticking 'also move the share's deadline' moves it on Save "
+        '(the server does not, 9.16v)', (tester) async {
+      final shareEnd = DateTime(2026, 10, 10, 17).millisecondsSinceEpoch;
+      final later = DateTime(2026, 10, 12, 9).millisecondsSinceEpoch;
+      final rig = _Rig(shareEndMs: shareEnd, t1EndMs: later);
+      await _open(tester, rig);
+      await _tap(tester, 'roster_segment_tasks');
+      await _tap(tester, 'task_menu_t1');
+      await _tap(tester, 'task_edit_t1');
+      await _tap(tester, 'task_sheet_move_share');
+      await _tap(tester, 'task_sheet_save');
+      expect(rig.edits.calls, ['updateShare(k, name: null, end: $later)']);
+      expect(rig.detail.state.cluster!.endTimeInMs, later);
+      expect(_key('task_sheet'), findsNothing);
       await rig.detail.close();
     });
 

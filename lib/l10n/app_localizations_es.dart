@@ -5121,8 +5121,8 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String taskSheetMovesShareDeadline(String when) {
-    return 'La fecha límite compartida pasará a $when.';
+  String taskSheetMoveShareDeadline(String when) {
+    return 'Mover también la fecha límite compartida a $when';
   }
 
   @override

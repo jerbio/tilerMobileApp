@@ -229,6 +229,61 @@ class AddTileFieldRow extends StatelessWidget {
   }
 }
 
+/// A row that turns one option on or off: a checkbox and what it does, in
+/// the form kit's spacing. The whole row toggles it and reads as one checkbox
+/// to assistive tech.
+class AddTileCheckboxRow extends StatelessWidget {
+  const AddTileCheckboxRow({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = TodayStatusTokens.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final ValueChanged<bool>? change = onChanged;
+    return MergeSemantics(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: change == null ? null : () => change(!value),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 56),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(6, 4, 14, 4),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: value,
+                    activeColor: tokens.brand,
+                    onChanged:
+                        change == null ? null : (v) => change(v ?? false),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: tokens.textPrimary),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// A secondary navigation row: icon chip, single title, trailing affordance
 /// (Location / Repeat / More options in the mockups).
 class AddTileNavRow extends StatelessWidget {

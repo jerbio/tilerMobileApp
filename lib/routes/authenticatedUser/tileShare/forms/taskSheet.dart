@@ -17,8 +17,6 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/ownerEdits.d
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/projectRows.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/contactFieldRow.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/deadlinePicker.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/shareDetailsForm.dart'
-    show tiletteAccepted;
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/animatedKeyedColumn.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/personAvatar.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/revealSlot.dart';
@@ -39,12 +37,18 @@ class TaskSheetValue extends Equatable {
   final String notes;
   final Contact? assignee;
 
+  /// The owner ticked *Also move the share's deadline*: the share's deadline
+  /// becomes [deadline] too. The server never moves it for a tilette's
+  /// (9.16v), so the app does. Only with a deadline after the share's.
+  final bool moveShareDeadline;
+
   const TaskSheetValue({
     required this.name,
     required this.length,
     required this.deadline,
     required this.notes,
     this.assignee,
+    this.moveShareDeadline = false,
   });
 
   /// What changed since [before] (what the sheet opened with) - the only
@@ -62,8 +66,15 @@ class TaskSheetValue extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [name, length, deadline, notes, assignee?.email, assignee?.phoneNumber];
+  List<Object?> get props => [
+        name,
+        length,
+        deadline,
+        notes,
+        assignee?.email,
+        assignee?.phoneNumber,
+        moveShareDeadline,
+      ];
 }
 
 /// The fields an edit changed; `null` when unchanged.
@@ -205,6 +216,9 @@ class _TaskSheetState extends State<TaskSheet> {
   bool _busy = false;
   bool _failed = false;
 
+  /// *Also move the share's deadline*, ticked (only counts while late).
+  bool _moveShare = false;
+
   /// People changes staged until Save: additions, removals (by roster row
   /// key) and a Project tilette's new assignee.
   final List<Contact> _adds = <Contact>[];
@@ -251,6 +265,7 @@ class _TaskSheetState extends State<TaskSheet> {
         deadline: _deadline,
         notes: _notes,
         assignee: _assignee,
+        moveShareDeadline: _late && _moveShare,
       );
 
   bool get _nameValid => _name.text.trim().length >= taskNameMinLength;
@@ -283,7 +298,7 @@ class _TaskSheetState extends State<TaskSheet> {
       _peopleFailed = false;
     });
     final TaskChanges changes = _value.changesSince(_initial);
-    if (widget.isNew || !changes.isEmpty) {
+    if (widget.isNew || !changes.isEmpty || _value.moveShareDeadline) {
       final bool ok = await widget.onSave(_value, changes);
       if (!mounted) return;
       if (!ok) {
@@ -750,18 +765,34 @@ class _TaskSheetState extends State<TaskSheet> {
                       child: _late && shareEnd != null
                           ? Padding(
                               padding: const EdgeInsets.only(top: 12),
-                              child: AddTileCallout(
-                                key: const Key('task_sheet_late'),
-                                icon: Icons.warning_amber_rounded,
-                                // Someone has accepted it: the server moves the
-                                // share's deadline out to this one (O27).
-                                text: widget.task != null &&
-                                        tiletteAccepted(widget.task!)
-                                    ? l10n.taskSheetMovesShareDeadline(
-                                        _when(_deadline))
-                                    : l10n.taskSheetAfterShareDeadline(_when(
-                                        DateTime.fromMillisecondsSinceEpoch(
-                                            shareEnd))),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  AddTileCallout(
+                                    key: const Key('task_sheet_late'),
+                                    icon: Icons.warning_amber_rounded,
+                                    text: l10n.taskSheetAfterShareDeadline(
+                                        _when(
+                                            DateTime.fromMillisecondsSinceEpoch(
+                                                shareEnd))),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // The server never moves the share's
+                                  // deadline for a tilette's (9.16v); the
+                                  // owner chooses to, knowingly.
+                                  AddTileSection(children: [
+                                    AddTileCheckboxRow(
+                                      key: const Key('task_sheet_move_share'),
+                                      label: l10n.taskSheetMoveShareDeadline(
+                                          _when(_deadline)),
+                                      value: _moveShare,
+                                      onChanged: _busy
+                                          ? null
+                                          : (v) =>
+                                              setState(() => _moveShare = v),
+                                    ),
+                                  ]),
+                                ],
                               ),
                             )
                           : null,

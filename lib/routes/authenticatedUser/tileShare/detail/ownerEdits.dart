@@ -94,7 +94,9 @@ class TaskEditor {
               ..DurationInMs = value.length.inMilliseconds
               ..EndTime = value.deadline.millisecondsSinceEpoch
               ..Contacts = to.map((c) => c.toContactModel()).toList();
-            if (await cubit.addTask(task, notes: value.notes)) return true;
+            if (await cubit.addTask(task, notes: value.notes)) {
+              return _moveShareIfAsked(value);
+            }
             // Added, but its notes were refused: the banner retries them.
             if (cubit.state.editFailed == DetailEdit.editTask) return true;
             cubit.dismissEditFailure();
@@ -132,15 +134,26 @@ class TaskEditor {
                   ),
                 ),
         shareDeadlineMs: _shareDeadlineMs,
-        onSave: (TaskSheetValue _, TaskChanges changes) async {
-          if (changes.isEmpty) return true;
-          return _kept(await cubit.updateTask(id,
-              name: changes.name, endMs: changes.endMs));
+        onSave: (TaskSheetValue value, TaskChanges changes) async {
+          if (!changes.isEmpty &&
+              !_kept(await cubit.updateTask(id,
+                  name: changes.name, endMs: changes.endMs))) {
+            return false;
+          }
+          return _moveShareIfAsked(value);
         },
         onDelete: () async => _kept(await cubit.deleteTask(id)),
       ),
     );
     if (notesChanged && !cubit.isClosed) await cubit.refresh();
+  }
+
+  /// The owner ticked *Also move the share's deadline*: the share's deadline
+  /// becomes the tilette's. The server never does this itself (9.16v).
+  Future<bool> _moveShareIfAsked(TaskSheetValue value) async {
+    if (!value.moveShareDeadline) return true;
+    return _kept(
+        await cubit.updateShare(endMs: value.deadline.millisecondsSinceEpoch));
   }
 
   bool _kept(bool ok) {

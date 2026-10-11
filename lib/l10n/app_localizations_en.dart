@@ -5072,8 +5072,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String taskSheetMovesShareDeadline(String when) {
-    return 'The share’s deadline will move to $when.';
+  String taskSheetMoveShareDeadline(String when) {
+    return 'Also move the share’s deadline to $when';
   }
 
   @override

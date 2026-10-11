@@ -8714,11 +8714,11 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 tilette nobody has accepted keeps its later deadline.} other{{count} tilettes nobody has accepted keep their later deadlines.}}'**
   String shareEditTilettesKeep(int count);
 
-  /// No description provided for @taskSheetMovesShareDeadline.
+  /// No description provided for @taskSheetMoveShareDeadline.
   ///
   /// In en, this message translates to:
-  /// **'The share’s deadline will move to {when}.'**
-  String taskSheetMovesShareDeadline(String when);
+  /// **'Also move the share’s deadline to {when}'**
+  String taskSheetMoveShareDeadline(String when);
 
   /// No description provided for @taskSheetPeopleLabel.
   ///

@@ -486,6 +486,13 @@ class TileShareClusterApi extends AppApi {
           },
         );
 
+        if (response.statusCode != 200) {
+          // Seen on-device: a reply that is not JSON (9.16v); say what it was.
+          final String body = response.body;
+          Utility.debugPrint('updateTileShareTemplate ${templateTileModel.Id}: '
+              '${response.statusCode} '
+              '${body.length > 500 ? '${body.substring(0, 500)}...' : body}');
+        }
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {

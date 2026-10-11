@@ -1902,7 +1902,7 @@
     "shareEditDiscardBody": "Se perderán tus cambios a este compartido.",
     "shareEditTilettesPulledIn": "{count, plural, =1{1 tilette aceptada pasará a esta fecha límite.} other{{count} tilettes aceptadas pasarán a esta fecha límite.}}",
     "shareEditTilettesKeep": "{count, plural, =1{1 tilette que nadie ha aceptado conserva su fecha posterior.} other{{count} tilettes que nadie ha aceptado conservan sus fechas posteriores.}}",
-    "taskSheetMovesShareDeadline": "La fecha límite compartida pasará a {when}.",
+    "taskSheetMoveShareDeadline": "Mover también la fecha límite compartida a {when}",
     "taskSheetPeopleLabel": "PERSONAS",
     "taskSheetAddPerson": "AGREGAR PERSONA",
     "taskSheetWillBeAdded": "Se agregará",

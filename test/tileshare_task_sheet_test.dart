@@ -259,19 +259,83 @@ void main() {
       expect(_key('task_sheet'), findsOneWidget);
     });
 
-    testWidgets("a later deadline on an accepted tilette says the share's "
-        'deadline moves', (tester) async {
+    // The server never moves the share's deadline for a tilette's (device
+    // check 9.16v, O27), so the owner chooses to: a checkbox, unticked, for
+    // any tilette whose deadline is after the share's.
+    testWidgets("a later deadline offers to move the share's deadline too - "
+        'unticked, accepted or not', (tester) async {
+      for (final status in [InvitationStatus.accepted, null]) {
+        final rig = _Rig()
+          ..pickedDate = DateTime(2026, 10, 12)
+          ..pickedTime = const TimeOfDay(hour: 9, minute: 0);
+        final tilette = tsTilette('t1', name: 'Deck', durationMs: 3600000,
+            assignees: [tsAssignee('ann@x.com', status: status)]);
+        await _open(tester, rig.sheet(task: tilette));
+        expect(_key('task_sheet_move_share'), findsNothing);
+        await _tap(tester, 'task_sheet_deadline');
+        expect(find.textContaining('after the share’s deadline'),
+            findsOneWidget);
+        expect(find.textContaining('will move'), findsNothing,
+            reason: 'nothing moves unless the owner says so');
+        expect(
+            find.descendant(
+                of: _key('task_sheet_move_share'),
+                matching: find.textContaining(
+                    'Also move the share’s deadline to Mon, Oct 12, 2026')),
+            findsOneWidget);
+        expect(
+            tester
+                .widget<Checkbox>(find.descendant(
+                    of: _key('task_sheet_move_share'),
+                    matching: find.byType(Checkbox)))
+                .value,
+            isFalse);
+        await _tap(tester, 'task_sheet_save');
+        expect(rig.saved.single.moveShareDeadline, isFalse);
+      }
+    });
+
+    testWidgets("ticked, Save says to move the share's deadline as well",
+        (tester) async {
       final rig = _Rig()
         ..pickedDate = DateTime(2026, 10, 12)
         ..pickedTime = const TimeOfDay(hour: 9, minute: 0);
-      final accepted = tsTilette('t1', name: 'Deck', durationMs: 3600000,
-          assignees: [tsAssignee('ann@x.com', status: InvitationStatus.accepted)]);
-      await _open(tester, rig.sheet(task: accepted));
+      await _open(tester, rig.sheet(task: task()));
       await _tap(tester, 'task_sheet_deadline');
-      expect(
-          find.textContaining('The share’s deadline will move to Mon, Oct 12, 2026'),
-          findsOneWidget,
-          reason: 'the server moves it when someone has accepted (O27)');
+      await _tap(tester, 'task_sheet_move_share');
+      await _tap(tester, 'task_sheet_save');
+      expect(rig.saved.single.moveShareDeadline, isTrue);
+      expect(rig.saved.single.deadline, DateTime(2026, 10, 12, 9));
+    });
+
+    testWidgets('a tilette already after the share can move it on its own',
+        (tester) async {
+      final rig = _Rig();
+      final late = tsTilette('t1',
+          name: 'Deck',
+          durationMs: 3600000,
+          endMs: DateTime(2026, 10, 12, 9).millisecondsSinceEpoch);
+      await _open(tester, rig.sheet(task: late));
+      expect(_key('task_sheet_move_share'), findsOneWidget);
+      await _tap(tester, 'task_sheet_move_share');
+      await _tap(tester, 'task_sheet_save');
+      expect(rig.saved.single.moveShareDeadline, isTrue,
+          reason: 'ticking is a change Save sends');
+    });
+
+    testWidgets("back before the share's deadline, the offer goes",
+        (tester) async {
+      final rig = _Rig()
+        ..pickedDate = DateTime(2026, 10, 12)
+        ..pickedTime = const TimeOfDay(hour: 9, minute: 0);
+      await _open(tester, rig.sheet(task: task()));
+      await _tap(tester, 'task_sheet_deadline');
+      await _tap(tester, 'task_sheet_move_share');
+      rig.pickedDate = DateTime(2026, 10, 9);
+      await _tap(tester, 'task_sheet_deadline');
+      expect(_key('task_sheet_move_share'), findsNothing);
+      await _tap(tester, 'task_sheet_save');
+      expect(rig.saved.single.moveShareDeadline, isFalse);
     });
 
     testWidgets('notes saved by the notes page are not part of Save',
