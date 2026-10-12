@@ -18,6 +18,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridChore
 import 'package:tiler_app/services/scheduleDelta.dart';
 import 'package:tiler_app/services/scheduleMotionPreferences.dart';
 import 'package:tiler_app/theme/theme_data.dart';
+import 'package:tiler_app/components/scheduleChangeScope.dart';
 
 final DateTime day = DateTime(2026, 5, 15);
 // A clock on another day: no now-line, no minute timer.
@@ -132,11 +133,13 @@ void main() {
       late void Function() rebuild;
       Widget body = StatefulBuilder(builder: (context, setState) {
         rebuild = () => setState(() {});
-        return SizedBox(
-          width: 400,
-          height: 600,
-          child: DayGridWidget(tiles: tiles, day: day, now: now),
-        );
+        return ScheduleChangeScope(
+            change: bloc.changeFeed.latest,
+            child: SizedBox(
+              width: 400,
+              height: 600,
+              child: DayGridWidget(tiles: tiles, day: day, now: now),
+            ));
       });
       body = BlocProvider<ScheduleBloc>.value(value: bloc, child: body);
       if (motion != null) {
@@ -172,7 +175,8 @@ void main() {
       final rebuild = await mount(tester);
       expect(dyBetween(tester), closeTo(160, 1));
 
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       await serveMove(tester, rebuild);
 
       // Held at the old time on the first frame.
@@ -215,7 +219,8 @@ void main() {
       expect(motion.state, ScheduleUpdateMode.minimal);
 
       final rebuild = await mount(tester, motion: motion);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       await serveMove(tester, rebuild);
       await tester.pump(Duration.zero);
       expect(ghost, findsNothing);
@@ -227,7 +232,8 @@ void main() {
     testWidgets('the same revision served again does not replay',
         (tester) async {
       final rebuild = await mount(tester);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       await serveMove(tester, rebuild);
       await tester.pumpAndSettle();
       expect(ghost, findsNothing);

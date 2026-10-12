@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/bloc/schedule/schedule_diagnostics.dart';
 export 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
+import 'package:tiler_app/bloc/schedule/schedule_change_feed.dart';
 import 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart';
 import 'package:tiler_app/bloc/schedule/schedule_recovery_monitor.dart';
 import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
@@ -31,6 +32,8 @@ export 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart'
         ScheduleChangeOrigin,
         ScheduleChangeAttribution,
         ScheduleRevisionGate;
+export 'package:tiler_app/bloc/schedule/schedule_change_feed.dart'
+    show ScheduleChange, ScheduleChangeFeed;
 
 part 'schedule_event.dart';
 part 'schedule_state.dart';
@@ -235,6 +238,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         request: evaluation,
         fields: {'reason': reason, 'canConfirmMutation': false});
     _clearJournal(evaluation.account, evaluation.id);
+    if (reason == 'deadline_expired') _withdrawEvaluation(evaluation);
     if (_evaluation?.id == evaluation.id) {
       _evaluationTimer?.cancel();
       if (_evaluationDeadline?.isCompleted == false) {
@@ -339,6 +343,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       final enriched = _evaluation!.withTarget(ids: ids, name: name);
       if (enriched != _evaluation) {
         _evaluation = enriched;
+        _attachEvaluationSubject(enriched);
         _publishEvaluation();
       }
       return request();
@@ -385,6 +390,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
                 : 1,
         affectedTileIds: List.unmodifiable(ids));
     _evaluation = evaluation;
+    _attributeEvaluation(evaluation);
     _unconfirmedRequestId = null;
     final deadline = Completer<bool>();
     _evaluationDeadline = deadline;
@@ -570,6 +576,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       _evaluationDeadline!.complete(false);
     _evaluation =
         success ? null : evaluation.withPhase(ScheduleEvaluationPhase.failed);
+    if (success) {
+      _changeTokens.remove(evaluation.id);
+    } else {
+      _withdrawEvaluation(evaluation);
+    }
     _trace('mutation_finished',
         request: evaluation, fields: {'success': success});
     _publishEvaluation();
@@ -688,30 +699,74 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   late ScheduleRevisionCubit revisions;
   ScheduleRecoveryMonitor? _recoveryMonitor;
 
-  /// Attributes each new server revision to the change that caused it
-  /// (re-optimize, drag, edit, complete) or to a background refresh.
-  /// Views read it through [attributionFor] to pick how much motion a
-  /// schedule change gets.
+  /// Attributes each new server revision to the change that caused it, or
+  /// to a background refresh. Every schedule write the bloc admits records
+  /// itself here (see [_attributeEvaluation]), so no flow has to.
   final ScheduleChangeTracker changeTracker = ScheduleChangeTracker();
   StreamSubscription<ScheduleRevision?>? _revisionAttribution;
 
-  /// Records a mutation about to be sent, so the revision it produces is
-  /// attributed to [origin]. Pass the returned token to [abandonChange] if
-  /// the request fails.
-  int beginChange(ScheduleChangeOrigin origin, {String? subjectId}) =>
-      changeTracker.begin(origin,
-          baseline: revisions.state, subjectId: subjectId);
+  /// The tracker record for each admitted evaluation, by evaluation id.
+  final Map<String, int> _changeTokens = <String, int>{};
 
-  void abandonChange(int token) => changeTracker.abandon(token);
+  /// One [ScheduleChange] per new revision, shared by every view and
+  /// subscriber that reacts to schedule changes.
+  final ScheduleChangeFeed changeFeed = ScheduleChangeFeed();
 
-  /// Names the tile the change from [beginChange] is about, once known.
-  void attachChangeSubject(int token, String subjectId) =>
-      changeTracker.attachSubject(token, subjectId);
+  @override
+  void onChange(Change<ScheduleState> change) {
+    super.onChange(change);
+    // Before any listener or widget sees the state, so the change and its
+    // tiles always arrive together.
+    changeFeed.observe(change.nextState, attribute: changeTracker.resolve);
+  }
 
-  /// What caused the schedule revision carried by [status].
-  ScheduleChangeAttribution attributionFor(ScheduleStatus? status) =>
-      changeTracker.resolve(
-          status == null ? null : ScheduleRevision.fromStatus(status));
+  /// What a write of [kind] is, as a cause of schedule changes.
+  static ScheduleChangeOrigin originOf(ScheduleChangeKind kind) {
+    switch (kind) {
+      case ScheduleChangeKind.revise:
+      case ScheduleChangeKind.shuffle:
+        return ScheduleChangeOrigin.tilerRevise;
+      case ScheduleChangeKind.add:
+        return ScheduleChangeOrigin.userAdd;
+      case ScheduleChangeKind.complete:
+        return ScheduleChangeOrigin.userComplete;
+      case ScheduleChangeKind.edit:
+      case ScheduleChangeKind.delete:
+      case ScheduleChangeKind.defer:
+      case ScheduleChangeKind.startNow:
+      case ScheduleChangeKind.pause:
+      case ScheduleChangeKind.resume:
+      case ScheduleChangeKind.settings:
+      case ScheduleChangeKind.accept:
+        return ScheduleChangeOrigin.userEdit;
+    }
+  }
+
+  /// Records an admitted write as the cause of the next new revision. The
+  /// subject is the one tile it acts on, when it names exactly one.
+  void _attributeEvaluation(ScheduleEvaluation evaluation) {
+    final ids = evaluation.affectedTileIds;
+    _changeTokens[evaluation.id] = changeTracker.begin(
+        originOf(evaluation.kind),
+        baseline: evaluation.baseline,
+        subjectId: ids.length == 1 ? ids.single : null);
+  }
+
+  /// A nested call named the tile after the write was admitted.
+  void _attachEvaluationSubject(ScheduleEvaluation evaluation) {
+    final token = _changeTokens[evaluation.id];
+    final ids = evaluation.affectedTileIds;
+    if (token != null && ids.length == 1) {
+      changeTracker.attachSubject(token, ids.single);
+    }
+  }
+
+  /// The write did not change the schedule (confirmed failure, or its hold
+  /// ended unconfirmed): it must not claim a later, unrelated revision.
+  void _withdrawEvaluation(ScheduleEvaluation evaluation) {
+    final token = _changeTokens.remove(evaluation.id);
+    if (token != null) changeTracker.abandon(token);
+  }
 
   void startRecoveryMonitoring() {
     if (_recoveryMonitor != null) return;
@@ -737,6 +792,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     await _revisionSubscription?.cancel();
     _recoveryMonitor?.close();
     await _revisionAttribution?.cancel();
+    await changeFeed.close();
     await revisions.close();
     await super.close();
   }
@@ -871,6 +927,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     });
     revisions.reset();
     changeTracker.reset();
+    _changeTokens.clear();
+    changeFeed.reset();
     emit(ScheduleLoggedOutState());
   }
 

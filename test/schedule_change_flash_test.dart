@@ -25,6 +25,7 @@ import 'package:tiler_app/services/scheduleDelta.dart';
 import 'package:tiler_app/services/scheduleMotionPreferences.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tiler_app/components/scheduleChangeScope.dart';
 
 final DateTime day = DateTime(2026, 5, 15);
 final Timeline dayTimeline =
@@ -254,19 +255,22 @@ void main() {
         value: bloc,
         child: StatefulBuilder(builder: (context, setState) {
           rebuild = () => setState(() {});
-          return SizedBox(
-            width: 400,
-            height: 600,
-            child: DayGridWidget(
-                tiles: tiles, day: day, now: DateTime(2026, 5, 16, 9)),
-          );
+          return ScheduleChangeScope(
+              change: bloc.changeFeed.latest,
+              child: SizedBox(
+                width: 400,
+                height: 600,
+                child: DayGridWidget(
+                    tiles: tiles, day: day, now: DateTime(2026, 5, 16, 9)),
+              ));
         }),
       )));
       await tester.pump();
       await tester.pump();
 
       // b leaves 10am for 2pm: the 9am-12pm stretch opens up.
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       tiles = [tiles[0], tile('b', at(14, 0), 60), tiles[2]];
       await reload(status('r1'));
       rebuild();
@@ -320,25 +324,28 @@ void main() {
         ],
         child: StatefulBuilder(builder: (context, setState) {
           rebuild = () => setState(() {});
-          return SizedBox(
-            height: 600,
-            child: EnhancedTileBatch(
-              dayIndex: day.universalDayIndex,
-              tiles: tiles,
-              showProactiveAlerts: false,
-              showTimelineMarkers: false,
-              showEnhancedCards: true,
-              showConflictAlerts: false,
-              showTravelConnectors: false,
-              showFreeSlots: false,
-            ),
-          );
+          return ScheduleChangeScope(
+              change: bloc.changeFeed.latest,
+              child: SizedBox(
+                height: 600,
+                child: EnhancedTileBatch(
+                  dayIndex: day.universalDayIndex,
+                  tiles: tiles,
+                  showProactiveAlerts: false,
+                  showTimelineMarkers: false,
+                  showEnhancedCards: true,
+                  showConflictAlerts: false,
+                  showTravelConnectors: false,
+                  showFreeSlots: false,
+                ),
+              ));
         }),
       )));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       tiles = [
         for (final t in tiles)
           t.uniqueId == 'T1' ? tile('T1', at(11, 30), 30) : t

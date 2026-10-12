@@ -141,6 +141,60 @@ void main() {
     await flush();
   });
 
+  test('the revision an admitted write produces is attributed to it, once',
+      () async {
+    await seed();
+    final changes = <ScheduleChange>[];
+    final sub = bloc.changeFeed.changes.listen(changes.add);
+    final mutation = Completer<SubCalendarEvent>();
+    final pending = bloc.runScheduleChange(() => mutation.future,
+        kind: ScheduleChangeKind.complete, affectedTileIds: ['existing']);
+    await flush();
+    // The new schedule is read while the write is still evaluating.
+    final moved = SubCalendarEvent(id: 'pushed', name: 'Pushed tile');
+    bloc.add(ReloadLocalScheduleEvent(
+        subEvents: [tile, moved],
+        timelines: [],
+        lookupTimeline: api.window,
+        scheduleStatus: ScheduleStatus.fromJson(
+            {'analysisId': 'a2', 'evaluationId': 'e2'})));
+    await flush();
+    expect(bloc.state, isA<ScheduleEvaluationState>());
+    expect(changes, hasLength(1));
+    expect(
+        changes.single.attribution.origin, ScheduleChangeOrigin.userComplete);
+    expect(changes.single.attribution.subjectId, 'existing');
+
+    api.status =
+        ScheduleStatus.fromJson({'analysisId': 'a2', 'evaluationId': 'e2'});
+    api.tiles = [tile, moved];
+    mutation.complete(tile);
+    await pending;
+    await flush();
+    await flush();
+    expect(bloc.state, isA<ScheduleLoadedState>());
+    // Settling on the same revision is not another change.
+    expect(changes, hasLength(1));
+    await sub.cancel();
+  });
+
+  test('a failed write does not claim the next revision', () async {
+    await seed();
+    await expectLater(
+        bloc.runScheduleChange(() async => throw StateError('rejected'),
+            kind: ScheduleChangeKind.complete),
+        throwsStateError);
+    await flush();
+    bloc.add(ReloadLocalScheduleEvent(
+        subEvents: [tile],
+        timelines: [],
+        lookupTimeline: api.window,
+        scheduleStatus: ScheduleStatus.fromJson(
+            {'analysisId': 'a3', 'evaluationId': 'e3'})));
+    await flush();
+    expect(bloc.changeFeed.latest!.attribution.isRefresh, isTrue);
+  });
+
   test('refresh without previousSubEvents retains existing tiles while loading',
       () async {
     await seed();

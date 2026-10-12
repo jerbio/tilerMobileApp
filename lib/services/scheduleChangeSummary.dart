@@ -1,6 +1,4 @@
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
-import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
-import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/scheduleDelta.dart';
@@ -57,7 +55,13 @@ class ScheduleChangeSummary {
     if (attribution.isRefresh || delta.isEmpty) return null;
     if (attribution.origin != ScheduleChangeOrigin.tilerRevise) {
       final subject = attribution.subjectId;
-      final knockOn = delta.changes.any((c) => c.id != subject) ||
+      // The user's own action: the tile they acted on, and for an add the
+      // tile they added (its id is unknown when the add is admitted).
+      bool own(TileChange c) =>
+          c.id == subject ||
+          (attribution.origin == ScheduleChangeOrigin.userAdd &&
+              c.kind == TileChangeKind.added);
+      final knockOn = delta.changes.any((c) => !own(c)) ||
           delta.travelChanges.any((t) => t.id != subject);
       if (!knockOn) return null;
     }
@@ -107,47 +111,7 @@ class ScheduleChangeSummary {
       delta.changes.where((c) => kinds.contains(c.kind)).length;
 }
 
-/// Turns the stream of schedule states into summaries for the day on
-/// screen.
-///
-/// Keeps the last snapshot it saw (Tiles + loaded window) and only diffs
-/// when a known, new server revision arrives, so loading more days, cache
-/// replays and failed loads never produce a summary.
-class ScheduleChangeWatcher {
-  final ScheduleRevisionGate _gate = ScheduleRevisionGate();
-  List<SubCalendarEvent>? _subEvents;
-  Timeline? _window;
-
-  /// Feeds [state] in. Returns a summary for [day] when this state is a new
-  /// revision worth reporting.
-  ScheduleChangeSummary? observe(
-    ScheduleState state, {
-    required Timeline day,
-    required ScheduleChangeAttribution Function(ScheduleStatus status)
-        attribute,
-  }) {
-    if (state is! ScheduleLoadedState || state is FailedScheduleLoadedState) {
-      return null;
-    }
-    final revision = ScheduleRevision.fromStatus(state.scheduleStatus);
-    // An unknown revision carries no trustworthy snapshot: keep the last one.
-    if (!revision.isKnown) return null;
-
-    final before = _subEvents;
-    final beforeWindow = _window;
-    final isNew = _gate.admit(revision);
-    _subEvents = state.subEvents;
-    _window = state.lookupTimeline;
-    if (!isNew || before == null) return null;
-
-    final delta = ScheduleDelta.compute(
-      before: before,
-      after: state.subEvents,
-      day: day,
-      beforeWindow: beforeWindow,
-      afterWindow: state.lookupTimeline,
-    );
-    return ScheduleChangeSummary.from(delta, attribute(state.scheduleStatus),
-        before: before, after: state.subEvents);
-  }
-}
+/// The summary worth showing for [change] on [day], if any.
+ScheduleChangeSummary? summaryForChange(ScheduleChange change, Timeline day) =>
+    ScheduleChangeSummary.from(change.deltaFor(day), change.attribution,
+        before: change.before, after: change.after);

@@ -1,7 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
-import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/scheduleDelta.dart';
@@ -30,34 +28,31 @@ class ListAnchorRestore {
 /// Keeps the daily list from jumping when a schedule change adds or removes
 /// rows above what the user is looking at.
 ///
-/// Before the rows for a new schedule revision are built, [capture] picks
-/// the anchor tile from the change (the tile the user acted on, else the
-/// nearest unchanged tile by the change, else the first unchanged tile in
-/// view) and notes where it sits on screen. After the rows are built,
-/// [resolve] says where it should sit now. Repeats of a revision, failed
-/// loads and hosts without a [ScheduleBloc] never move the list.
+/// Before the rows for a schedule change are built, [capture] picks the
+/// anchor tile from the change (the tile the user acted on, else the nearest
+/// unchanged tile by the change, else the first unchanged tile in view) and
+/// notes where it sits on screen. After the rows are built, [resolve] says
+/// where it should sit now. Without a change nothing moves.
 class ListAnchorKeeper {
-  final ScheduleRevisionGate _gate = ScheduleRevisionGate();
-  List<SubCalendarEvent> _tiles = const <SubCalendarEvent>[];
   Map<String, int> _rowOfTile = const <String, int>{};
   _Captured? _captured;
   ListChange? _change;
 
-  /// The change seen by the last [capture], if it was a new revision;
-  /// handed out once.
+  /// The change seen by the last [capture]; handed out once.
   ListChange? takeChange() {
     final change = _change;
     _change = null;
     return change;
   }
 
-  /// Call at the start of a build with the tiles about to be shown.
+  /// Call at the start of a build with the tiles about to be shown and the
+  /// schedule [change] they come with (null when there is none).
   ///
   /// [visibleRows] are the row indexes fully on screen right now, in screen
   /// order, and [alignmentOf] gives a row's leading edge as a fraction of
   /// the viewport (null when it is not laid out).
-  void capture(
-    BuildContext context, {
+  void capture({
+    required ScheduleChange? change,
     required List<SubCalendarEvent> tiles,
     required Timeline day,
     required List<int> visibleRows,
@@ -65,35 +60,31 @@ class ListAnchorKeeper {
   }) {
     _captured = null;
     _change = null;
-    final ScheduleBloc bloc;
-    try {
-      bloc = context.read<ScheduleBloc>();
-    } on ProviderNotFoundException {
-      return;
-    }
-    final state = bloc.state;
-    if (state is! ScheduleLoadedState || state is FailedScheduleLoadedState) {
-      return;
-    }
-    if (!_gate.admit(ScheduleRevision.fromStatus(state.scheduleStatus)) ||
-        _tiles.isEmpty) {
-      return;
-    }
+    if (change == null || _rowOfTile.isEmpty) return;
     final tileOfRow = <int, String>{};
     _rowOfTile.forEach((id, row) => tileOfRow.putIfAbsent(row, () => id));
     final visibleIds = [
       for (final row in visibleRows)
         if (tileOfRow[row] != null) tileOfRow[row]!,
     ];
-    // This day as shown, plus every other loaded day, so tiles that left
-    // for another day read as moved rather than removed.
-    final after = <SubCalendarEvent>[
-      ...tiles,
-      ...state.subEvents.where((t) =>
-          t.start != null && (t.start! < day.start! || t.start! >= day.end!)),
-    ];
-    final delta = ScheduleDelta.compute(before: _tiles, after: after, day: day);
-    final attribution = bloc.attributionFor(state.scheduleStatus);
+    bool otherDay(SubCalendarEvent t) =>
+        t.start != null && (t.start! < day.start! || t.start! >= day.end!);
+    // The change's own before/after, limited to tiles this list shows (or
+    // just showed) plus other days, so hidden tiles never count and tiles
+    // that left for another day read as moved rather than removed.
+    final shown = <String>{
+      ..._rowOfTile.keys,
+      for (final t in tiles) t.uniqueId
+    };
+    final delta = ScheduleDelta.compute(
+      before: [
+        for (final t in change.before)
+          if (otherDay(t) || shown.contains(t.uniqueId)) t,
+      ],
+      after: [...tiles, ...change.after.where(otherDay)],
+      day: day,
+    );
+    final attribution = change.attribution;
     _change = ListChange(delta, attribution);
     final anchorId = delta.anchorFor(
       visibleIds: visibleIds,
@@ -108,9 +99,7 @@ class ListAnchorKeeper {
 
   /// Call once the new rows are built. Records them for the next change and
   /// returns where the captured anchor should go, if anywhere.
-  ListAnchorRestore? resolve(
-      List<SubCalendarEvent> tiles, Map<String, int> rowOfTile) {
-    _tiles = tiles;
+  ListAnchorRestore? resolve(Map<String, int> rowOfTile) {
     _rowOfTile = rowOfTile;
     final captured = _captured;
     _captured = null;

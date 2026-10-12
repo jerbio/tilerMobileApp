@@ -38,7 +38,8 @@ class ScheduleChangeSummaryHost extends StatefulWidget {
 }
 
 class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
-  final ScheduleChangeWatcher _watcher = ScheduleChangeWatcher();
+  /// Schedule changes as they happen, from the bloc's change feed.
+  StreamSubscription<ScheduleChange>? _changes;
   ScheduleChangeSummary? _summary;
   Timer? _hideTimer;
 
@@ -50,9 +51,8 @@ class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
   @override
   void initState() {
     super.initState();
-    // Seed the watcher with what is already loaded, so the first change
-    // after mounting has something to diff against.
-    _observe(context.read<ScheduleBloc>().state);
+    _changes =
+        context.read<ScheduleBloc>().changeFeed.changes.listen(_onChange);
   }
 
   @override
@@ -65,6 +65,7 @@ class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
 
   @override
   void dispose() {
+    _changes?.cancel();
     _hideTimer?.cancel();
     _showTimer?.cancel();
     super.dispose();
@@ -77,10 +78,9 @@ class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
         start, DateTime(date.year, date.month, date.day + 1));
   }
 
-  void _observe(ScheduleState state) {
-    final bloc = context.read<ScheduleBloc>();
-    final summary = _watcher.observe(state,
-        day: _day, attribute: (status) => bloc.attributionFor(status));
+  void _onChange(ScheduleChange change) {
+    if (!mounted) return;
+    final summary = summaryForChange(change, _day);
     if (summary == null) return;
     AnalysticsSignal.send('schedule_change_summary_shown', additionalInfo: {
       'origin': summary.attribution.origin.name,
@@ -154,51 +154,47 @@ class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
     // The content runs behind the bottom navigation bar; the scaffold
     // reports the bar's height as this body's bottom padding.
     final bottomBar = MediaQuery.paddingOf(context).bottom;
-    return BlocListener<ScheduleBloc, ScheduleState>(
-      listener: (context, state) => _observe(state),
-      child: ScheduleChipInsets(
-        bottomBar: bottomBar,
-        child: Stack(
-          // The content keeps the tight size its region gives it.
-          fit: StackFit.expand,
-          children: [
-            widget.child,
-            if (_moving != null)
-              Positioned(
-                top: 8,
-                left: 16,
-                right: 16,
-                child: Center(
-                    child: ScheduleChangeMovingBanner(summary: _moving!)),
-              ),
+    return ScheduleChipInsets(
+      bottomBar: bottomBar,
+      child: Stack(
+        // The content keeps the tight size its region gives it.
+        fit: StackFit.expand,
+        children: [
+          widget.child,
+          if (_moving != null)
             Positioned(
+              top: 8,
               left: 16,
-              right: ScheduleChipInsets.fabClearance,
-              bottom: bottomBar + ScheduleChipInsets.summaryGap,
-              child: AnimatedSwitcher(
-                duration: animates
-                    ? const Duration(milliseconds: 250)
-                    : Duration.zero,
-                transitionBuilder: (child, animation) => FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                            begin: const Offset(0, 0.4), end: Offset.zero)
-                        .animate(animation),
-                    child: child,
-                  ),
-                ),
-                child: summary == null
-                    ? const SizedBox.shrink()
-                    : ScheduleChangeSummaryChip(
-                        key: ValueKey(summary),
-                        summary: summary,
-                        onSeeChanges: () => _openDetails(summary),
-                      ),
-              ),
+              right: 16,
+              child:
+                  Center(child: ScheduleChangeMovingBanner(summary: _moving!)),
             ),
-          ],
-        ),
+          Positioned(
+            left: 16,
+            right: ScheduleChipInsets.fabClearance,
+            bottom: bottomBar + ScheduleChipInsets.summaryGap,
+            child: AnimatedSwitcher(
+              duration:
+                  animates ? const Duration(milliseconds: 250) : Duration.zero,
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                          begin: const Offset(0, 0.4), end: Offset.zero)
+                      .animate(animation),
+                  child: child,
+                ),
+              ),
+              child: summary == null
+                  ? const SizedBox.shrink()
+                  : ScheduleChangeSummaryChip(
+                      key: ValueKey(summary),
+                      summary: summary,
+                      onSeeChanges: () => _openDetails(summary),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }

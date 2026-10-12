@@ -16,7 +16,6 @@
 // network methods, so the request each seam builds is the real one and can
 // be asserted against the Step 1.2 mapper.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
@@ -133,10 +132,7 @@ class RecordingRefresher implements EditTileScheduleRefresher {
   final List<String> events = <String>[];
 
   @override
-  void beginEvaluation(
-          {ScheduleChangeOrigin origin = ScheduleChangeOrigin.userEdit,
-          String? subjectId}) =>
-      events.add('begin');
+  void beginEvaluation() => events.add('begin');
 
   @override
   void refreshAfterChange() => events.add('refresh');

@@ -11,6 +11,7 @@ import 'package:tiler_app/components/tileUI/tileDetailBottomSheet.dart';
 import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
+import 'package:tiler_app/components/scheduleChangeScope.dart';
 import 'package:tiler_app/components/tilelist/dailyView/motion/listMotion.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
@@ -79,7 +80,8 @@ class EnhancedTileBatch extends StatefulWidget {
   EnhancedTileBatchState createState() => EnhancedTileBatchState();
 }
 
-class EnhancedTileBatchState extends State<EnhancedTileBatch> {
+class EnhancedTileBatchState extends State<EnhancedTileBatch>
+    with ScheduleChangeConsumer<EnhancedTileBatch> {
   String uniqueKey = Utility.getUuid;
   Map<String, TilerEvent> renderedTiles = {};
   Map<String, TilerEvent>? pendingRenderedTiles;
@@ -112,6 +114,15 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
   /// The rows of the last build (keys and where each tile sits).
   TileConnectorLayoutResult? _rowLayout;
+
+  /// The schedule change that arrived with the tiles, until the next build
+  /// captures it (see [ScheduleChangeConsumer]).
+  ScheduleChange? _arrivedChange;
+
+  @override
+  void didReceiveScheduleChange(ScheduleChange change) {
+    _arrivedChange = change;
+  }
 
   /// Bumped to remount the list at [_initialRow] / [_initialAlignment]:
   /// the list holds its place by row index, so it is re-opened at the
@@ -382,8 +393,10 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         .map((p) => p.index)
         .toList()
       ..sort();
+    final change = _arrivedChange;
+    _arrivedChange = null;
     _motion.anchor.capture(
-      context,
+      change: change,
       tiles: orderedTiles.whereType<SubCalendarEvent>().toList(),
       day: Timeline.fromDateTime(dayStart,
           DateTime(dayStart.year, dayStart.month, dayStart.day + 1)),
@@ -403,8 +416,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
   void _restoreAnchor(List<TilerEvent> orderedTiles) {
     final layout = _rowLayout;
     if (layout == null) return;
-    final restore = _motion.anchor.resolve(
-        orderedTiles.whereType<SubCalendarEvent>().toList(), layout.rowOfTile);
+    final restore = _motion.anchor.resolve(layout.rowOfTile);
     if (_motion.hasPending) {
       // Measure where the moved tiles landed once the new rows are laid
       // out (the anchor remount below lands in the same frame).

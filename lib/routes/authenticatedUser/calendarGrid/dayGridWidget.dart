@@ -9,7 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/scheduleChipInsets.dart';
-import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
+import 'package:tiler_app/components/scheduleChangeScope.dart';
 import 'package:tiler_app/constants.dart' as constant;
 import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
@@ -398,7 +398,8 @@ class DayGridWidget extends StatefulWidget {
   DayGridWidgetState createState() => DayGridWidgetState();
 }
 
-class DayGridWidgetState extends State<DayGridWidget> {
+class DayGridWidgetState extends State<DayGridWidget>
+    with ScheduleChangeConsumer<DayGridWidget> {
   /// Created in [initState] with `initialScrollOffset` = the initial
   /// auto-scroll target, so a freshly mounted grid (a carousel day page
   /// sliding into view) PAINTS its first frame already at the first tile
@@ -468,9 +469,6 @@ class DayGridWidgetState extends State<DayGridWidget> {
   Timer? _removeTimer;
 
   // Step-by-step schedule changes (Detailed "Schedule updates" mode).
-  /// Only a new server revision plays; repeats of the one on screen don't.
-  final ScheduleRevisionGate _stepGate = ScheduleRevisionGate();
-
   /// Holds, lifts and releases moving tiles batch by batch.
   late final GridStepPlayer _stepPlayer = GridStepPlayer(apply: (change) {
     if (mounted) {
@@ -614,8 +612,6 @@ class DayGridWidgetState extends State<DayGridWidget> {
           additionalInfo: {'actionCount': widget.tiles.length});
     }
     _resyncInitialScroll();
-    // Remember the revision already on screen, so only the next one plays.
-    _newRevisionAttribution();
   }
 
   @override
@@ -647,9 +643,11 @@ class DayGridWidgetState extends State<DayGridWidget> {
     if (oldWidget.selectedActionEntityId != widget.selectedActionEntityId) {
       _onSelectedActionChanged();
     }
-    // Step through a Tiler-made change before the diff below overwrites
-    // the previous frame's tiles (it needs them as the "before").
-    _maybeStepThroughChange(oldWidget);
+    // A different day is a fresh grid: nothing carries over.
+    if (oldWidget.dayKey != widget.dayKey) {
+      _stepPlayer.stop(notify: false);
+      _handoffs.stop(notify: false);
+    }
     // Diff the tile set for add/remove enter/exit animations
     // (runs before build so the result is visible in the upcoming frame).
     _diffTiles(oldWidget, widget);
@@ -751,68 +749,45 @@ class DayGridWidgetState extends State<DayGridWidget> {
     }
   }
 
-  /// What caused the schedule state now on screen, with every loaded tile,
-  /// when it is a revision this grid has not shown yet; null for repeats,
-  /// unknown or failed states, the TileCast preview, and hosts without a
-  /// [ScheduleBloc].
-  (ScheduleChangeAttribution, List<SubCalendarEvent>)?
-      _newRevisionAttribution() {
-    if (widget.preview) return null;
-    final ScheduleBloc bloc;
-    try {
-      bloc = context.read<ScheduleBloc>();
-    } on ProviderNotFoundException {
-      return null;
-    }
-    final state = bloc.state;
-    if (state is! ScheduleLoadedState || state is FailedScheduleLoadedState) {
-      return null;
-    }
-    if (!_stepGate.admit(ScheduleRevision.fromStatus(state.scheduleStatus))) {
-      return null;
-    }
-    return (bloc.attributionFor(state.scheduleStatus), state.subEvents);
-  }
-
-  /// When new tiles arrive for a change Tiler made (or one that pushed
-  /// other tiles):
+  /// A new schedule revision arrived with this grid's tiles (delivered
+  /// once, before the build that draws them, by [ScheduleChangeConsumer]):
   /// - in Detailed mode, play it in steps: moved tiles wait at their old
   ///   time, then lift, slide and land in batches, leaving an outline and a
   ///   gutter line from where they were;
   /// - in every mode, tiles that were on screen and moved out of view or to
   ///   another day get an edge chip once they have moved.
   /// Background refreshes keep the plain transition and get no chips.
-  void _maybeStepThroughChange(DayGridWidget oldWidget) {
-    if (identical(oldWidget.tiles, widget.tiles)) {
-      return;
-    }
-    if (oldWidget.dayKey != widget.dayKey) {
-      _stepPlayer.stop(notify: false);
-      _handoffs.stop(notify: false);
-      return;
-    }
-    final change = _newRevisionAttribution();
-    if (change == null || _controller.mode != DayGridMode.idle) {
-      return;
-    }
-    final (attribution, allTiles) = change;
+  @override
+  void didReceiveScheduleChange(ScheduleChange change) {
+    final attribution = change.attribution;
     final dayStart = _gridDayStart();
-    if (attribution.isRefresh || dayStart == null) {
+    if (widget.preview ||
+        attribution.isRefresh ||
+        dayStart == null ||
+        _controller.mode != DayGridMode.idle) {
       return;
     }
     final mode = ScheduleMotion.modeFor(context,
         origin: attribution.origin, listen: false);
     final day = Timeline.fromDateTime(
         dayStart, DateTime(dayStart.year, dayStart.month, dayStart.day + 1));
-    // This day as rendered, plus every other loaded day, so tiles that
-    // left for another day are seen as moved rather than removed.
-    final after = <SubCalendarEvent>[
-      ...widget.tiles,
-      ...allTiles.where((t) =>
-          t.start != null && (t.start! < day.start! || t.start! >= day.end!)),
-    ];
+    bool otherDay(SubCalendarEvent t) =>
+        t.start != null && (t.start! < day.start! || t.start! >= day.end!);
+    // The change's own before/after, limited to tiles this grid draws (now
+    // or just before) plus other days, so hidden tiles never animate and an
+    // early draw of the new tiles cannot erase what moved.
+    final drawn = <String>{
+      ..._lastTilesById.keys,
+      for (final t in widget.tiles) t.uniqueId,
+    };
     final delta = ScheduleDelta.compute(
-        before: _lastTilesById.values.toList(), after: after, day: day);
+      before: [
+        for (final t in change.before)
+          if (otherDay(t) || drawn.contains(t.uniqueId)) t,
+      ],
+      after: [...widget.tiles, ...change.after.where(otherDay)],
+      day: day,
+    );
 
     GridChoreography? steps;
     if (mode.choreographs) {
@@ -821,7 +796,9 @@ class DayGridWidgetState extends State<DayGridWidget> {
         Utility.debugPrint('DayGrid::steps ${attribution.origin.name}: '
             '${steps.batches.map((b) => b.ids.length).join('+')} tiles');
         _startSteps(steps,
-            grownGaps: delta.grownGaps, conflicts: delta.newConflicts);
+            before: change.beforeById,
+            grownGaps: delta.grownGaps,
+            conflicts: delta.newConflicts);
       } else if (delta.newConflicts.isNotEmpty) {
         _stepPlayer.flashConflicts(delta.newConflicts);
       }
@@ -910,13 +887,15 @@ class DayGridWidgetState extends State<DayGridWidget> {
   }
 
   void _startSteps(GridChoreography steps,
-      {List<FreeGap> grownGaps = const <FreeGap>[],
+      {required Map<String, SubCalendarEvent> before,
+      List<FreeGap> grownGaps = const <FreeGap>[],
       Set<String> conflicts = const <String>{}}) {
     _stepPlayer.start(
       grownGaps: grownGaps,
       conflicts: conflicts,
       steps,
-      before: _lastTilesById,
+      // Held at the times from before the change, whatever was last drawn.
+      before: before,
       after: {for (final t in widget.tiles) t.uniqueId: t},
       layoutOf: (id) {
         final layout = _lastLayoutById[id];

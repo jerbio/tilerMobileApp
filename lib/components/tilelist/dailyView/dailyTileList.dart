@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/scheduleChangeScope.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
@@ -711,6 +712,16 @@ class _DailyTileListState extends TileListState {
   }
 
   Widget buildDailyRenderSubCalendarTiles(
+      Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
+    // Every day page receives a schedule change in the same build as the
+    // tiles it belongs to, so a view can never draw one without the other.
+    return ScheduleChangeScope(
+      change: this.context.read<ScheduleBloc>().changeFeed.latest,
+      child: _buildDayCarousel(tileData),
+    );
+  }
+
+  Widget _buildDayCarousel(
       Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
     Tuple2<int, List<Widget>> carouselData = buildCarousel(tileData);
     int initialCarouselIndex = carouselData.item1;

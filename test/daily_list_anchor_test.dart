@@ -8,7 +8,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/components/scheduleChangeScope.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/motion/countingDuration.dart';
 import 'package:tiler_app/components/tilelist/dailyView/motion/listAnchor.dart';
@@ -112,52 +114,41 @@ void main() {
   });
 
   group('ListAnchorKeeper', () {
-    late ScheduleBloc bloc;
+    // The schedule as the bloc would report it, one state per call.
+    ScheduleChange? feed(ScheduleChangeFeed changes,
+            List<SubCalendarEvent> tiles, ScheduleStatus s) =>
+        changes.observe(
+            ScheduleLoadedState(
+                subEvents: tiles,
+                timelines: const [],
+                lookupTimeline: dayTimeline,
+                previousLookupTimeline: dayTimeline,
+                currentView: AuthorizedRouteTileListPage.Daily,
+                scheduleStatus: s),
+            attribute: (_) =>
+                const ScheduleChangeAttribution(ScheduleChangeOrigin.userEdit));
 
-    Future<BuildContext> host(WidgetTester tester) async {
-      late BuildContext captured;
-      await tester.pumpWidget(BlocProvider<ScheduleBloc>.value(
-          value: bloc,
-          child: Builder(builder: (context) {
-            captured = context;
-            return const SizedBox();
-          })));
-      return captured;
-    }
-
-    Future<void> reload(WidgetTester tester, List<SubCalendarEvent> tiles,
-        ScheduleStatus s) async {
-      bloc.add(ReloadLocalScheduleEvent(
-          subEvents: tiles,
-          timelines: const [],
-          lookupTimeline: dayTimeline,
-          scheduleStatus: s));
-      await tester.pump();
-    }
-
-    testWidgets('rows added above the anchor move it; it keeps its alignment',
-        (tester) async {
-      bloc = ScheduleBloc(getContextCallBack: () => null);
-      final context = await host(tester);
+    test('rows added above the anchor move it; it keeps its alignment', () {
+      final changes = ScheduleChangeFeed();
       final keeper = ListAnchorKeeper();
       final before = [tile('a', 8), tile('b', 9), tile('c', 10)];
 
-      await reload(tester, before, status('r0'));
-      keeper.capture(context,
+      keeper.capture(
+          change: feed(changes, before, status('r0')),
           tiles: before,
           day: dayTimeline,
           visibleRows: [1, 2],
           alignmentOf: (_) => 0.0);
-      expect(keeper.resolve(before, layout(before).rowOfTile), isNull);
+      expect(keeper.resolve(layout(before).rowOfTile), isNull);
 
       final after = [tile('x', 6), tile('y', 7), ...before];
-      await reload(tester, after, status('r1'));
-      keeper.capture(context,
+      keeper.capture(
+          change: feed(changes, after, status('r1')),
           tiles: after,
           day: dayTimeline,
           visibleRows: [1, 2],
           alignmentOf: (row) => row == 1 ? 0.25 : 0.6);
-      final restore = keeper.resolve(after, layout(after).rowOfTile)!;
+      final restore = keeper.resolve(layout(after).rowOfTile)!;
       // Nothing visible changed: the first unchanged tile in view.
       expect(restore.tileId, 'b');
       expect(restore.previousRow, 1);
@@ -166,42 +157,39 @@ void main() {
       expect(restore.alignment, 0.25);
     });
 
-    testWidgets('the same revision again never moves the list', (tester) async {
-      bloc = ScheduleBloc(getContextCallBack: () => null);
-      final context = await host(tester);
+    test('the same revision again never moves the list', () {
+      final changes = ScheduleChangeFeed();
       final keeper = ListAnchorKeeper();
       final tiles = [tile('a', 8), tile('b', 9)];
-      await reload(tester, tiles, status('r0'));
-      keeper.capture(context,
+      keeper.capture(
+          change: feed(changes, tiles, status('r0')),
           tiles: tiles,
           day: dayTimeline,
           visibleRows: [0],
           alignmentOf: (_) => 0.0);
-      keeper.resolve(tiles, layout(tiles).rowOfTile);
+      keeper.resolve(layout(tiles).rowOfTile);
 
       final more = [tile('x', 6), ...tiles];
-      keeper.capture(context,
+      final again = feed(changes, more, status('r0'));
+      expect(again, isNull);
+      keeper.capture(
+          change: again,
           tiles: more,
           day: dayTimeline,
           visibleRows: [0],
           alignmentOf: (_) => 0.0);
-      expect(keeper.resolve(more, layout(more).rowOfTile), isNull);
+      expect(keeper.resolve(layout(more).rowOfTile), isNull);
     });
 
-    testWidgets('without a schedule bloc nothing is captured', (tester) async {
-      late BuildContext context;
-      await tester.pumpWidget(Builder(builder: (c) {
-        context = c;
-        return const SizedBox();
-      }));
-      final keeper = ListAnchorKeeper()..resolve([tile('a', 8)], {'a': 0});
-      keeper.capture(context,
+    test('without a change nothing is captured', () {
+      final keeper = ListAnchorKeeper()..resolve({'a': 0});
+      keeper.capture(
+          change: null,
           tiles: [tile('x', 6), tile('a', 8)],
           day: dayTimeline,
           visibleRows: [0],
           alignmentOf: (_) => 0.0);
-      expect(keeper.resolve([tile('x', 6), tile('a', 8)], {'x': 0, 'a': 1}),
-          isNull);
+      expect(keeper.resolve({'x': 0, 'a': 1}), isNull);
     });
   });
 
@@ -233,19 +221,21 @@ void main() {
         ],
         child: StatefulBuilder(builder: (context, setState) {
           rebuild = () => setState(() {});
-          return SizedBox(
-            height: 500,
-            child: EnhancedTileBatch(
-              dayIndex: dayIndex,
-              tiles: tiles,
-              showProactiveAlerts: false,
-              showTimelineMarkers: false,
-              showEnhancedCards: true,
-              showConflictAlerts: false,
-              showTravelConnectors: false,
-              showFreeSlots: false,
-            ),
-          );
+          return ScheduleChangeScope(
+              change: bloc.changeFeed.latest,
+              child: SizedBox(
+                height: 500,
+                child: EnhancedTileBatch(
+                  dayIndex: dayIndex,
+                  tiles: tiles,
+                  showProactiveAlerts: false,
+                  showTimelineMarkers: false,
+                  showEnhancedCards: true,
+                  showConflictAlerts: false,
+                  showTravelConnectors: false,
+                  showFreeSlots: false,
+                ),
+              ));
         }),
       )));
       await tester.pump();

@@ -25,6 +25,7 @@ import 'package:tiler_app/services/scheduleDelta.dart';
 import 'package:tiler_app/services/scheduleMotionPreferences.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tiler_app/components/scheduleChangeScope.dart';
 
 // A past day: no free-slot rows and no "now" auto-scroll.
 final DateTime day = DateTime(2026, 5, 15);
@@ -130,19 +131,21 @@ void main() {
       late void Function() rebuild;
       Widget body = StatefulBuilder(builder: (context, setState) {
         rebuild = () => setState(() {});
-        return SizedBox(
-          height: 500,
-          child: EnhancedTileBatch(
-            dayIndex: day.universalDayIndex,
-            tiles: dayTiles,
-            showProactiveAlerts: false,
-            showTimelineMarkers: false,
-            showEnhancedCards: true,
-            showConflictAlerts: false,
-            showTravelConnectors: false,
-            showFreeSlots: false,
-          ),
-        );
+        return ScheduleChangeScope(
+            change: bloc.changeFeed.latest,
+            child: SizedBox(
+              height: 500,
+              child: EnhancedTileBatch(
+                dayIndex: day.universalDayIndex,
+                tiles: dayTiles,
+                showProactiveAlerts: false,
+                showTimelineMarkers: false,
+                showEnhancedCards: true,
+                showConflictAlerts: false,
+                showTravelConnectors: false,
+                showFreeSlots: false,
+              ),
+            ));
       });
       final providers = <BlocProvider>[
         BlocProvider<ScheduleBloc>.value(value: bloc),
@@ -196,7 +199,8 @@ void main() {
     testWidgets('a re-optimize flies a tile that moves within view',
         (tester) async {
       final rebuild = await mount(tester);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final moved = withT1At(11.5);
       await serve(tester, rebuild, moved, moved);
 
@@ -221,7 +225,8 @@ void main() {
     testWidgets('a tile that moves into view says where it came from',
         (tester) async {
       final rebuild = await mount(tester);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final moved = [
         for (final t in [for (var i = 0; i < 12; i++) tile('T$i', 8.0 + i)])
           t.uniqueId == 'T10' ? tile('T10', 9.5) : t
@@ -244,7 +249,8 @@ void main() {
 
     testWidgets('a day swapped for new tiles fades in as one', (tester) async {
       final rebuild = await mount(tester);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final fresh = [for (var i = 0; i < 12; i++) tile('N$i', 8.0 + i)];
       await serve(tester, rebuild, fresh, fresh);
       double opacity() => tester
@@ -264,7 +270,8 @@ void main() {
     testWidgets('a tile that moves below the view gets a chip, no flight',
         (tester) async {
       final rebuild = await mount(tester);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final moved = withT1At(20.5);
       await serve(tester, rebuild, moved, moved);
       await tester.pump();
@@ -283,7 +290,8 @@ void main() {
 
     testWidgets('a tile moved to another day gets a day chip', (tester) async {
       final rebuild = await mount(tester);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final all = withT1At(9, dayOffset: 1);
       await serve(
           tester, rebuild, all, all.where((t) => t.uniqueId != 'T1').toList());
@@ -313,7 +321,8 @@ void main() {
           () => Future<void>.delayed(const Duration(milliseconds: 50)));
       final rebuild = await mount(tester, motion: motion);
 
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final moved = withT1At(20.5);
       await serve(tester, rebuild, moved, moved);
       expect(flight, findsNothing);

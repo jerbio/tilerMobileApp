@@ -21,6 +21,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.d
 import 'package:tiler_app/services/scheduleDelta.dart';
 import 'package:tiler_app/services/scheduleMotionPreferences.dart';
 import 'package:tiler_app/theme/theme_data.dart';
+import 'package:tiler_app/components/scheduleChangeScope.dart';
 
 final DateTime day = DateTime(2026, 5, 15);
 final DateTime now = DateTime(2026, 5, 16, 9);
@@ -180,11 +181,13 @@ void main() {
       late void Function() rebuild;
       Widget body = StatefulBuilder(builder: (context, setState) {
         rebuild = () => setState(() {});
-        return SizedBox(
-          width: 400,
-          height: 600,
-          child: DayGridWidget(tiles: gridTiles, day: day, now: now),
-        );
+        return ScheduleChangeScope(
+            change: bloc.changeFeed.latest,
+            child: SizedBox(
+              width: 400,
+              height: 600,
+              child: DayGridWidget(tiles: gridTiles, day: day, now: now),
+            ));
       });
       body = BlocProvider<ScheduleBloc>.value(value: bloc, child: body);
       if (motion != null) {
@@ -229,7 +232,8 @@ void main() {
     testWidgets('a move within view draws a gutter line, and no chip',
         (tester) async {
       final rebuild = await mount(tester);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final moved = [tile('a', 'Alpha', 8), tile('b', 'Beta', 12)];
       await serve(tester, rebuild, moved, moved);
 
@@ -247,7 +251,8 @@ void main() {
       final rebuild = await mount(tester);
       expect(onScreen(tester, find.text('Beta')), isTrue);
 
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final moved = [tile('a', 'Alpha', 8), tile('b', 'Beta', 21)];
       await serve(tester, rebuild, moved, moved);
       // No chip until the tile has moved.
@@ -269,7 +274,8 @@ void main() {
     testWidgets('a tile leaving the view shrinks toward its chip',
         (tester) async {
       final rebuild = await mount(tester);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final moved = [tile('a', 'Alpha', 8), tile('b', 'Beta', 21)];
       await serve(tester, rebuild, moved, moved);
       TileMotionEmphasis emphasis(String id) => tester
@@ -288,7 +294,8 @@ void main() {
 
     testWidgets('a tile moving within view does not shrink', (tester) async {
       final rebuild = await mount(tester);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final moved = [tile('a', 'Alpha', 8), tile('b', 'Beta', 12)];
       await serve(tester, rebuild, moved, moved);
       await tester.pump(Duration.zero);
@@ -302,7 +309,8 @@ void main() {
 
     testWidgets('the chip hides on its own', (tester) async {
       final rebuild = await mount(tester);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final moved = [tile('a', 'Alpha', 8), tile('b', 'Beta', 21)];
       await serve(tester, rebuild, moved, moved);
       await tester.pump(const Duration(milliseconds: 600));
@@ -313,7 +321,8 @@ void main() {
 
     testWidgets('a tile moved to another day gets a day chip', (tester) async {
       final rebuild = await mount(tester);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       await serve(
         tester,
         rebuild,
@@ -346,7 +355,8 @@ void main() {
       await tester.runAsync(
           () => Future<void>.delayed(const Duration(milliseconds: 50)));
       final rebuild = await mount(tester, motion: motion);
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       final moved = [tile('a', 'Alpha', 8), tile('b', 'Beta', 21)];
       await serve(tester, rebuild, moved, moved);
       expect(later, findsOneWidget);

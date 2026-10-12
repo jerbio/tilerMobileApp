@@ -136,38 +136,67 @@ void main() {
     });
   });
 
-  group('ScheduleChangeWatcher', () {
-    ScheduleChangeSummary? feed(ScheduleChangeWatcher w, ScheduleState state,
+  group('ScheduleChangeFeed', () {
+    ScheduleChange? feed(ScheduleChangeFeed f, ScheduleState state,
             [ScheduleChangeAttribution attribution = revise]) =>
-        w.observe(state, day: day, attribute: (_) => attribution);
+        f.observe(state, attribute: (_) => attribution);
+
+    ScheduleEvaluationState evaluating(
+            List<SubCalendarEvent> tiles, ScheduleStatus s) =>
+        ScheduleEvaluationState(
+            subEvents: tiles,
+            timelines: const [],
+            lookupTimeline: window,
+            evaluationTime: DateTime(2026),
+            scheduleStatus: s,
+            currentView: AuthorizedRouteTileListPage.Daily);
 
     test('the first state only seeds the snapshot', () {
-      final w = ScheduleChangeWatcher();
-      expect(feed(w, loaded(thursday(), status('r0'))), isNull);
+      final f = ScheduleChangeFeed();
+      expect(feed(f, loaded(thursday(), status('r0'))), isNull);
+      expect(f.latest, isNull);
     });
 
-    test('a new revision with a change produces a summary', () {
-      final w = ScheduleChangeWatcher()
-        ..observe(loaded(thursday(), status('r0')),
-            day: day, attribute: (_) => revise);
-      final summary =
-          feed(w, loaded(thursday(vitd: at(19, 55)), status('r1')))!;
-      expect(summary.movedCount, 1);
+    test('a new revision produces one change, summarised per day', () {
+      final f = ScheduleChangeFeed();
+      feed(f, loaded(thursday(), status('r0')));
+      final change = feed(f, loaded(thursday(vitd: at(19, 55)), status('r1')))!;
+      expect(f.latest, same(change));
+      expect(change.revision.analysisId, 'r1');
+      expect(summaryForChange(change, day)!.movedCount, 1);
     });
 
     test('the same revision again never produces one', () {
-      final w = ScheduleChangeWatcher();
-      feed(w, loaded(thursday(), status('r0')));
+      final f = ScheduleChangeFeed();
+      feed(f, loaded(thursday(), status('r0')));
       // Same revision, different Tiles: e.g. more days were loaded.
-      expect(feed(w, loaded(thursday(vitd: at(19, 55)), status('r0'))), isNull);
+      expect(feed(f, loaded(thursday(vitd: at(19, 55)), status('r0'))), isNull);
+    });
+
+    test('a read that lands while the change is evaluating produces it once',
+        () async {
+      final f = ScheduleChangeFeed();
+      final seen = <ScheduleChange>[];
+      final sub = f.changes.listen(seen.add);
+      feed(f, loaded(thursday(), status('r0')));
+      // The new tiles arrive before the evaluation settles...
+      final change =
+          feed(f, evaluating(thursday(vitd: at(19, 55)), status('r1')));
+      expect(change, isNotNull);
+      expect(summaryForChange(change!, day)!.movedCount, 1);
+      // ...and the loaded state that ends it carries the same revision.
+      expect(feed(f, loaded(thursday(vitd: at(19, 55)), status('r1'))), isNull);
+      await Future<void>.delayed(Duration.zero);
+      expect(seen, [same(change)]);
+      await sub.cancel();
     });
 
     test('failed and unknown states are ignored and keep the snapshot', () {
-      final w = ScheduleChangeWatcher();
-      feed(w, loaded(thursday(), status('r0')));
+      final f = ScheduleChangeFeed();
+      feed(f, loaded(thursday(), status('r0')));
       expect(
           feed(
-              w,
+              f,
               FailedScheduleLoadedState(
                   subEvents: const <SubCalendarEvent>[],
                   timelines: const <Timeline>[],
@@ -176,21 +205,28 @@ void main() {
                   scheduleStatus: status('r9'),
                   currentView: AuthorizedRouteTileListPage.Daily)),
           isNull);
-      expect(feed(w, loaded(const [], ScheduleStatus())), isNull);
+      expect(feed(f, loaded(const [], ScheduleStatus())), isNull);
       // Diffed against the last good snapshot, not the empty failure.
-      final summary =
-          feed(w, loaded(thursday(vitd: at(19, 55)), status('r1')))!;
+      final summary = summaryForChange(
+          feed(f, loaded(thursday(vitd: at(19, 55)), status('r1')))!, day)!;
       expect(summary.movedCount, 1);
       expect(summary.removedCount, 0);
     });
 
-    test('a refresh is diffed but not reported', () {
-      final w = ScheduleChangeWatcher();
-      feed(w, loaded(thursday(), status('r0')));
-      expect(
-          feed(w, loaded(thursday(vitd: at(19, 55)), status('r1')),
-              ScheduleChangeAttribution.refresh),
-          isNull);
+    test('a refresh is a change, but gets no summary', () {
+      final f = ScheduleChangeFeed();
+      feed(f, loaded(thursday(), status('r0')));
+      final change = feed(f, loaded(thursday(vitd: at(19, 55)), status('r1')),
+          ScheduleChangeAttribution.refresh)!;
+      expect(change.attribution.isRefresh, isTrue);
+      expect(summaryForChange(change, day), isNull);
+    });
+
+    test('after a reset the next revision only seeds', () {
+      final f = ScheduleChangeFeed();
+      feed(f, loaded(thursday(), status('r0')));
+      f.reset();
+      expect(feed(f, loaded(thursday(vitd: at(19, 55)), status('r1'))), isNull);
     });
   });
 
@@ -291,7 +327,8 @@ void main() {
       createBloc();
       await tester.pumpWidget(host(bottomBar: 100));
       await reload(tester, thursday(), status('r0'));
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       await reload(tester, thursday(vitd: at(19, 55)), status('r1'));
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
@@ -311,7 +348,8 @@ void main() {
       await reload(tester, thursday(), status('r0'));
       expect(find.byKey(ScheduleChangeSummaryChip.chipKey), findsNothing);
 
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       await reload(tester, thursday(vitd: at(19, 55)), status('r1'));
       // While the change plays (Detailed), a banner names it...
       expect(find.byKey(ScheduleChangeMovingBanner.bannerKey), findsOneWidget);
@@ -341,7 +379,8 @@ void main() {
       createBloc();
       await tester.pumpWidget(host());
       await reload(tester, thursday(), status('r0'));
-      bloc.beginChange(ScheduleChangeOrigin.tilerRevise);
+      bloc.changeTracker.begin(ScheduleChangeOrigin.tilerRevise,
+          baseline: bloc.revisions.state);
       await reload(tester, thursday(vitd: at(19, 55)), status('r1'));
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();

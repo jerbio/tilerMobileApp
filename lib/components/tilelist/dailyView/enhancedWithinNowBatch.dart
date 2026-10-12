@@ -14,6 +14,7 @@ import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/components/components.dart';
 import 'package:tiler_app/components/tilelist/dailyView/models/models.dart';
+import 'package:tiler_app/components/scheduleChangeScope.dart';
 import 'package:tiler_app/components/tilelist/dailyView/motion/listMotion.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart';
 import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
@@ -82,7 +83,8 @@ class EnhancedWithinNowBatch extends TileBatch {
   }
 }
 
-class EnhancedWithinNowBatchState extends TileBatchState {
+class EnhancedWithinNowBatchState extends TileBatchState
+    with ScheduleChangeConsumer<TileBatch> {
   // UI Configuration
   static const double _heightMargin = 262;
   static const double _hourMarkerWidth = 55;
@@ -107,6 +109,15 @@ class EnhancedWithinNowBatchState extends TileBatchState {
 
   /// The rows of the last build (keys and where each tile sits).
   TileConnectorLayoutResult? _rowLayout;
+
+  /// The schedule change that arrived with the tiles, until the next build
+  /// captures it (see [ScheduleChangeConsumer]).
+  ScheduleChange? _arrivedChange;
+
+  @override
+  void didReceiveScheduleChange(ScheduleChange change) {
+    _arrivedChange = change;
+  }
 
   /// The tiles of the last build, by uniqueId, for flying copies.
   Map<String, TilerEvent> _tilesById = const <String, TilerEvent>{};
@@ -302,8 +313,10 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         ? _motion.rows.alignmentOf(layout.rowKeys[row], position)
         : null;
     final dayStart = Utility.currentTime().dayDate;
+    final change = _arrivedChange;
+    _arrivedChange = null;
     _motion.anchor.capture(
-      context,
+      change: change,
       tiles: orderedTiles.whereType<SubCalendarEvent>().toList(),
       day: Timeline.fromDateTime(dayStart,
           DateTime(dayStart.year, dayStart.month, dayStart.day + 1)),
@@ -322,8 +335,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   void _restoreAnchor(List<TilerEvent> orderedTiles) {
     final layout = _rowLayout;
     if (layout == null) return;
-    final restore = _motion.anchor.resolve(
-        orderedTiles.whereType<SubCalendarEvent>().toList(), layout.rowOfTile);
+    final restore = _motion.anchor.resolve(layout.rowOfTile);
     if (_motion.hasPending) {
       // Measure where the moved tiles landed once the new rows are laid
       // out and the anchor correction (itself after a frame) has applied.
