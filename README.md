@@ -122,7 +122,6 @@ lib/
 │   │   ├── dayRibbon/      # Day ribbon components
 │   │   ├── monthRibbon/    # Month ribbon components
 │   │   └── weekRibbon/     # Week ribbon components
-│   ├── summaryPage/        # Summary page components
 │   ├── template/           # Template components
 │   ├── tilelist/           # Tile list components
 │   │   ├── dailyView/      # Daily view components
