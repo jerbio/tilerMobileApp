@@ -8846,6 +8846,30 @@ abstract class AppLocalizations {
   /// **'Next: people'**
   String get createNextPeople;
 
+  /// No description provided for @createProjectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New project'**
+  String get createProjectTitle;
+
+  /// No description provided for @createProjectSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Create project'**
+  String get createProjectSend;
+
+  /// No description provided for @createCreating.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating…'**
+  String get createCreating;
+
+  /// No description provided for @createProjectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign tilettes to people from the board once it’s created, or keep them for yourself.'**
+  String get createProjectHint;
+
   /// No description provided for @detailLoading.
   ///
   /// In en, this message translates to:

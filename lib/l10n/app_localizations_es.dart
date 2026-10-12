@@ -5217,6 +5217,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get createNextPeople => 'Siguiente: personas';
 
   @override
+  String get createProjectTitle => 'Nuevo proyecto';
+
+  @override
+  String get createProjectSend => 'Crear proyecto';
+
+  @override
+  String get createCreating => 'Creando…';
+
+  @override
+  String get createProjectHint =>
+      'Asigna tilettes a personas desde el tablero una vez creado, o guárdalas para ti.';
+
+  @override
   String get detailLoading => 'Cargando contenido compartido…';
 
   @override

@@ -5206,6 +5206,19 @@ class AppLocalizationsPt extends AppLocalizations {
   String get createNextPeople => 'Next: people';
 
   @override
+  String get createProjectTitle => 'New project';
+
+  @override
+  String get createProjectSend => 'Create project';
+
+  @override
+  String get createCreating => 'Creating…';
+
+  @override
+  String get createProjectHint =>
+      'Assign tilettes to people from the board once it’s created, or keep them for yourself.';
+
+  @override
   String get detailLoading => 'Loading share…';
 
   @override

@@ -9,6 +9,7 @@ import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/create/createBroadcast.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/create/createClass.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/create/createModeChooser.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/create/createProject.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/hub/tileShareHub.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/preview/tileSharePreviewHost.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareActivityWidget.dart';
@@ -84,15 +85,20 @@ class _TileShareHubHostState extends State<TileShareHubHost> {
   /// takes the create screen's place.
   Future<void> _create() async {
     final TileShareMode? mode = await showCreateModeChooser(context);
-    if (!mounted || mode == null || mode == TileShareMode.project) return;
+    if (!mounted || mode == null) return;
     final source = LiveTileShareCreateSource(_clusterApi);
     void onCreated(BuildContext context, String clusterId) =>
         Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
             builder: (_) => TileShareDetailWidget.byId(
                 tileShareId: clusterId, isOutBox: true)));
-    await _push(mode == TileShareMode.class_
-        ? CreateClassScreen(source: source, onCreated: onCreated)
-        : CreateBroadcastScreen(source: source, onCreated: onCreated));
+    await _push(switch (mode) {
+      TileShareMode.broadcast =>
+        CreateBroadcastScreen(source: source, onCreated: onCreated),
+      TileShareMode.class_ =>
+        CreateClassScreen(source: source, onCreated: onCreated),
+      TileShareMode.project =>
+        CreateProjectScreen(source: source, onCreated: onCreated),
+    });
   }
 
   Future<void> _preview(String assignmentId) => _push(

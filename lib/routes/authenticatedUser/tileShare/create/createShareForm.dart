@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
+import 'package:tiler_app/data/request/contactModel.dart';
 import 'package:tiler_app/data/tileShareClassFanout.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
@@ -62,7 +63,7 @@ class CreateShareForm extends StatefulWidget {
     this.pickDate = platformPickDate,
     this.pickTime = platformPickTime,
     this.editNotes,
-  }) : assert(mode == TileShareMode.broadcast || mode == TileShareMode.class_);
+  });
 
   @override
   State<CreateShareForm> createState() => _CreateShareFormState();
@@ -91,7 +92,16 @@ class _CreateShareFormState extends State<CreateShareForm> {
   List<({int id, TaskSheetValue value, bool ownDeadline})> get _activeTasks =>
       _tasks.where((t) => !_removingTasks.contains(t.id)).toList();
   bool get _isClass => widget.mode == TileShareMode.class_;
-  String get _prefix => _isClass ? 'create_class' : 'create_broadcast';
+  bool get _isProject => widget.mode == TileShareMode.project;
+
+  /// Class and Project are made of tilettes staged here; a Broadcast is its
+  /// one tilette.
+  bool get _hasTilettes => _isClass || _isProject;
+  String get _prefix => switch (widget.mode) {
+        TileShareMode.broadcast => 'create_broadcast',
+        TileShareMode.class_ => 'create_class',
+        TileShareMode.project => 'create_project',
+      };
   Duration get _effort =>
       _activeTasks.fold(Duration.zero, (sum, task) => sum + task.value.length);
 
@@ -113,7 +123,7 @@ class _CreateShareFormState extends State<CreateShareForm> {
                     'end': draft.value.deadline.millisecondsSinceEpoch,
                   'miscData': {'userNote': draft.value.notes},
                 }),
-          people: TaskSheetPeople.everyone,
+          people: _isProject ? TaskSheetPeople.none : TaskSheetPeople.everyone,
           shareDeadlineMs: _deadline.millisecondsSinceEpoch,
           pickDuration: widget.pickDuration,
           pickDate: widget.pickDate,
@@ -181,7 +191,7 @@ class _CreateShareFormState extends State<CreateShareForm> {
                     formatDurationSummary(l10n, task.value.length) ?? '';
                 // Arrives and leaves as the shared lists' rows do (T11).
                 return AnimatedPresence(
-                  key: Key('create_class_task_${task.id}'),
+                  key: Key('${_prefix}_task_${task.id}'),
                   leaving: _removingTasks.contains(task.id),
                   onGone: () => setState(() {
                     _tasks.removeWhere((t) => t.id == task.id);
@@ -196,7 +206,7 @@ class _CreateShareFormState extends State<CreateShareForm> {
                         : l10n.createTiletteWithShare(length),
                     onTap: _busy ? null : () => _task(index: index),
                     remove: IconButton(
-                      key: Key('create_class_remove_task_${task.id}'),
+                      key: Key('${_prefix}_remove_task_${task.id}'),
                       tooltip: l10n.detailDeleteTask,
                       icon: const Icon(Icons.remove_circle_outline),
                       onPressed: _busy
@@ -208,7 +218,7 @@ class _CreateShareFormState extends State<CreateShareForm> {
               },
             ),
           AddTileNavRow(
-            key: const Key('create_class_add_task'),
+            key: Key('${_prefix}_add_task'),
             icon: Icons.add,
             title: l10n.detailAddTask,
             onTap: _busy ? null : () => _task(),
@@ -217,7 +227,7 @@ class _CreateShareFormState extends State<CreateShareForm> {
         RevealSlot(
           child: _needsTask
               ? Padding(
-                  key: const Key('create_class_needs_task'),
+                  key: Key('${_prefix}_needs_task'),
                   padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
                   child: Text(l10n.createNeedsTask,
                       style: textTheme.bodySmall?.copyWith(
@@ -228,7 +238,7 @@ class _CreateShareFormState extends State<CreateShareForm> {
         const SizedBox(height: 12),
         AddTileSection(children: [
           AddTileFieldRow(
-            key: const Key('create_class_effort'),
+            key: Key('${_prefix}_effort'),
             icon: Icons.hourglass_empty_rounded,
             label: l10n.shareEditEffort,
             value: formatDurationSummary(l10n, _effort) ?? '',
@@ -293,8 +303,8 @@ class _CreateShareFormState extends State<CreateShareForm> {
 
   bool get _ready =>
       _name.text.trim().length >= shareNameMinLength &&
-      _people.isNotEmpty &&
-      (!_isClass || _activeTasks.isNotEmpty);
+      (_isProject || _people.isNotEmpty) &&
+      (!_hasTilettes || _activeTasks.isNotEmpty);
 
   static String _labelOf(Contact contact) =>
       (contact.email ?? contact.phoneNumber ?? '').trim();
@@ -340,12 +350,15 @@ class _CreateShareFormState extends State<CreateShareForm> {
     if (_busy) return;
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final String? problem = _nameProblem(l10n);
-    if (problem != null ||
-        _people.isEmpty ||
-        (_isClass && _activeTasks.isEmpty)) {
+    // A Project goes without people: its tilettes are assigned later, on
+    // the board, if ever (owner, 9.20).
+    final bool needsPerson = !_isProject && _people.isEmpty;
+    final bool needsTask = _hasTilettes && _activeTasks.isEmpty;
+    if (problem != null || needsPerson || needsTask) {
       setState(() {
         _nameError = problem;
-        _needsPerson = _people.isEmpty;
+        _needsPerson = needsPerson;
+        _needsTask = needsTask;
       });
       return;
     }
@@ -371,7 +384,7 @@ class _CreateShareFormState extends State<CreateShareForm> {
       ..startTimeInMs = start
       ..endTimeInMs = end
       ..contacts = <Contact>[]
-      ..tilettes = _isClass
+      ..tilettes = _hasTilettes
           ? [
               for (int i = 0; i < drafts.length; i++)
                 ClusterTemplateTileModel()
@@ -381,7 +394,11 @@ class _CreateShareFormState extends State<CreateShareForm> {
                   ..StartTime = start
                   ..EndTime = _dueOf(drafts[i]).millisecondsSinceEpoch
                   ..NoteMiscData = drafts[i].value.notes
-                  ..Contacts = _people.map((c) => c.toContactModel()).toList(),
+                  // Class: everyone on every tilette (O9). Project: no one
+                  // yet - an empty list, never null.
+                  ..Contacts = _isProject
+                      ? <ContactModel>[]
+                      : _people.map((c) => c.toContactModel()).toList(),
             ]
           : <ClusterTemplateTileModel>[tilette];
     final String id;
@@ -479,7 +496,9 @@ class _CreateShareFormState extends State<CreateShareForm> {
                             ?.copyWith(color: tokens.textSecondary)),
                   ],
                 )
-              : Text(l10n.createBroadcastTitle),
+              : Text(_isProject
+                  ? l10n.createProjectTitle
+                  : l10n.createBroadcastTitle),
         ),
         body: Column(
           children: [
@@ -525,11 +544,17 @@ class _CreateShareFormState extends State<CreateShareForm> {
                           onTap: _busy ? null : _pickDeadline,
                         ),
                       ]),
-                      if (_isClass) _taskList(l10n, tokens, textTheme, locale),
+                      if (_hasTilettes)
+                        _taskList(l10n, tokens, textTheme, locale),
+                      if (_isProject)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+                          child: Text(l10n.createProjectHint, style: quiet),
+                        ),
                     ],
                     if (_isClass && _peopleStep)
                       _summary(l10n, tokens, textTheme, locale),
-                    if (!_isClass || _peopleStep) ...[
+                    if (!_hasTilettes || (_isClass && _peopleStep)) ...[
                       const SizedBox(height: 16),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
@@ -599,10 +624,12 @@ class _CreateShareFormState extends State<CreateShareForm> {
                   : '${_prefix}_send'),
               label: _isClass && !_peopleStep
                   ? l10n.createNextPeople
-                  : _people.isEmpty
-                      ? l10n.createSend
-                      : l10n.createSendTo(_people.length),
-              busyLabel: l10n.createSending,
+                  : _isProject
+                      ? l10n.createProjectSend
+                      : _people.isEmpty
+                          ? l10n.createSend
+                          : l10n.createSendTo(_people.length),
+              busyLabel: _isProject ? l10n.createCreating : l10n.createSending,
               enabled: _isClass && !_peopleStep
                   ? _name.text.trim().length >= shareNameMinLength &&
                       _activeTasks.isNotEmpty
