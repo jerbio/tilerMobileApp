@@ -7,6 +7,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/attention/attentionFilter.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/create/createBroadcast.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/create/createClass.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/create/createModeChooser.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/hub/tileShareHub.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/preview/tileSharePreviewHost.dart';
@@ -16,14 +17,13 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareActivityApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/services/api/tileShareInvitationsApi.dart';
-import 'package:tiler_app/services/api/userApi.dart';
+import 'package:tiler_app/services/tileShare/tileShareSession.dart';
 import 'package:tiler_app/services/tileShare/liveTileShareSources.dart';
 import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 
 /// The hub wired to the real backend: builds the live sources and both cubits,
-/// learns who the signed-in user is (so their own actions are left out of
-/// Attention) *before* anything loads, and sends the hub's navigation to the
-/// screens that exist today.
+/// reads the signed-in session (so their own actions are left out of
+/// Attention) without another profile request, and wires navigation.
 ///
 /// Until the unified detail screens exist (Step 9.12) a card opens today's
 /// detail screen for its cluster.
@@ -39,11 +39,9 @@ class _TileShareHubHostState extends State<TileShareHubHost> {
   late final TileShareActivityApi _activityApi;
   late final TileShareClusterApi _clusterApi;
   late final ScheduleApi _scheduleApi;
-  late final UserApi _userApi;
   late final TileShareAttentionCubit _attention;
   late final TileShareClustersCubit _clusters;
   String? _userId;
-  bool _ready = false;
 
   @override
   void initState() {
@@ -53,8 +51,11 @@ class _TileShareHubHostState extends State<TileShareHubHost> {
     _activityApi = TileShareActivityApi(getContextCallBack: () => context);
     _clusterApi = TileShareClusterApi(getContextCallBack: () => context);
     _scheduleApi = ScheduleApi(getContextCallBack: () => context);
-    _userApi = UserApi(getContextCallBack: () => context);
-    final assignments = LiveTileShareAssignmentsSource(_clusterApi, _scheduleApi);
+    _userId = tileShareSessionUserId(context);
+    TileShareLog.d('TileShareHub',
+        'signed-in user ${_userId == null ? 'unknown' : 'known'} (session)');
+    final assignments =
+        LiveTileShareAssignmentsSource(_clusterApi, _scheduleApi);
     final clusters = LiveTileShareClustersSource(_clusterApi);
     _attention = TileShareAttentionCubit(
       attention: LiveTileShareAttentionSources(_invitationsApi, _activityApi),
@@ -66,49 +67,36 @@ class _TileShareHubHostState extends State<TileShareHubHost> {
         clusters: clusters,
         assignments: assignments,
         currentUserId: () => _userId);
-    _start();
-  }
-
-  Future<void> _start() async {
-    try {
-      _userId = (await _userApi.getUserProfile())?.id;
-      TileShareLog.d('TileShareHub',
-          'signed-in user ${_userId == null ? 'unknown' : 'known'}');
-    } catch (error) {
-      // Without the id the user's own actions simply are not filtered out.
-      TileShareLog.d('TileShareHub',
-          'signed-in user unknown (profile failed: $error)');
-    }
-    if (mounted) setState(() => _ready = true);
   }
 
   Future<void> _push(Widget screen) =>
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 
-  Future<void> _openAttention(AttentionItem item) => _push(
-      TileShareDetailWidget.byId(
+  Future<void> _openAttention(AttentionItem item) =>
+      _push(TileShareDetailWidget.byId(
           tileShareId: item.clusterId, isOutBox: attentionOpensOutbox(item)));
 
-  Future<void> _openCluster(ClusterListItem item) => _push(
-      TileShareDetailWidget.byId(
+  Future<void> _openCluster(ClusterListItem item) =>
+      _push(TileShareDetailWidget.byId(
           tileShareId: item.id, isOutBox: item.createdByMe));
 
   /// Create starts with the mode (T14); once sent, the new share's detail
   /// takes the create screen's place.
   Future<void> _create() async {
     final TileShareMode? mode = await showCreateModeChooser(context);
-    if (!mounted || mode != TileShareMode.broadcast) return;
-    await _push(CreateBroadcastScreen(
-      source: LiveTileShareCreateSource(_clusterApi),
-      onCreated: (context, clusterId) => Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(
-              builder: (_) => TileShareDetailWidget.byId(
-                  tileShareId: clusterId, isOutBox: true))),
-    ));
+    if (!mounted || mode == null || mode == TileShareMode.project) return;
+    final source = LiveTileShareCreateSource(_clusterApi);
+    void onCreated(BuildContext context, String clusterId) =>
+        Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
+            builder: (_) => TileShareDetailWidget.byId(
+                tileShareId: clusterId, isOutBox: true)));
+    await _push(mode == TileShareMode.class_
+        ? CreateClassScreen(source: source, onCreated: onCreated)
+        : CreateBroadcastScreen(source: source, onCreated: onCreated));
   }
 
-  Future<void> _preview(String assignmentId) => _push(TileSharePreviewHost(
-      assignmentId: assignmentId, accountKey: _userId));
+  Future<void> _preview(String assignmentId) => _push(
+      TileSharePreviewHost(assignmentId: assignmentId, accountKey: _userId));
 
   void _openActivity() {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
@@ -127,7 +115,6 @@ class _TileShareHubHostState extends State<TileShareHubHost> {
       _activityApi.dispose();
       _clusterApi.dispose();
       _scheduleApi.dispose();
-      _userApi.dispose();
     });
     _clusters.close();
     super.dispose();
@@ -135,12 +122,6 @@ class _TileShareHubHostState extends State<TileShareHubHost> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_ready) {
-      return Scaffold(
-        appBar: AppBar(toolbarHeight: 48, automaticallyImplyLeading: false),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
     return TileShareHub(
       attention: _attention,
       clusters: _clusters,

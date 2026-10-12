@@ -155,6 +155,9 @@ class TaskSheet extends StatefulWidget {
   final TileShareTemplate? task;
   final TaskSheetPeople people;
 
+  /// Unsaved create-flow tilette: its length is still editable.
+  final bool draft;
+
   /// The share's deadline: where a new task's starts, and the line past
   /// which a task's is warned about.
   final int? shareDeadlineMs;
@@ -177,6 +180,7 @@ class TaskSheet extends StatefulWidget {
   const TaskSheet({
     super.key,
     this.task,
+    this.draft = false,
     required this.people,
     required this.shareDeadlineMs,
     required this.onSave,
@@ -298,7 +302,10 @@ class _TaskSheetState extends State<TaskSheet> {
       _peopleFailed = false;
     });
     final TaskChanges changes = _value.changesSince(_initial);
-    if (widget.isNew || !changes.isEmpty || _value.moveShareDeadline) {
+    if (widget.isNew ||
+        widget.draft ||
+        !changes.isEmpty ||
+        _value.moveShareDeadline) {
       final bool ok = await widget.onSave(_value, changes);
       if (!mounted) return;
       if (!ok) {
@@ -736,9 +743,11 @@ class _TaskSheetState extends State<TaskSheet> {
                         label: l10n.addTileFieldDuration,
                         value: formatDurationSummary(l10n, _length) ?? '',
                         // Once shared, information: no chevron, a quiet icon.
-                        onTap: isNew ? _pickLength : null,
-                        mutedIcon: !isNew,
-                        helper: isNew ? null : l10n.detailTaskLengthFixed,
+                        onTap: isNew || widget.draft ? _pickLength : null,
+                        mutedIcon: !isNew && !widget.draft,
+                        helper: isNew || widget.draft
+                            ? null
+                            : l10n.detailTaskLengthFixed,
                       ),
                       AddTileFieldRow(
                         key: const Key('task_sheet_deadline'),
@@ -966,16 +975,13 @@ class _StagedPersonRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
-    return PersonLine(
-        label: label,
-        note: l10n.taskSheetWillBeAdded,
-        trailing: [
-          IconButton(
-            key: Key('task_sheet_undo_$label'),
-            tooltip: l10n.attentionUndo,
-            onPressed: onUndo,
-            icon: const Icon(Icons.close),
-          ),
-        ]);
+    return PersonLine(label: label, note: l10n.taskSheetWillBeAdded, trailing: [
+      IconButton(
+        key: Key('task_sheet_undo_$label'),
+        tooltip: l10n.attentionUndo,
+        onPressed: onUndo,
+        icon: const Icon(Icons.close),
+      ),
+    ]);
   }
 }

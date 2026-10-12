@@ -52,7 +52,9 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
   void initState() {
     super.initState();
     final TileShareDetailCubit cubit = context.read<TileShareDetailCubit>();
-    if (cubit.state.phase != DetailPhase.loading) cubit.load();
+    if (cubit.state.phase != DetailPhase.loading) {
+      cubit.load();
+    }
   }
 
   @override
@@ -66,6 +68,8 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
       builder: (context, state) {
         final TileShareDetailCubit cubit = context.read<TileShareDetailCubit>();
         final String name = (state.cluster?.name ?? '').trim();
+        final bool loading = state.phase == DetailPhase.idle ||
+            state.phase == DetailPhase.loading;
         return Scaffold(
           appBar: AppBar(
             toolbarHeight: 48,
@@ -77,10 +81,16 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
               icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.of(context).pop(),
             ),
-            title: Text(name.isEmpty ? l10n.clusterTitleFallback : name,
-                maxLines: 1, overflow: TextOverflow.ellipsis),
+            title: Text(
+                loading
+                    ? l10n.detailLoading
+                    : name.isEmpty
+                        ? l10n.clusterTitleFallback
+                        : name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
             actions: [
-              if (cubit.canEdit)
+              if (!loading && cubit.canEdit)
                 PopupMenuButton<_ShareAction>(
                   key: const Key('detail_menu'),
                   tooltip: MaterialLocalizations.of(context).showMenuTooltip,
@@ -113,16 +123,24 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
                   onPressed: widget.onOpenActivity,
                 ),
             ],
-            bottom: state.isRefreshing || state.isSaving
-                ? const PreferredSize(
+            bottom: loading || state.isRefreshing || state.isSaving
+                ? PreferredSize(
                     preferredSize: Size.fromHeight(2),
-                    child: LinearProgressIndicator(minHeight: 2))
+                    child: LinearProgressIndicator(
+                      key: const Key('detail_load_progress'),
+                      minHeight: 2,
+                      color: scheme.onPrimary,
+                      backgroundColor: scheme.onPrimary.withValues(alpha: 0.2),
+                      semanticsLabel:
+                          loading ? l10n.detailLoading : l10n.loading,
+                    ))
                 : null,
           ),
           body: AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             child: KeyedSubtree(
-              key: ValueKey<DetailPhase>(state.phase),
+              key: ValueKey<DetailPhase>(
+                  loading ? DetailPhase.loading : state.phase),
               child: _body(context, state, cubit),
             ),
           ),

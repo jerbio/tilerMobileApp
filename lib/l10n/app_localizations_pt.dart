@@ -5164,6 +5164,51 @@ class AppLocalizationsPt extends AppLocalizations {
   String get createDiscardBody => 'What you’ve entered won’t be sent.';
 
   @override
+  String get createClassTitle => 'New class';
+
+  @override
+  String get createNeedsTask => 'Add at least one tilette';
+
+  @override
+  String get createClassPeopleHint =>
+      'Each person gets their own copy of every tilette and is asked to accept.';
+
+  @override
+  String get createTilettesLabel => 'TILETTES';
+
+  @override
+  String createTiletteWithShare(String length) {
+    return '$length · due with the share';
+  }
+
+  @override
+  String createTiletteDue(String length, String when) {
+    return '$length · due $when';
+  }
+
+  @override
+  String createClassSummary(int count, String effort, String when) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tilettes',
+      one: '1 tilette',
+    );
+    return '$_temp0 · $effort · due $when';
+  }
+
+  @override
+  String createStepOf(int step, int total) {
+    return 'Step $step of $total';
+  }
+
+  @override
+  String get createNextPeople => 'Next: people';
+
+  @override
+  String get detailLoading => 'Loading share…';
+
+  @override
   String get taskSheetPeopleLabel => 'PEOPLE';
 
   @override

@@ -8792,6 +8792,66 @@ abstract class AppLocalizations {
   /// **'What you’ve entered won’t be sent.'**
   String get createDiscardBody;
 
+  /// No description provided for @createClassTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New class'**
+  String get createClassTitle;
+
+  /// No description provided for @createNeedsTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one tilette'**
+  String get createNeedsTask;
+
+  /// No description provided for @createClassPeopleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Each person gets their own copy of every tilette and is asked to accept.'**
+  String get createClassPeopleHint;
+
+  /// No description provided for @createTilettesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TILETTES'**
+  String get createTilettesLabel;
+
+  /// No description provided for @createTiletteWithShare.
+  ///
+  /// In en, this message translates to:
+  /// **'{length} · due with the share'**
+  String createTiletteWithShare(String length);
+
+  /// No description provided for @createTiletteDue.
+  ///
+  /// In en, this message translates to:
+  /// **'{length} · due {when}'**
+  String createTiletteDue(String length, String when);
+
+  /// No description provided for @createClassSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tilette} other{{count} tilettes}} · {effort} · due {when}'**
+  String createClassSummary(int count, String effort, String when);
+
+  /// No description provided for @createStepOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total}'**
+  String createStepOf(int step, int total);
+
+  /// No description provided for @createNextPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: people'**
+  String get createNextPeople;
+
+  /// No description provided for @detailLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading share…'**
+  String get detailLoading;
+
   /// No description provided for @taskSheetPeopleLabel.
   ///
   /// In en, this message translates to:

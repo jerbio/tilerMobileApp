@@ -137,6 +137,55 @@ class _AnimatedKeyedColumnState extends State<AnimatedKeyedColumn>
   }
 }
 
+/// One child that arrives and leaves the way a row of [AnimatedKeyedColumn]
+/// does, for a list that manages its own rows (a reorderable list): it grows
+/// in when first built and, once [leaving], shrinks out where it is (taps
+/// pass it by) and then calls [onGone]. Back before it is gone, it returns.
+class AnimatedPresence extends StatefulWidget {
+  final Widget child;
+  final bool leaving;
+  final VoidCallback? onGone;
+
+  const AnimatedPresence(
+      {super.key, required this.child, this.leaving = false, this.onGone});
+
+  @override
+  State<AnimatedPresence> createState() => _AnimatedPresenceState();
+}
+
+class _AnimatedPresenceState extends State<AnimatedPresence>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: AnimatedKeyedColumn.inDuration,
+    reverseDuration: AnimatedKeyedColumn.outDuration,
+  )..forward();
+
+  @override
+  void didUpdateWidget(covariant AnimatedPresence oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.leaving && !oldWidget.leaving) {
+      _controller.reverse().whenComplete(() {
+        if (mounted && widget.leaving) widget.onGone?.call();
+      });
+    } else if (!widget.leaving && oldWidget.leaving) {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+        ignoring: widget.leaving,
+        child: _Transition(animation: _controller, child: widget.child),
+      );
+}
+
 class _Transition extends StatelessWidget {
   final Animation<double> animation;
   final Widget child;

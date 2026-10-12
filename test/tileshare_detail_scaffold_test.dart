@@ -4,6 +4,7 @@
 // answered, when it is due, how many tasks), pull-to-refresh that never
 // flashes a spinner, and the mode's content below.
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -85,8 +86,8 @@ Widget _app(_Rig rig,
           body: Center(
             child: ElevatedButton(
               onPressed: () async {
-                rig.popResult = await Navigator.of(context).push(
-                    MaterialPageRoute(
+                rig.popResult =
+                    await Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => BlocProvider.value(
                             value: rig.cubit,
                             child: TileShareDetailScaffold(
@@ -120,7 +121,10 @@ Future<void> _open(WidgetTester tester, _Rig rig,
   addTearDown(tester.view.reset);
   await tester.pumpWidget(const SizedBox());
   await tester.pumpWidget(_app(rig,
-      theme: theme, textScale: textScale, activity: activity, content: content));
+      theme: theme,
+      textScale: textScale,
+      activity: activity,
+      content: content));
   await tester.tap(find.text('open detail'));
   await _settle(tester);
 }
@@ -134,9 +138,16 @@ void main() {
       rig.clusters.hold();
       await _open(tester, rig);
       expect(_key('detail_loading'), findsOneWidget);
+      expect(find.text('Loading share\u2026'), findsOneWidget);
+      expect(find.text('Untitled share'), findsNothing);
+      expect(_key('detail_load_progress'), findsOneWidget);
+      expect(find.byType(Shimmer), findsOneWidget);
       rig.clusters.release();
       await _settle(tester);
       expect(_key('detail_loading'), findsNothing);
+      expect(find.text('Loading share\u2026'), findsNothing);
+      expect(_key('detail_load_progress'), findsNothing);
+      expect(find.byType(Shimmer), findsNothing);
       expect(find.text('Launch Prep'), findsWidgets);
       await rig.cubit.close();
     });
@@ -166,7 +177,8 @@ void main() {
   });
 
   group('the header', () {
-    testWidgets('a recipient sees the mode, who it is from, what they '
+    testWidgets(
+        'a recipient sees the mode, who it is from, what they '
         'answered, when it is due and how many tasks', (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
@@ -227,12 +239,17 @@ void main() {
         (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
-      final before = rig.clusters.calls.where((c) => c.startsWith('cluster(')).length;
+      final before =
+          rig.clusters.calls.where((c) => c.startsWith('cluster(')).length;
       rig.clusters.hold();
-      await tester.fling(find.text('Write the brief'), const Offset(0, 400), 1000);
+      await tester.fling(
+          find.text('Write the brief'), const Offset(0, 400), 1000);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(_key('detail_loading'), findsNothing);
+      expect(find.text('Launch Prep'), findsWidgets);
+      expect(find.text('Loading share\u2026'), findsNothing);
+      expect(_key('detail_load_progress'), findsOneWidget);
       expect(find.text('Write the brief'), findsOneWidget);
       rig.clusters.release();
       await _settle(tester);
@@ -265,7 +282,9 @@ void main() {
       await _open(tester, rig);
       final bar = tester.widget<AppBar>(find.byType(AppBar));
       expect(bar.toolbarHeight, 48);
-      expect(find.descendant(of: find.byType(AppBar), matching: find.text('Launch Prep')),
+      expect(
+          find.descendant(
+              of: find.byType(AppBar), matching: find.text('Launch Prep')),
           findsOneWidget);
       await tester.tap(_key('detail_activity'));
       expect(rig.activityOpened, 1);

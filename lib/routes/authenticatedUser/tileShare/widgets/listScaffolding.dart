@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 /// The pieces the TileShare lists (Attention, Clusters) share, so both look and
 /// behave the same.
@@ -84,7 +85,8 @@ class TileShareErrorBanner extends StatelessWidget {
             onPressed: onRetry,
             // The default (primary red) is nearly invisible on the dark
             // theme's dark-red banner; this colour is made for it.
-            style: TextButton.styleFrom(foregroundColor: scheme.onErrorContainer),
+            style:
+                TextButton.styleFrom(foregroundColor: scheme.onErrorContainer),
             child: Text(retryLabel),
           ),
         ],
@@ -178,24 +180,30 @@ class TileShareSkeleton extends StatelessWidget {
     final Color fill = Theme.of(context).colorScheme.surfaceContainerHigh;
     // Not scrollable, but clipped rather than overflowing on a short screen
     // (a phone held sideways shows fewer than three).
-    return ClipRect(
-      child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-        child: Column(
-          children: [
-            for (int i = 0; i < 3; i++)
-              Container(
-                height: cardHeight,
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: fill,
-                  borderRadius: BorderRadius.circular(16),
+    return ExcludeSemantics(
+        child: Shimmer.fromColors(
+            baseColor: fill,
+            highlightColor:
+                Theme.of(context).colorScheme.surfaceContainerLowest,
+            enabled: !MediaQuery.disableAnimationsOf(context),
+            child: ClipRect(
+              child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Column(
+                  children: [
+                    for (int i = 0; i < 3; i++)
+                      Container(
+                        height: cardHeight,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: fill,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-          ],
-        ),
-      ),
-    );
+            )));
   }
 }
