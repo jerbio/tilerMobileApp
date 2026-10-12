@@ -9,6 +9,43 @@ class AppLocalizationsIt extends AppLocalizations {
   AppLocalizationsIt([String locale = 'it']) : super(locale);
 
   @override
+  String get notesLoadFailed =>
+      'Impossibile caricare le tue note. Riapri l’editor delle note per riprovare.';
+
+  @override
+  String get onboardingSubmitFailed =>
+      'Impossibile salvare la configurazione. Le tue scelte sono mantenute. Riprova o salta questo passaggio per ora.';
+
+  @override
+  String operationFailed(String operation) {
+    return '$operation non è riuscito. Riprova.';
+  }
+
+  @override
+  String get scheduleLoadFailed =>
+      'Impossibile caricare il tuo programma. Aggiorna per riprovare.';
+
+  @override
+  String get chatConnectionFailed =>
+      'Impossibile connettersi alla chat. Riapri la chat per riprovare.';
+
+  @override
+  String get chatHistoryFailed =>
+      'Impossibile caricare la cronologia della chat. Riapri la conversazione.';
+
+  @override
+  String get chatSendFailed =>
+      'Impossibile inviare il tuo messaggio. Controlla la connessione e riprova.';
+
+  @override
+  String get chatRecordingFailed =>
+      'Impossibile avviare la registrazione vocale. Controlla l’accesso al microfono e riprova.';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      'Impossibile annullare la registrazione vocale. Prova a interromperla di nuovo.';
+
+  @override
   String get whiteSpace => ' ';
 
   @override
@@ -4222,59 +4259,60 @@ class AppLocalizationsIt extends AppLocalizations {
   String get productTourStarting => 'Il tour dell\'app sta per iniziare.';
 
   @override
-  String get scheduleChangeRefresh => 'Refresh schedule';
+  String get scheduleChangeRefresh => 'Aggiorna programma';
 
   @override
   String get scheduleChangeUncertainBody =>
-      'Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.';
+      'La modifica potrebbe essere arrivata al server. Aggiorna per verificare se il programma è stato aggiornato. Questo blocco terminerà automaticamente.';
 
   @override
-  String get scheduleChangeUncertain => 'Confirmation unavailable';
+  String get scheduleChangeUncertain => 'Conferma non disponibile';
 
   @override
   String get scheduleChangeHoldEnded =>
-      'The previous schedule change could not be confirmed. Check your schedule before making another change.';
+      'Non è stato possibile confermare la modifica precedente al programma. Controlla il programma prima di apportare un’altra modifica.';
 
   @override
-  String get scheduleChangeAdding => 'Adding event';
+  String get scheduleChangeAdding => 'Aggiunta dell’evento';
 
   @override
-  String get scheduleChangeSettings => 'Updating schedule settings';
+  String get scheduleChangeSettings =>
+      'Aggiornamento delle impostazioni del programma';
 
   @override
-  String get scheduleChangeAccepting => 'Accepting changes';
+  String get scheduleChangeAccepting => 'Accettazione delle modifiche';
 
   @override
-  String get scheduleChangeTargetSchedule => 'Your schedule';
+  String get scheduleChangeTargetSchedule => 'Il tuo programma';
 
   @override
-  String get scheduleChangeTargetEvent => 'Event';
+  String get scheduleChangeTargetEvent => 'Evento';
 
   @override
-  String get scheduleChangeAllEvents => 'All events';
+  String get scheduleChangeAllEvents => 'Tutti gli eventi';
 
   @override
   String scheduleChangeEventCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count events',
-      one: '1 event',
+      other: '$count eventi',
+      one: '1 evento',
     );
     return '$_temp0';
   }
 
   @override
   String get scheduleChangesBlocked =>
-      'Finish the current schedule change before starting another.';
+      'Completa la modifica in corso al programma prima di iniziarne un’altra.';
 
   @override
   String scheduleChangesBlockedBy(String change) {
-    return 'Finish the current schedule change ($change) before starting another.';
+    return 'Completa la modifica in corso al programma ($change) prima di iniziarne un’altra.';
   }
 
   @override
-  String get scheduleChangeFailed => 'Schedule change failed';
+  String get scheduleChangeFailed => 'Modifica al programma non riuscita';
 
   @override
   String get scheduleUpdates => 'Aggiornamenti del programma';

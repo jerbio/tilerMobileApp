@@ -9,6 +9,43 @@ class AppLocalizationsEl extends AppLocalizations {
   AppLocalizationsEl([String locale = 'el']) : super(locale);
 
   @override
+  String get notesLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση των σημειώσεών σας. Ανοίξτε ξανά τον επεξεργαστή σημειώσεων.';
+
+  @override
+  String get onboardingSubmitFailed =>
+      'Δεν ήταν δυνατή η αποθήκευση της ρύθμισης. Οι επιλογές σας διατηρούνται. Δοκιμάστε ξανά ή παραλείψτε αυτό το βήμα προς το παρόν.';
+
+  @override
+  String operationFailed(String operation) {
+    return 'Η ενέργεια $operation απέτυχε. Δοκιμάστε ξανά.';
+  }
+
+  @override
+  String get scheduleLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση του προγράμματός σας. Ανανεώστε για να δοκιμάσετε ξανά.';
+
+  @override
+  String get chatConnectionFailed =>
+      'Δεν ήταν δυνατή η σύνδεση στη συνομιλία. Ανοίξτε ξανά τη συνομιλία.';
+
+  @override
+  String get chatHistoryFailed =>
+      'Δεν ήταν δυνατή η φόρτωση του ιστορικού συνομιλίας. Ανοίξτε ξανά τη συνομιλία.';
+
+  @override
+  String get chatSendFailed =>
+      'Δεν ήταν δυνατή η αποστολή του μηνύματός σας. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.';
+
+  @override
+  String get chatRecordingFailed =>
+      'Δεν ήταν δυνατή η έναρξη της ηχογράφησης. Ελέγξτε την πρόσβαση στο μικρόφωνο και δοκιμάστε ξανά.';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      'Δεν ήταν δυνατή η ακύρωση της ηχογράφησης. Δοκιμάστε ξανά να τη σταματήσετε.';
+
+  @override
   String get whiteSpace => ' ';
 
   @override
@@ -4233,59 +4270,59 @@ class AppLocalizationsEl extends AppLocalizations {
       'Η περιήγηση στην εφαρμογή σου πρόκειται να αρχίσει.';
 
   @override
-  String get scheduleChangeRefresh => 'Refresh schedule';
+  String get scheduleChangeRefresh => 'Ανανέωση προγράμματος';
 
   @override
   String get scheduleChangeUncertainBody =>
-      'Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.';
+      'Η αλλαγή σου μπορεί να έχει φτάσει στον διακομιστή. Ανανέωσε για να ελέγξεις αν το πρόγραμμα ενημερώθηκε. Η αναμονή θα λήξει αυτόματα.';
 
   @override
-  String get scheduleChangeUncertain => 'Confirmation unavailable';
+  String get scheduleChangeUncertain => 'Η επιβεβαίωση δεν είναι διαθέσιμη';
 
   @override
   String get scheduleChangeHoldEnded =>
-      'The previous schedule change could not be confirmed. Check your schedule before making another change.';
+      'Η προηγούμενη αλλαγή στο πρόγραμμα δεν μπόρεσε να επιβεβαιωθεί. Έλεγξε το πρόγραμμά σου πριν κάνεις άλλη αλλαγή.';
 
   @override
-  String get scheduleChangeAdding => 'Adding event';
+  String get scheduleChangeAdding => 'Προσθήκη συμβάντος';
 
   @override
-  String get scheduleChangeSettings => 'Updating schedule settings';
+  String get scheduleChangeSettings => 'Ενημέρωση ρυθμίσεων προγράμματος';
 
   @override
-  String get scheduleChangeAccepting => 'Accepting changes';
+  String get scheduleChangeAccepting => 'Αποδοχή αλλαγών';
 
   @override
-  String get scheduleChangeTargetSchedule => 'Your schedule';
+  String get scheduleChangeTargetSchedule => 'Το πρόγραμμά σου';
 
   @override
-  String get scheduleChangeTargetEvent => 'Event';
+  String get scheduleChangeTargetEvent => 'Συμβάν';
 
   @override
-  String get scheduleChangeAllEvents => 'All events';
+  String get scheduleChangeAllEvents => 'Όλα τα συμβάντα';
 
   @override
   String scheduleChangeEventCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count events',
-      one: '1 event',
+      other: '$count συμβάντα',
+      one: '1 συμβάν',
     );
     return '$_temp0';
   }
 
   @override
   String get scheduleChangesBlocked =>
-      'Finish the current schedule change before starting another.';
+      'Ολοκλήρωσε την τρέχουσα αλλαγή στο πρόγραμμα πριν ξεκινήσεις άλλη.';
 
   @override
   String scheduleChangesBlockedBy(String change) {
-    return 'Finish the current schedule change ($change) before starting another.';
+    return 'Ολοκλήρωσε την τρέχουσα αλλαγή στο πρόγραμμα ($change) πριν ξεκινήσεις άλλη.';
   }
 
   @override
-  String get scheduleChangeFailed => 'Schedule change failed';
+  String get scheduleChangeFailed => 'Η αλλαγή στο πρόγραμμα απέτυχε';
 
   @override
   String get scheduleUpdates => 'Ενημερώσεις προγράμματος';

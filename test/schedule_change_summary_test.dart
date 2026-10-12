@@ -86,13 +86,13 @@ void main() {
     });
 
     test('a drag that only moved the dragged Tile gets none', () {
-      const drag = ScheduleChangeAttribution(ScheduleChangeOrigin.userDrag,
+      const drag = ScheduleChangeAttribution(ScheduleChangeOrigin.userEdit,
           subjectId: 'vitd');
       expect(ScheduleChangeSummary.from(moveVitD(), drag), isNull);
     });
 
     test('a drag that pushed other Tiles gets one', () {
-      const drag = ScheduleChangeAttribution(ScheduleChangeOrigin.userDrag,
+      const drag = ScheduleChangeAttribution(ScheduleChangeOrigin.userEdit,
           subjectId: 'groc');
       final delta = ScheduleDelta.compute(
           before: thursday(),

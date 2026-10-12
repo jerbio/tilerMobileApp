@@ -832,8 +832,7 @@ class DayGridWidgetState extends State<DayGridWidget>
       return 0;
     }
 
-    final handoffs =
-        GridHandoff.fromDelta(delta, place: place, skipId: skipId);
+    final handoffs = GridHandoff.fromDelta(delta, place: place, skipId: skipId);
     if (handoffs.isNotEmpty) {
       Utility.debugPrint('DayGrid::handoff '
           '${handoffs.map((h) => '${h.direction.name}:${h.tiles.length}').join(' ')}');
@@ -873,10 +872,9 @@ class DayGridWidgetState extends State<DayGridWidget>
     }
     final position = _scrollController.position;
     // Land the first moved tile about a third of the way down.
-    final target =
-        (_topPx(dayStart: dayStart, startMs: handoff.targetStartMs) -
-                position.viewportDimension / 3)
-            .clamp(0.0, position.maxScrollExtent);
+    final target = (_topPx(dayStart: dayStart, startMs: handoff.targetStartMs) -
+            position.viewportDimension / 3)
+        .clamp(0.0, position.maxScrollExtent);
     if (ScheduleMotion.modeFor(context, listen: false).animates) {
       _scrollController.animateTo(target,
           duration: const Duration(milliseconds: 450),
@@ -1619,7 +1617,7 @@ class DayGridWidgetState extends State<DayGridWidget>
         });
       }
       _rollbackDragMove();
-      _showDragErrorToast();
+      _showDragErrorToast(tile.name);
     });
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: preDragSubEvents,
@@ -1655,11 +1653,14 @@ class DayGridWidgetState extends State<DayGridWidget>
 
   /// Localized failure toast (best-effort — a missing localization
   /// never blocks the rollback itself).
-  void _showDragErrorToast() {
+  void _showDragErrorToast(String? eventName) {
     try {
       final l10n = AppLocalizations.of(context);
       Fluttertoast.showToast(
-        msg: l10n?.failedToUpdateTile ?? 'Failed to move the tile.',
+        msg: l10n == null
+            ? 'The tile move could not be confirmed. Refresh your schedule.'
+            : scheduleChangeFailureMessage(context,
+                kind: ScheduleChangeKind.edit, eventName: eventName),
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
       );
@@ -2293,11 +2294,9 @@ class DayGridWidgetState extends State<DayGridWidget>
                     key: FreeGapFlashWidget.keyFor(entry.key),
                     gap: entry.key,
                     top: _topPx(dayStart: dayStart, startMs: entry.key.startMs),
-                    height:
-                        _topPx(dayStart: dayStart, startMs: entry.key.endMs) -
-                            _topPx(
-                                dayStart: dayStart,
-                                startMs: entry.key.startMs),
+                    height: _topPx(
+                            dayStart: dayStart, startMs: entry.key.endMs) -
+                        _topPx(dayStart: dayStart, startMs: entry.key.startMs),
                     left: tileLeft,
                     width: tileWidth,
                     yOf: (ms) => _topPx(dayStart: dayStart, startMs: ms),
@@ -2567,8 +2566,8 @@ class DayGridWidgetState extends State<DayGridWidget>
     if (visible.isEmpty) {
       return const <Widget>[];
     }
-    Widget chip(GridHandoff handoff) => GridHandoffChip(
-        handoff: handoff, onTap: () => _onHandoffTap(handoff));
+    Widget chip(GridHandoff handoff) =>
+        GridHandoffChip(handoff: handoff, onTap: () => _onHandoffTap(handoff));
     final top =
         visible.where((h) => h.direction == HandoffDirection.earlier).toList();
     final bottom =

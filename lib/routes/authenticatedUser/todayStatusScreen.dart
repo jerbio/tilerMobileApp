@@ -401,7 +401,7 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
             Icon(Icons.cloud_off, color: tokens.textSecondary, size: 32),
             const SizedBox(height: TodayStatusTokens.space3),
             Text(
-              l10n.errorOccurred,
+              l10n.scheduleLoadFailed,
               textAlign: TextAlign.center,
               style: TextStyle(color: tokens.textSecondary),
             ),
@@ -509,13 +509,21 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
         _exitSelectionMode();
         unawaited(_load());
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(scheduleChangeFailureMessage(context))));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(scheduleChangeFailureMessage(context,
+                kind: ScheduleChangeKind.complete,
+                eventName:
+                    selected.length == 1 ? selected.single.source.name : null,
+                affectedEventCount: selected.length))));
       }
     } catch (_) {
       if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(scheduleChangeFailureMessage(context))));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(scheduleChangeFailureMessage(context,
+                kind: ScheduleChangeKind.complete,
+                eventName:
+                    selected.length == 1 ? selected.single.source.name : null,
+                affectedEventCount: selected.length))));
     } finally {
       if (mounted) setState(() => _isCompleting = false);
     }

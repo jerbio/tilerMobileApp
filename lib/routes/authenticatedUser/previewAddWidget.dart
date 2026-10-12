@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
+import 'package:tiler_app/components/scheduleNotices/scheduleNoticeSurface.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
@@ -75,6 +77,9 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   }
 
   onSubmit(NewTile newTile) {
+    if (isPendingAdd ||
+        !scheduleChangesAllowed(context, requestedKind: ScheduleChangeKind.add))
+      return;
     Color randomColor = Utility.randomColor;
     newTile.RColor = (randomColor.r * 255).round().toString();
     newTile.BColor = (randomColor.b * 255).round().toString();
@@ -121,13 +126,8 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     }).onError((error, stackTrace) {
       AnalysticsSignal.send('ADD_TILE_NEWTILE_ADD_ERROR_RESPONSE');
       if (error != null) {
-        String message = error.toString();
-        if (error is FormatException) {
-          FormatException exception = error;
-          message = exception.message;
-        }
-
-        debugPrint(message);
+        final message = scheduleChangeFailureMessage(context,
+            kind: ScheduleChangeKind.add, eventName: newTile.Name);
         final scaffold = ScaffoldMessenger.of(context);
         scaffold.showSnackBar(
           SnackBar(
@@ -246,6 +246,8 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
       text: AppLocalizations.of(context)!.previewTileDeferAll,
       icon: _buildTripleChevron(),
       onPressed: () {
+        if (!scheduleChangesAllowed(context,
+            requestedKind: ScheduleChangeKind.defer)) return;
         AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
         Navigator.pushNamed(context, '/Procrastinate').whenComplete(() {
           var scheduleBloc = this.context.read<ScheduleBloc>().state;
@@ -329,6 +331,8 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           color: colorScheme.primary, size: 20),
       text: AppLocalizations.of(context)!.previewTileShuffle,
       onPressed: () {
+        if (!scheduleChangesAllowed(context,
+            requestedKind: ScheduleChangeKind.shuffle)) return;
         AnalysticsSignal.send('SHUFFLE_BUTTON');
         this.context.read<ScheduleBloc>().add(ShuffleScheduleEvent());
         if (Navigator.canPop(context)) {
@@ -389,8 +393,9 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-        listeners: [
+    return ScheduleNoticeSurface(
+        child: MultiBlocListener(
+            listeners: [
           BlocListener<ForecastBloc, ForecastState>(
             listener: (context, state) {
               if (state is ForecastLoading) {
@@ -404,18 +409,18 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
             },
           ),
         ],
-        child: Stack(
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
+            child: Stack(
               children: [
-                Utility.isKeyboardVisible(context)
-                    ? SizedBox.shrink()
-                    : renderPreview(),
-                renderModal(),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Utility.isKeyboardVisible(context)
+                        ? SizedBox.shrink()
+                        : renderPreview(),
+                    renderModal(),
+                  ],
+                )
               ],
-            )
-          ],
-        ));
+            )));
   }
 }

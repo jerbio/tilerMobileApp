@@ -1,5 +1,6 @@
 import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
@@ -77,7 +78,7 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
       if (!mounted) return;
       setState(() => _submitting = false);
       showErrorMessage(scheduleChangeFailureMessage(context,
-          fallback: AppLocalizations.of(context)!.errorOccurred));
+          kind: ScheduleChangeKind.defer));
     }
   }
 

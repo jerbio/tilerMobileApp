@@ -311,6 +311,8 @@ abstract class AppApi {
                   requestTimeout,
                   onTimeout: () {
                     throw TilerError(
+                        cause: TimeoutException(
+                            'Request timed out', requestTimeout),
                         Message:
                             'Request timed out after ${requestTimeout.inSeconds} seconds');
                   },
@@ -327,6 +329,8 @@ abstract class AppApi {
                   requestTimeout,
                   onTimeout: () {
                     throw TilerError(
+                        cause: TimeoutException(
+                            'Request timed out', requestTimeout),
                         Message:
                             'Request timed out after ${requestTimeout.inSeconds} seconds');
                   },
@@ -356,7 +360,8 @@ abstract class AppApi {
               if (e is TilerError) {
                 rethrow;
               }
-              throw TilerError(Message: 'Network error: ${e.toString()}');
+              throw TilerError(
+                  Message: 'Network error: ${e.toString()}', cause: e);
             }
           }
           throw TilerError(
@@ -368,10 +373,10 @@ abstract class AppApi {
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
+      if (e is TilerError) rethrow;
       throw TilerError(
-          Message: e is TilerError
-              ? e.Message
-              : LocalizationService.instance.translations.errorOccurred);
+          Message: LocalizationService.instance.translations.errorOccurred,
+          cause: e);
     }
     throw TilerError();
   }

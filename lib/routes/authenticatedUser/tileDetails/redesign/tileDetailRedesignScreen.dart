@@ -11,6 +11,8 @@
 // Details — on the shared widgets and the shared Add Tile pickers. The
 // occurrences list is 6.5, the route drop-in 6.6.
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/notesPayload.dart';
@@ -507,6 +509,8 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
   Future<void> _save() async {
     final TileDetailDraft? d = draft;
     if (d == null || _submitting || !d.canSave) return;
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.edit)) return;
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _submitting = true);
     final TileDetailSaveResult result = await widget.submission.save(d);
@@ -520,11 +524,14 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
         return;
       case EditTileSaveOutcome.failure:
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        showScheduleChangeFailure(
+          context,
           key: const ValueKey('detailSaveError'),
-          content: Text(l10n.tileDetailSaveFailed),
-          action: SnackBarAction(label: l10n.addTileRetry, onPressed: _save),
-        ));
+          kind: ScheduleChangeKind.edit,
+          eventName: d.name,
+          fallback: l10n.tileDetailSaveFailed,
+          onRetry: _save,
+        );
     }
   }
 
@@ -535,6 +542,8 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
   Future<void> _deleteSeries() async {
     final TileDetailDraft d = draft!;
     if (_submitting) return;
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.delete)) return;
     final l10n = AppLocalizations.of(context)!;
     final String title = d.name.trim().isEmpty ? l10n.tileName : d.name.trim();
     final List<String> body = <String>[
@@ -561,6 +570,8 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
       ),
     );
     if (confirmed != true || !mounted) return;
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.delete)) return;
     setState(() => _submitting = true);
     final TileDetailSaveResult result = await widget.submission.deleteSeries(d);
     if (!mounted) return;
@@ -569,10 +580,12 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
       Navigator.of(context).pop(TileDetailDeleted(result.event));
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    showScheduleChangeFailure(
+      context,
       key: const ValueKey('detailDeleteError'),
-      content: Text(l10n.tileDetailDeleteFailed),
-    ));
+      kind: ScheduleChangeKind.delete,
+      eventName: d.name,
+    );
   }
 
   // ----------------------------------------------------------------- leave
@@ -647,46 +660,49 @@ class TileDetailRedesignScreenState extends State<TileDetailRedesignScreen> {
               ),
           ],
         ),
-        body: _loading
-            ? const TileLoadSkeleton(sweepKey: ValueKey('detailLoadingSweep'))
-            : _loadFailure != null
-                ? TileLoadFailure(
-                    retryKey: const ValueKey('detailRetryLoad'),
-                    message: l10n.tileDetailLoadFailed,
-                    onRetry: _load)
-                : _Frame(
-                    draft: d!,
-                    submitting: _submitting,
-                    titleController: _titleController,
-                    titleFocus: _titleFocus,
-                    onTitleChanged: _onTitleChanged,
-                    onDurationTap: _editDuration,
-                    onDeadlineTap: _editDeadline,
-                    onDeadlineClear: () => draft!.setDeadline(null),
-                    onRepeatTap: _editRepeat,
-                    onLocationTap: _editLocation,
-                    onNameLocationTap: _nameLocation,
-                    onColorTap: _editColor,
-                    onRestrictionTap: _editRestriction,
-                    onNotesTap: _openNotes,
-                    onSave: _save,
-                    occurrences: widget.occurrences == null || d.isProviderOwned
-                        ? null
-                        : _OccurrencesView(
-                            items: _paging.orderedItems,
-                            loading: _occurrencesLoading,
-                            failed: _occurrencesFailed,
-                            loaded: _occurrencesLoaded,
-                            canEarlier: _paging.hasMoreBefore,
-                            canLater: _paging.hasMoreAfter,
-                            loadingEarlier: _paging.isLoadingBefore,
-                            loadingLater: _paging.isLoadingAfter,
-                            onRetry: _loadOccurrences,
-                            onEarlier: _loadOccurrencesBefore,
-                            onLater: _loadOccurrencesAfter,
-                            onOpen: _openOccurrence,
-                          ),
-                  ),
+        body: ScheduleEvaluationProgress(
+            child: _loading
+                ? const TileLoadSkeleton(
+                    sweepKey: ValueKey('detailLoadingSweep'))
+                : _loadFailure != null
+                    ? TileLoadFailure(
+                        retryKey: const ValueKey('detailRetryLoad'),
+                        message: l10n.tileDetailLoadFailed,
+                        onRetry: _load)
+                    : _Frame(
+                        draft: d!,
+                        submitting: _submitting,
+                        titleController: _titleController,
+                        titleFocus: _titleFocus,
+                        onTitleChanged: _onTitleChanged,
+                        onDurationTap: _editDuration,
+                        onDeadlineTap: _editDeadline,
+                        onDeadlineClear: () => draft!.setDeadline(null),
+                        onRepeatTap: _editRepeat,
+                        onLocationTap: _editLocation,
+                        onNameLocationTap: _nameLocation,
+                        onColorTap: _editColor,
+                        onRestrictionTap: _editRestriction,
+                        onNotesTap: _openNotes,
+                        onSave: _save,
+                        occurrences:
+                            widget.occurrences == null || d.isProviderOwned
+                                ? null
+                                : _OccurrencesView(
+                                    items: _paging.orderedItems,
+                                    loading: _occurrencesLoading,
+                                    failed: _occurrencesFailed,
+                                    loaded: _occurrencesLoaded,
+                                    canEarlier: _paging.hasMoreBefore,
+                                    canLater: _paging.hasMoreAfter,
+                                    loadingEarlier: _paging.isLoadingBefore,
+                                    loadingLater: _paging.isLoadingAfter,
+                                    onRetry: _loadOccurrences,
+                                    onEarlier: _loadOccurrencesBefore,
+                                    onLater: _loadOccurrencesAfter,
+                                    onOpen: _openOccurrence,
+                                  ),
+                      )),
       ),
     );
   }

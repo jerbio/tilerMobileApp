@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -121,10 +122,11 @@ class LocalNotificationService {
   }
 
   completeTile(BuildContext context, SubCalendarEvent subTile) async {
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.complete)) return;
     final colorScheme = Theme.of(context).colorScheme;
     showMessage(AppLocalizations.of(context)!.completing, colorScheme);
     final scheduleState = context.read<ScheduleBloc>().state;
-    if (context.read<ScheduleBloc>().scheduleChangesBlocked) return;
 
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];

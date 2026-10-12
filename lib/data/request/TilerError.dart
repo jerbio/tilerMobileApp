@@ -6,7 +6,11 @@ class TilerError {
   static const String unexpectedCharacter = 'Unexpected character';
   String? Message;
   String? Code;
-  TilerError({this.Message, this.Code});
+
+  /// Original local error, retained for lifecycle decisions, never sent on wire.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final Object? cause;
+  TilerError({this.Message, this.Code, this.cause});
 
   factory TilerError.fromJson(Map<String, dynamic> json) =>
       _$TilerErrorFromJson(json);

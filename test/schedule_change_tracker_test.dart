@@ -20,14 +20,14 @@ void main() {
 
     test('the first new revision after begin claims the change', () {
       tracker.resolve(rev('r0'));
-      tracker.begin(ScheduleChangeOrigin.userDrag,
+      tracker.begin(ScheduleChangeOrigin.userEdit,
           baseline: rev('r0'), subjectId: 'vitd');
 
       // The baseline itself does not claim it.
       expect(tracker.resolve(rev('r0')).isRefresh, isTrue);
 
       final claimed = tracker.resolve(rev('r1'));
-      expect(claimed.origin, ScheduleChangeOrigin.userDrag);
+      expect(claimed.origin, ScheduleChangeOrigin.userEdit);
       expect(claimed.subjectId, 'vitd');
 
       // Claimed once: the next revision is a refresh again.

@@ -112,6 +112,60 @@ abstract class AppLocalizations {
     Locale('pt')
   ];
 
+  /// No description provided for @notesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load your notes. Reopen the notes editor to try again.'**
+  String get notesLoadFailed;
+
+  /// No description provided for @onboardingSubmitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t save your setup. Your choices are kept. Try again or skip for now.'**
+  String get onboardingSubmitFailed;
+
+  /// An unsuccessful operation, naming the command and its target rather than a generic error.
+  ///
+  /// In en, this message translates to:
+  /// **'{operation} failed. Please try again.'**
+  String operationFailed(String operation);
+
+  /// No description provided for @scheduleLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load your schedule. Refresh to try again.'**
+  String get scheduleLoadFailed;
+
+  /// No description provided for @chatConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t connect to chat. Reopen chat to try again.'**
+  String get chatConnectionFailed;
+
+  /// No description provided for @chatHistoryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load your chat history. Reopen the conversation to try again.'**
+  String get chatHistoryFailed;
+
+  /// No description provided for @chatSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message couldn’t be sent. Check your connection and try again.'**
+  String get chatSendFailed;
+
+  /// No description provided for @chatRecordingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t start voice recording. Check microphone access and try again.'**
+  String get chatRecordingFailed;
+
+  /// No description provided for @chatCancelRecordingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t cancel voice recording. Try stopping the recording again.'**
+  String get chatCancelRecordingFailed;
+
   /// No description provided for @whiteSpace.
   ///
   /// In en, this message translates to:

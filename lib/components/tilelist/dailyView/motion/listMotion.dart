@@ -109,21 +109,20 @@ class ListMotion {
     _pending = null;
     final change = anchor.takeChange();
     final layer = _layer;
-    if (preview ||
-        change == null ||
-        change.attribution.isRefresh ||
-        previousRows == null ||
-        layer == null) {
+    if (preview || change == null || previousRows == null || layer == null) {
       return;
     }
     final mode = ScheduleMotion.modeFor(context,
         origin: change.attribution.origin, listen: false);
     final subject = change.attribution.subjectId;
     if (mode.animates && change.delta.isMostlyReplaced) {
+      Utility.debugPrint(
+          'DailyList::crossfade origin=${change.attribution.origin.name}');
       _fadingIn = true;
       WidgetsBinding.instance
           .addPostFrameCallback((_) => apply(() => _fadingIn = false));
     }
+    if (change.attribution.isRefresh) return;
 
     // Tiles that were on screen and are leaving their row.
     final seen = <String, Rect>{};

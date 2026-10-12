@@ -343,6 +343,35 @@ void main() {
       expect(later, findsNothing);
     });
 
+    for (final reduceMotion in [false, true]) {
+      testWidgets(
+          'a replaced day on refresh respects reduced motion ($reduceMotion)',
+          (tester) async {
+        tester.platformDispatcher.accessibilityFeaturesTestValue =
+            FakeAccessibilityFeatures(disableAnimations: reduceMotion);
+        addTearDown(
+            tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+        final rebuild = await mount(tester);
+        final replacement = [
+          for (var i = 0; i < 12; i++) tile('new$i', 8.0 + i)
+        ];
+        await serve(tester, rebuild, replacement, replacement);
+        final opacity = find
+            .descendant(
+                of: find.byType(ListMotionLayer),
+                matching: find.byType(AnimatedOpacity))
+            .first;
+        expect(tester.widget<AnimatedOpacity>(opacity).opacity,
+            reduceMotion ? 1 : 0);
+        expect(flight, findsNothing);
+        await tester.pump();
+        await tester.pump(ListMotion.crossFade);
+        expect(tester.widget<AnimatedOpacity>(opacity).opacity, 1);
+        expect(find.text('new1'), findsWidgets);
+        expect(later, findsNothing);
+      });
+    }
+
     testWidgets('Minimal mode: no flight, but the chip still shows',
         (tester) async {
       SharedPreferences.setMockInitialValues(

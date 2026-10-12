@@ -1,4 +1,13 @@
 {
+  "notesLoadFailed": "No se pudieron cargar tus notas. Vuelve a abrir el editor para intentarlo de nuevo.",
+  "onboardingSubmitFailed": "No se pudo guardar tu configuración. Tus opciones se conservan. Inténtalo de nuevo u omite este paso por ahora.",
+  "operationFailed": "{operation} falló. Inténtalo de nuevo.",
+  "scheduleLoadFailed": "No se pudo cargar tu horario. Actualiza para intentarlo de nuevo.",
+  "chatConnectionFailed": "No se pudo conectar al chat. Vuelve a abrirlo para intentarlo de nuevo.",
+  "chatHistoryFailed": "No se pudo cargar tu historial de chat. Vuelve a abrir la conversación.",
+  "chatSendFailed": "No se pudo enviar tu mensaje. Revisa tu conexión e inténtalo de nuevo.",
+  "chatRecordingFailed": "No se pudo iniciar la grabación. Revisa el acceso al micrófono e inténtalo de nuevo.",
+  "chatCancelRecordingFailed": "No se pudo cancelar la grabación. Intenta detenerla de nuevo.",
     "helloWorld": "¡Hola Mundo!",
     "useDeviceLocation": "Usar la ubicación de mi dispositivo",
     "todayStatusPlacedTitle": "Programadas correctamente",

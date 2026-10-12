@@ -7,18 +7,25 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 /// Handler guard as well as API admission: a second tap gets an explanation
 /// naming the change still in progress, shown where the user is looking
 /// (over an open sheet, not behind it).
-bool scheduleChangesAllowed(BuildContext context) {
+bool scheduleChangesAllowed(BuildContext context,
+    {ScheduleChangeKind? requestedKind}) {
   try {
     final bloc = context.read<ScheduleBloc>();
     if (!bloc.scheduleChangesBlocked) return true;
+    bloc.reportBlockedChange(requestedKind);
     final l10n = AppLocalizations.of(context)!;
     final evaluation = bloc.activeEvaluation;
-    final message = evaluation == null
-        ? l10n.scheduleChangesBlocked
-        : l10n.scheduleChangesBlockedBy(scheduleChangeLabel(l10n, evaluation));
+    final message = scheduleChangeFailureMessage(context,
+        fallback: l10n.scheduleChangesBlocked);
     final bus = ScheduleNoticeBus.maybeOf(context);
     if (bus != null) {
-      bus.interrupt(context, message);
+      bus.interrupt(context, message, stillRelevant: () {
+        final current = bloc.activeEvaluation;
+        return !bloc.isClosed &&
+            bloc.scheduleChangesBlocked &&
+            current?.id == evaluation?.id &&
+            current?.account == evaluation?.account;
+      });
     } else {
       ScaffoldMessenger.maybeOf(context)
           ?.showSnackBar(SnackBar(content: Text(message)));
@@ -79,18 +86,131 @@ String scheduleChangeLabel(
     '${scheduleChangeActionTitle(l10n, evaluation.kind)} · '
     '${scheduleChangeTarget(l10n, evaluation)}';
 
-String scheduleChangeFailureMessage(BuildContext context, {String? fallback}) {
+/// The command label, used for failures rather than an in-progress verb.
+String scheduleChangeCommand(AppLocalizations l10n, ScheduleChangeKind kind) =>
+    switch (kind) {
+      ScheduleChangeKind.complete => l10n.complete,
+      ScheduleChangeKind.delete => l10n.delete,
+      ScheduleChangeKind.startNow => l10n.startNow,
+      ScheduleChangeKind.pause => l10n.pause,
+      ScheduleChangeKind.resume => l10n.resume,
+      ScheduleChangeKind.defer => l10n.defer,
+      ScheduleChangeKind.add => l10n.addTile,
+      ScheduleChangeKind.edit => l10n.edit,
+      ScheduleChangeKind.settings => l10n.settings,
+      ScheduleChangeKind.accept => l10n.accept,
+      _ => l10n.reOptimizeChip,
+    };
+
+String scheduleChangeFailureMessage(BuildContext context,
+    {String? fallback,
+    ScheduleChangeKind? kind,
+    String? eventName,
+    int affectedEventCount = 0}) {
   final l10n = AppLocalizations.of(context)!;
   try {
-    if (context.read<ScheduleBloc>().lastChangeUnconfirmed) {
+    final bloc = context.read<ScheduleBloc>();
+    final evaluation = bloc.activeEvaluation;
+    if (evaluation?.phase == ScheduleEvaluationPhase.uncertain) {
+      return '${l10n.scheduleChangeUncertain} · '
+          '${scheduleChangeLabel(l10n, evaluation!)}\n'
+          '${l10n.scheduleChangeUncertainBody}';
+    }
+    if (bloc.scheduleChangesBlocked) {
+      return evaluation == null
+          ? l10n.scheduleChangesBlocked
+          : l10n
+              .scheduleChangesBlockedBy(scheduleChangeLabel(l10n, evaluation));
+    }
+    if (bloc.lastChangeUnconfirmed) {
       return l10n.scheduleChangeHoldEnded;
     }
-    if (context.read<ScheduleBloc>().activeEvaluation?.phase ==
-        ScheduleEvaluationPhase.uncertain) {
-      return '${l10n.scheduleChangeUncertain}. ${l10n.scheduleChangeUncertainBody}';
-    }
   } on ProviderNotFoundException {}
+  if (kind != null) {
+    final target = affectedEventCount > 1
+        ? l10n.scheduleChangeEventCount(affectedEventCount)
+        : (eventName?.trim().isNotEmpty ?? false)
+            ? eventName!.trim()
+            : affectedEventCount == 1 ||
+                    const {
+                      ScheduleChangeKind.add,
+                      ScheduleChangeKind.edit,
+                      ScheduleChangeKind.complete,
+                      ScheduleChangeKind.delete,
+                      ScheduleChangeKind.startNow,
+                      ScheduleChangeKind.pause,
+                      ScheduleChangeKind.resume,
+                      ScheduleChangeKind.accept,
+                    }.contains(kind)
+                ? l10n.scheduleChangeTargetEvent
+                : kind == ScheduleChangeKind.defer
+                    ? l10n.scheduleChangeAllEvents
+                    : l10n.scheduleChangeTargetSchedule;
+    final message =
+        l10n.operationFailed('${scheduleChangeCommand(l10n, kind)} · $target');
+    return fallback == null ? message : '$message\n$fallback';
+  }
   return fallback ?? l10n.scheduleChangeFailed;
+}
+
+/// Retry must not replay a mutation whose outcome is still unknown.
+bool scheduleChangeRetryAllowed(BuildContext context) {
+  try {
+    final bloc = context.read<ScheduleBloc>();
+    return !bloc.scheduleChangesBlocked && !bloc.lastChangeUnconfirmed;
+  } on ProviderNotFoundException {
+    return true;
+  }
+}
+
+void showScheduleChangeFailure(BuildContext context,
+    {required ScheduleChangeKind kind,
+    String? eventName,
+    int affectedEventCount = 0,
+    String? fallback,
+    Key? key,
+    VoidCallback? onRetry}) {
+  final l10n = AppLocalizations.of(context)!;
+  final messenger = ScaffoldMessenger.of(context);
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(
+      key: key,
+      content: Text(scheduleChangeFailureMessage(context,
+          kind: kind,
+          eventName: eventName,
+          affectedEventCount: affectedEventCount,
+          fallback: fallback)),
+      action: onRetry != null && scheduleChangeRetryAllowed(context)
+          ? SnackBarAction(label: l10n.addTileRetry, onPressed: onRetry)
+          : null,
+    ));
+}
+
+/// Editors keep the current change visible even when its calendar is covered.
+class ScheduleEvaluationProgress extends StatelessWidget {
+  const ScheduleEvaluationProgress({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final ScheduleBloc bloc;
+    try {
+      bloc = context.read<ScheduleBloc>();
+    } on ProviderNotFoundException {
+      return child;
+    }
+    return BlocBuilder<ScheduleBloc, ScheduleState>(
+        bloc: bloc,
+        builder: (context, state) {
+          return Column(children: [
+            if (state is ScheduleEvaluationState &&
+                state.evaluation?.phase != ScheduleEvaluationPhase.failed)
+              ScheduleEvaluationFeedback(state: state),
+            Expanded(child: child),
+          ]);
+        });
+  }
 }
 
 /// Calendar-local feedback preserves the mounted day content and navigation.
@@ -156,7 +276,7 @@ class ScheduleEvaluationFeedback extends StatelessWidget {
             SizedBox(
                 width: 44,
                 height: 44,
-                child: Stack(children: [
+                child: Stack(alignment: Alignment.center, children: [
                   Container(
                       width: 40,
                       height: 40,
@@ -170,20 +290,8 @@ class ScheduleEvaluationFeedback extends StatelessWidget {
                               .colorScheme
                               .onPrimaryContainer)),
                   if (phase == ScheduleEvaluationPhase.pending)
-                    Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .surfaceContainerHigh),
-                            padding: const EdgeInsets.all(2),
-                            child: const CircularProgressIndicator(
-                                strokeWidth: 2))),
+                    const Positioned.fill(
+                        child: CircularProgressIndicator(strokeWidth: 2)),
                 ])),
             const SizedBox(width: 12),
             Expanded(

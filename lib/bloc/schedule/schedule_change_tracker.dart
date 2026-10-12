@@ -5,10 +5,7 @@ enum ScheduleChangeOrigin {
   /// Re-optimize / shuffle.
   tilerRevise,
 
-  /// A Tile dropped on the day grid.
-  userDrag,
-
-  /// Any other user mutation that re-evaluates the schedule.
+  /// A grid drop or another user mutation that re-evaluates the schedule.
   userEdit,
 
   /// A tile the user just added.

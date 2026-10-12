@@ -28,10 +28,7 @@ import '../../services/api/subCalendarEventApi.dart';
 // Callers building `EvaluateSchedule` or calling `beginChange` need the
 // origin types without a second import.
 export 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart'
-    show
-        ScheduleChangeOrigin,
-        ScheduleChangeAttribution,
-        ScheduleRevisionGate;
+    show ScheduleChangeOrigin, ScheduleChangeAttribution, ScheduleRevisionGate;
 export 'package:tiler_app/bloc/schedule/schedule_change_feed.dart'
     show ScheduleChange, ScheduleChangeFeed;
 
@@ -77,6 +74,13 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       _now().isBefore(_evaluation!.expiresAt);
   bool get ownsCurrentEvaluation =>
       _evaluation != null && Zone.current[_requestZoneKey] == _evaluation!.id;
+
+  /// Records a refusal at a UI guard before an API request is attempted.
+  void reportBlockedChange(ScheduleChangeKind? requestedKind) =>
+      _trace('mutation_blocked', fields: {
+        'requestedKind': requestedKind?.name,
+        'reason': 'active_evaluation',
+      });
 
   void _trace(String event,
       {ScheduleEvaluation? request,
@@ -434,10 +438,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       if (generation == _sessionGeneration &&
           _evaluation?.id == evaluation.id &&
           _evaluation?.phase == ScheduleEvaluationPhase.pending) {
+        final cause = error is TilerError ? error.cause ?? error : error;
         if (_sent &&
-            (error is SocketException ||
-                error is TimeoutException ||
-                error is http.ClientException)) {
+            (cause is SocketException ||
+                cause is TimeoutException ||
+                cause is http.ClientException)) {
           _evaluation =
               _evaluation!.withPhase(ScheduleEvaluationPhase.uncertain);
           _trace('mutation_uncertain',

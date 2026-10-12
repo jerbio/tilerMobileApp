@@ -70,11 +70,12 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
   /// Returns the request so the caller's callback (and the pop) can wait
   /// on it. A conflicting evaluation rejects before sending another request.
   Future _procrastinate(Duration duration) {
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.defer))
+      return Future.error(ScheduleChangeBlocked());
     String tileId = this.widget.tileId;
     showMessage(AppLocalizations.of(context)!.procrastinating);
     final scheduleState = this.context.read<ScheduleBloc>().state;
-    if (context.read<ScheduleBloc>().scheduleChangesBlocked)
-      return Future.error(ScheduleChangeBlocked());
 
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
@@ -119,7 +120,8 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
 
   Future<void> _onSelected(Duration duration) async {
     if (_submitting || duration.inMilliseconds <= 0) return;
-    if (!scheduleChangesAllowed(context)) return;
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.defer)) return;
     // Busy from the first frame: the picker dims and shows a spinner so the
     // tap is visibly acknowledged while the request is in flight.
     setState(() => _submitting = true);
@@ -128,7 +130,8 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
     } catch (_) {
       if (mounted) {
         setState(() => _submitting = false);
-        showMessage(scheduleChangeFailureMessage(context));
+        showMessage(scheduleChangeFailureMessage(context,
+            kind: ScheduleChangeKind.defer, eventName: widget.eventName));
       }
       return;
     }

@@ -9,6 +9,38 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get notesLoadFailed => 'メモを読み込めませんでした。メモエディターを開き直してください。';
+
+  @override
+  String get onboardingSubmitFailed =>
+      '初期設定を保存できませんでした。選択内容は保持されています。もう一度試すか、今はスキップしてください。';
+
+  @override
+  String operationFailed(String operation) {
+    return '$operationに失敗しました。もう一度お試しください。';
+  }
+
+  @override
+  String get scheduleLoadFailed => 'スケジュールを読み込めませんでした。更新してもう一度お試しください。';
+
+  @override
+  String get chatConnectionFailed => 'チャットに接続できませんでした。チャットを開き直してください。';
+
+  @override
+  String get chatHistoryFailed => 'チャット履歴を読み込めませんでした。会話を開き直してください。';
+
+  @override
+  String get chatSendFailed => 'メッセージを送信できませんでした。接続を確認してもう一度お試しください。';
+
+  @override
+  String get chatRecordingFailed =>
+      '音声録音を開始できませんでした。マイクへのアクセスを確認してもう一度お試しください。';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      '音声録音をキャンセルできませんでした。もう一度録音の停止をお試しください。';
+
+  @override
   String get whiteSpace => ' ';
 
   @override
@@ -4093,59 +4125,52 @@ class AppLocalizationsJa extends AppLocalizations {
   String get productTourStarting => 'アプリのツアーがまもなく始まります。';
 
   @override
-  String get scheduleChangeRefresh => 'Refresh schedule';
+  String get scheduleChangeRefresh => 'スケジュールを更新';
 
   @override
   String get scheduleChangeUncertainBody =>
-      'Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.';
+      '変更がサーバーに届いている可能性があります。更新して、スケジュールに変更があるか確認してください。この制限は自動的に解除されます。';
 
   @override
-  String get scheduleChangeUncertain => 'Confirmation unavailable';
+  String get scheduleChangeUncertain => '確認できません';
 
   @override
   String get scheduleChangeHoldEnded =>
-      'The previous schedule change could not be confirmed. Check your schedule before making another change.';
+      '前のスケジュール変更を確認できませんでした。次の変更を行う前に、スケジュールを確認してください。';
 
   @override
-  String get scheduleChangeAdding => 'Adding event';
+  String get scheduleChangeAdding => '予定を追加中';
 
   @override
-  String get scheduleChangeSettings => 'Updating schedule settings';
+  String get scheduleChangeSettings => 'スケジュール設定を更新中';
 
   @override
-  String get scheduleChangeAccepting => 'Accepting changes';
+  String get scheduleChangeAccepting => '変更を承認中';
 
   @override
-  String get scheduleChangeTargetSchedule => 'Your schedule';
+  String get scheduleChangeTargetSchedule => 'あなたのスケジュール';
 
   @override
-  String get scheduleChangeTargetEvent => 'Event';
+  String get scheduleChangeTargetEvent => '予定';
 
   @override
-  String get scheduleChangeAllEvents => 'All events';
+  String get scheduleChangeAllEvents => 'すべての予定';
 
   @override
   String scheduleChangeEventCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count events',
-      one: '1 event',
-    );
-    return '$_temp0';
+    return '$count件の予定';
   }
 
   @override
-  String get scheduleChangesBlocked =>
-      'Finish the current schedule change before starting another.';
+  String get scheduleChangesBlocked => '現在のスケジュール変更が完了してから、次の変更を開始してください。';
 
   @override
   String scheduleChangesBlockedBy(String change) {
-    return 'Finish the current schedule change ($change) before starting another.';
+    return '現在のスケジュール変更（$change）が完了してから、次の変更を開始してください。';
   }
 
   @override
-  String get scheduleChangeFailed => 'Schedule change failed';
+  String get scheduleChangeFailed => 'スケジュール変更に失敗しました';
 
   @override
   String get scheduleUpdates => 'スケジュールの更新';

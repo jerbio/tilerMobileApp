@@ -6,6 +6,8 @@ import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/scheduleDelta.dart';
+import 'package:tiler_app/bloc/schedule/schedule_diagnostics.dart';
+import 'package:tiler_app/util.dart';
 
 /// One new schedule revision: what the schedule was, what it is now, and
 /// what caused the change. Produced once by [ScheduleChangeFeed] and shared
@@ -38,15 +40,24 @@ class ScheduleChange {
   });
 
   /// What changed on [day], computed once per day.
-  ScheduleDelta deltaFor(Timeline day) => _byDay.putIfAbsent(
-      day.start!,
-      () => ScheduleDelta.compute(
-            before: before,
-            after: after,
-            day: day,
-            beforeWindow: beforeWindow,
-            afterWindow: afterWindow,
-          ));
+  ScheduleDelta deltaFor(Timeline day) => _byDay.putIfAbsent(day.start!, () {
+        final delta = ScheduleDelta.compute(
+          before: before,
+          after: after,
+          day: day,
+          beforeWindow: beforeWindow,
+          afterWindow: afterWindow,
+        );
+        final churn = delta.identityChurn;
+        if (churn.pairs > 0) {
+          scheduleFlowLog('identity_churn', fields: {
+            'day': Utility.localDateTimeFromMs(day.start!).universalDayIndex,
+            'pairs': churn.pairs,
+            'calendarEventIds': churn.calendarEventCount,
+          });
+        }
+        return delta;
+      });
 
   /// The tiles before the change, by uniqueId.
   Map<String, SubCalendarEvent> get beforeById =>

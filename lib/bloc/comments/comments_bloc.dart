@@ -3,8 +3,13 @@ part of 'comments_state.dart';
 class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
   static const int maxAttachmentsPerComment = 5;
   static const int maxAttachmentBytes = 10 * 1024 * 1024; // 10 MB
-  static const List<String> allowedExtensions =
-      ['pdf', 'docx', 'png', 'jpg', 'jpeg'];
+  static const List<String> allowedExtensions = [
+    'pdf',
+    'docx',
+    'png',
+    'jpg',
+    'jpeg'
+  ];
 
   /// Leading bytes identifying the real format behind each allowed
   /// extension (PDF marker, PNG/JPEG markers, ZIP container for DOCX).
@@ -25,10 +30,12 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
   final CommentsApi _api;
   final String _targetType;
   final String _targetId;
+
   /// Root/reply page size for the paged loads (the web Tilette Detail
   /// screen pages 10 at a time; the default stays 50 for other hosts).
   final int _pageSize;
   final Uuid _uuid = const Uuid();
+
   /// Idempotency key of the failed post in flight, kept so a retry of the
   /// same logical action replays the original request.
   String? _pendingPostKey;
@@ -63,19 +70,19 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
   void _onClearToast(ClearToastEvent event, Emitter<CommentsState> emit) {
     emit(state.copyWith(showToast: false, clearError: true));
   }
+
   @override
   Future<void> close() async {
     _disposed = true;
     return super.close();
   }
+
   // ---------------------------------------------------------------- helpers
-  String _message(Object e) {
-    if (e is TilerError && e.Message != null && e.Message!.isNotEmpty) {
-      return e.Message!;
-    }
-    // Never surface raw ids/tokens to the user.
-    return LocalizationService.instance.translations.reachingServerIssues;
-  }
+  String _message(Object e, {String? fallback}) =>
+      operationFailureMessage(LocalizationService.instance.translations,
+          fallback: fallback ??
+              LocalizationService.instance.translations.commentsLoadError,
+          error: e);
   List<ComposerAttachmentDraft> _replaceDraft(
       List<ComposerAttachmentDraft> drafts, ComposerAttachmentDraft next) {
     return [
@@ -83,6 +90,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
         if (draft.localPath == next.localPath) next else draft,
     ];
   }
+
   /// Replaces [updated] in the roots or in a root's reply list.
   void _replaceComment(List<Comment> roots,
       Map<String, RootRepliesData> repliesByRoot, Comment updated) {
@@ -101,6 +109,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       }
     }
   }
+
   /// The key the composer should reuse for its next post when retrying the
   /// action that just failed; null otherwise (mint a new key).
   String? reusablePostKey(String? rootCommentId) {
@@ -108,6 +117,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
     if (_pendingPostRootId == rootCommentId) return _pendingPostKey;
     return null;
   }
+
   // --------------------------------------------------------------- thread
   Future<void> _onLoadThread(
       LoadThreadEvent event, Emitter<CommentsState> emit) async {
@@ -122,10 +132,9 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
           targetType: _targetType, targetId: _targetId, limit: _pageSize);
       List<CommentParticipant> participants = const [];
       try {
-        participants =
-            (await _api.getParticipants(
-                    targetType: _targetType, targetId: _targetId))
-                .participants;
+        participants = (await _api.getParticipants(
+                targetType: _targetType, targetId: _targetId))
+            .participants;
       } catch (e) {
         // Suggestions are best-effort; the thread works without them.
         debugPrint('[CommentsBloc] getParticipants failed (non-fatal): $e');
@@ -145,6 +154,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
           step: CommentsStep.error, error: _message(e), clearError: true));
     }
   }
+
   Future<void> _onLoadMoreRoots(
       LoadMoreRootsEvent event, Emitter<CommentsState> emit) async {
     final cursor = state.rootsNextCursor;
@@ -171,6 +181,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
           isLoadingMoreRoots: false, error: _message(e), clearError: true));
     }
   }
+
   // ---------------------------------------------------------------- replies
   Future<void> _onLoadReplies(
       LoadRepliesEvent event, Emitter<CommentsState> emit) async {
@@ -186,8 +197,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       clearError: true,
     ));
     try {
-      final page = await _api.getReplies(
-          commentId: rootId, limit: _pageSize);
+      final page = await _api.getReplies(commentId: rootId, limit: _pageSize);
       if (_disposed) return;
       emit(state.copyWith(
         repliesByRoot: {
@@ -214,6 +224,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       ));
     }
   }
+
   Future<void> _onLoadMoreReplies(
       LoadMoreRepliesEvent event, Emitter<CommentsState> emit) async {
     final rootId = event.rootId;
@@ -244,8 +255,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
         },
       ));
     } catch (e, st) {
-      debugPrint(
-          '[CommentsBloc] _onLoadMoreReplies ($rootId) failed: $e\n$st');
+      debugPrint('[CommentsBloc] _onLoadMoreReplies ($rootId) failed: $e\n$st');
       if (_disposed) return;
       emit(state.copyWith(
         repliesByRoot: {
@@ -258,6 +268,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       ));
     }
   }
+
   Future<void> _onToggleReplies(
       ToggleRepliesEvent event, Emitter<CommentsState> emit) async {
     emit(state.copyWith(
@@ -270,6 +281,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       add(LoadRepliesEvent(rootId: event.rootId));
     }
   }
+
   // --------------------------------------------------------------- composer
   Future<void> _onComposerText(
       ComposerTextEvent event, Emitter<CommentsState> emit) async {
@@ -278,6 +290,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       mentionSelections: event.mentionSelections,
     ));
   }
+
   Future<void> _onSetReplyTarget(
       SetReplyTargetEvent event, Emitter<CommentsState> emit) async {
     emit(state.copyWith(
@@ -286,6 +299,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       mentionSelections: const [],
     ));
   }
+
   // -------------------------------------------------------- post / edit / del
   Comment _withReplyCount(Comment root, int newCount) {
     return Comment(
@@ -309,6 +323,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       replyAuthors: root.replyAuthors,
     );
   }
+
   Future<void> _onPostComment(
       PostCommentEvent event, Emitter<CommentsState> emit) async {
     final trimmed = event.text.trim();
@@ -338,8 +353,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
         final (updatedDraft, uploadError) = await _uploadDraft(target);
         if (_disposed) return;
         emit(state.copyWith(
-          attachmentDrafts: _replaceDraft(
-              state.attachmentDrafts, updatedDraft),
+          attachmentDrafts: _replaceDraft(state.attachmentDrafts, updatedDraft),
           error: uploadError.isEmpty ? state.error : uploadError,
           clearError: !uploadError.isEmpty,
           showToast: uploadError.isNotEmpty,
@@ -408,9 +422,17 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       _pendingPostRootId = event.rootCommentId;
       if (_disposed) return;
       emit(state.copyWith(
-          isSending: false, error: _message(e), clearError: true));
+          isSending: false,
+          error: _message(e,
+              fallback: event.rootCommentId == null
+                  ? LocalizationService
+                      .instance.translations.commentsCreateError
+                  : LocalizationService
+                      .instance.translations.commentsCreateReplyError),
+          clearError: true));
     }
   }
+
   Future<void> _onEditComment(
       EditCommentEvent event, Emitter<CommentsState> emit) async {
     emit(state.copyWith(clearError: true));
@@ -429,9 +451,14 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       emit(state.copyWith(roots: roots, repliesByRoot: repliesByRoot));
     } catch (e) {
       if (_disposed) return;
-      emit(state.copyWith(error: _message(e), clearError: true));
+      emit(state.copyWith(
+          error: _message(e,
+              fallback:
+                  LocalizationService.instance.translations.commentsEditError),
+          clearError: true));
     }
   }
+
   Future<void> _onDeleteComment(
       DeleteCommentEvent event, Emitter<CommentsState> emit) async {
     emit(state.copyWith(clearError: true));
@@ -458,15 +485,19 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       emit(state.copyWith(roots: roots, repliesByRoot: repliesByRoot));
     } catch (e) {
       if (_disposed) return;
-      emit(state.copyWith(error: _message(e), clearError: true));
+      emit(state.copyWith(
+          error: _message(e,
+              fallback: LocalizationService
+                  .instance.translations.commentsDeleteError),
+          clearError: true));
     }
   }
+
   // ------------------------------------------------------------ attachments
   /// Client-side pre-validation mirroring the server allowlist. Returns a
   /// l10n key fragment ('limit' | 'invalidType' | 'empty' | 'tooLarge') or
   /// null when the file is acceptable.
-  String? validateAttachment(
-      String fileName, int byteSize, int currentCount) {
+  String? validateAttachment(String fileName, int byteSize, int currentCount) {
     if (currentCount >= maxAttachmentsPerComment) {
       return 'limit';
     }
@@ -516,6 +547,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
     }
     return null;
   }
+
   Future<void> _onAddAttachment(
       AddAttachmentEvent event, Emitter<CommentsState> emit) async {
     // Local-only: no network traffic and no server storage until the
@@ -526,8 +558,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       byteSize: event.byteSize,
       retryKey: event.retryKey,
     );
-    emit(state.copyWith(
-        attachmentDrafts: [...state.attachmentDrafts, draft]));
+    emit(state.copyWith(attachmentDrafts: [...state.attachmentDrafts, draft]));
   }
 
   /// Uploads [draft] into the quarantine and polls until the scan resolves
@@ -553,8 +584,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       if (_disposed) {
         return (draft, '');
       }
-      final isReady =
-          resolved.state == 'ready' || resolved.state == 'attached';
+      final isReady = resolved.state == 'ready' || resolved.state == 'attached';
       debugPrint('[CommentsBloc] attachment ${draft.fileName} resolved: '
           'id=${uploaded.id} state=${resolved.state}');
       return (
@@ -577,10 +607,13 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       }
       return (
         draft.copyWith(step: ComposerAttachmentStep.failed),
-        _message(e),
+        _message(e,
+            fallback: LocalizationService
+                .instance.translations.commentsAttachmentUploadFailed),
       );
     }
   }
+
   Future<void> _onRemoveAttachment(
       RemoveAttachmentEvent event, Emitter<CommentsState> emit) async {
     final drafts = [
@@ -591,9 +624,11 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
     final attachmentId = event.attachmentId;
     if (attachmentId == null) return;
     // Best-effort cancel of the unclaimed quarantine row.
-    unawaited(_api.cancelAttachment(attachmentId: attachmentId).catchError(
-        (_) => attachmentId));
+    unawaited(_api
+        .cancelAttachment(attachmentId: attachmentId)
+        .catchError((_) => attachmentId));
   }
+
   /// Native channel backed by MainActivity's
   /// `tiler_app/comment_downloads` handler. Android 10+ (scoped storage, and
   /// this app targets 36) blocks file-path writes to the public Downloads
@@ -654,16 +689,14 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
           debugPrint('[DownloadDiag] persist: Android MediaStore channel OK, '
               'name=$name isPath=$isPath');
           return isPath
-              ? (location: name,
-                  name: name.split(Platform.pathSeparator).last)
+              ? (location: name, name: name.split(Platform.pathSeparator).last)
               : (location: 'media:$name', name: name);
         }
         debugPrint(
             '[CommentsBloc] Downloads channel returned a null name for $safeName; '
             'falling back to the app temp directory');
       } catch (e, st) {
-        debugPrint(
-            '[CommentsBloc] Downloads channel failed for $safeName: $e; '
+        debugPrint('[CommentsBloc] Downloads channel failed for $safeName: $e; '
             'falling back to the app temp directory\n$st');
       }
     }
@@ -711,8 +744,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
 
   Future<void> _onDownloadAttachment(
       DownloadAttachmentEvent event, Emitter<CommentsState> emit) async {
-    debugPrint(
-        '[DownloadDiag] bloc: DownloadAttachmentEvent received '
+    debugPrint('[DownloadDiag] bloc: DownloadAttachmentEvent received '
         'id=${event.attachmentId} fileName=${event.fileName}');
     emit(state.copyWith(
         clearError: true,
@@ -742,10 +774,8 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       // The server currently does not send a Content-Disposition header, so
       // the API reports the 'attachment' sentinel — fall back to the
       // attachment's known display name (keeps the real name + extension).
-      final saved = await _storeDownloaded(
-          result.bytes, result.fileName,
-          attachmentId: event.attachmentId,
-          fallbackName: event.fileName);
+      final saved = await _storeDownloaded(result.bytes, result.fileName,
+          attachmentId: event.attachmentId, fallbackName: event.fileName);
       if (saved == null) return;
       debugPrint('[CommentsBloc] attachment saved: ${saved.location}');
       debugPrint('[DownloadDiag] bloc: emitting showToast '
@@ -765,7 +795,9 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       if (_disposed) return;
       emit(state.copyWith(
           clearDownload: true,
-          error: _message(e),
+          error: _message(e,
+              fallback: LocalizationService
+                  .instance.translations.commentsAttachmentDownloadError),
           showToast: true,
           toastKind: CommentToastKind.error));
     }
@@ -811,8 +843,8 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
         !(location.startsWith('media:') || File(location).existsSync())) {
       debugPrint('[DownloadDiag] bloc: stored location unavailable '
           '($location), re-downloading');
-      final fresh = await _downloadAndPersist(
-          event.attachmentId, event.fileName, emit);
+      final fresh =
+          await _downloadAndPersist(event.attachmentId, event.fileName, emit);
       if (fresh == null) return;
       await _openSavedLocation(event.attachmentId, fresh, emit);
       return;
@@ -823,8 +855,8 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
   /// Downloads [attachmentId] and stores it; returns the location record
   /// (`media:<name>` or absolute path) or null when the download failed
   /// (an error toast was already shown).
-  Future<String?> _downloadAndPersist(String attachmentId, String fileName,
-      Emitter<CommentsState> emit) async {
+  Future<String?> _downloadAndPersist(
+      String attachmentId, String fileName, Emitter<CommentsState> emit) async {
     try {
       final result = await _api.downloadAttachment(attachmentId: attachmentId);
       if (_disposed) return null;
@@ -848,8 +880,8 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
   /// the native channel resolves the MediaStore content URI on Android
   /// (plain file paths are blocked by FileUriExposure), open_filex handles
   /// the other platforms.
-  Future<void> _openSavedLocation(String attachmentId, String location,
-      Emitter<CommentsState> emit) async {
+  Future<void> _openSavedLocation(
+      String attachmentId, String location, Emitter<CommentsState> emit) async {
     debugPrint('[DownloadDiag] bloc: opening $location');
     try {
       if (Platform.isAndroid && location.startsWith('media:')) {
@@ -884,7 +916,9 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
       // is often misleading (e.g. MissingPluginException after a native
       // rebuild is pending is not a server problem).
       emit(state.copyWith(
-          error: _message(e),
+          error: _message(e,
+              fallback: LocalizationService
+                  .instance.translations.commentsAttachmentOpenFailed),
           showToast: true,
           toastKind: CommentToastKind.attachmentOpenFailed));
     }

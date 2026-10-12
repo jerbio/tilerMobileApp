@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/util.dart';
@@ -146,7 +147,8 @@ class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
       ));
     } catch (e) {
       emit(ForecastError(
-        'An error occurred while fetching data. Please try again later.',
+        LocalizationService.instance.translations.operationFailed(
+            LocalizationService.instance.translations.forecast),
         duration: duration,
         endTime: state.endTime,
       ));

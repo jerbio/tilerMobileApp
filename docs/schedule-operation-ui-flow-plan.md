@@ -123,6 +123,8 @@ The Refresh action remains a calendar read. Its revision can reconcile an interr
 
 ## Verification
 
+October 11, 2026 follow-up: AppApi preserves local transport causes through `TilerError`, including both POST/PUT request timeout handlers. Twelve transport regressions cover uncertainty, rejection, pre-send failure, late success and body loss after a confirmed 2xx. Blocked notification/connect paths now publish the running change's label; background interruptions wait for resume and discard obsolete holds. Editors retain live progress and drafts; the spinner surrounds the glyph. Shuffle/Defer All retain the preview sheet and show the running change when blocked. App errors identify the attempted operation. The final pre-commit suite has 2354 passing tests, 4 existing skips and no failures. Android debug build/install and staging re-optimize smoke checks passed before the feedback refinements; the full device matrix remains open. See [implementation plan §6](schedule-change-implementation-plan.md#6-execution-record--october-11-2026).
+
 The 166-test focused automated suite passed after adding captured command details and action icons. It covers schedule evaluation, revision/recovery, editor submissions/refresher, day-grid persistence/rebuild/date navigation, deferral, Today Status completion/recovery, onboarding prefetch, API contracts, and search interactions. After filling editor deletion/deferral name gaps, all 77 affected editor/schedule tests passed. Dart analysis found no new errors; existing warnings remain.
 
 [Schedule evaluation regression tests](../test/schedule_evaluation_flow_test.dart) exercise:

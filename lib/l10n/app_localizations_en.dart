@@ -9,6 +9,43 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get notesLoadFailed =>
+      'Couldn’t load your notes. Reopen the notes editor to try again.';
+
+  @override
+  String get onboardingSubmitFailed =>
+      'Couldn’t save your setup. Your choices are kept. Try again or skip for now.';
+
+  @override
+  String operationFailed(String operation) {
+    return '$operation failed. Please try again.';
+  }
+
+  @override
+  String get scheduleLoadFailed =>
+      'Couldn’t load your schedule. Refresh to try again.';
+
+  @override
+  String get chatConnectionFailed =>
+      'Couldn’t connect to chat. Reopen chat to try again.';
+
+  @override
+  String get chatHistoryFailed =>
+      'Couldn’t load your chat history. Reopen the conversation to try again.';
+
+  @override
+  String get chatSendFailed =>
+      'Your message couldn’t be sent. Check your connection and try again.';
+
+  @override
+  String get chatRecordingFailed =>
+      'Couldn’t start voice recording. Check microphone access and try again.';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      'Couldn’t cancel voice recording. Try stopping the recording again.';
+
+  @override
   String get whiteSpace => ' ';
 
   @override

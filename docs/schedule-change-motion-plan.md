@@ -1,6 +1,6 @@
 # Schedule-Change Motion — Daily List & Day Grid
 
-Status: **Plan only, nothing implemented.**
+Status: **Implemented; final device, translation and backend verification remains open.** Current execution evidence and release gates: [schedule-change-implementation-plan.md](schedule-change-implementation-plan.md).
 Scope: the Daily list view (`EnhancedTileBatch` / `EnhancedWithinNowBatch`) and the Day
 grid view (`DayGridWidget`). Weekly/monthly views and the tile cast are out of scope.
 
@@ -84,7 +84,7 @@ The full choreography should **only** run when the user should be watching the c
 | Origin | Source in `schedule_bloc.dart` | Treatment |
 |---|---|---|
 | `tilerRevise` | `_onReviseSchedule` → `shuffleSchedule()` | Full choreography + summary chip |
-| `userDrag` | grid drop → `EvaluateSchedule` | Immediate, physical; only the *knock-on* moves are choreographed |
+| `userEdit` with subject tile | grid drop → admitted edit | Immediate, physical; only the *knock-on* moves are choreographed. The unused `userDrag` origin was retired by decision on October 11, 2026. |
 | `userEdit` / `userAdd` | edit / add Tile flows | Choreograph knock-on moves, short chip |
 | `refresh` | pull-to-refresh, polling, app resume | **Today's quiet motion only**: no lift, no dim, no chip |
 
@@ -243,7 +243,7 @@ before any new motion lands, so no animation ships unguarded.
 - Changing the mode while an animation is playing affects the *next* change.
 - Grid pinch-to-zoom, drag and carousel day swipes are gestures or navigation, not schedule
   updates, and are not affected in any mode.
-- Drag drop (`userDrag`) in Minimal: the dropped Tile settles straight away, and knock-on
+- Drag drop (`userEdit` with subject tile) in Minimal: the dropped Tile settles straight away, and knock-on
   moves slide together without ordering.
 
 **Tests**

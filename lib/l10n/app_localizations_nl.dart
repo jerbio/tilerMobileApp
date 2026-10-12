@@ -9,6 +9,43 @@ class AppLocalizationsNl extends AppLocalizations {
   AppLocalizationsNl([String locale = 'nl']) : super(locale);
 
   @override
+  String get notesLoadFailed =>
+      'Je notities konden niet worden geladen. Open de notitie-editor opnieuw.';
+
+  @override
+  String get onboardingSubmitFailed =>
+      'Je instellingen konden niet worden opgeslagen. Je keuzes blijven bewaard. Probeer het opnieuw of sla deze stap voorlopig over.';
+
+  @override
+  String operationFailed(String operation) {
+    return '$operation is mislukt. Probeer het opnieuw.';
+  }
+
+  @override
+  String get scheduleLoadFailed =>
+      'Je planning kon niet worden geladen. Vernieuw om het opnieuw te proberen.';
+
+  @override
+  String get chatConnectionFailed =>
+      'Er kon geen verbinding met de chat worden gemaakt. Open de chat opnieuw.';
+
+  @override
+  String get chatHistoryFailed =>
+      'Je chatgeschiedenis kon niet worden geladen. Open het gesprek opnieuw.';
+
+  @override
+  String get chatSendFailed =>
+      'Je bericht kon niet worden verzonden. Controleer je verbinding en probeer het opnieuw.';
+
+  @override
+  String get chatRecordingFailed =>
+      'De spraakopname kon niet worden gestart. Controleer de microfoontoegang en probeer het opnieuw.';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      'De spraakopname kon niet worden geannuleerd. Probeer de opname opnieuw te stoppen.';
+
+  @override
   String get whiteSpace => ' ';
 
   @override
@@ -4209,59 +4246,59 @@ class AppLocalizationsNl extends AppLocalizations {
       'Je rondleiding door de app staat op het punt te beginnen.';
 
   @override
-  String get scheduleChangeRefresh => 'Refresh schedule';
+  String get scheduleChangeRefresh => 'Planning vernieuwen';
 
   @override
   String get scheduleChangeUncertainBody =>
-      'Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.';
+      'Je wijziging heeft de server mogelijk bereikt. Vernieuw om te controleren of de planning is bijgewerkt. Deze blokkering eindigt automatisch.';
 
   @override
-  String get scheduleChangeUncertain => 'Confirmation unavailable';
+  String get scheduleChangeUncertain => 'Bevestiging niet beschikbaar';
 
   @override
   String get scheduleChangeHoldEnded =>
-      'The previous schedule change could not be confirmed. Check your schedule before making another change.';
+      'De vorige wijziging van de planning kon niet worden bevestigd. Controleer je planning voordat je nog een wijziging aanbrengt.';
 
   @override
-  String get scheduleChangeAdding => 'Adding event';
+  String get scheduleChangeAdding => 'Afspraak toevoegen';
 
   @override
-  String get scheduleChangeSettings => 'Updating schedule settings';
+  String get scheduleChangeSettings => 'Planningsinstellingen bijwerken';
 
   @override
-  String get scheduleChangeAccepting => 'Accepting changes';
+  String get scheduleChangeAccepting => 'Wijzigingen accepteren';
 
   @override
-  String get scheduleChangeTargetSchedule => 'Your schedule';
+  String get scheduleChangeTargetSchedule => 'Je planning';
 
   @override
-  String get scheduleChangeTargetEvent => 'Event';
+  String get scheduleChangeTargetEvent => 'Afspraak';
 
   @override
-  String get scheduleChangeAllEvents => 'All events';
+  String get scheduleChangeAllEvents => 'Alle afspraken';
 
   @override
   String scheduleChangeEventCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count events',
-      one: '1 event',
+      other: '$count afspraken',
+      one: '1 afspraak',
     );
     return '$_temp0';
   }
 
   @override
   String get scheduleChangesBlocked =>
-      'Finish the current schedule change before starting another.';
+      'Rond de huidige wijziging van de planning af voordat je een nieuwe begint.';
 
   @override
   String scheduleChangesBlockedBy(String change) {
-    return 'Finish the current schedule change ($change) before starting another.';
+    return 'Rond de huidige wijziging van de planning ($change) af voordat je een nieuwe begint.';
   }
 
   @override
-  String get scheduleChangeFailed => 'Schedule change failed';
+  String get scheduleChangeFailed => 'Wijziging van de planning mislukt';
 
   @override
   String get scheduleUpdates => 'Planningupdates';

@@ -9,6 +9,43 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
+  String get notesLoadFailed =>
+      'No se pudieron cargar tus notas. Vuelve a abrir el editor para intentarlo de nuevo.';
+
+  @override
+  String get onboardingSubmitFailed =>
+      'No se pudo guardar tu configuración. Tus opciones se conservan. Inténtalo de nuevo u omite este paso por ahora.';
+
+  @override
+  String operationFailed(String operation) {
+    return '$operation falló. Inténtalo de nuevo.';
+  }
+
+  @override
+  String get scheduleLoadFailed =>
+      'No se pudo cargar tu horario. Actualiza para intentarlo de nuevo.';
+
+  @override
+  String get chatConnectionFailed =>
+      'No se pudo conectar al chat. Vuelve a abrirlo para intentarlo de nuevo.';
+
+  @override
+  String get chatHistoryFailed =>
+      'No se pudo cargar tu historial de chat. Vuelve a abrir la conversación.';
+
+  @override
+  String get chatSendFailed =>
+      'No se pudo enviar tu mensaje. Revisa tu conexión e inténtalo de nuevo.';
+
+  @override
+  String get chatRecordingFailed =>
+      'No se pudo iniciar la grabación. Revisa el acceso al micrófono e inténtalo de nuevo.';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      'No se pudo cancelar la grabación. Intenta detenerla de nuevo.';
+
+  @override
   String get whiteSpace => ' ';
 
   @override

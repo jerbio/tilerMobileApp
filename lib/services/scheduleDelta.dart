@@ -188,6 +188,38 @@ class ScheduleDelta {
 
   TileChange? changeFor(String id) => _changeById[id];
 
+  /// Possible server re-identification, for diagnostics only. Tile identity
+  /// and the added/removed classification remain unchanged.
+  ({int pairs, int calendarEventCount}) get identityChurn {
+    final added = <String, int>{};
+    final removed = <String, int>{};
+    for (final change in changes) {
+      final Map<String, int> counts;
+      final SubCalendarEvent? tile;
+      if (change.kind == TileChangeKind.added) {
+        counts = added;
+        tile = change.after;
+      } else if (change.kind == TileChangeKind.removed) {
+        counts = removed;
+        tile = change.before;
+      } else {
+        continue;
+      }
+      final parent = tile?.calendarEvent?.id;
+      if (parent == null || parent.trim().isEmpty) continue;
+      counts.update(parent, (value) => value + 1, ifAbsent: () => 1);
+    }
+    var pairs = 0;
+    var calendarEventCount = 0;
+    for (final entry in added.entries) {
+      final oldCount = removed[entry.key] ?? 0;
+      if (oldCount == 0) continue;
+      pairs += oldCount < entry.value ? oldCount : entry.value;
+      calendarEventCount++;
+    }
+    return (pairs: pairs, calendarEventCount: calendarEventCount);
+  }
+
   /// Whether most of the day was swapped for other tiles: more than half
   /// of its tiles went and more than half of the new ones are new, as when
   /// Tiler re-plans a day with fresh tiles. Such a change cross-fades

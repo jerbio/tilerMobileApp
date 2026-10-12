@@ -67,7 +67,7 @@ abstract class ScheduleNoticeHost {
 ///
 /// Not a [Listenable], so it can be provided like any other service; only
 /// surfaces listen, and they rebuild themselves.
-class ScheduleNoticeBus {
+class ScheduleNoticeBus with WidgetsBindingObserver {
   ScheduleNoticeBus({this.interruptionFor = const Duration(seconds: 4)});
 
   /// How long an interruption stays.
@@ -81,6 +81,7 @@ class ScheduleNoticeBus {
   Timer? _interruptionTimer;
   int _sequence = 0;
   bool _disposed = false;
+  (BuildContext, String, bool Function()?)? _deferredInterruption;
   final List<VoidCallback> _listeners = <VoidCallback>[];
 
   void addListener(VoidCallback listener) => _listeners.add(listener);
@@ -137,8 +138,18 @@ class ScheduleNoticeBus {
 
   /// Shows [message] where the user is looking. [context] is where the
   /// action was attempted; its root overlay is the fallback.
-  void interrupt(BuildContext context, String message) {
+  void interrupt(BuildContext context, String message,
+      {bool Function()? stillRelevant}) {
+    if (_disposed || !context.mounted) return;
     _clearInterruption(notify: false);
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    if (lifecycle != null && lifecycle != AppLifecycleState.resumed) {
+      // A notification tap may arrive before the app resumes. Start the
+      // display timer when the user can see it, and discard obsolete holds.
+      _deferredInterruption = (context, message, stillRelevant);
+      WidgetsBinding.instance.addObserver(this);
+      return;
+    }
     final interruption = ScheduleInterruption(++_sequence, message);
     _interruption = interruption;
     ScheduleNoticeHost? host;
@@ -166,10 +177,26 @@ class ScheduleNoticeBus {
     _notify();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    final deferred = _deferredInterruption;
+    if (deferred == null) return;
+    _deferredInterruption = null;
+    WidgetsBinding.instance.removeObserver(this);
+    if (!_disposed && deferred.$1.mounted && (deferred.$3?.call() ?? true)) {
+      interrupt(deferred.$1, deferred.$2);
+    }
+  }
+
   /// The interruption showing now, wherever it is.
   ScheduleInterruption? get interruption => _interruption;
 
   void _clearInterruption({bool notify = true}) {
+    if (_deferredInterruption != null) {
+      _deferredInterruption = null;
+      WidgetsBinding.instance.removeObserver(this);
+    }
     _interruptionTimer?.cancel();
     _interruptionTimer = null;
     _overlayEntry?.remove();
