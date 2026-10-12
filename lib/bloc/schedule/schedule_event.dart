@@ -106,6 +106,10 @@ class EvaluateSchedule extends ScheduleEvent {
   final Timeline renderedScheduleTimeline;
   final bool isAlreadyLoaded;
   final Future? callBack;
+  final Future Function()? request;
+  final ScheduleChangeKind kind;
+  final String? eventName;
+  final List<String> affectedTileIds;
   final ScheduleStatus scheduleStatus;
   EvaluateSchedule(
       {required this.renderedSubEvents,
@@ -114,10 +118,22 @@ class EvaluateSchedule extends ScheduleEvent {
       required this.isAlreadyLoaded,
       required this.scheduleStatus,
       this.message,
-      this.callBack});
+      this.callBack,
+      this.request,
+      this.kind = ScheduleChangeKind.edit,
+      this.eventName,
+      this.affectedTileIds = const []});
 
   @override
   List<Object> get props => [];
+}
+
+class _EvaluationChangedEvent extends ScheduleEvent {
+  const _EvaluationChangedEvent(this.generation,
+      {this.released, this.releaseReason});
+  final int generation;
+  final ScheduleEvaluation? released;
+  final String? releaseReason;
 }
 
 class ReloadLocalScheduleEvent extends ScheduleEvent {

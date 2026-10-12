@@ -7285,6 +7285,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your product tour is about to begin.'**
   String get productTourStarting;
+
+  /// No description provided for @scheduleChangeRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh schedule'**
+  String get scheduleChangeRefresh;
+
+  /// No description provided for @scheduleChangeUncertainBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.'**
+  String get scheduleChangeUncertainBody;
+
+  /// No description provided for @scheduleChangeUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation unavailable'**
+  String get scheduleChangeUncertain;
+
+  /// No description provided for @scheduleChangeHoldEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'The previous schedule change could not be confirmed. Check your schedule before making another change.'**
+  String get scheduleChangeHoldEnded;
+
+  /// No description provided for @scheduleChangeAdding.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding event'**
+  String get scheduleChangeAdding;
+
+  /// No description provided for @scheduleChangeSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating schedule settings'**
+  String get scheduleChangeSettings;
+
+  /// No description provided for @scheduleChangeAccepting.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepting changes'**
+  String get scheduleChangeAccepting;
+
+  /// No description provided for @scheduleChangeTargetSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Your schedule'**
+  String get scheduleChangeTargetSchedule;
+
+  /// No description provided for @scheduleChangeTargetEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Event'**
+  String get scheduleChangeTargetEvent;
+
+  /// No description provided for @scheduleChangeAllEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'All events'**
+  String get scheduleChangeAllEvents;
+
+  /// Number of events affected by the current schedule command.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 event} other{{count} events}}'**
+  String scheduleChangeEventCount(int count);
+
+  /// No description provided for @scheduleChangesBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the current schedule change before starting another.'**
+  String get scheduleChangesBlocked;
+
+  /// Shown when the user starts a schedule change while another is still in progress. {change} names it, e.g. 'Completing · Gym'.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the current schedule change ({change}) before starting another.'**
+  String scheduleChangesBlockedBy(String change);
+
+  /// No description provided for @scheduleChangeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule change failed'**
+  String get scheduleChangeFailed;
 }
 
 class _AppLocalizationsDelegate

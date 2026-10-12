@@ -8,6 +8,7 @@ import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
@@ -159,6 +160,11 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       debugPrint('onAppLink: $uri');
       openAppLink(uri);
     });
+  }
+
+  void _onShareTap() {
+    AnalysticsSignal.send('TILE_SHARE_BUTTON');
+    Navigator.pushNamed(context, '/TileShare');
   }
 
   void _onGetScheduleRequestTap() {
@@ -341,8 +347,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               previous.currentView != current.currentView,
           builder: (context, scheduleState) {
             return HomeBottomNav(
-              onShare: _onGetScheduleRequestTap,
-              onAddTile: _onReviseScheduleTap,
+              onShare: _onShareTap,
+              onAddTile: () => displayDialog(MediaQuery.of(context).size),
               currentView: scheduleState.currentView,
               onSelectView: _onSelectCalendarView,
             );
@@ -504,6 +510,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
         BlocListener<ScheduleBloc, ScheduleState>(
           listener: (context, state) {
+            if (state is ScheduleEvaluationReleasedState) {
+              NotificationOverlayMessage().showToast(
+                context,
+                AppLocalizations.of(context)!.scheduleChangeHoldEnded,
+                NotificationOverlayMessageType.info,
+              );
+            }
             if (state is ScheduleLoadingState || state is ScheduleLoadedState) {
               final previewSummaryBloc =
                   BlocProvider.of<PreviewSummaryBloc>(context);

@@ -1,4 +1,9 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
+import 'package:tiler_app/bloc/schedule/schedule_diagnostics.dart';
+export 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/bloc/schedule/schedule_recovery_monitor.dart';
 import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
 
@@ -9,6 +14,7 @@ import 'package:flutter/widgets.dart';
 import 'package:tuple/tuple.dart';
 
 import 'package:tiler_app/data/scheduleStatus.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -23,7 +29,609 @@ part 'schedule_state.dart';
 enum AuthorizedRouteTileListPage { Daily, Weekly, Monthly }
 
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
-  final Duration _retryScheduleLoadingDuration = Duration(minutes: 5);
+  static final Object _requestZoneKey = Object();
+  static final Object _ownerZoneKey = Object();
+
+  /// The bloc running the schedule change the caller is part of, if any.
+  /// Lets an API call made for a change reach its bloc even after the
+  /// screen that started it has closed.
+  static ScheduleBloc? get ofCurrentChange =>
+      Zone.current[_ownerZoneKey] as ScheduleBloc?;
+  final ScheduleEvaluationStore evaluationStore;
+  final ScheduleEvaluationConfig evaluationConfig;
+  final DateTime Function() _now;
+  ScheduleEvaluation? _evaluation;
+  ScheduleEvaluation? _restoredEvaluation;
+  Timer? _evaluationTimer;
+  Completer<bool>? _evaluationDeadline;
+  Timer? _presentationTimer;
+  Future<ScheduleRevision>? _baselineFetch;
+  bool _initializingChange = false;
+  String? _unconfirmedRequestId;
+  String _account = 'session';
+  int _sessionGeneration = 0;
+  int _readGeneration = 0;
+  int _sequence = 0;
+  int _readsInFlight = 0;
+  bool _sent = false;
+  bool _fetching = false;
+  final Expando<bool> _managedRequests = Expando<bool>();
+  StreamSubscription<ScheduleRevision?>? _revisionSubscription;
+
+  ScheduleEvaluation? get activeEvaluation => _evaluation;
+  bool get lastChangeUnconfirmed => _unconfirmedRequestId != null;
+  bool get scheduleChangesBlocked =>
+      _evaluation?.blocksChanges == true &&
+      _now().isBefore(_evaluation!.expiresAt);
+  bool get ownsCurrentEvaluation =>
+      _evaluation != null && Zone.current[_requestZoneKey] == _evaluation!.id;
+
+  void _trace(String event,
+      {ScheduleEvaluation? request,
+      Map<String, Object?> fields = const {},
+      Object? error}) {
+    final evaluation = request ?? _evaluation;
+    scheduleFlowLog(event, error: error, fields: {
+      'requestId': evaluation?.id,
+      'kind': evaluation?.kind.name,
+      'phase': evaluation?.phase.name,
+      'activeRequestId': _evaluation?.id,
+      'activePhase': _evaluation?.phase.name,
+      'ageMs': evaluation == null
+          ? null
+          : _now().difference(evaluation.startedAt).inMilliseconds,
+      'remainingMs': evaluation?.expiresAt.difference(_now()).inMilliseconds,
+      'baselineKnown': evaluation?.baseline.isKnown,
+      'revisionKnown': revisions.state?.isKnown ?? false,
+      'observationAgeMs': revisions.observedAt == null
+          ? null
+          : _now().difference(revisions.observedAt!).inMilliseconds,
+      'baselineChanged': evaluation == null || revisions.state == null
+          ? null
+          : revisions.state != evaluation.baseline,
+      'observedAfterStart': evaluation == null || revisions.observedAt == null
+          ? null
+          : !revisions.observedAt!.isBefore(evaluation.startedAt),
+      'initializing': _initializingChange,
+      'sent': _sent,
+      'blocked': scheduleChangesBlocked,
+      'session': _sessionGeneration,
+      'read': _readGeneration,
+      'readsInFlight': _readsInFlight,
+      'state': state.runtimeType.toString(),
+      'view': state.currentView.name,
+      ...fields,
+    });
+  }
+
+  /// Refresh can reconcile an interrupted request against its baseline.
+  void refreshEvaluationSchedule() {
+    _trace('ui_refresh_requested', fields: {
+      'canConfirmMutation': false,
+      'reason': _evaluation?.phase == ScheduleEvaluationPhase.uncertain
+          ? 'check_revision_against_baseline'
+          : 'calendar_read_only',
+    });
+    add(GetScheduleEvent(forceRefresh: true, emitOnlyLoadedStated: true));
+  }
+
+  void bindEvaluationAccount(String account) {
+    if (_account == account || isClosed) return;
+    _trace('account_bind', fields: {
+      'previousScope': _account == 'session' ? 'session' : 'authenticated',
+      'savedRecordPresent': evaluationStore.read(account) != null,
+      'sessionRecordPresent': evaluationStore.read('session') != null,
+    });
+    if (scheduleChangesBlocked && (_account != 'session' || _sent)) return;
+    if (_account != 'session') revisions.reset();
+    _account = account;
+    if (_evaluation != null) _evaluation = _evaluation!.withAccount(account);
+    final scope = evaluationStore.read(account) != null ? account : 'session';
+    final saved = evaluationStore.read(scope);
+    if (saved != null) {
+      _restoredEvaluation = ScheduleEvaluation.fromRecord(saved,
+          account: scope, now: _now(), config: evaluationConfig);
+      if (_restoredEvaluation == null) {
+        _trace('mutation_restore_discarded', fields: {
+          'reason': 'missing_baseline_invalid_or_expired_timing',
+        });
+        _clearJournal(scope, saved['id']);
+      } else {
+        _trace('mutation_restore_staged', request: _restoredEvaluation);
+        _reconcileRevision();
+        if (_restoredEvaluation != null) {
+          unawaited(_ensureBaseline(force: true).then<void>((_) {
+            _reconcileRevision();
+          }, onError: (Object error, StackTrace _) {
+            _trace('mutation_restore_initialization_failed', error: error);
+          }));
+        }
+      }
+    }
+  }
+
+  bool get _baselineIsFresh {
+    final observed = revisions.observedAt;
+    if (revisions.state?.isKnown != true || observed == null) return false;
+    final age = _now().difference(observed);
+    return !age.isNegative && age <= evaluationConfig.baselineMaxAge;
+  }
+
+  Future<ScheduleRevision> _ensureBaseline({bool force = false}) {
+    if (!force && _baselineIsFresh) return Future.value(revisions.state!);
+    return _baselineFetch ??= _fetchBaseline();
+  }
+
+  Future<ScheduleRevision> _fetchBaseline() async {
+    final generation = _sessionGeneration;
+    _trace('mutation_initialization_started', fields: {
+      'initializationTimeoutMs':
+          evaluationConfig.initializationTimeout.inMilliseconds,
+      'baselineMaxAgeMs': evaluationConfig.baselineMaxAge.inMilliseconds,
+    });
+    try {
+      final status =
+          await Future<ScheduleStatus>(() => scheduleApi.getScheduleStatus())
+              .timeout(evaluationConfig.initializationTimeout);
+      if (isClosed || generation != _sessionGeneration)
+        throw ScheduleChangeBlocked();
+      if (!ScheduleRevision.fromStatus(status).isKnown)
+        throw ScheduleInitializationFailed();
+      revisions.observe(status);
+      _trace('mutation_initialization_ready');
+      return revisions.state!;
+    } catch (error) {
+      _trace('mutation_initialization_failed', error: error);
+      if (!isClosed && generation == _sessionGeneration) _publishEvaluation();
+      rethrow;
+    } finally {
+      if (generation == _sessionGeneration) _baselineFetch = null;
+    }
+  }
+
+  void _clearJournal(String account, Object? id) {
+    if (evaluationStore.read(account)?['id'] != id) return;
+    unawaited(evaluationStore.write(account, null).then<void>((_) {
+      _trace('mutation_journal_cleared', fields: {'clearedRequestId': id});
+    }, onError: (Object error, StackTrace _) {
+      _trace('mutation_journal_clear_failed', error: error);
+    }));
+  }
+
+  void _armEvaluationDeadline() {
+    _evaluationTimer?.cancel();
+    final evaluation = _evaluation;
+    if (evaluation == null || !evaluation.blocksChanges) return;
+    final remaining = evaluation.expiresAt.difference(_now());
+    if (remaining <= Duration.zero) {
+      _expireEvaluation();
+    } else {
+      _evaluationTimer = Timer(remaining, _expireEvaluation);
+    }
+  }
+
+  void _expireEvaluation() {
+    final evaluation = _evaluation;
+    if (evaluation == null || !evaluation.blocksChanges) return;
+    if (_now().isBefore(evaluation.expiresAt)) {
+      _armEvaluationDeadline();
+      return;
+    }
+    _releaseUnconfirmedEvaluation(evaluation, 'deadline_expired');
+  }
+
+  void _releaseUnconfirmedEvaluation(
+      ScheduleEvaluation evaluation, String reason) {
+    _trace('mutation_released_unconfirmed',
+        request: evaluation,
+        fields: {'reason': reason, 'canConfirmMutation': false});
+    _clearJournal(evaluation.account, evaluation.id);
+    if (_evaluation?.id == evaluation.id) {
+      _evaluationTimer?.cancel();
+      if (_evaluationDeadline?.isCompleted == false) {
+        _evaluationDeadline!.complete(reason == 'deadline_expired');
+      }
+      _evaluation = null;
+      _unconfirmedRequestId = evaluation.id;
+      _sent = false;
+      // Require a new status read before another explicit user write.
+      if (reason == 'deadline_expired') revisions.invalidateObservation();
+      _publishEvaluation(released: evaluation, releaseReason: reason);
+    }
+  }
+
+  void _reconcileRevision() {
+    _expireEvaluation();
+    final restored = _restoredEvaluation;
+    if (restored != null) {
+      if (!_now().isBefore(restored.expiresAt)) {
+        _restoredEvaluation = null;
+        _clearJournal(restored.account, restored.id);
+        _trace('mutation_restore_discarded',
+            request: restored, fields: {'reason': 'deadline_expired'});
+      } else if (_baselineIsFresh &&
+          !revisions.observedAt!.isBefore(restored.startedAt)) {
+        _restoredEvaluation = null;
+        if (revisions.state != restored.baseline) {
+          _releaseUnconfirmedEvaluation(restored, 'revision_changed');
+        } else {
+          _evaluation = restored;
+          _sent = false;
+          _armEvaluationDeadline();
+          _trace('mutation_restored_uncertain',
+              fields: {'liveResponseAttached': false});
+          _publishEvaluation();
+        }
+      }
+    }
+    final evaluation = _evaluation;
+    if (evaluation?.phase == ScheduleEvaluationPhase.uncertain &&
+        _baselineIsFresh &&
+        !revisions.observedAt!.isBefore(evaluation!.startedAt) &&
+        revisions.state != evaluation.baseline) {
+      _releaseUnconfirmedEvaluation(evaluation, 'revision_changed');
+    }
+  }
+
+  void _publishEvaluation(
+      {ScheduleEvaluation? released, String? releaseReason}) {
+    if (!isClosed)
+      add(_EvaluationChangedEvent(_sessionGeneration,
+          released: released, releaseReason: releaseReason));
+  }
+
+  /// Initialize a known baseline before reservation. Preparation is serialized;
+  /// nested API calls inherit ownership, while independent writes reject.
+  Future<T> runScheduleChange<T>(Future<T> Function() request,
+      {ScheduleChangeKind kind = ScheduleChangeKind.edit,
+      String? eventName,
+      List<String> affectedTileIds = const []}) {
+    final future = _runScheduleChange(request,
+        kind: kind, eventName: eventName, affectedTileIds: affectedTileIds);
+    _managedRequests[future] = true;
+    // EvaluateSchedule may attach after a fast failure. Observe it immediately
+    // while preserving the original typed future and its error for callers.
+    unawaited(future.then<void>((_) {}, onError: (Object _, StackTrace __) {}));
+    return future;
+  }
+
+  Future<T> _runScheduleChange<T>(Future<T> Function() request,
+      {ScheduleChangeKind kind = ScheduleChangeKind.edit,
+      String? eventName,
+      List<String> affectedTileIds = const []}) async {
+    final ids = affectedTileIds
+        .expand((id) => id.split(','))
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toSet()
+        .toList();
+    String? name = eventName?.trim();
+    if (name == null || name.isEmpty) {
+      name = null;
+      if (ids.length == 1) {
+        final tiles = ScheduleState.generatePriorScheduleState(state).subEvents;
+        for (final tile in tiles) {
+          if (tile.id == ids.single ||
+              tile.uniqueId == ids.single ||
+              tile.calendarEvent?.id == ids.single) {
+            final candidate = tile.name?.trim();
+            if (candidate != null && candidate.isNotEmpty) {
+              name = candidate;
+              break;
+            }
+          }
+        }
+      }
+    }
+    _reconcileRevision();
+    if (ownsCurrentEvaluation &&
+        _evaluation?.phase == ScheduleEvaluationPhase.pending) {
+      _trace('mutation_joined', fields: {'requestedKind': kind.name});
+      final enriched = _evaluation!.withTarget(ids: ids, name: name);
+      if (enriched != _evaluation) {
+        _evaluation = enriched;
+        _publishEvaluation();
+      }
+      return request();
+    }
+    if (scheduleChangesBlocked ||
+        _initializingChange ||
+        isClosed ||
+        Zone.current[_requestZoneKey] != null) {
+      _trace('mutation_blocked', fields: {
+        'requestedKind': kind.name,
+        'reason': isClosed ? 'bloc_closed' : 'active_evaluation'
+      });
+      throw ScheduleChangeBlocked();
+    }
+    final generation = _sessionGeneration;
+    if (!_baselineIsFresh || _restoredEvaluation != null) {
+      _initializingChange = true;
+      try {
+        await _ensureBaseline(force: _restoredEvaluation != null);
+        _reconcileRevision();
+        if (isClosed ||
+            generation != _sessionGeneration ||
+            scheduleChangesBlocked) {
+          throw ScheduleChangeBlocked();
+        }
+      } finally {
+        if (generation == _sessionGeneration) _initializingChange = false;
+      }
+    }
+    final startedAt = _now();
+    final evaluation = ScheduleEvaluation(
+        id: '${startedAt.microsecondsSinceEpoch}_${++_sequence}',
+        kind: kind,
+        account: _account,
+        startedAt: startedAt,
+        expiresAt: startedAt.add(evaluationConfig.operationTimeout),
+        baseline: revisions.state!,
+        baselineObservedAt: revisions.observedAt!,
+        eventName: name,
+        affectedEventCount: ids.isNotEmpty
+            ? ids.length
+            : name == null
+                ? 0
+                : 1,
+        affectedTileIds: List.unmodifiable(ids));
+    _evaluation = evaluation;
+    _unconfirmedRequestId = null;
+    final deadline = Completer<bool>();
+    _evaluationDeadline = deadline;
+    _presentationTimer?.cancel();
+    _sent = false;
+    _armEvaluationDeadline();
+    _trace('mutation_reserved', fields: {
+      'affectedTileCount': affectedTileIds.length,
+      'baselineKnown': evaluation.baseline.isKnown,
+    });
+    _publishEvaluation();
+    try {
+      final callback = runZoned(request, zoneValues: {
+        _requestZoneKey: evaluation.id,
+        _ownerZoneKey: this,
+      });
+      final expiry = deadline.future.then<T>((expired) {
+        if (expired) {
+          throw TimeoutException(
+              'Schedule change deadline expired; outcome unconfirmed');
+        }
+        return callback;
+      });
+      final result = await Future.any<T>([callback, expiry]);
+      // Fakes/legacy callbacks may not go through HTTP. Their awaited result
+      // still settles this evaluation. HTTP itself settles at the 2xx boundary.
+      if (generation == _sessionGeneration &&
+          _evaluation?.id == evaluation.id &&
+          _evaluation?.phase == ScheduleEvaluationPhase.pending) {
+        await _finishEvaluation(_evaluation!,
+            success: result != false &&
+                !(result is Tuple2 && result.item2 is TilerError));
+      }
+      _trace('mutation_callback_completed', request: evaluation, fields: {
+        'requestStillActive': _evaluation?.id == evaluation.id,
+        'resultType': result.runtimeType.toString(),
+      });
+      return result;
+    } catch (error) {
+      _trace('mutation_callback_error', request: evaluation, error: error);
+      if (generation == _sessionGeneration &&
+          _evaluation?.id == evaluation.id &&
+          _evaluation?.phase == ScheduleEvaluationPhase.pending) {
+        if (_sent &&
+            (error is SocketException ||
+                error is TimeoutException ||
+                error is http.ClientException)) {
+          _evaluation =
+              _evaluation!.withPhase(ScheduleEvaluationPhase.uncertain);
+          _trace('mutation_uncertain',
+              fields: {'reason': 'callback_transport_error'}, error: error);
+          _publishEvaluation();
+          _reconcileRevision();
+        } else {
+          await _finishEvaluation(_evaluation!, success: false);
+        }
+      }
+      rethrow;
+    }
+  }
+
+  /// Observe the original transport future so an eventual response can resolve
+  /// uncertainty after timeout. Never replay schedule mutations.
+  Future<http.StreamedResponse> observeScheduleResponse(
+      Future<http.StreamedResponse> Function() send,
+      {required ScheduleChangeKind kind,
+      Duration timeout = const Duration(seconds: 180)}) async {
+    if (!ownsCurrentEvaluation ||
+        _evaluation?.phase != ScheduleEvaluationPhase.pending) {
+      return runScheduleChange(
+          () => observeScheduleResponse(send, kind: kind, timeout: timeout),
+          kind: kind);
+    }
+    if (_restoredEvaluation != null) {
+      await _ensureBaseline(force: true);
+      _reconcileRevision();
+      if (!ownsCurrentEvaluation ||
+          _evaluation?.phase != ScheduleEvaluationPhase.pending) {
+        throw ScheduleChangeBlocked();
+      }
+    }
+    final evaluation = _evaluation!;
+    final generation = _sessionGeneration;
+    _trace('mutation_persist_started', request: evaluation);
+    await evaluationStore.write(evaluation.account, evaluation.toRecord());
+    _trace('mutation_persist_completed', request: evaluation);
+    if (isClosed ||
+        generation != _sessionGeneration ||
+        _evaluation?.id != evaluation.id ||
+        !_now().isBefore(evaluation.expiresAt)) {
+      _trace('mutation_send_abandoned',
+          request: evaluation,
+          fields: {'reason': 'ownership_changed_before_send'});
+      throw ScheduleChangeBlocked();
+    }
+    _sent = true;
+    _trace('mutation_sent',
+        request: evaluation,
+        fields: {'responseTimeoutMs': timeout.inMilliseconds});
+    var timedOut = false;
+    final original = Future.sync(send).then((response) async {
+      _trace('mutation_response', request: evaluation, fields: {
+        'status': response.statusCode,
+        'late': timedOut,
+        'sameSession': generation == _sessionGeneration,
+        'sameRequest': _evaluation?.id == evaluation.id,
+      });
+      final success = response.statusCode >= 200 && response.statusCode < 300;
+      final uncertain =
+          response.statusCode == 408 || response.statusCode >= 500;
+      if (uncertain) {
+        if (generation == _sessionGeneration &&
+            _evaluation?.id == evaluation.id) {
+          _evaluation = evaluation.withPhase(ScheduleEvaluationPhase.uncertain);
+          _trace('mutation_uncertain', fields: {
+            'reason': 'http_response_unconfirmed',
+            'status': response.statusCode,
+          });
+          _publishEvaluation();
+          _reconcileRevision();
+        }
+      } else {
+        await _finishEvaluation(evaluation, success: success);
+      }
+      if (!success || timedOut) {
+        unawaited(response.stream.drain<void>().catchError((Object _) {}));
+      }
+      if (!success)
+        throw http.ClientException('Schedule change was not confirmed');
+      return response;
+    }, onError: (Object error, StackTrace stack) {
+      if (generation == _sessionGeneration &&
+          _evaluation?.id == evaluation.id) {
+        _evaluation = evaluation.withPhase(ScheduleEvaluationPhase.uncertain);
+        _trace('mutation_uncertain',
+            fields: {'reason': 'transport_error'}, error: error);
+        _publishEvaluation();
+        _reconcileRevision();
+      }
+      Error.throwWithStackTrace(error, stack);
+    });
+    final remaining = evaluation.expiresAt.difference(_now());
+    final responseTimeout = timeout < remaining ? timeout : remaining;
+    return original.timeout(responseTimeout, onTimeout: () {
+      timedOut = true;
+      if (generation == _sessionGeneration &&
+          _evaluation?.id == evaluation.id) {
+        _evaluation = evaluation.withPhase(ScheduleEvaluationPhase.uncertain);
+        _trace('mutation_uncertain', fields: {
+          'reason': 'response_timeout',
+          'responseTimeoutMs': timeout.inMilliseconds,
+          'liveResponseAttached': true,
+        });
+        _publishEvaluation();
+        _reconcileRevision();
+      }
+      throw TimeoutException('Schedule change confirmation unavailable');
+    });
+  }
+
+  Future<void> _finishEvaluation(ScheduleEvaluation evaluation,
+      {required bool success}) async {
+    if (success && _unconfirmedRequestId == evaluation.id)
+      _unconfirmedRequestId = null;
+    final saved = evaluationStore.read(evaluation.account);
+    _trace('mutation_finish_started', request: evaluation, fields: {
+      'success': success,
+      'journalPresent': saved != null,
+      'journalMatchesRequest': saved == null || saved['id'] == evaluation.id,
+    });
+    if (saved == null || saved['id'] == evaluation.id) {
+      // Journal cleanup cannot delay a confirmed server response or UI release.
+      _clearJournal(evaluation.account, saved?['id']);
+    }
+    if (isClosed || _evaluation?.id != evaluation.id) {
+      _trace('mutation_finish_ignored', request: evaluation, fields: {
+        'reason': isClosed ? 'bloc_closed' : 'request_no_longer_active'
+      });
+      return;
+    }
+    _evaluationTimer?.cancel();
+    if (_evaluationDeadline?.isCompleted == false)
+      _evaluationDeadline!.complete(false);
+    _evaluation =
+        success ? null : evaluation.withPhase(ScheduleEvaluationPhase.failed);
+    _trace('mutation_finished',
+        request: evaluation, fields: {'success': success});
+    _publishEvaluation();
+    if (success) {
+      revisions.checkAfterChange(baseline: evaluation.baseline);
+      add(GetScheduleEvent(forceRefresh: true, emitOnlyLoadedStated: true));
+    }
+  }
+
+  void dismissEvaluationFailure() {
+    if (_evaluation?.phase == ScheduleEvaluationPhase.failed) {
+      _evaluation = null;
+      _publishEvaluation();
+    }
+  }
+
+  /// Every calendar emission consults current evaluation, rather than a request
+  /// snapshot captured before another handler started/finished a mutation.
+  void _emitCalendar(ScheduleState next, Emitter<ScheduleState> emit) {
+    if (emit.isDone) return;
+    if (_evaluation == null) {
+      emit(next);
+      return;
+    }
+    final snapshot = ScheduleState.generatePriorScheduleState(next);
+    _trace('calendar_preserved_evaluation', fields: {
+      'readState': next.runtimeType.toString(),
+      'tileCount': snapshot.subEvents.length,
+      'fetching': _fetching,
+      'canConfirmMutation': false,
+    });
+    emit(ScheduleEvaluationState(
+        subEvents: snapshot.subEvents,
+        timelines: snapshot.timelines,
+        lookupTimeline: snapshot.previousLookupTimeline,
+        scheduleStatus: snapshot.scheduleStatus,
+        currentView: next.currentView,
+        evaluationTime: _evaluation!.startedAt,
+        evaluation: _evaluation,
+        isFetching: _fetching));
+  }
+
+  void _onEvaluationChanged(
+      _EvaluationChangedEvent event, Emitter<ScheduleState> emit) {
+    if (event.generation != _sessionGeneration ||
+        state is ScheduleLoggedOutState) return;
+    final snapshot = ScheduleState.generatePriorScheduleState(state);
+    if (event.released != null &&
+        _evaluation == null &&
+        _unconfirmedRequestId == event.released!.id) {
+      emit(ScheduleEvaluationReleasedState(
+          requestId: event.released!.id,
+          reason: event.releaseReason!,
+          subEvents: snapshot.subEvents,
+          timelines: snapshot.timelines,
+          lookupTimeline: snapshot.previousLookupTimeline,
+          previousLookupTimeline: snapshot.previousLookupTimeline,
+          scheduleStatus: snapshot.scheduleStatus,
+          currentView: state.currentView));
+      return;
+    }
+    _emitCalendar(
+        ScheduleLoadedState(
+            subEvents: snapshot.subEvents,
+            timelines: snapshot.timelines,
+            lookupTimeline: snapshot.previousLookupTimeline,
+            previousLookupTimeline: snapshot.previousLookupTimeline,
+            scheduleStatus: snapshot.scheduleStatus,
+            currentView: state.currentView),
+        emit);
+  }
 
   /// When true, `GetScheduleEvent` is a no-op so the tutorial's dummy tiles
   /// are not overwritten by real API data.
@@ -43,6 +651,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     getSubTiles(timeline).then((value) {
       _cachedRealSchedule = value;
       revisions.observe(value.item3);
+      _reconcileRevision();
     }).catchError((_) {
       // Silently ignore — the normal GetScheduleEvent path will retry.
     });
@@ -74,16 +683,24 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     if (_recoveryMonitor != null) return;
     _recoveryMonitor = ScheduleRecoveryMonitor(
       onRecover: () {
+        _trace('recovery_requested', fields: {'canConfirmMutation': false});
         if (!isClosed && !tutorialMode && state is! ScheduleLoggedOutState) {
+          _reconcileRevision();
           revisions.recover();
         }
       },
-      onSuspend: revisions.suspend,
+      onSuspend: () {
+        _trace('recovery_suspended');
+        revisions.suspend();
+      },
     )..start();
   }
 
   @override
   Future<void> close() async {
+    _evaluationTimer?.cancel();
+    _presentationTimer?.cancel();
+    await _revisionSubscription?.cancel();
     _recoveryMonitor?.close();
     await revisions.close();
     await super.close();
@@ -93,9 +710,20 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   late SubCalendarEventApi subCalendarEventApi;
   Function getContextCallBack;
   late PreviewApi previewApi;
-  ScheduleBloc({required Function this.getContextCallBack})
-      : super(ScheduleInitialState(
+  ScheduleBloc(
+      {required Function this.getContextCallBack,
+      ScheduleEvaluationStore? evaluationStore,
+      this.evaluationConfig = const ScheduleEvaluationConfig(),
+      DateTime Function()? now})
+      : evaluationStore = evaluationStore ?? ScheduleEvaluationStore(),
+        _now = now ?? DateTime.now,
+        super(ScheduleInitialState(
             currentView: AuthorizedRouteTileListPage.Daily)) {
+    if (evaluationConfig.operationTimeout <= Duration.zero ||
+        evaluationConfig.initializationTimeout <= Duration.zero ||
+        evaluationConfig.baselineMaxAge < Duration.zero) {
+      throw ArgumentError('Schedule evaluation timing must be positive');
+    }
     on<GetScheduleEvent>(_onGetSchedule, transformer: restartable());
     on<LogInScheduleEvent>(_onInitialLogInScheduleEvent);
     on<LogOutScheduleEvent>(_onLoggedOutScheduleEvent);
@@ -103,15 +731,35 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<ReviseScheduleEvent>(_onReviseSchedule);
     on<ShuffleScheduleEvent>(_onShuffleSchedule);
     on<EvaluateSchedule>(_onEvaluateSchedule);
+    on<_EvaluationChangedEvent>(_onEvaluationChanged);
     on<ChangeViewEvent>(_onChangeView, transformer: restartable());
     ;
     on<CompleteTaskEvent>(_onCompleteTask);
     scheduleApi = ScheduleApi(getContextCallBack: getContextCallBack);
     revisions = ScheduleRevisionCubit(
-        fetchStatus: () => scheduleApi.getScheduleStatus());
+        now: _now, fetchStatus: () => scheduleApi.getScheduleStatus());
     subCalendarEventApi =
         SubCalendarEventApi(getContextCallBack: getContextCallBack);
     previewApi = PreviewApi(getContextCallBack: getContextCallBack);
+    _revisionSubscription = revisions.stream.listen((revision) {
+      _reconcileRevision();
+      _trace('revision_observed', fields: {
+        'known': revision?.isKnown ?? false,
+        'canConfirmMutation': false,
+      });
+      if (revision == null ||
+          isClosed ||
+          tutorialMode ||
+          _readsInFlight > 0 ||
+          state is ScheduleInitialState ||
+          state is ScheduleLoggedOutState) return;
+      final rendered =
+          ScheduleState.generatePriorScheduleState(state).scheduleStatus;
+      if (ScheduleRevision.fromStatus(rendered) != revision) {
+        _trace('revision_requested_read');
+        add(GetScheduleEvent(forceRefresh: true, emitOnlyLoadedStated: true));
+      }
+    });
   }
 
   Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
@@ -127,6 +775,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   Future<bool> shouldGetRefreshedListOfTiles(ScheduleStatus currentStatus) {
     return scheduleApi.getScheduleStatus().then((value) {
       revisions.observe(value);
+      _reconcileRevision();
       bool isAnalyisTheSame = false;
       bool isEvaluationTheSame = false;
       if (value.analysisId == currentStatus.analysisId) {
@@ -153,6 +802,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   void _onLocalScheduleEvent(
       ReloadLocalScheduleEvent event, Emitter<ScheduleState> emit) {
     revisions.observe(event.scheduleStatus);
+    _reconcileRevision();
     LocalScheduleLoadedState put = LocalScheduleLoadedState(
         subEvents: event.subEvents,
         timelines: event.timelines,
@@ -162,11 +812,22 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         previousLookupTimeline: event.previousLookupTimeline,
         currentView: state.currentView);
 
-    emit(put);
+    _emitCalendar(put, emit);
   }
 
   void _onLoggedOutScheduleEvent(
       LogOutScheduleEvent event, Emitter<ScheduleState> emit) async {
+    _trace('session_logout');
+    ++_sessionGeneration;
+    ++_readGeneration;
+    _evaluation = null;
+    _unconfirmedRequestId = null;
+    _restoredEvaluation = null;
+    _evaluationTimer?.cancel();
+    _presentationTimer?.cancel();
+    _baselineFetch = null;
+    _initializingChange = false;
+    _account = 'session';
     scheduleApi = ScheduleApi(getContextCallBack: () {
       return event.getContextCallBack();
     });
@@ -176,169 +837,185 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void _onInitialLogInScheduleEvent(
       LogInScheduleEvent event, Emitter<ScheduleState> emit) async {
+    _trace('session_login_reset');
+    ++_sessionGeneration;
+    ++_readGeneration;
+    _evaluation = null;
+    _unconfirmedRequestId = null;
+    _restoredEvaluation = null;
+    _evaluationTimer?.cancel();
+    _presentationTimer?.cancel();
+    _baselineFetch = null;
+    _initializingChange = false;
+    _account = 'session';
+    revisions.reset();
     emit(ScheduleInitialState(currentView: state.currentView));
-  }
-
-  Future _getSubEventCallBack(
-      Timeline updateTimeline,
-      List<SubCalendarEvent> subEvents,
-      List<Timeline> timelines,
-      ScheduleStatus scheduleStatus,
-      Emitter<ScheduleState> emit,
-      {String? eventId = null,
-      Timeline? previousTimeLine}) async {
-    await this.getSubTiles(updateTimeline).then((value) {
-      // Guard against overwriting tutorial dummy tiles.
-      // The API call may have started before tutorialMode was set,
-      // so we re-check here when the response arrives.
-      if (tutorialMode) return;
-
-      revisions.observe(value.item3);
-      List<SubCalendarEvent> updatedSubEvents = value.item2;
-      if (state is ScheduleLoadedState &&
-          !(state is LocalScheduleLoadedState)) {
-        emit(LocalScheduleLoadedState(
-            subEvents: updatedSubEvents,
-            timelines: value.item1.toList(),
-            scheduleStatus: value.item3,
-            lookupTimeline: updateTimeline,
-            previousLookupTimeline: previousTimeLine,
-            currentView: state.currentView,
-            eventId: eventId));
-      } else {
-        emit(ScheduleLoadedState(
-            subEvents: updatedSubEvents,
-            timelines: value.item1.toList(),
-            scheduleStatus: value.item3,
-            lookupTimeline: updateTimeline,
-            previousLookupTimeline: previousTimeLine,
-            currentView: state.currentView,
-            eventId: eventId));
-      }
-    }).catchError((onError) {
-      debugPrint("emitting failed schedule loaded state getSubEventCallBack");
-      emit(FailedScheduleLoadedState(
-          evaluationTime: Utility.currentTime(),
-          subEvents: subEvents,
-          timelines: timelines,
-          scheduleStatus: scheduleStatus,
-          lookupTimeline: updateTimeline,
-          previousLookupTimeline: previousTimeLine,
-          currentView: state.currentView,
-          eventId: eventId));
-    });
   }
 
   Future<void> _onCompleteTask(
       CompleteTaskEvent event, Emitter<ScheduleState> emit) async {
-    emit(ScheduleLoadingTaskState());
     try {
-      print("started making api call to complete");
-      SubCalendarEvent completedEvent =
-          await subCalendarEventApi.complete(event.subEvent);
-      print("SUCCESSFULLY COMPLETED TASK");
-      emit(ScheduleCompleteTaskState(completedEvent: completedEvent));
-    } catch (error) {
-      emit(FailedScheduleLoadedState(
-          evaluationTime: Utility.currentTime(),
-          subEvents: [],
-          timelines: [],
-          lookupTimeline: Timeline.fromDateTime(Utility.currentTime(),
-              Utility.currentTime().add(Duration(days: 1))),
-          currentView: state.currentView,
-          scheduleStatus: null));
+      await runScheduleChange(
+          () => subCalendarEventApi.complete(event.subEvent),
+          kind: ScheduleChangeKind.complete,
+          eventName: event.subEvent.name,
+          affectedTileIds: [event.subEvent.id ?? '']);
+    } catch (_) {
+      // Evaluation retains the request's failure/uncertainty for the UI.
     }
   }
 
   Future<void> _onGetSchedule(
       GetScheduleEvent event, Emitter<ScheduleState> emit) async {
-    // Skip real schedule fetches while the tutorial is showing dummy tiles.
-    if (tutorialMode) return;
-
-    final state = this.state;
-    String? eventId = event.eventId;
-    bool isAlreadyLoaded = false;
-    Timeline updateTimeline =
-        event.scheduleTimeline ?? Utility.initialScheduleTimeline;
-    List<SubCalendarEvent> subEvents = event.previousSubEvents ?? [];
-    List<Timeline> timelines = [];
-    ScheduleStatus scheduleStatus = new ScheduleStatus();
-    bool makeRemoteCall = false;
-
-    var preservedStateResult = preserveState(state);
-
-    if (state is ScheduleInitialState) {
-      isAlreadyLoaded = false;
-      updateTimeline =
-          event.scheduleTimeline ?? Utility.initialScheduleTimeline;
-      subEvents = [];
-      timelines = [];
-    }
-
-    if (state is ScheduleLoadedState) {
-      Timeline timeline = state.lookupTimeline;
-      updateTimeline = event.scheduleTimeline ?? timeline;
-      timelines = state.timelines;
-      scheduleStatus = state.scheduleStatus;
-      isAlreadyLoaded = true;
-      if (!timeline.isStartAndEndEqual(updateTimeline) ||
-          event.scheduleTimeline == null) {
-        makeRemoteCall = true;
-      }
-    }
-
-    if (state is ScheduleEvaluationState) {
-      timelines = state.timelines;
-      scheduleStatus = state.scheduleStatus;
-      updateTimeline = state.lookupTimeline;
-      isAlreadyLoaded = true;
-    }
-    if (!event.emitOnlyLoadedStated) {
-      emit(ScheduleLoadingState(
-          subEvents: subEvents,
-          timelines: timelines,
-          previousLookupTimeline: event.previousTimeline ?? updateTimeline,
-          isAlreadyLoaded: isAlreadyLoaded,
-          scheduleStatus: scheduleStatus,
-          eventId: event.eventId,
-          loadingTime: Utility.currentTime(),
-          currentView: state.currentView,
-          connectionState: ConnectionState.waiting));
-    }
-
-    if (event.forceRefresh) {
-      revisions.checkAfterChange(
-        baseline: ScheduleRevision.fromStatus(scheduleStatus),
-      );
-    }
-    if (event.forceRefresh || makeRemoteCall) {
-      print("Force refresh on get tiles");
-      await _getSubEventCallBack(
-          updateTimeline, subEvents, timelines, scheduleStatus, emit,
-          eventId: eventId, previousTimeLine: event.previousTimeline);
+    _reconcileRevision();
+    if (tutorialMode || state is ScheduleLoggedOutState) {
+      _trace('read_skipped', fields: {
+        'reason': tutorialMode ? 'tutorial' : 'logged_out',
+      });
       return;
     }
-
-    print("no force refresh on get tiles");
-    await shouldGetRefreshedListOfTiles(scheduleStatus).then((value) async {
-      if (value) {
-        await _getSubEventCallBack(
-            updateTimeline, subEvents, timelines, scheduleStatus, emit,
-            eventId: eventId, previousTimeLine: event.previousTimeline);
+    final elapsed = Stopwatch()..start();
+    final generation = _sessionGeneration;
+    final read = ++_readGeneration;
+    final snapshot = ScheduleState.generatePriorScheduleState(state);
+    final updateTimeline =
+        event.scheduleTimeline ?? snapshot.previousLookupTimeline;
+    final wasLoaded = state is ScheduleLoadedState ||
+        state is ScheduleEvaluationState ||
+        (state is ScheduleLoadingState &&
+            (state as ScheduleLoadingState).isAlreadyLoaded);
+    _fetching = true;
+    _readsInFlight++;
+    _trace('read_started', fields: {
+      'forceRefresh': event.forceRefresh,
+      'quietRefresh': event.emitOnlyLoadedStated,
+      'requestedWindowProvided': event.scheduleTimeline != null,
+      'tileCount': snapshot.subEvents.length,
+      'canConfirmMutation': false,
+    });
+    if (!event.emitOnlyLoadedStated) {
+      _emitCalendar(
+          ScheduleLoadingState(
+              subEvents: snapshot.subEvents,
+              timelines: snapshot.timelines,
+              previousLookupTimeline: snapshot.previousLookupTimeline,
+              isAlreadyLoaded: wasLoaded,
+              scheduleStatus: snapshot.scheduleStatus,
+              loadingTime: Utility.currentTime(),
+              currentView: state.currentView,
+              connectionState: ConnectionState.waiting,
+              eventId: event.eventId),
+          emit);
+    }
+    try {
+      final fetch = event.forceRefresh ||
+          !wasLoaded ||
+          event.scheduleTimeline == null ||
+          !snapshot.previousLookupTimeline.isStartAndEndEqual(updateTimeline) ||
+          await shouldGetRefreshedListOfTiles(snapshot.scheduleStatus);
+      _trace('read_decision',
+          fields: {'fetchTiles': fetch, 'readAttempt': read});
+      if (emit.isDone ||
+          generation != _sessionGeneration ||
+          read != _readGeneration ||
+          tutorialMode) {
+        _trace('read_ignored', fields: {
+          'stage': 'status',
+          'readAttempt': read,
+          'emitterDone': emit.isDone,
+          'sameSession': generation == _sessionGeneration
+        });
         return;
       }
-      emit(LocalScheduleLoadedState(
-          subEvents: preservedStateResult.item1,
-          timelines: preservedStateResult.item2,
-          scheduleStatus: preservedStateResult.item5,
-          lookupTimeline: preservedStateResult.item3,
-          previousLookupTimeline: preservedStateResult.item3,
-          currentView: preservedStateResult.item6,
-          eventId: eventId));
-      return;
-    });
-
-    return;
+      if (fetch) {
+        final data = await getSubTiles(updateTimeline);
+        if (emit.isDone ||
+            generation != _sessionGeneration ||
+            read != _readGeneration ||
+            tutorialMode) {
+          _trace('read_ignored', fields: {
+            'stage': 'tiles',
+            'readAttempt': read,
+            'emitterDone': emit.isDone,
+            'sameSession': generation == _sessionGeneration
+          });
+          return;
+        }
+        _trace('read_succeeded', fields: {
+          'readAttempt': read,
+          'elapsedMs': elapsed.elapsedMilliseconds,
+          'tileCount': data.item2.length,
+          'analysisChanged':
+              data.item3.analysisId != snapshot.scheduleStatus.analysisId,
+          'evaluationChanged':
+              data.item3.evaluationId != snapshot.scheduleStatus.evaluationId,
+          'canConfirmMutation': false,
+        });
+        revisions.observe(data.item3);
+        _reconcileRevision();
+        _fetching = false;
+        _emitCalendar(
+            ScheduleLoadedState(
+                subEvents: data.item2,
+                timelines: data.item1,
+                scheduleStatus: data.item3,
+                lookupTimeline: updateTimeline,
+                previousLookupTimeline: event.previousTimeline,
+                currentView: state.currentView,
+                eventId: event.eventId),
+            emit);
+      } else {
+        _trace('read_reused_snapshot', fields: {
+          'readAttempt': read,
+          'elapsedMs': elapsed.elapsedMilliseconds
+        });
+        _fetching = false;
+        _emitCalendar(
+            LocalScheduleLoadedState(
+                subEvents: snapshot.subEvents,
+                timelines: snapshot.timelines,
+                scheduleStatus: snapshot.scheduleStatus,
+                lookupTimeline: snapshot.previousLookupTimeline,
+                previousLookupTimeline: snapshot.previousLookupTimeline,
+                currentView: state.currentView,
+                eventId: event.eventId),
+            emit);
+      }
+    } catch (error) {
+      _trace('read_failed', error: error, fields: {
+        'readAttempt': read,
+        'elapsedMs': elapsed.elapsedMilliseconds,
+        'sameSession': generation == _sessionGeneration,
+        'emitterDone': emit.isDone,
+        'canConfirmMutation': false,
+      });
+      if (emit.isDone ||
+          generation != _sessionGeneration ||
+          read != _readGeneration) return;
+      _fetching = false;
+      // Failure of a read cannot settle a mutation or remove its feedback.
+      final current = ScheduleState.generatePriorScheduleState(state);
+      _emitCalendar(
+          FailedScheduleLoadedState(
+              evaluationTime: Utility.currentTime(),
+              subEvents: current.subEvents,
+              timelines: current.timelines,
+              scheduleStatus: current.scheduleStatus,
+              lookupTimeline: current.previousLookupTimeline,
+              previousLookupTimeline: current.previousLookupTimeline,
+              currentView: state.currentView,
+              eventId: event.eventId),
+          emit);
+    } finally {
+      _readsInFlight--;
+      if (read == _readGeneration) _fetching = false;
+      _trace('read_finished', fields: {
+        'readAttempt': read,
+        'elapsedMs': elapsed.elapsedMilliseconds,
+        'stillUncertain':
+            _evaluation?.phase == ScheduleEvaluationPhase.uncertain,
+      });
+    }
   }
 
   static Tuple6<
@@ -368,6 +1045,13 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       lookupTimeline = state.lookupTimeline;
     }
 
+    if (state is ScheduleLoadingState) {
+      subEvents = state.subEvents;
+      timelines = state.timelines;
+      scheduleStatus = state.scheduleStatus;
+      lookupTimeline = state.previousLookupTimeline;
+    }
+
     if (state is ScheduleInitialState) {
       subEvents = [];
       timelines = [];
@@ -382,51 +1066,47 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   Future<void> _onReviseSchedule(
       ReviseScheduleEvent event, Emitter<ScheduleState> emit) async {
-    final state = this.state;
-
-    print("revising your schedule");
-    print("current state is ");
-    print(state);
-    var priorSscheduleState = ScheduleState.generatePriorScheduleState(state);
-    List<SubCalendarEvent> subEvents = priorSscheduleState.subEvents;
-    List<Timeline> timelines = priorSscheduleState.timelines;
-    Timeline lookupTimeline = priorSscheduleState.previousLookupTimeline;
-    ScheduleStatus? scheduleStatus = priorSscheduleState.scheduleStatus;
-    String? message;
-    if (subEvents != null && timelines != null && lookupTimeline != null) {
-      emit(ScheduleEvaluationState(
-          subEvents: subEvents,
-          timelines: timelines,
-          lookupTimeline: lookupTimeline,
-          evaluationTime: Utility.currentTime(),
-          scheduleStatus: scheduleStatus,
-          currentView: state.currentView,
-          message: message));
-      await this.scheduleApi.reviseSchedule().catchError((onError) {
-        debugPrint("emitting failed schedule loaded state onReviseSchedule");
-        emit(FailedScheduleLoadedState(
-            evaluationTime: Utility.currentTime(),
-            subEvents: subEvents,
-            timelines: timelines,
-            scheduleStatus: scheduleStatus,
-            lookupTimeline: lookupTimeline,
-            previousLookupTimeline: lookupTimeline,
-            currentView: state.currentView));
-      }).whenComplete(() async {
-        await this._onGetSchedule(
-            GetScheduleEvent(
-              isAlreadyLoaded: true,
-              previousSubEvents: subEvents,
-              previousTimeline: lookupTimeline,
-              scheduleTimeline: lookupTimeline,
-            ),
-            emit);
-      });
-    }
+    try {
+      await runScheduleChange(scheduleApi.reviseSchedule,
+          kind: ScheduleChangeKind.revise);
+    } catch (_) {}
   }
 
-  void _onEvaluateSchedule(
+  Future<void> _onEvaluateSchedule(
       EvaluateSchedule event, Emitter<ScheduleState> emit) async {
+    if (event.request != null) {
+      try {
+        await runScheduleChange(event.request!,
+            kind: event.kind,
+            eventName: event.eventName,
+            affectedTileIds: event.affectedTileIds);
+      } catch (_) {}
+      return;
+    }
+    if (event.callBack != null) {
+      // Compatibility for callers handing over an already-started future.
+      // API-owned requests have already reserved evaluation synchronously.
+      if (_evaluation != null || _managedRequests[event.callBack!] == true) {
+        try {
+          await event.callBack;
+        } catch (_) {}
+      } else {
+        try {
+          await runScheduleChange(() async => await event.callBack,
+              kind: event.kind,
+              eventName: event.eventName,
+              affectedTileIds: event.affectedTileIds);
+        } catch (_) {}
+      }
+      return;
+    }
+    // Legacy editor beginEvaluation is presentation only. The API call owns
+    // admission/outcome, so a manual begin cannot admit a conflicting write.
+    if (_evaluation != null) return;
+    _presentationTimer?.cancel();
+    _presentationTimer = Timer(evaluationConfig.initializationTimeout, () {
+      if (_evaluation == null) _publishEvaluation();
+    });
     emit(ScheduleEvaluationState(
         subEvents: event.renderedSubEvents,
         timelines: event.renderedTimelines,
@@ -435,91 +1115,28 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         scheduleStatus: event.scheduleStatus,
         currentView: state.currentView,
         message: event.message));
-    if (event.callBack != null) {
-      print("Calling _onEvaluateSchedule callback");
-      await event.callBack!.catchError((onError) {
-        debugPrint("emitting failed schedule loaded state onEvaluateSchedule");
-        emit(FailedScheduleLoadedState(
-            evaluationTime: Utility.currentTime(),
-            subEvents: event.renderedSubEvents,
-            timelines: event.renderedTimelines,
-            scheduleStatus: event.scheduleStatus,
-            lookupTimeline: event.renderedScheduleTimeline,
-            previousLookupTimeline: event.renderedScheduleTimeline,
-            currentView: state.currentView));
-      }).whenComplete(() async {
-        await this._onGetSchedule(
-            GetScheduleEvent(
-              isAlreadyLoaded: true,
-              // emitOnlyLoadedStated: true,
-              previousSubEvents: event.renderedSubEvents,
-              previousTimeline: event.renderedScheduleTimeline,
-              scheduleTimeline: event.renderedScheduleTimeline,
-            ),
-            emit);
-      });
-    }
   }
 
   Future<void> _onShuffleSchedule(
       ShuffleScheduleEvent event, Emitter<ScheduleState> emit) async {
-    final state = this.state;
-
-    var priorSscheduleState = ScheduleState.generatePriorScheduleState(state);
-    List<SubCalendarEvent> subEvents = priorSscheduleState.subEvents;
-    List<Timeline> timelines = priorSscheduleState.timelines;
-    Timeline lookupTimeline = priorSscheduleState.previousLookupTimeline;
-    ScheduleStatus? scheduleStatus = priorSscheduleState.scheduleStatus;
-    String? message;
-    if (subEvents != null && timelines != null && lookupTimeline != null) {
-      emit(ScheduleEvaluationState(
-          subEvents: subEvents,
-          timelines: timelines,
-          lookupTimeline: lookupTimeline,
-          evaluationTime: Utility.currentTime(),
-          scheduleStatus: scheduleStatus,
-          currentView: state.currentView,
-          message: message));
-      await this.scheduleApi.shuffleSchedule().then((value) async {
-        await this._onGetSchedule(
-            GetScheduleEvent(
-              isAlreadyLoaded: true,
-              previousSubEvents: subEvents,
-              previousTimeline: lookupTimeline,
-              scheduleTimeline: lookupTimeline,
-            ),
-            emit);
-      });
-    }
+    try {
+      await runScheduleChange(scheduleApi.shuffleSchedule,
+          kind: ScheduleChangeKind.shuffle);
+    } catch (_) {}
   }
 
-  // void _onDelayedGetSchedule(
-  //     DelayedGetSchedule event, Emitter<ScheduleState> emit) async {
-  //   var setTimeOutResult = Utility.setTimeOut(duration: event.delayDuration!);
-
-  //   emit(DelayedScheduleLoadedState(
-  //       subEvents: event.previousSubEvents,
-  //       timelines: event.renderedTimelines,
-  //       lookupTimeline: event.scheduleTimeline,
-  //       scheduleStatus: event.scheduleStatus,
-  //       pendingDelayedScheduleRetrieval:
-  //           setTimeOutResult.item1.asStream().listen((futureEvent) async {})));
-
-  //   await setTimeOutResult.item1.then((futureEvent) async {
-  //     await this._onGetSchedule(
-  //         GetScheduleEvent(
-  //           isAlreadyLoaded: true,
-  //           previousSubEvents: event.previousSubEvents,
-  //           previousTimeline: event.previousTimeline,
-  //           scheduleTimeline: event.scheduleTimeline,
-  //         ),
-  //         emit);
-  //   });
-  // }
-  void _onChangeView(ChangeViewEvent event, Emitter<ScheduleState> emit) async {
-    scheduleApi = ScheduleApi(
-        getContextCallBack:
-            scheduleApi.getContextCallBack ?? getContextCallBack);
-    emit(ScheduleInitialState(currentView: event.newView));
+  void _onChangeView(ChangeViewEvent event, Emitter<ScheduleState> emit) {
+    // Preserve the connection and snapshot while changing only the view.
+    final snapshot = ScheduleState.generatePriorScheduleState(state);
+    _emitCalendar(
+        ScheduleLoadedState(
+            subEvents: snapshot.subEvents,
+            timelines: snapshot.timelines,
+            lookupTimeline: snapshot.previousLookupTimeline,
+            previousLookupTimeline: snapshot.previousLookupTimeline,
+            scheduleStatus: snapshot.scheduleStatus,
+            currentView: event.newView),
+        emit);
+    // The newly mounted view loads its selected range through TileList.
   }
 }

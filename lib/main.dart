@@ -77,6 +77,7 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   if (!Constants.isProduction) {
     HttpOverrides.global = MyHttpOverrides();
   }
@@ -86,10 +87,12 @@ Future main() async {
   //     options: DefaultFirebaseOptions.currentPlatform,
   //   );
   // }
-  runApp(TilerApp());
+  runApp(TilerApp(evaluationStore: await ScheduleEvaluationStore.load()));
 }
 
 class TilerApp extends StatefulWidget {
+  const TilerApp({super.key, this.evaluationStore});
+  final ScheduleEvaluationStore? evaluationStore;
   @override
   _TilerAppState createState() => new _TilerAppState();
 }
@@ -171,7 +174,9 @@ class _TilerAppState extends State<TilerApp> {
                         this.context;
                   })),
           BlocProvider(
-              create: (context) => ScheduleBloc(getContextCallBack: () {
+              create: (context) => ScheduleBloc(
+                  evaluationStore: widget.evaluationStore,
+                  getContextCallBack: () {
                     return _navigatorKey.currentState?.overlay?.context ??
                         this.context;
                   })

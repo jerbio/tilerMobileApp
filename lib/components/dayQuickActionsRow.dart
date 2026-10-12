@@ -1,3 +1,4 @@
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -92,6 +93,7 @@ class DayQuickActionsRow extends StatelessWidget {
   }
 
   void _reOptimize(BuildContext context) {
+    if (!scheduleChangesAllowed(context)) return;
     context.read<ScheduleBloc>().add(ReviseScheduleEvent());
   }
 

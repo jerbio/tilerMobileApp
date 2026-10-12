@@ -124,12 +124,7 @@ class LocalNotificationService {
     final colorScheme = Theme.of(context).colorScheme;
     showMessage(AppLocalizations.of(context)!.completing, colorScheme);
     final scheduleState = context.read<ScheduleBloc>().state;
-    if (scheduleState is ScheduleEvaluationState) {
-      DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-      if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-        return;
-      }
-    }
+    if (context.read<ScheduleBloc>().scheduleChangesBlocked) return;
 
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
@@ -160,7 +155,11 @@ class LocalNotificationService {
     var subCalendarEventApi = SubCalendarEventApi(
         getContextCallBack: () => context.read<ScheduleBloc>());
 
-    var requestFuture = subCalendarEventApi.complete((subTile));
+    var requestFuture = context.read<ScheduleBloc>().runScheduleChange(
+        () => subCalendarEventApi.complete(subTile),
+        kind: ScheduleChangeKind.complete,
+        eventName: subTile.name,
+        affectedTileIds: [subTile.id ?? '']);
 
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: renderedSubEvents,
@@ -209,6 +208,7 @@ class LocalNotificationService {
             MaterialPageRoute(
                 builder: (context) => TileProcrastinateRoute(
                       tileId: subTile.id!,
+                      eventName: subTile.name,
                     )));
       }
     }

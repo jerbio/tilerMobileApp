@@ -1,3 +1,4 @@
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -68,14 +69,9 @@ class PlayBackState extends State<PlayBack> {
   }
 
   pauseTile() async {
+    if (!scheduleChangesAllowed(context)) return;
     showMessage(AppLocalizations.of(context)!.pausing);
     final scheduleState = this.context.read<ScheduleBloc>().state;
-    if (scheduleState is ScheduleEvaluationState) {
-      DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-      if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-        return;
-      }
-    }
 
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
@@ -102,8 +98,12 @@ class PlayBackState extends State<PlayBack> {
       lookupTimeline = scheduleState.previousLookupTimeline;
       scheduleStatus = scheduleState.scheduleStatus;
     }
-    var request =
-        _subCalendarEventApi.pauseTile((_subEvent ?? this.widget.subEvent).id!);
+    var request = context.read<ScheduleBloc>().runScheduleChange(
+        () =>
+            _subCalendarEventApi.pauseTile((_subEvent ?? widget.subEvent).id!),
+        kind: ScheduleChangeKind.pause,
+        eventName: (_subEvent ?? widget.subEvent).name,
+        affectedTileIds: [widget.subEvent.id ?? '']);
 
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.PlayPause, request);
@@ -119,14 +119,9 @@ class PlayBackState extends State<PlayBack> {
   }
 
   resumeTile() async {
+    if (!scheduleChangesAllowed(context)) return;
     showMessage(AppLocalizations.of(context)!.resuming);
     final scheduleState = this.context.read<ScheduleBloc>().state;
-    if (scheduleState is ScheduleEvaluationState) {
-      DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-      if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-        return;
-      }
-    }
 
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
@@ -154,8 +149,11 @@ class PlayBackState extends State<PlayBack> {
       scheduleStatus = scheduleState.scheduleStatus;
     }
 
-    var request =
-        _subCalendarEventApi.resumeTile((_subEvent ?? this.widget.subEvent));
+    var request = context.read<ScheduleBloc>().runScheduleChange(
+        () => _subCalendarEventApi.resumeTile(_subEvent ?? widget.subEvent),
+        kind: ScheduleChangeKind.resume,
+        eventName: (_subEvent ?? widget.subEvent).name,
+        affectedTileIds: [widget.subEvent.id ?? '']);
 
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.PlayPause, request);
@@ -172,15 +170,10 @@ class PlayBackState extends State<PlayBack> {
   }
 
   setAsNowTile() async {
+    if (!scheduleChangesAllowed(context)) return;
     showMessage(AppLocalizations.of(context)!.movingUp);
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     final scheduleState = this.context.read<ScheduleBloc>().state;
-    if (scheduleState is ScheduleEvaluationState) {
-      DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-      if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-        return;
-      }
-    }
 
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
@@ -208,7 +201,11 @@ class PlayBackState extends State<PlayBack> {
       scheduleStatus = scheduleState.scheduleStatus;
     }
 
-    var requestFuture = _subCalendarEventApi.setAsNow((subTile));
+    var requestFuture = context.read<ScheduleBloc>().runScheduleChange(
+        () => _subCalendarEventApi.setAsNow(subTile),
+        kind: ScheduleChangeKind.startNow,
+        eventName: subTile.name,
+        affectedTileIds: [subTile.id ?? '']);
 
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.Now, requestFuture);
@@ -225,15 +222,10 @@ class PlayBackState extends State<PlayBack> {
   }
 
   completeTile() async {
+    if (!scheduleChangesAllowed(context)) return;
     showMessage(AppLocalizations.of(context)!.completing);
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     final scheduleState = this.context.read<ScheduleBloc>().state;
-    if (scheduleState is ScheduleEvaluationState) {
-      DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-      if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-        return;
-      }
-    }
 
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
@@ -261,7 +253,11 @@ class PlayBackState extends State<PlayBack> {
       scheduleStatus = scheduleState.scheduleStatus;
     }
 
-    var requestFuture = _subCalendarEventApi.complete((subTile));
+    var requestFuture = context.read<ScheduleBloc>().runScheduleChange(
+        () => _subCalendarEventApi.complete(subTile),
+        kind: ScheduleChangeKind.complete,
+        eventName: subTile.name,
+        affectedTileIds: [subTile.id ?? '']);
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.Complete, requestFuture);
     }
@@ -283,15 +279,10 @@ class PlayBackState extends State<PlayBack> {
   }
 
   _performDeletion() async {
+    if (!scheduleChangesAllowed(context)) return;
     showMessage(AppLocalizations.of(context)!.deleting);
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     final scheduleState = this.context.read<ScheduleBloc>().state;
-    if (scheduleState is ScheduleEvaluationState) {
-      DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-      if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-        return;
-      }
-    }
 
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
@@ -319,11 +310,15 @@ class PlayBackState extends State<PlayBack> {
       scheduleStatus = scheduleState.scheduleStatus;
     }
 
-    var requestFuture = _subCalendarEventApi.delete(
-        subTile.id!,
-        subTile.thirdpartyId,
-        subTile.thirdPartyUserId,
-        subTile.thirdpartyType?.name.toString().toLowerCase() ?? "");
+    var requestFuture = context.read<ScheduleBloc>().runScheduleChange(
+        () => _subCalendarEventApi.delete(
+            subTile.id!,
+            subTile.thirdpartyId,
+            subTile.thirdPartyUserId,
+            subTile.thirdpartyType?.name.toLowerCase() ?? ''),
+        kind: ScheduleChangeKind.delete,
+        eventName: subTile.name,
+        affectedTileIds: [subTile.id ?? '']);
 
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: renderedSubEvents,
@@ -345,6 +340,7 @@ class PlayBackState extends State<PlayBack> {
       Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => TileProcrastinateRoute(
                 tileId: subTile.id!,
+                eventName: subTile.name,
                 callBack: this.widget.callBack,
               )));
     }

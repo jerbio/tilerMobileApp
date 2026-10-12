@@ -1697,5 +1697,20 @@
   "tileShareActivityDeclined": "Asignación rechazada",
   "tileShareActivityInvitationSent": "Invitación enviada",
   "tileShareActivityInvitationFailed": "No se pudo enviar la invitación",
-  "commentsAttachmentPickFailed": "No se pudo adjuntar ese archivo. Inténtalo de nuevo."
+  "commentsAttachmentPickFailed": "No se pudo adjuntar ese archivo. Inténtalo de nuevo.",
+  "scheduleChangeRefresh": "Actualizar horario",
+  "scheduleChangeUncertainBody": "Tu cambio puede haber llegado al servidor. Actualiza para comprobar si el horario cambió. Esta pausa terminará automáticamente.",
+  "scheduleChangeUncertain": "Confirmación no disponible",
+  "scheduleChangeHoldEnded": "No se pudo confirmar el cambio anterior. Revisa tu horario antes de hacer otro cambio.",
+  "scheduleChangeAdding": "Añadiendo evento",
+  "scheduleChangeSettings": "Actualizando ajustes del horario",
+  "scheduleChangeAccepting": "Aceptando cambios",
+  "scheduleChangeTargetSchedule": "Tu horario",
+  "scheduleChangeTargetEvent": "Evento",
+  "scheduleChangeAllEvents": "Todos los eventos",
+  "scheduleChangeEventCount": "{count, plural, =1{1 evento} other{{count} eventos}}",
+  "@scheduleChangeEventCount": {"placeholders": {"count": {"type": "int"}}},
+  "scheduleChangesBlocked": "Termina el cambio de horario actual antes de iniciar otro.",
+  "scheduleChangesBlockedBy": "Termina el cambio de horario actual ({change}) antes de iniciar otro.",
+  "scheduleChangeFailed": "No se pudo cambiar el horario"
 }

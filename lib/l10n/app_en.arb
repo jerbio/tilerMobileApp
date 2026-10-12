@@ -2470,5 +2470,21 @@
   "@commentsAttachmentLimit": {
     "placeholders": { "count": { "type": "int", "example": "5" } }
   },
-  "productTourStarting": "Your product tour is about to begin."
+  "productTourStarting": "Your product tour is about to begin.",
+  "scheduleChangeRefresh": "Refresh schedule",
+  "scheduleChangeUncertainBody": "Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.",
+  "scheduleChangeUncertain": "Confirmation unavailable",
+  "scheduleChangeHoldEnded": "The previous schedule change could not be confirmed. Check your schedule before making another change.",
+  "scheduleChangeAdding": "Adding event",
+  "scheduleChangeSettings": "Updating schedule settings",
+  "scheduleChangeAccepting": "Accepting changes",
+  "scheduleChangeTargetSchedule": "Your schedule",
+  "scheduleChangeTargetEvent": "Event",
+  "scheduleChangeAllEvents": "All events",
+  "scheduleChangeEventCount": "{count, plural, =1{1 event} other{{count} events}}",
+  "@scheduleChangeEventCount": {"description": "Number of events affected by the current schedule command.", "placeholders": {"count": {"type": "int"}}},
+  "scheduleChangesBlocked": "Finish the current schedule change before starting another.",
+  "scheduleChangesBlockedBy": "Finish the current schedule change ({change}) before starting another.",
+  "@scheduleChangesBlockedBy": {"description": "Shown when the user starts a schedule change while another is still in progress. {change} names it, e.g. 'Completing · Gym'.", "placeholders": {"change": {"type": "String"}}},
+  "scheduleChangeFailed": "Schedule change failed"
 }

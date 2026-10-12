@@ -4197,4 +4197,59 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get productTourStarting =>
       'Tu recorrido por la app está a punto de comenzar.';
+
+  @override
+  String get scheduleChangeRefresh => 'Actualizar horario';
+
+  @override
+  String get scheduleChangeUncertainBody =>
+      'Tu cambio puede haber llegado al servidor. Actualiza para comprobar si el horario cambió. Esta pausa terminará automáticamente.';
+
+  @override
+  String get scheduleChangeUncertain => 'Confirmación no disponible';
+
+  @override
+  String get scheduleChangeHoldEnded =>
+      'No se pudo confirmar el cambio anterior. Revisa tu horario antes de hacer otro cambio.';
+
+  @override
+  String get scheduleChangeAdding => 'Añadiendo evento';
+
+  @override
+  String get scheduleChangeSettings => 'Actualizando ajustes del horario';
+
+  @override
+  String get scheduleChangeAccepting => 'Aceptando cambios';
+
+  @override
+  String get scheduleChangeTargetSchedule => 'Tu horario';
+
+  @override
+  String get scheduleChangeTargetEvent => 'Evento';
+
+  @override
+  String get scheduleChangeAllEvents => 'Todos los eventos';
+
+  @override
+  String scheduleChangeEventCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count eventos',
+      one: '1 evento',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangesBlocked =>
+      'Termina el cambio de horario actual antes de iniciar otro.';
+
+  @override
+  String scheduleChangesBlockedBy(String change) {
+    return 'Termina el cambio de horario actual ($change) antes de iniciar otro.';
+  }
+
+  @override
+  String get scheduleChangeFailed => 'No se pudo cambiar el horario';
 }

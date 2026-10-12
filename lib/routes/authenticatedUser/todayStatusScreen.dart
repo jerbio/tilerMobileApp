@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
 import 'package:flutter/material.dart';
@@ -466,6 +467,7 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
   /// Ported from the previous summary page: the API takes parallel
   /// comma-joined id / type / user-id strings.
   Future<void> _completeSelected(DayPlanViewModel model) async {
+    if (_isCompleting || !scheduleChangesAllowed(context)) return;
     final List<PlanItemViewModel> selected = model.attentionItems
         .where((item) => _selectedIds.contains(item.id))
         .toList();
@@ -487,15 +489,33 @@ class _TodayStatusScreenState extends State<TodayStatusScreen> {
     final baseline = _revisions?.state;
     setState(() => _isCompleting = true);
     try {
-      final bool success = await BlocProvider.of<ScheduleSummaryBloc>(context)
+      Future<bool> request() => BlocProvider.of<ScheduleSummaryBloc>(context)
           .completeTasks(ids, types, userIds);
+      ScheduleBloc? schedule;
+      try {
+        schedule = context.read<ScheduleBloc>();
+      } on ProviderNotFoundException {}
+      final bool success = schedule == null
+          ? await request()
+          : await schedule.runScheduleChange(request,
+              kind: ScheduleChangeKind.complete,
+              eventName:
+                  selected.length == 1 ? selected.single.source.name : null,
+              affectedTileIds: ids.split(','));
 
       if (!mounted) return;
       if (success) {
         _revisions?.checkAfterChange(baseline: baseline);
         _exitSelectionMode();
-        await _load();
+        unawaited(_load());
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(scheduleChangeFailureMessage(context))));
       }
+    } catch (_) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(scheduleChangeFailureMessage(context))));
     } finally {
       if (mounted) setState(() => _isCompleting = false);
     }

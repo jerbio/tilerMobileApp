@@ -4,6 +4,7 @@ import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 
@@ -81,6 +82,8 @@ class IntegrationApi extends AppApi {
   /// [provider] must be `google` or `microsoft` (the only providers the
   /// server accepts for the connect flow).
   Future<String> startCalendarConnect({required String provider}) async {
+    if (scheduleLifecycle?.scheduleChangesBlocked ?? false)
+      throw ScheduleChangeBlocked();
     final isAuthenticated = await authentication.isUserAuthenticated();
     if (!isAuthenticated.item1) {
       throw TilerError(

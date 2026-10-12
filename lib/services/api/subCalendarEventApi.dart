@@ -8,6 +8,7 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 import 'package:http/http.dart' as http;
@@ -151,10 +152,14 @@ class SubCalendarEventApi extends AppApi {
     TilerError error = new TilerError();
     error.Message =
         LocalizationService.instance.translations.failedToResumeTile;
-    return sendPostRequest('api/Schedule/Event/Resume', {
-      'EventID': subEvent.id,
-      'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
-    }).then((response) {
+    return sendPostRequest(
+            'api/Schedule/Event/Resume',
+            {
+              'EventID': subEvent.id,
+              'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
+            },
+            eventName: subEvent.name)
+        .then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -172,10 +177,14 @@ class SubCalendarEventApi extends AppApi {
     TilerError error = new TilerError();
     error.Message =
         LocalizationService.instance.translations.failedToMoveUpTask;
-    return sendPostRequest('api/Schedule/Event/Now', {
-      'EventID': subEvent.id,
-      'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
-    }).then((response) {
+    return sendPostRequest(
+            'api/Schedule/Event/Now',
+            {
+              'EventID': subEvent.id,
+              'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
+            },
+            eventName: subEvent.name)
+        .then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -253,14 +262,19 @@ class SubCalendarEventApi extends AppApi {
         LocalizationService.instance.translations.failedToSendRequest;
     print(subEvent);
     print(subEvent.id);
-    return sendPostRequest('api/Schedule/Event/Complete', {
-      'EventID': subEvent.id,
-      'ThirdPartyType':
-          subEvent.thirdpartyType?.name.toString().toLowerCase() ?? "",
-      'ThirdPartyUserID': subEvent.thirdPartyUserId,
-      'TimeZoneOffset': Utility.currentTime().timeZoneOffset.inHours.toString(),
-      'ThirdPartyEventID': subEvent.thirdpartyId,
-    }).then((response) {
+    return sendPostRequest(
+            'api/Schedule/Event/Complete',
+            {
+              'EventID': subEvent.id,
+              'ThirdPartyType':
+                  subEvent.thirdpartyType?.name.toString().toLowerCase() ?? "",
+              'ThirdPartyUserID': subEvent.thirdPartyUserId,
+              'TimeZoneOffset':
+                  Utility.currentTime().timeZoneOffset.inHours.toString(),
+              'ThirdPartyEventID': subEvent.thirdpartyId,
+            },
+            eventName: subEvent.name)
+        .then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -295,6 +309,14 @@ class SubCalendarEventApi extends AppApi {
   }
 
   Future<CalendarEvent?> delete(String eventId, String? thirdPartyEventID,
+          String? thirdPartyUserId, String? thirdPartyType) =>
+      runScheduleMutation(
+          ScheduleChangeKind.delete,
+          () => _delete(
+              eventId, thirdPartyEventID, thirdPartyUserId, thirdPartyType),
+          affectedTileIds: [eventId]);
+
+  Future<CalendarEvent?> _delete(String eventId, String? thirdPartyEventID,
       String? thirdPartyUserId, String? thirdPartyType) async {
     TilerError error = new TilerError();
     print('deleting ' + eventId);
@@ -356,7 +378,11 @@ class SubCalendarEventApi extends AppApi {
     throw error;
   }
 
-  Future procrastinate(Duration duration, String tileId) async {
+  Future procrastinate(Duration duration, String tileId) => runScheduleMutation(
+      ScheduleChangeKind.defer, () => _procrastinate(duration, tileId),
+      affectedTileIds: [tileId]);
+
+  Future _procrastinate(Duration duration, String tileId) async {
     TilerError error = new TilerError();
     error.Message = "Did not procrastinate tile";
     bool userIsAuthenticated = true;

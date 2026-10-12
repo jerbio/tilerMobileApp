@@ -22,6 +22,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/procrastinateAll.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileProcrastinate.dart';
@@ -76,7 +77,10 @@ class FakeSubCalendarEventApi extends SubCalendarEventApi {
 
 /// Records events without processing them — nothing reaches the network.
 class RecordingScheduleBloc extends ScheduleBloc {
-  RecordingScheduleBloc() : super(getContextCallBack: () => null);
+  RecordingScheduleBloc() : super(getContextCallBack: () => null) {
+    revisions.observe(
+        ScheduleStatus.fromJson({'analysisId': 'a', 'evaluationId': 'e'}));
+  }
   final List<ScheduleEvent> events = [];
   @override
   void add(ScheduleEvent event) => events.add(event);

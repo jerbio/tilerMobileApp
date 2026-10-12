@@ -9,6 +9,27 @@ ScheduleStatus status(String id) => ScheduleStatus.fromJson({
     });
 
 void main() {
+  test(
+      'observations refresh time even when hashes are unchanged; reset clears it',
+      () async {
+    var now = DateTime(2026, 10, 11);
+    final cubit = ScheduleRevisionCubit(
+        fetchStatus: () async => status('a'), now: () => now);
+    cubit.observe(status('a'));
+    expect(cubit.observedAt, now);
+    now = now.add(const Duration(seconds: 10));
+    cubit.observe(status('a'));
+    expect(cubit.observedAt, now);
+    cubit.observe(ScheduleStatus());
+    expect(cubit.observedAt, now);
+    cubit.invalidateObservation();
+    expect(cubit.observedAt, isNull);
+    cubit.observe(status('a'));
+    cubit.reset();
+    expect(cubit.state, isNull);
+    expect(cubit.observedAt, isNull);
+    await cubit.close();
+  });
   test('retries unchanged status, publishes once, and stops on change',
       () async {
     var calls = 0;

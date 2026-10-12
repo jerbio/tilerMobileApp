@@ -4210,4 +4210,59 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get productTourStarting => 'Il tour dell\'app sta per iniziare.';
+
+  @override
+  String get scheduleChangeRefresh => 'Refresh schedule';
+
+  @override
+  String get scheduleChangeUncertainBody =>
+      'Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.';
+
+  @override
+  String get scheduleChangeUncertain => 'Confirmation unavailable';
+
+  @override
+  String get scheduleChangeHoldEnded =>
+      'The previous schedule change could not be confirmed. Check your schedule before making another change.';
+
+  @override
+  String get scheduleChangeAdding => 'Adding event';
+
+  @override
+  String get scheduleChangeSettings => 'Updating schedule settings';
+
+  @override
+  String get scheduleChangeAccepting => 'Accepting changes';
+
+  @override
+  String get scheduleChangeTargetSchedule => 'Your schedule';
+
+  @override
+  String get scheduleChangeTargetEvent => 'Event';
+
+  @override
+  String get scheduleChangeAllEvents => 'All events';
+
+  @override
+  String scheduleChangeEventCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count events',
+      one: '1 event',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangesBlocked =>
+      'Finish the current schedule change before starting another.';
+
+  @override
+  String scheduleChangesBlockedBy(String change) {
+    return 'Finish the current schedule change ($change) before starting another.';
+  }
+
+  @override
+  String get scheduleChangeFailed => 'Schedule change failed';
 }

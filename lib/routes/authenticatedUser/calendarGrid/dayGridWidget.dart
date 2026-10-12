@@ -1,3 +1,4 @@
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'dart:async';
 import 'dart:math' show max;
 import 'package:flutter/gestures.dart';
@@ -1360,11 +1361,16 @@ class DayGridWidgetState extends State<DayGridWidget> {
     }
 
     final dayStart = _gridDayStart();
-    final request = (widget.subCalendarEventApi ??
-            (_subCalendarEventApi ??
-                (_subCalendarEventApi =
-                    SubCalendarEventApi(getContextCallBack: () => context))))
-        .updateSubEvent(edit);
+    if (!scheduleChangesAllowed(context)) return;
+    final api = (widget.subCalendarEventApi ??
+        (_subCalendarEventApi ??
+            (_subCalendarEventApi =
+                SubCalendarEventApi(getContextCallBack: () => context))));
+    final request = context.read<ScheduleBloc>().runScheduleChange(
+        () => api.updateSubEvent(edit),
+        kind: ScheduleChangeKind.edit,
+        eventName: tile.name,
+        affectedTileIds: [tile.uniqueId]);
     final move = _SettlingMove(
       tileId: tile.uniqueId,
       topPx: _topPx(

@@ -1,3 +1,4 @@
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -191,8 +192,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         preview: preview,
         compact: useCompact,
         onTileTap: useCompact
-            ? () => showTileDetailBottomSheet(context, tile,
-                preview: preview)
+            ? () => showTileDetailBottomSheet(context, tile, preview: preview)
             : null,
         hasDottedBorder:
             (widget as EnhancedWithinNowBatch).selectedActionEntityId != null &&
@@ -258,8 +258,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       buildFreeSlot: !withinNow.showFreeSlots
           ? null
           : (slot) => ConnectorRowWithHourMarker(
-                connector:
-                    FreeSlotRow(slot: slot, preview: withinNow.preview),
+                connector: FreeSlotRow(slot: slot, preview: withinNow.preview),
                 hourMarkerWidth: _hourMarkerWidth,
               ),
     );
@@ -270,6 +269,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
 
   /// Trigger schedule revise (re-optimize)
   void _triggerRevise() {
+    if (!scheduleChangesAllowed(context)) return;
     context.read<ScheduleBloc>().add(ReviseScheduleEvent());
   }
 
@@ -534,29 +534,29 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           // summary entry and the shared DayQuickActionsRow carries the
           // chips + loading bar for both layouts.
           if (withinNow.showDaySummaryHeader)
-          BlocBuilder<ScheduleBloc, ScheduleState>(
-            buildWhen: (previous, current) {
-              final wasLoading = previous is ScheduleLoadingState ||
-                  previous is ScheduleEvaluationState;
-              final isLoading = current is ScheduleLoadingState ||
-                  current is ScheduleEvaluationState;
-              return wasLoading != isLoading;
-            },
-            builder: (context, state) {
-              final isLoading = state is ScheduleLoadingState ||
-                  state is ScheduleEvaluationState;
-              return SliverPersistentHeader(
-                pinned: true,
-                delegate: StickyDayHeaderDelegate(
-                  dayData: dayData,
-                  onShowRoute: _navigateToTodaysRoute,
-                  onReOptimize: _triggerRevise,
-                  isLoading: isLoading,
-                  preview: withinNow.preview,
-                ),
-              );
-            },
-          ),
+            BlocBuilder<ScheduleBloc, ScheduleState>(
+              buildWhen: (previous, current) {
+                final wasLoading = previous is ScheduleLoadingState ||
+                    previous is ScheduleEvaluationState;
+                final isLoading = current is ScheduleLoadingState ||
+                    current is ScheduleEvaluationState;
+                return wasLoading != isLoading;
+              },
+              builder: (context, state) {
+                final isLoading = state is ScheduleLoadingState ||
+                    state is ScheduleEvaluationState;
+                return SliverPersistentHeader(
+                  pinned: true,
+                  delegate: StickyDayHeaderDelegate(
+                    dayData: dayData,
+                    onShowRoute: _navigateToTodaysRoute,
+                    onReOptimize: _triggerRevise,
+                    isLoading: isLoading,
+                    preview: withinNow.preview,
+                  ),
+                );
+              },
+            ),
 
           // Rest of the content
           SliverToBoxAdapter(

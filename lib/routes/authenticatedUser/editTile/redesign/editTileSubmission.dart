@@ -17,6 +17,7 @@
 // Failure codes are allow-listed (`api_rejected`, `network_timeout`), as in
 // the Add Tile submission, so nothing free-form reaches analytics.
 import 'package:tiler_app/data/nextTileSuggestions.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/data/prediction.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -269,12 +270,15 @@ class ApiEditTileSubmission implements EditTileSubmission {
           'edit_tile_action',
           <String, Object?>{'tileId': tile.id, 'kind': 'delete'}, () async {
         // The identity the legacy playback buttons send.
-        await subCalendarEventApi.delete(
-          tile.id!,
-          tile.thirdpartyId,
-          tile.thirdPartyUserId,
-          tile.thirdpartyType?.name.toString().toLowerCase() ?? '',
-        );
+        await subCalendarEventApi.runScheduleMutation(
+            ScheduleChangeKind.delete,
+            () => subCalendarEventApi.delete(
+                tile.id!,
+                tile.thirdpartyId,
+                tile.thirdPartyUserId,
+                tile.thirdpartyType?.name.toString().toLowerCase() ?? ''),
+            eventName: tile.name,
+            affectedTileIds: [tile.id ?? '']);
         return null;
       });
 
@@ -282,7 +286,9 @@ class ApiEditTileSubmission implements EditTileSubmission {
   Future<EditTileSaveResult> defer(SubCalendarEvent tile, Duration by) =>
       _mutate('edit_tile_action',
           <String, Object?>{'tileId': tile.id, 'kind': 'defer'}, () async {
-        await subCalendarEventApi.procrastinate(by, tile.id!);
+        await subCalendarEventApi.runScheduleMutation(ScheduleChangeKind.defer,
+            () => subCalendarEventApi.procrastinate(by, tile.id!),
+            eventName: tile.name, affectedTileIds: [tile.id ?? '']);
         return null;
       });
 
