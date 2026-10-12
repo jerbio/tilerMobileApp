@@ -4,6 +4,7 @@ import 'package:tiler_app/bloc/tileShare/tile_share_detail_cubit.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_detail_state.dart';
 import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tileDetailEntry.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tiletteDetailScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/commitmentDetail.dart';
@@ -115,15 +116,28 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
   void _comments(DesignatedTile tile) =>
       TiletteDetailScreen.byTilette(context: context, designatedTile: tile);
 
+  /// The owner's way to a tilette's comments - the same thread.
+  void _tiletteComments(TileShareTemplate tilette) =>
+      TiletteDetailScreen.byTemplate(context: context, tilette: tilette);
+
   /// The mode's content under the header.
   Widget _content(BuildContext context, TileShareDetailState state) {
     switch (state.variant) {
       case DetailVariant.broadcast:
-        return BroadcastDetail(detail: state, recipients: _recipients);
+        return BroadcastDetail(
+            detail: state,
+            recipients: _recipients,
+            onComments: _tiletteComments);
       case DetailVariant.classMode:
-        return ClassDetail(detail: state, recipients: _recipients);
+        return ClassDetail(
+            detail: state,
+            recipients: _recipients,
+            onComments: _tiletteComments);
       case DetailVariant.project:
-        return ProjectDetail(detail: state, recipients: _recipients);
+        return ProjectDetail(
+            detail: state,
+            recipients: _recipients,
+            onComments: _tiletteComments);
       case DetailVariant.commitment:
         return CommitmentDetail(
           detail: state,

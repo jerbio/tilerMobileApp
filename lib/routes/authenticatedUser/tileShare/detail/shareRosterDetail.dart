@@ -27,12 +27,22 @@ class BroadcastDetail extends StatelessWidget {
   final TileShareDetailState detail;
   final TileShareRecipientsSource recipients;
 
+  /// Opens a tilette's comments (its one thread, shared with everyone on
+  /// it); no comments buttons without it.
+  final void Function(TileShareTemplate tilette)? onComments;
+
   const BroadcastDetail(
-      {super.key, required this.detail, required this.recipients});
+      {super.key,
+      required this.detail,
+      required this.recipients,
+      this.onComments});
 
   @override
   Widget build(BuildContext context) => ShareRosterDetail(
-      detail: detail, recipients: recipients, mode: RosterMode.broadcast);
+      detail: detail,
+      recipients: recipients,
+      mode: RosterMode.broadcast,
+      onComments: onComments);
 }
 
 /// The owner's Class detail (Step 9.14): Overview · Tasks · Participants.
@@ -40,12 +50,22 @@ class ClassDetail extends StatelessWidget {
   final TileShareDetailState detail;
   final TileShareRecipientsSource recipients;
 
+  /// Opens a tilette's comments (its one thread, shared with everyone on
+  /// it); no comments buttons without it.
+  final void Function(TileShareTemplate tilette)? onComments;
+
   const ClassDetail(
-      {super.key, required this.detail, required this.recipients});
+      {super.key,
+      required this.detail,
+      required this.recipients,
+      this.onComments});
 
   @override
   Widget build(BuildContext context) => ShareRosterDetail(
-      detail: detail, recipients: recipients, mode: RosterMode.classMode);
+      detail: detail,
+      recipients: recipients,
+      mode: RosterMode.classMode,
+      onComments: onComments);
 }
 
 /// The owner's Project detail (Step 9.15): Overview · Tasks (the board) ·
@@ -54,12 +74,22 @@ class ProjectDetail extends StatelessWidget {
   final TileShareDetailState detail;
   final TileShareRecipientsSource recipients;
 
+  /// Opens a tilette's comments (its one thread, shared with everyone on
+  /// it); no comments buttons without it.
+  final void Function(TileShareTemplate tilette)? onComments;
+
   const ProjectDetail(
-      {super.key, required this.detail, required this.recipients});
+      {super.key,
+      required this.detail,
+      required this.recipients,
+      this.onComments});
 
   @override
   Widget build(BuildContext context) => ShareRosterDetail(
-      detail: detail, recipients: recipients, mode: RosterMode.project);
+      detail: detail,
+      recipients: recipients,
+      mode: RosterMode.project,
+      onComments: onComments);
 }
 
 enum _Segment { overview, tasks, participants }
@@ -88,6 +118,10 @@ class ShareRosterDetail extends StatefulWidget {
   final TileShareRecipientsSource recipients;
   final RosterMode mode;
 
+  /// Opens a tilette's comments (its one thread, shared with everyone on
+  /// it); no comments buttons without it.
+  final void Function(TileShareTemplate tilette)? onComments;
+
   /// How many people (or tasks) the Overview previews.
   static const int previewCount = 3;
 
@@ -96,6 +130,7 @@ class ShareRosterDetail extends StatefulWidget {
     required this.detail,
     required this.recipients,
     required this.mode,
+    this.onComments,
   });
 
   @override
@@ -192,10 +227,18 @@ class _ShareRosterDetailState extends State<ShareRosterDetail> {
                     mode: widget.mode,
                     tilettes: _tilettes,
                     onParticipants: () => _go(_Segment.participants),
-                    onTasks: () => _go(_Segment.tasks)),
+                    onTasks: () => _go(_Segment.tasks),
+                    onComments: widget.onComments),
                 _Segment.tasks => widget.mode == RosterMode.project
-                    ? _Board(state: state, roster: roster, tilettes: _tilettes)
-                    : _Tasks(state: state, tilettes: _tilettes),
+                    ? _Board(
+                        state: state,
+                        roster: roster,
+                        tilettes: _tilettes,
+                        onComments: widget.onComments)
+                    : _Tasks(
+                        state: state,
+                        tilettes: _tilettes,
+                        onComments: widget.onComments),
                 _Segment.participants => _Participants(
                     state: state,
                     roster: roster,
@@ -230,6 +273,7 @@ class _Overview extends StatelessWidget {
   final List<TileShareTemplate> tilettes;
   final VoidCallback onParticipants;
   final VoidCallback onTasks;
+  final void Function(TileShareTemplate tilette)? onComments;
 
   const _Overview({
     required this.state,
@@ -237,6 +281,7 @@ class _Overview extends StatelessWidget {
     required this.tilettes,
     required this.onParticipants,
     required this.onTasks,
+    this.onComments,
   });
 
   @override
@@ -392,6 +437,14 @@ class _Overview extends StatelessWidget {
                   )
                 : null,
           ),
+          // A Broadcast is one tilette and has no Tilettes tab: its comments
+          // are here.
+          if (mode == RosterMode.broadcast &&
+              onComments != null &&
+              tilettes.isNotEmpty)
+            alert(const Key('broadcast_comments'), Icons.chat_bubble_outline,
+                l10n.commentsTitle, theme.colorScheme.primary,
+                onTap: () => onComments!(tilettes.first)),
         ],
       ],
     );
@@ -404,8 +457,13 @@ class _Board extends StatelessWidget {
   final TileShareRosterCubit roster;
   final List<TileShareTemplate> tilettes;
 
+  final void Function(TileShareTemplate tilette)? onComments;
+
   const _Board(
-      {required this.state, required this.roster, required this.tilettes});
+      {required this.state,
+      required this.roster,
+      required this.tilettes,
+      this.onComments});
 
   Future<void> _assign(BuildContext context, int index) async {
     final TileShareTemplate tilette = tilettes[index];
@@ -445,6 +503,8 @@ class _Board extends StatelessWidget {
                 change: state.tasks[tilettes[i].id],
                 onAssign: () => _assign(context, i),
                 onRetry: () => roster.retryTask(tilettes[i].id ?? ''),
+                onComments:
+                    onComments == null ? null : () => onComments!(tilettes[i]),
                 menu: editor == null
                     ? null
                     : TaskMenu(
@@ -463,7 +523,9 @@ class _Tasks extends StatelessWidget {
   final TileShareRosterState state;
   final List<TileShareTemplate> tilettes;
 
-  const _Tasks({required this.state, required this.tilettes});
+  final void Function(TileShareTemplate tilette)? onComments;
+
+  const _Tasks({required this.state, required this.tilettes, this.onComments});
 
   @override
   Widget build(BuildContext context) {
@@ -524,6 +586,13 @@ class _Tasks extends StatelessWidget {
                           Duration(milliseconds: t.durationInMs!)
                               .toHumanLocalized(context),
                           style: quiet),
+                    if (onComments != null)
+                      IconButton(
+                        key: Key('class_task_comments_${t.id}'),
+                        tooltip: l10n.commentsTitle,
+                        icon: const Icon(Icons.chat_bubble_outline),
+                        onPressed: () => onComments!(t),
+                      ),
                     if (editor != null)
                       TaskMenu(
                           tilette: t,
