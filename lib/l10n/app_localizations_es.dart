@@ -88,9 +88,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get nickName => 'Nombre de usuario';
 
   @override
-  String get deadline_anytime => 'Fecha límite (Cualquier momento)';
-
-  @override
   String get selectADeadline => 'Selecciona una fecha límite';
 
   @override
@@ -1053,9 +1050,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addTilette => 'Agregar Tilette';
 
   @override
-  String get tileShareName => 'Nombre del bloque compartido';
-
-  @override
   String get tileShare => 'Bloque compartido';
 
   @override
@@ -1168,9 +1162,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get inBound => 'En entrada';
-
-  @override
-  String get multiShare => 'Compartir múltiple';
 
   @override
   String get errorOccurred =>
@@ -5124,6 +5115,64 @@ class AppLocalizationsEs extends AppLocalizations {
   String taskSheetMoveShareDeadline(String when) {
     return 'Mover también la fecha límite compartida a $when';
   }
+
+  @override
+  String get createChooserTitle => 'Compartir trabajo';
+
+  @override
+  String get createChooserSubtitle => '¿Cómo participarán las personas?';
+
+  @override
+  String get createModeBroadcastBody =>
+      'Cada persona recibe su propia copia de una tilette';
+
+  @override
+  String get createModeClassBody =>
+      'Cada persona recibe su propia copia de un conjunto de tilettes';
+
+  @override
+  String get createModeProjectBody =>
+      'Todos trabajan en un conjunto compartido de tilettes';
+
+  @override
+  String get createComingSoon => 'Próximamente';
+
+  @override
+  String get createBroadcastTitle => 'Nueva difusión';
+
+  @override
+  String get createBroadcastPeopleHint =>
+      'Cada persona recibe su propia copia y se le pide que la acepte.';
+
+  @override
+  String get createSend => 'Enviar';
+
+  @override
+  String createSendTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Enviar a $count personas',
+      one: 'Enviar a 1 persona',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get createSending => 'Enviando…';
+
+  @override
+  String get createNeedsPerson => 'Agrega al menos una persona';
+
+  @override
+  String get createFailed =>
+      'No se pudo enviar en este momento. Tus datos se conservan.';
+
+  @override
+  String get createDiscardTitle => '¿Descartar este compartido?';
+
+  @override
+  String get createDiscardBody => 'Lo que ingresaste no se enviará.';
 
   @override
   String get taskSheetPeopleLabel => 'PERSONAS';

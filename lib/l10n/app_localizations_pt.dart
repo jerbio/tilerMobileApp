@@ -87,9 +87,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get nickName => 'Nome de utilizador';
 
   @override
-  String get deadline_anytime => 'Prazo(Quando quiser)';
-
-  @override
   String get selectADeadline => 'Selecionar um prazo';
 
   @override
@@ -1052,9 +1049,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get addTilette => 'Adicionar Tilette';
 
   @override
-  String get tileShareName => 'Nome do bloco partilhado';
-
-  @override
   String get tileShare => 'Bloco partilhado';
 
   @override
@@ -1168,9 +1162,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get inBound => 'Em entrada';
-
-  @override
-  String get multiShare => 'Partilha múltipla';
 
   @override
   String get errorOccurred => 'Ocorreu um erro!!\nTente novamente.';
@@ -5114,6 +5105,63 @@ class AppLocalizationsPt extends AppLocalizations {
   String taskSheetMoveShareDeadline(String when) {
     return 'Also move the share’s deadline to $when';
   }
+
+  @override
+  String get createChooserTitle => 'Share work';
+
+  @override
+  String get createChooserSubtitle => 'How should people take part?';
+
+  @override
+  String get createModeBroadcastBody =>
+      'Everyone gets their own copy of one tilette';
+
+  @override
+  String get createModeClassBody =>
+      'Everyone gets their own copy of a set of tilettes';
+
+  @override
+  String get createModeProjectBody =>
+      'Everyone works on one shared set of tilettes';
+
+  @override
+  String get createComingSoon => 'Coming soon';
+
+  @override
+  String get createBroadcastTitle => 'New broadcast';
+
+  @override
+  String get createBroadcastPeopleHint =>
+      'Each person gets their own copy and is asked to accept.';
+
+  @override
+  String get createSend => 'Send';
+
+  @override
+  String createSendTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Send to $count people',
+      one: 'Send to 1 person',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get createSending => 'Sending…';
+
+  @override
+  String get createNeedsPerson => 'Add at least one person';
+
+  @override
+  String get createFailed => 'Could not send right now. Your details are kept.';
+
+  @override
+  String get createDiscardTitle => 'Discard this share?';
+
+  @override
+  String get createDiscardBody => 'What you’ve entered won’t be sent.';
 
   @override
   String get taskSheetPeopleLabel => 'PEOPLE';

@@ -17,7 +17,10 @@ import '../../constants.dart' as Constants;
 class TileShareClusterApi extends AppApi {
   TileShareClusterApi({required Function? getContextCallBack})
       : super(getContextCallBack: getContextCallBack);
-  Future createCluster(TileShareClusterData tileCluster) async {
+  /// Creates [tileCluster]; answers with the new share as the server sends
+  /// it back (with its id).
+  Future<TileShareClusterData> createCluster(
+      TileShareClusterData tileCluster) async {
     TilerError error = new TilerError();
     error.Message = "Did not send request";
     bool userIsAuthenticated = true;
@@ -57,8 +60,9 @@ class TileShareClusterApi extends AppApi {
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
           tileShareActivityChanges.value++;
-          if (isContentInResponse(jsonResult)) {
-            return;
+          if (isContentInResponse(jsonResult) &&
+              jsonResult['Content'] is Map<String, dynamic>) {
+            return TileShareClusterData.fromJson(jsonResult['Content']);
           }
         }
         if (isTilerRequestError(jsonResult)) {

@@ -262,6 +262,22 @@ class LiveTileShareRecipientsSource implements TileShareRecipientsSource {
           .items;
 }
 
+/// Creates a share; the server answers with it, so its id is known.
+class LiveTileShareCreateSource implements TileShareCreateSource {
+  final TileShareClusterApi _api;
+
+  LiveTileShareCreateSource(this._api);
+
+  @override
+  Future<String> createShare(TileShareClusterData share) async {
+    final String? id = (await _api.createCluster(share)).id;
+    if (id == null || id.isEmpty) {
+      throw StateError('the new share came back without an id');
+    }
+    return id;
+  }
+}
+
 /// Sends only what changed, as the old edit screens did: the server keeps
 /// every field left out.
 class LiveTileShareEditSource implements TileShareEditSource {

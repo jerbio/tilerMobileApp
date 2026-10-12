@@ -144,6 +144,13 @@ abstract class TileShareRecipientsSource {
   Future<List<TileShareActivity>> clusterActivity(String clusterId);
 }
 
+/// Creating a share (R6, T14).
+abstract class TileShareCreateSource {
+  /// Creates [share] (`POST api/TileShareCluster`) and answers with the new
+  /// share's id.
+  Future<String> createShare(TileShareClusterData share);
+}
+
 /// The owner's changes to a share and its tasks (redesign Step 9.16b). Only
 /// what is given changes. A task's length cannot change once it is shared.
 abstract class TileShareEditSource {

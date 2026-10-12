@@ -18,7 +18,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/projectRows.
 import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/contactFieldRow.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/deadlinePicker.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/animatedKeyedColumn.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/personAvatar.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/personLine.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/revealSlot.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/statusPill.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
@@ -914,13 +914,13 @@ class _PersonRow extends StatelessWidget {
     final String label = row.label;
     return switch (row.phase) {
       RosterRowPhase.adding =>
-        _PersonLine(label: label, note: l10n.participantAdding),
+        PersonLine(label: label, note: l10n.participantAdding),
       RosterRowPhase.addFailed ||
       RosterRowPhase.removeFailed =>
-        _PersonLine(label: label, trailing: [
+        PersonLine(label: label, trailing: [
           TextButton(onPressed: onRetry, child: Text(l10n.attentionRetry)),
         ]),
-      _ when removing => _PersonLine(
+      _ when removing => PersonLine(
             label: label,
             note: l10n.taskSheetWillBeRemoved,
             noteIsWarning: true,
@@ -932,7 +932,7 @@ class _PersonRow extends StatelessWidget {
                 child: Text(l10n.attentionUndo),
               ),
             ]),
-      _ => _PersonLine(
+      _ => PersonLine(
             label: label,
             below: switch (rsvp) {
               InvitationStatus.accepted => TileShareStatusPill(
@@ -966,7 +966,7 @@ class _StagedPersonRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
-    return _PersonLine(
+    return PersonLine(
         label: label,
         note: l10n.taskSheetWillBeAdded,
         trailing: [
@@ -977,71 +977,5 @@ class _StagedPersonRow extends StatelessWidget {
             icon: const Icon(Icons.close),
           ),
         ]);
-  }
-}
-
-/// One person: their avatar (as on Participants), how they are shown, their
-/// answer ([below]) or a quiet [note] under it (a staged change), and what
-/// is trailing - only actions, so a long address still fits.
-class _PersonLine extends StatelessWidget {
-  final String label;
-  final String? note;
-  final bool noteIsWarning;
-  final bool faded;
-  final List<Widget> trailing;
-
-  /// Under the name (the answer, as on Participants).
-  final Widget? below;
-
-  const _PersonLine({
-    required this.label,
-    this.below,
-    this.note,
-    this.noteIsWarning = false,
-    this.faded = false,
-    this.trailing = const <Widget>[],
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final TodayStatusTokens tokens = TodayStatusTokens.of(context);
-    final TextTheme textTheme = Theme.of(context).textTheme;
-    final String? note = this.note;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 6, 4, 6),
-      child: Row(
-        children: [
-          PersonAvatar(label: label),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodyLarge?.copyWith(
-                        color:
-                            faded ? tokens.textSecondary : tokens.textPrimary,
-                        decoration: faded ? TextDecoration.lineThrough : null)),
-                if (below != null) ...[
-                  const SizedBox(height: 4),
-                  below!,
-                ],
-                if (note != null)
-                  Text(note,
-                      style: textTheme.bodySmall?.copyWith(
-                          color: noteIsWarning
-                              ? Theme.of(context).colorScheme.error
-                              : tokens.textSecondary)),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          ...trailing,
-        ],
-      ),
-    );
   }
 }

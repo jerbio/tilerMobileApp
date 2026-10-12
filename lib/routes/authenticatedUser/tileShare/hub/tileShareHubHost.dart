@@ -5,7 +5,9 @@ import 'package:tiler_app/bloc/tileShare/tile_share_clusters_state.dart';
 import 'package:tiler_app/data/tileShareAttention.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/attention/attentionFilter.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
+import 'package:tiler_app/data/tileShareMode.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/create/createBroadcast.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/create/createModeChooser.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/hub/tileShareHub.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/preview/tileSharePreviewHost.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareActivityWidget.dart';
@@ -91,7 +93,19 @@ class _TileShareHubHostState extends State<TileShareHubHost> {
       TileShareDetailWidget.byId(
           tileShareId: item.id, isOutBox: item.createdByMe));
 
-  Future<void> _create() => _push(CreateTileShareClusterWidget());
+  /// Create starts with the mode (T14); once sent, the new share's detail
+  /// takes the create screen's place.
+  Future<void> _create() async {
+    final TileShareMode? mode = await showCreateModeChooser(context);
+    if (!mounted || mode != TileShareMode.broadcast) return;
+    await _push(CreateBroadcastScreen(
+      source: LiveTileShareCreateSource(_clusterApi),
+      onCreated: (context, clusterId) => Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(
+              builder: (_) => TileShareDetailWidget.byId(
+                  tileShareId: clusterId, isOutBox: true))),
+    ));
+  }
 
   Future<void> _preview(String assignmentId) => _push(TileSharePreviewHost(
       assignmentId: assignmentId, accountKey: _userId));

@@ -17,6 +17,10 @@ class TileShareClusterData {
   List<Contact>? contacts;
   bool? isMoreContact;
   List<NewTile>? newTileTemplates;
+
+  /// The tilettes a new share is created with, as sent (redesign create,
+  /// R6): each with its own name, length, deadline and people.
+  List<ClusterTemplateTileModel>? tilettes;
   List<TileShareTemplate>? tileShareTemplates;
   int? durationInMs;
   int? startTimeInMs;
@@ -119,10 +123,12 @@ class TileShareClusterData {
     templateClusterModel.Mode = this.mode?.wire;
     templateClusterModel.Contacts =
         this.contacts?.map<ContactModel>((e) => e.toContactModel()).toList();
-    templateClusterModel.ClusterTemplateTileModels = this
-        .newTileTemplates
-        ?.map<ClusterTemplateTileModel>((e) => e.toClusterTemplateTileModel())
-        .toList();
+    templateClusterModel.ClusterTemplateTileModels = this.tilettes ??
+        this
+            .newTileTemplates
+            ?.map<ClusterTemplateTileModel>(
+                (e) => e.toClusterTemplateTileModel())
+            .toList();
 
     return templateClusterModel;
   }

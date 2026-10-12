@@ -268,12 +268,6 @@ abstract class AppLocalizations {
   /// **'Nick Name'**
   String get nickName;
 
-  /// No description provided for @deadline_anytime.
-  ///
-  /// In en, this message translates to:
-  /// **'Deadline(Anytime)'**
-  String get deadline_anytime;
-
   /// No description provided for @selectADeadline.
   ///
   /// In en, this message translates to:
@@ -1960,12 +1954,6 @@ abstract class AppLocalizations {
   /// **'Add Tilette'**
   String get addTilette;
 
-  /// No description provided for @tileShareName.
-  ///
-  /// In en, this message translates to:
-  /// **'Tile Share Name'**
-  String get tileShareName;
-
   /// No description provided for @tileShare.
   ///
   /// In en, this message translates to:
@@ -2181,12 +2169,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Inbound'**
   String get inBound;
-
-  /// No description provided for @multiShare.
-  ///
-  /// In en, this message translates to:
-  /// **'Multi Share'**
-  String get multiShare;
 
   /// No description provided for @errorOccurred.
   ///
@@ -8719,6 +8701,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Also move the share’s deadline to {when}'**
   String taskSheetMoveShareDeadline(String when);
+
+  /// No description provided for @createChooserTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share work'**
+  String get createChooserTitle;
+
+  /// No description provided for @createChooserSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How should people take part?'**
+  String get createChooserSubtitle;
+
+  /// No description provided for @createModeBroadcastBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone gets their own copy of one tilette'**
+  String get createModeBroadcastBody;
+
+  /// No description provided for @createModeClassBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone gets their own copy of a set of tilettes'**
+  String get createModeClassBody;
+
+  /// No description provided for @createModeProjectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone works on one shared set of tilettes'**
+  String get createModeProjectBody;
+
+  /// No description provided for @createComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get createComingSoon;
+
+  /// No description provided for @createBroadcastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New broadcast'**
+  String get createBroadcastTitle;
+
+  /// No description provided for @createBroadcastPeopleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Each person gets their own copy and is asked to accept.'**
+  String get createBroadcastPeopleHint;
+
+  /// No description provided for @createSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get createSend;
+
+  /// No description provided for @createSendTo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Send to 1 person} other{Send to {count} people}}'**
+  String createSendTo(int count);
+
+  /// No description provided for @createSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get createSending;
+
+  /// No description provided for @createNeedsPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one person'**
+  String get createNeedsPerson;
+
+  /// No description provided for @createFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send right now. Your details are kept.'**
+  String get createFailed;
+
+  /// No description provided for @createDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard this share?'**
+  String get createDiscardTitle;
+
+  /// No description provided for @createDiscardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'What you’ve entered won’t be sent.'**
+  String get createDiscardBody;
 
   /// No description provided for @taskSheetPeopleLabel.
   ///

@@ -663,3 +663,21 @@ class FakeTileShareNotesApi extends NotesApi {
     return _payload(eventId);
   }
 }
+
+/// Creating a share (R6): records each request as the JSON the API would
+/// send, and answers with a new share id.
+class FakeTileShareCreateSource
+    with FakeSourceControls
+    implements TileShareCreateSource {
+  final List<Map<String, dynamic>> requests = <Map<String, dynamic>>[];
+  String nextId = 'new-share';
+
+  @override
+  Future<String> createShare(TileShareClusterData share) {
+    final Map<String, dynamic> json = share.toTemplateClusterModel().toJson();
+    return run('createShare(${share.name})', () {
+      requests.add(json);
+      return nextId;
+    });
+  }
+}

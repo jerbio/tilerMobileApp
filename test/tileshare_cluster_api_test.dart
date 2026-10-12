@@ -1,5 +1,6 @@
-// Deleting a tilette, tested at the HTTP level against a recording client -
-// no network.
+// Creating a share and deleting a tilette, tested at the HTTP level against
+// a recording client - no network.
+//   POST   api/TileShareCluster   -> the new share (its JSON, with its id)
 //   DELETE api/TileshareTemplate  {Id}
 // The server confirms with code 0 and no content (found on-device:
 // {"Error":{"Code":"0","Message":"Tilette deleted"},"Content":null}), which
@@ -7,6 +8,8 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tiler_app/data/tileShareClusterData.dart';
+import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 
@@ -34,6 +37,39 @@ void main() {
       ..httpClient = client;
   });
   tearDown(() => client.close());
+
+  group('creating a share', () {
+    test('POSTs the share and answers with the new share', () async {
+      client.nextBody = jsonEncode({
+        'Error': {'Code': '0', 'Message': 'SUCCESS'},
+        'Content': {
+          'id': 'TileShareCluster+u+new',
+          'name': 'Weekly reading',
+          'mode': 'broadcast',
+        },
+      });
+      final share = TileShareClusterData()
+        ..name = 'Weekly reading'
+        ..mode = TileShareMode.broadcast
+        ..isMultiTilette = false;
+      final created = await api.createCluster(share);
+      expect(client.last.method, 'POST');
+      expect(client.last.url.path, '/api/TileShareCluster');
+      expect(jsonDecode(client.last.body)['Mode'], 'broadcast');
+      expect(created.id, 'TileShareCluster+u+new');
+      expect(created.mode, TileShareMode.broadcast);
+    });
+
+    test('an error code is a failure', () async {
+      client.nextBody = jsonEncode({
+        'Error': {'Code': '500', 'Message': 'No'},
+        'Content': null,
+      });
+      await expectLater(
+          api.createCluster(TileShareClusterData()..name = 'X'),
+          throwsA(anything));
+    });
+  });
 
   group('deleting a tilette', () {
     test('code 0 with no content is a success', () async {
