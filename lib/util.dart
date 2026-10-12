@@ -512,9 +512,9 @@ class Utility {
         // Short format using localized strings
         if (days > 0) {
           if (hours > 0) {
-            return '${days}d ${hours}h';
+            return l10n.durationDaysHoursShort(days, hours);
           }
-          return '${days}d';
+          return l10n.durationDaysShort(days);
         }
         if (hours > 0) {
           if (minutes > 0) {

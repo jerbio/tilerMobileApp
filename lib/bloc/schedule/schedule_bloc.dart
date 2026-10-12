@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/bloc/schedule/schedule_diagnostics.dart';
 export 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
+import 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart';
 import 'package:tiler_app/bloc/schedule/schedule_recovery_monitor.dart';
 import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
 
@@ -22,6 +23,14 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../services/api/subCalendarEventApi.dart';
+
+// Callers building `EvaluateSchedule` or calling `beginChange` need the
+// origin types without a second import.
+export 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart'
+    show
+        ScheduleChangeOrigin,
+        ScheduleChangeAttribution,
+        ScheduleRevisionGate;
 
 part 'schedule_event.dart';
 part 'schedule_state.dart';
@@ -679,6 +688,31 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   late ScheduleRevisionCubit revisions;
   ScheduleRecoveryMonitor? _recoveryMonitor;
 
+  /// Attributes each new server revision to the change that caused it
+  /// (re-optimize, drag, edit, complete) or to a background refresh.
+  /// Views read it through [attributionFor] to pick how much motion a
+  /// schedule change gets.
+  final ScheduleChangeTracker changeTracker = ScheduleChangeTracker();
+  StreamSubscription<ScheduleRevision?>? _revisionAttribution;
+
+  /// Records a mutation about to be sent, so the revision it produces is
+  /// attributed to [origin]. Pass the returned token to [abandonChange] if
+  /// the request fails.
+  int beginChange(ScheduleChangeOrigin origin, {String? subjectId}) =>
+      changeTracker.begin(origin,
+          baseline: revisions.state, subjectId: subjectId);
+
+  void abandonChange(int token) => changeTracker.abandon(token);
+
+  /// Names the tile the change from [beginChange] is about, once known.
+  void attachChangeSubject(int token, String subjectId) =>
+      changeTracker.attachSubject(token, subjectId);
+
+  /// What caused the schedule revision carried by [status].
+  ScheduleChangeAttribution attributionFor(ScheduleStatus? status) =>
+      changeTracker.resolve(
+          status == null ? null : ScheduleRevision.fromStatus(status));
+
   void startRecoveryMonitoring() {
     if (_recoveryMonitor != null) return;
     _recoveryMonitor = ScheduleRecoveryMonitor(
@@ -702,6 +736,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     _presentationTimer?.cancel();
     await _revisionSubscription?.cancel();
     _recoveryMonitor?.close();
+    await _revisionAttribution?.cancel();
     await revisions.close();
     await super.close();
   }
@@ -738,6 +773,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     scheduleApi = ScheduleApi(getContextCallBack: getContextCallBack);
     revisions = ScheduleRevisionCubit(
         now: _now, fetchStatus: () => scheduleApi.getScheduleStatus());
+    // Resolve every new revision as it is observed, so a pending change is
+    // claimed by the first revision after it even when no view asks.
+    _revisionAttribution = revisions.stream.listen(changeTracker.resolve);
     subCalendarEventApi =
         SubCalendarEventApi(getContextCallBack: getContextCallBack);
     previewApi = PreviewApi(getContextCallBack: getContextCallBack);
@@ -832,6 +870,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       return event.getContextCallBack();
     });
     revisions.reset();
+    changeTracker.reset();
     emit(ScheduleLoggedOutState());
   }
 

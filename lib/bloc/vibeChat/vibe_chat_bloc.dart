@@ -623,8 +623,18 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
                 LocalizationService.instance.translations.noRequestToExecute);
       }
 
+      // The changes the assistant applies are shown as a change the user
+      // made (moved tiles step into place, with the "Plan updated" chip),
+      // not as a background refresh. Withdrawn only if the request itself
+      // fails; later failures here do not undo the server's change.
+      final change = scheduleBloc.beginChange(ScheduleChangeOrigin.userEdit);
+      try {
+        await chatApi.executeVibeRequest(requestId: lastRequestId);
+      } catch (_) {
+        scheduleBloc.abandonChange(change);
+        rethrow;
+      }
       //Updating Messages
-      await chatApi.executeVibeRequest(requestId: lastRequestId);
       List<VibeMessage> updatedMsgs = state.messages;
 
       List<VibeMessage> newMessages = [];

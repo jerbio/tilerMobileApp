@@ -7,6 +7,7 @@
 //     on the API so `Priority` reaches the wire) and delete the series,
 //     each inside the schedule side-effects the legacy screen dispatched.
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -70,7 +71,10 @@ class FakeLocationApi extends LocationApi {
 class RecordingRefresher implements EditTileScheduleRefresher {
   final List<String> events = <String>[];
   @override
-  void beginEvaluation() => events.add('begin');
+  void beginEvaluation(
+          {ScheduleChangeOrigin origin = ScheduleChangeOrigin.userEdit,
+          String? subjectId}) =>
+      events.add('begin');
   @override
   void refreshAfterChange() => events.add('refresh');
   @override

@@ -7,7 +7,25 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareActivityWidget.dart';
 import 'package:tiler_app/services/api/tileShareActivityApi.dart';
 
+/// The server's canonical fixture, from the backend repository checked out
+/// next to this app (at any depth up the tree); null when it is not there.
+File? _serverFixture(String name) {
+  const relative = 'WagTapWeb/TilerFront/TilerFront.Tests/Fixtures/'
+      'TileShareActivity';
+  var dir = Directory.current;
+  for (var depth = 0; depth < 6; depth++) {
+    final file = File('${dir.path}/$relative/$name');
+    if (file.existsSync()) return file;
+    final parent = dir.parent;
+    if (parent.path == dir.path) break;
+    dir = parent;
+  }
+  return null;
+}
+
 void main() {
+  final acceptedFixture = _serverFixture('AssignmentAccepted.json');
+
   test('invitation channel is allowlisted and unknown outcomes are supported',
       () {
     final json = <String, dynamic>{
@@ -28,9 +46,7 @@ void main() {
   });
 
   test('parses the server canonical event and tolerates future versions', () {
-    final fixture = File(
-            '../../WagTapWeb/TilerFront/TilerFront.Tests/Fixtures/TileShareActivity/AssignmentAccepted.json')
-        .readAsStringSync();
+    final fixture = acceptedFixture!.readAsStringSync();
     final json = jsonDecode(fixture) as Map<String, dynamic>;
     final event = TileShareActivity.fromJson(json);
     expect(event.eventType, 'assignment_accepted');
@@ -38,7 +54,11 @@ void main() {
     json['schemaVersion'] = 99;
     json['metadata'] = {'title': 'untrusted future data'};
     expect(TileShareActivity.fromJson(json).title, isNull);
-  });
+  },
+      skip: acceptedFixture == null
+          ? 'Needs the backend repo (WagTapWeb) with its TileShareActivity '
+              'fixtures checked out next to this app.'
+          : false);
 
   testWidgets('scopes reads and clears history when access is revoked',
       (tester) async {

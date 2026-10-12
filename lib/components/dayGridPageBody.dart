@@ -9,6 +9,7 @@ import 'package:tiler_app/components/dayGridTopChromeRow.dart';
 import 'package:tiler_app/components/dayQuickActionsRow.dart';
 import 'package:tiler_app/components/ribbons/dayRibbon/dayRibbonCarousel.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
+import 'package:tiler_app/components/tilelist/dailyView/scheduleChangeSummaryHost.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
 import 'package:tiler_app/util.dart';
 
@@ -168,6 +169,10 @@ class _GridDailyPageBodyState extends State<GridDailyPageBody> {
         // P7: "Showing blocks only · 4 of 11 · Show all" while filtered.
         DayContentFilterStrip(currentDate: widget.currentDate),
         Expanded(
+          // "Plan updated" chip over either layout after a schedule change
+          // on this day.
+          child: ScheduleChangeSummaryHost(
+          currentDate: widget.currentDate,
           child: LayoutBuilder(
             builder: (context, constraints) {
               final double maxHeight = constraints.maxHeight;
@@ -186,6 +191,7 @@ class _GridDailyPageBodyState extends State<GridDailyPageBody> {
                       showDaySummaryHeader: false,
                     );
             },
+          ),
           ),
         ),
         ]),

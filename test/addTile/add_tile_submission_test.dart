@@ -13,6 +13,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -74,6 +75,7 @@ Future<void> pumpShell(
   required AddTileDraft draft,
   AddTileSubmission? submission,
   Map<String, dynamic>? newTileParams,
+  ScheduleBloc? scheduleBloc,
 }) async {
   tester.view.physicalSize =
       AddTileTestMatrix.physicalSizeOf(AddTileTestMatrix.standard);
@@ -83,9 +85,12 @@ Future<void> pumpShell(
       BlocProvider<SubCalendarTileBloc>(
         create: (_) => SubCalendarTileBloc(getContextCallBack: () => null),
       ),
-      BlocProvider<ScheduleBloc>(
-        create: (_) => ScheduleBloc(getContextCallBack: () => null),
-      ),
+      if (scheduleBloc != null)
+        BlocProvider<ScheduleBloc>.value(value: scheduleBloc)
+      else
+        BlocProvider<ScheduleBloc>(
+          create: (_) => ScheduleBloc(getContextCallBack: () => null),
+        ),
     ],
     child: MaterialApp(
       theme: TileThemeData.lightTheme,
@@ -131,6 +136,41 @@ void main() {
       expect(result.failed, isTrue);
       expect(result.tile, isNull);
       expect(result.reasonCode, 'api_rejected');
+    });
+  });
+
+  group('The change an add makes is shown as an add', () {
+    ScheduleStatus status(String id) =>
+        ScheduleStatus.fromJson({'analysisId': id, 'evaluationId': id});
+
+    testWidgets('a created tile is the subject of the next revision',
+        (tester) async {
+      final bloc = ScheduleBloc(getContextCallBack: () => null);
+      await pumpShell(tester,
+          draft: submittableFixed(),
+          scheduleBloc: bloc,
+          submission: FakeSubmission(
+              result: AddTileSubmissionResult.success(
+                  SubCalendarEvent(id: 'new-1', name: 'Weekend run'))));
+      await tester.tap(find.byKey(const ValueKey('addTileCta')));
+      await tester.pumpAndSettle();
+
+      final attribution = bloc.attributionFor(status('r1'));
+      expect(attribution.origin, ScheduleChangeOrigin.userAdd);
+      expect(attribution.subjectId, 'new-1');
+    });
+
+    testWidgets('a failed add leaves nothing recorded', (tester) async {
+      final bloc = ScheduleBloc(getContextCallBack: () => null);
+      await pumpShell(tester,
+          draft: submittableFixed(),
+          scheduleBloc: bloc,
+          submission: FakeSubmission(
+              result: const AddTileSubmissionResult.failure('api_rejected')));
+      await tester.tap(find.byKey(const ValueKey('addTileCta')));
+      await tester.pumpAndSettle();
+
+      expect(bloc.attributionFor(status('r1')).isRefresh, isTrue);
     });
   });
 

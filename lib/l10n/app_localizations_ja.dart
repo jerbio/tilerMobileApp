@@ -1883,12 +1883,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String durationHoursMinutesShort(int hours, int minutes) {
-    return '${hours}h$minutes分';
+    return '$hours時間$minutes分';
+  }
+
+  @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '$days日$hours時間';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '$days日';
   }
 
   @override
   String durationHoursShort(int hours) {
-    return '${hours}h';
+    return '$hours時間';
   }
 
   @override
@@ -4136,4 +4146,214 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get scheduleChangeFailed => 'Schedule change failed';
+
+  @override
+  String get scheduleUpdates => 'スケジュールの更新';
+
+  @override
+  String get scheduleUpdatesDescription => 'スケジュールが変わったときの一日の動き方。';
+
+  @override
+  String get scheduleUpdatesDetailed => '詳細';
+
+  @override
+  String get scheduleUpdatesDetailedDescription => '変更を一つずつ順に表示します。';
+
+  @override
+  String get scheduleUpdatesMinimal => 'シンプル';
+
+  @override
+  String get scheduleUpdatesMinimalDescription => 'タイルを新しい時間へスライドします。';
+
+  @override
+  String get scheduleUpdatesOff => 'オフ';
+
+  @override
+  String get scheduleUpdatesOffDescription => 'アニメーションなしですぐに更新します。';
+
+  @override
+  String get scheduleChangePlanUpdated => 'プランを更新しました';
+
+  @override
+  String get scheduleChangeDayCleared => 'この日は空になりました';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを別の日に移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを追加',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを削除',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件の移動時間を更新',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(String duration) {
+    return '空き時間 +$duration';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => '変更を見る';
+
+  @override
+  String get scheduleChangeWhatChanged => '変更内容';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return '追加 · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => '削除';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return '$nameへの移動';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => '空き時間';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return '$timeから移動';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return '$timeに移動';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$nameを$whenに移動';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを$whenに移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを後ろに移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを前に移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを移動中',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangeTabChanges => '変更';
+
+  @override
+  String get scheduleChangeTabBeforeAfter => '変更前と変更後';
+
+  @override
+  String get scheduleChangeBefore => '変更前';
+
+  @override
+  String get scheduleChangeAfter => '変更後';
 }

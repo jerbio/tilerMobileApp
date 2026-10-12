@@ -1,3 +1,4 @@
+import 'package:tiler_app/components/tilelist/dailyView/motion/countingDuration.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -83,8 +84,10 @@ class FreeSlotRow extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            slot.duration.toHumanLocalized(context),
+                          CountingDuration(
+                            value: slot.duration,
+                            format: (context, value) =>
+                                value.toHumanLocalized(context),
                             style: TextStyle(
                               fontFamily: TileTextStyles.rubikFontName,
                               fontSize: 14,

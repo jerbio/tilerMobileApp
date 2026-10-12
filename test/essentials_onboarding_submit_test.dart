@@ -96,7 +96,7 @@ class FakeScheduleApi extends ScheduleApi {
   FakeScheduleApi() : super(getContextCallBack: () => null);
 
   @override
-  Future buzzSchedule() async {
+  Future buzzSchedule({bool includeLocationParams = true}) async {
     buzzCalls++;
   }
 }

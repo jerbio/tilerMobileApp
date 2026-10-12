@@ -790,20 +790,48 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
   /// result into the caller's slot. Done HERE rather than in the route
   /// builder because it runs after an await, and this is the only layer with
   /// a `State` that can say whether the screen is still alive.
-  void _applyCreatedTile(SubCalendarEvent? created) {
+  void _applyCreatedTile(SubCalendarEvent? created, int? changeToken) {
     if (created == null) return;
     widget.newTileParams?['newTile'] = created;
     context
         .read<SubCalendarTileBloc>()
         .add(NewSubCalendarTileBlocEvent(subEvent: created));
-    final scheduleState = context.read<ScheduleBloc>().state;
-    if (scheduleState is ScheduleEvaluationState) {
-      context.read<ScheduleBloc>().add(GetScheduleEvent(
-            isAlreadyLoaded: true,
-            previousSubEvents: scheduleState.subEvents,
-            scheduleTimeline: scheduleState.lookupTimeline,
-            previousTimeline: scheduleState.lookupTimeline,
-          ));
+    final ScheduleBloc scheduleBloc = context.read<ScheduleBloc>();
+    // Now that the new tile has an id, the change is about it: it enters,
+    // and only the tiles it pushed step into place.
+    if (changeToken != null) {
+      scheduleBloc.attachChangeSubject(changeToken, created.uniqueId);
+    }
+    // Reload now so the new tile, and whatever it moved, arrives straight
+    // away rather than on the next background check.
+    final preserved = ScheduleBloc.preserveState(scheduleBloc.state);
+    scheduleBloc.add(GetScheduleEvent(
+      isAlreadyLoaded: true,
+      previousSubEvents: preserved.item1,
+      scheduleTimeline: preserved.item3,
+      previousTimeline: preserved.item3,
+      forceRefresh: true,
+    ));
+  }
+
+  /// Records the change an add is about to make; null without a
+  /// [ScheduleBloc] above (isolated screens in tests).
+  int? _beginScheduleChange() {
+    try {
+      return context
+          .read<ScheduleBloc>()
+          .beginChange(ScheduleChangeOrigin.userAdd);
+    } on ProviderNotFoundException {
+      return null;
+    }
+  }
+
+  void _abandonScheduleChange(int? changeToken) {
+    if (changeToken == null) return;
+    try {
+      context.read<ScheduleBloc>().abandonChange(changeToken);
+    } on ProviderNotFoundException {
+      // Nothing was recorded.
     }
   }
 
@@ -857,6 +885,10 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       return;
     }
     setState(() => _submitting = true);
+    // The change this submission makes, recorded before the request so the
+    // revision it produces shows as an added tile (the tiles it pushes step
+    // into place, with the "Plan updated" chip). Withdrawn on failure.
+    int? changeToken;
     // Drops the keyboard immediately. `ExcludeFocus` below keeps it down for
     // the duration of the request (D50).
     FocusManager.instance.primaryFocus?.unfocus();
@@ -869,8 +901,10 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         await widget.onSubmitted!.call(tile);
         _analytics.submitResult(_draft.type, outcome: 'success');
       } else if (widget.submission != null) {
+        changeToken = _beginScheduleChange();
         final AddTileSubmissionResult result =
             await widget.submission!.create(tile);
+        if (result.failed) _abandonScheduleChange(changeToken);
         if (!mounted) return;
         if (result.failed) {
           _analytics.submitResult(_draft.type,
@@ -878,7 +912,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
           _showSubmissionFailure();
           return;
         }
-        _applyCreatedTile(result.tile);
+        _applyCreatedTile(result.tile, changeToken);
         _analytics.submitResult(_draft.type, outcome: 'success');
         Navigator.of(context).pop(result.tile);
       } else {
@@ -904,6 +938,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       // The exception object is deliberately NOT inspected or logged: its
       // message can embed request content. Only the enumerated outcome and an
       // allow-listed reason code are emitted.
+      _abandonScheduleChange(changeToken);
       _analytics.submitResult(_draft.type,
           outcome: 'api_error', reasonCode: 'api_rejected');
       if (mounted) _showSubmissionFailure();

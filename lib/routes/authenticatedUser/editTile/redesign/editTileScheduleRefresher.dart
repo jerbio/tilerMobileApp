@@ -23,8 +23,17 @@ class BlocEditTileScheduleRefresher implements EditTileScheduleRefresher {
   final ScheduleBloc scheduleBloc;
   final ScheduleSummaryBloc scheduleSummaryBloc;
 
+  /// The change recorded by [beginEvaluation], until it settles.
+  int? _changeToken;
+
   @override
-  void beginEvaluation() {
+  void beginEvaluation(
+      {ScheduleChangeOrigin origin = ScheduleChangeOrigin.userEdit,
+      String? subjectId}) {
+    // So the revision this request produces is shown as this change (the
+    // tiles it pushed step into place, with the "Plan updated" chip) rather
+    // than as a background refresh.
+    _changeToken = scheduleBloc.beginChange(origin, subjectId: subjectId);
     // `subEventUpdate()`: only from a loaded schedule, as before.
     final ScheduleState current = scheduleBloc.state;
     if (current is ScheduleLoadedState) {
@@ -42,7 +51,12 @@ class BlocEditTileScheduleRefresher implements EditTileScheduleRefresher {
   void refreshAfterChange() => _reload(forceRefresh: true);
 
   @override
-  void abandonEvaluation() => _reload(forceRefresh: false);
+  void abandonEvaluation() {
+    final token = _changeToken;
+    _changeToken = null;
+    if (token != null) scheduleBloc.abandonChange(token);
+    _reload(forceRefresh: false);
+  }
 
   void _reload({required bool forceRefresh}) {
     // `subEventUpdate()`'s `.then`: preserve whatever the bloc holds and ask

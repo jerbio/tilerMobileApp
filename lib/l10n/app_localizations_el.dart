@@ -1936,6 +1936,16 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '$daysημ $hoursω';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '$daysημ';
+  }
+
+  @override
   String durationHoursShort(int hours) {
     return '$hoursω';
   }
@@ -4276,4 +4286,226 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get scheduleChangeFailed => 'Schedule change failed';
+
+  @override
+  String get scheduleUpdates => 'Ενημερώσεις προγράμματος';
+
+  @override
+  String get scheduleUpdatesDescription =>
+      'Πώς κινείται η μέρα σου όταν αλλάζει το πρόγραμμά σου.';
+
+  @override
+  String get scheduleUpdatesDetailed => 'Λεπτομερής';
+
+  @override
+  String get scheduleUpdatesDetailedDescription =>
+      'Δείχνει κάθε αλλαγή βήμα προς βήμα.';
+
+  @override
+  String get scheduleUpdatesMinimal => 'Ελάχιστη';
+
+  @override
+  String get scheduleUpdatesMinimalDescription =>
+      'Τα πλακίδια μετακινούνται ομαλά στις νέες ώρες.';
+
+  @override
+  String get scheduleUpdatesOff => 'Απενεργοποίηση';
+
+  @override
+  String get scheduleUpdatesOffDescription => 'Άμεση ενημέρωση, χωρίς κίνηση.';
+
+  @override
+  String get scheduleChangePlanUpdated => 'Το πλάνο ενημερώθηκε';
+
+  @override
+  String get scheduleChangeDayCleared => 'Η μέρα άδειασε';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινήθηκαν',
+      one: '1 πλακίδιο μετακινήθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινήθηκαν σε άλλες μέρες',
+      one: '1 πλακίδιο μετακινήθηκε σε άλλη μέρα',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια προστέθηκαν',
+      one: '1 πλακίδιο προστέθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια αφαιρέθηκαν',
+      one: '1 πλακίδιο αφαιρέθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString χρόνοι μετακίνησης ενημερώθηκαν',
+      one: '1 χρόνος μετακίνησης ενημερώθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(String duration) {
+    return '+$duration ελεύθερα';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => 'Δες τις αλλαγές';
+
+  @override
+  String get scheduleChangeWhatChanged => 'Τι άλλαξε';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return 'Προστέθηκε · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => 'Αφαιρέθηκε';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return 'Μετακίνηση προς $name';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => 'Ελεύθερος χρόνος';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return 'Μετακινήθηκε από τις $time';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return 'Μετακινήθηκε στις $time';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$name μετακινήθηκε στις $when';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινήθηκαν στις $when',
+      one: '1 πλακίδιο μετακινήθηκε στις $when',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινήθηκαν αργότερα',
+      one: '1 πλακίδιο μετακινήθηκε αργότερα',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινήθηκαν νωρίτερα',
+      one: '1 πλακίδιο μετακινήθηκε νωρίτερα',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινούνται',
+      one: '1 πλακίδιο μετακινείται',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangeTabChanges => 'Αλλαγές';
+
+  @override
+  String get scheduleChangeTabBeforeAfter => 'Πριν & μετά';
+
+  @override
+  String get scheduleChangeBefore => 'Πριν';
+
+  @override
+  String get scheduleChangeAfter => 'Μετά';
 }

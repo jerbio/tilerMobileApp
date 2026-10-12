@@ -16,6 +16,7 @@
 //
 // Failure codes are allow-listed (`api_rejected`, `network_timeout`), as in
 // the Add Tile submission, so nothing free-form reaches analytics.
+import 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/data/prediction.dart';
@@ -119,8 +120,12 @@ class WhatIfResult {
 /// The schedule side-effects around a mutating call. The API version
 /// dispatches to `ScheduleBloc` / `ScheduleSummaryBloc`; tests record.
 abstract class EditTileScheduleRefresher {
-  /// Before the request: the schedule shows as being re-evaluated.
-  void beginEvaluation();
+  /// Before the request: the schedule shows as being re-evaluated, and the
+  /// coming change is recorded as [origin] about [subjectId], so the day can
+  /// show what it moved.
+  void beginEvaluation(
+      {ScheduleChangeOrigin origin = ScheduleChangeOrigin.userEdit,
+      String? subjectId});
 
   /// After success: reload the schedule and the day summary.
   void refreshAfterChange();
@@ -207,8 +212,10 @@ class ApiEditTileSubmission implements EditTileSubmission {
   /// Runs [call] inside the schedule side-effects, mapping failure to an
   /// allow-listed code.
   Future<EditTileSaveResult> _mutate(String event, Map<String, Object?> data,
-      Future<SubCalendarEvent?> Function() call) async {
-    refresher.beginEvaluation();
+      Future<SubCalendarEvent?> Function() call,
+      {ScheduleChangeOrigin origin = ScheduleChangeOrigin.userEdit,
+      String? subjectId}) async {
+    refresher.beginEvaluation(origin: origin, subjectId: subjectId);
     try {
       final SubCalendarEvent? tile = await call();
       refresher.refreshAfterChange();
@@ -235,7 +242,8 @@ class ApiEditTileSubmission implements EditTileSubmission {
           'dirty': draft.dirtyFields.map((f) => f.name).join('|'),
         },
         () => subCalendarEventApi
-            .updateSubEventRequest(editTileUpdateParams(draft)));
+            .updateSubEventRequest(editTileUpdateParams(draft)),
+        subjectId: draft.id);
   }
 
   @override
@@ -250,20 +258,24 @@ class ApiEditTileSubmission implements EditTileSubmission {
     return _mutate(
         'edit_tile_rsvp',
         <String, Object?>{'tileId': draft.id, 'status': status.name},
-        () => subCalendarEventApi.updateSubEventRequest(params));
+        () => subCalendarEventApi.updateSubEventRequest(params),
+        subjectId: draft.id);
   }
 
   @override
   Future<EditTileSaveResult> complete(SubCalendarEvent tile) => _mutate(
       'edit_tile_action',
       <String, Object?>{'tileId': tile.id, 'kind': 'complete'},
-      () => subCalendarEventApi.complete(tile));
+      () => subCalendarEventApi.complete(tile),
+      origin: ScheduleChangeOrigin.userComplete,
+      subjectId: tile.uniqueId);
 
   @override
   Future<EditTileSaveResult> startNow(SubCalendarEvent tile) => _mutate(
       'edit_tile_action',
       <String, Object?>{'tileId': tile.id, 'kind': 'startNow'},
-      () => subCalendarEventApi.setAsNow(tile));
+      () => subCalendarEventApi.setAsNow(tile),
+      subjectId: tile.uniqueId);
 
   @override
   Future<EditTileSaveResult> delete(SubCalendarEvent tile) => _mutate(
@@ -280,7 +292,7 @@ class ApiEditTileSubmission implements EditTileSubmission {
             eventName: tile.name,
             affectedTileIds: [tile.id ?? '']);
         return null;
-      });
+      }, subjectId: tile.uniqueId);
 
   @override
   Future<EditTileSaveResult> defer(SubCalendarEvent tile, Duration by) =>
@@ -290,7 +302,7 @@ class ApiEditTileSubmission implements EditTileSubmission {
             () => subCalendarEventApi.procrastinate(by, tile.id!),
             eventName: tile.name, affectedTileIds: [tile.id ?? '']);
         return null;
-      });
+      }, subjectId: tile.uniqueId);
 
   @override
   Future<WhatIfResult?> preview(EditTileDraft draft) async {

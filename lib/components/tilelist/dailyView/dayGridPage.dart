@@ -10,6 +10,7 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridPinnedHeader.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
+import 'package:tiler_app/services/scheduleMotion.dart';
 import 'package:tiler_app/util.dart';
 
 /// One day page of the Daily carousel.
@@ -135,7 +136,9 @@ class DayGridPage extends StatelessWidget {
           // stays put). AnimatedSize: the one chrome element that can
           // resize the grid viewport does so smoothly (no-snap rule 3).
           AnimatedSize(
-            duration: const Duration(milliseconds: 200),
+            duration: ScheduleMotion.modeFor(context).animates
+                ? const Duration(milliseconds: 200)
+                : Duration.zero,
             curve: Curves.easeOut,
             alignment: Alignment.topCenter,
             child: DayGridPinnedHeader(tiles: parityTiles),

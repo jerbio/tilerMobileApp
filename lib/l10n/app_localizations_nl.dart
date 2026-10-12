@@ -1934,6 +1934,16 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '${days}d ${hours}u';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '${days}d';
+  }
+
+  @override
   String durationHoursShort(int hours) {
     return '${hours}u';
   }
@@ -4252,4 +4262,227 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get scheduleChangeFailed => 'Schedule change failed';
+
+  @override
+  String get scheduleUpdates => 'Planningupdates';
+
+  @override
+  String get scheduleUpdatesDescription =>
+      'Hoe je dag beweegt wanneer je planning verandert.';
+
+  @override
+  String get scheduleUpdatesDetailed => 'Gedetailleerd';
+
+  @override
+  String get scheduleUpdatesDetailedDescription =>
+      'Toont elke wijziging stap voor stap.';
+
+  @override
+  String get scheduleUpdatesMinimal => 'Minimaal';
+
+  @override
+  String get scheduleUpdatesMinimalDescription =>
+      'Schuift tegeltjes naar hun nieuwe tijden.';
+
+  @override
+  String get scheduleUpdatesOff => 'Uit';
+
+  @override
+  String get scheduleUpdatesOffDescription =>
+      'Direct bijwerken, zonder animatie.';
+
+  @override
+  String get scheduleChangePlanUpdated => 'Planning bijgewerkt';
+
+  @override
+  String get scheduleChangeDayCleared => 'Dag vrijgemaakt';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes verplaatst',
+      one: '1 tegeltje verplaatst',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes naar andere dagen verplaatst',
+      one: '1 tegeltje naar een andere dag verplaatst',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes toegevoegd',
+      one: '1 tegeltje toegevoegd',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes verwijderd',
+      one: '1 tegeltje verwijderd',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString reistijden bijgewerkt',
+      one: '1 reistijd bijgewerkt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(String duration) {
+    return '+$duration vrij';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => 'Wijzigingen bekijken';
+
+  @override
+  String get scheduleChangeWhatChanged => 'Wat er is veranderd';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return 'Toegevoegd · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => 'Verwijderd';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return 'Reis naar $name';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => 'Vrije tijd';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return 'Verplaatst van $time';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return 'Verplaatst naar $time';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$name verplaatst naar $when';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes verplaatst naar $when',
+      one: '1 tegeltje verplaatst naar $when',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes later gezet',
+      one: '1 tegeltje later gezet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes eerder gezet',
+      one: '1 tegeltje eerder gezet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes worden verplaatst',
+      one: '1 tegeltje wordt verplaatst',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangeTabChanges => 'Wijzigingen';
+
+  @override
+  String get scheduleChangeTabBeforeAfter => 'Voor & na';
+
+  @override
+  String get scheduleChangeBefore => 'Voor';
+
+  @override
+  String get scheduleChangeAfter => 'Na';
 }

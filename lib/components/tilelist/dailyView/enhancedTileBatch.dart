@@ -11,6 +11,7 @@ import 'package:tiler_app/components/tileUI/tileDetailBottomSheet.dart';
 import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
+import 'package:tiler_app/components/tilelist/dailyView/motion/listMotion.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
 import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
@@ -21,6 +22,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/services/scheduleMotion.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -100,6 +102,24 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
   /// user's manual scroll on subsequent rebuilds.
   bool _isAutoScrolled = false;
 
+  /// Schedule-change motion for this day: keeps the tile the user is
+  /// looking at in place, flies moved tiles, and shows edge chips.
+  late final ListMotion _motion = ListMotion(apply: (change) {
+    if (mounted) {
+      setState(change);
+    }
+  });
+
+  /// The rows of the last build (keys and where each tile sits).
+  TileConnectorLayoutResult? _rowLayout;
+
+  /// Bumped to remount the list at [_initialRow] / [_initialAlignment]:
+  /// the list holds its place by row index, so it is re-opened at the
+  /// anchor's new row in the same frame instead of jumping there after.
+  int _listGeneration = 0;
+  int _initialRow = 0;
+  double _initialAlignment = 0;
+
   @override
   void initState() {
     super.initState();
@@ -121,6 +141,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
   @override
   void dispose() {
+    _motion.dispose();
     super.dispose();
   }
 
@@ -346,7 +367,92 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       },
     );
 
-    return (result.widgets, result.selectedTileIndex, result.currentFocusIndex);
+    _rowLayout = result;
+    return (result.keyedRows, result.selectedTileIndex, result.currentFocusIndex);
+  }
+
+  /// Notes where the anchor tile sits before rows for a new schedule
+  /// revision are built.
+  void _captureAnchor(List<TilerEvent> orderedTiles) {
+    if (widget.preview || widget.dayIndex == null) return;
+    final dayStart = Utility.getTimeFromIndex(widget.dayIndex!);
+    final positions = _itemPositionsListener.itemPositions.value;
+    final visible = positions
+        .where((p) => p.itemLeadingEdge >= 0 && p.itemTrailingEdge <= 1)
+        .map((p) => p.index)
+        .toList()
+      ..sort();
+    _motion.anchor.capture(
+      context,
+      tiles: orderedTiles.whereType<SubCalendarEvent>().toList(),
+      day: Timeline.fromDateTime(dayStart,
+          DateTime(dayStart.year, dayStart.month, dayStart.day + 1)),
+      visibleRows: visible,
+      alignmentOf: (row) {
+        for (final p in positions) {
+          if (p.index == row) return p.itemLeadingEdge;
+        }
+        return null;
+      },
+    );
+    // Moved tiles that were on screen: hold them for their flight.
+    _motion.beforeRows(context, _rowLayout, preview: widget.preview);
+  }
+
+  /// Re-opens the list with the anchor at its old spot when its row moved.
+  void _restoreAnchor(List<TilerEvent> orderedTiles) {
+    final layout = _rowLayout;
+    if (layout == null) return;
+    final restore = _motion.anchor.resolve(
+        orderedTiles.whereType<SubCalendarEvent>().toList(), layout.rowOfTile);
+    if (_motion.hasPending) {
+      // Measure where the moved tiles landed once the new rows are laid
+      // out (the anchor remount below lands in the same frame).
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final rows = _itemPositionsListener.itemPositions.value
+            .map((p) => p.index)
+            .toList();
+        _motion.afterLayout(
+            layout,
+            rows.isEmpty
+                ? null
+                : (rows.reduce((a, b) => a < b ? a : b),
+                    rows.reduce((a, b) => a > b ? a : b)));
+      });
+    }
+    if (restore == null || !restore.moved) return;
+    Utility.debugPrint('DailyList::anchor ${restore.tileId} row '
+        '${restore.previousRow} -> ${restore.row} '
+        'at ${restore.alignment.toStringAsFixed(2)}');
+    _listGeneration++;
+    _initialRow = restore.row;
+    _initialAlignment = restore.alignment;
+  }
+
+  /// A tile's row as it is now, for its flying copy.
+  Widget _buildFlightRow(String tileId) {
+    final tile = renderedTiles[tileId];
+    if (tile == null) return const SizedBox.shrink();
+    return widget.showTimelineMarkers
+        ? _buildTileRowWithHourMarker(tile, showHourMarker: false)
+        : _buildTileWidget(tile);
+  }
+
+  /// Brings a tile's row a third of the way down the list.
+  void _scrollToTile(String tileId) {
+    final row = _rowLayout?.rowOfTile[tileId];
+    if (row == null || !_itemScrollController.isAttached) return;
+    if (ScheduleMotion.modeFor(context, listen: false).animates) {
+      _itemScrollController.scrollTo(
+        index: row,
+        alignment: 0.3,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOutCubic,
+      );
+    } else {
+      _itemScrollController.jumpTo(index: row, alignment: 0.3);
+    }
   }
 
   void evaluateTileDelta(Iterable<TilerEvent>? tiles) {
@@ -618,8 +724,10 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     if (renderedTiles.length > 0) {
       final orderedTilesList =
           Utility.orderTiles(renderedTiles.values.toList());
+      _captureAnchor(orderedTilesList);
       final (built, scrollIndex, focusIndex) =
           _buildTilesWithConnectors(orderedTilesList);
+      _restoreAnchor(orderedTilesList);
       tilesWithConnectors = built;
       targetScrollIndex = scrollIndex;
       currentFocusIndex = focusIndex;
@@ -651,12 +759,17 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           if (!mounted) return;
           if (_itemScrollController.isAttached) {
             _isAutoScrolled = true;
-            _itemScrollController.scrollTo(
-              index: currentFocusIndex!,
-              alignment: 0.15,
-              duration: const Duration(milliseconds: 450),
-              curve: Curves.easeInOutCubic,
-            );
+            if (ScheduleMotion.modeFor(context, listen: false).animates) {
+              _itemScrollController.scrollTo(
+                index: currentFocusIndex!,
+                alignment: 0.15,
+                duration: const Duration(milliseconds: 450),
+                curve: Curves.easeInOutCubic,
+              );
+            } else {
+              _itemScrollController.jumpTo(
+                  index: currentFocusIndex!, alignment: 0.15);
+            }
           }
         });
       }
@@ -679,7 +792,17 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
                 ? null
                 : MediaQuery.sizeOf(dayContentContext).height -
                     daySummaryToHeightBuffer,
-            child: ScrollablePositionedList.builder(
+            child: ListMotionLayer(
+              motion: _motion,
+              day: widget.dayIndex == null
+                  ? null
+                  : Utility.getTimeFromIndex(widget.dayIndex!),
+              rowBuilder: _buildFlightRow,
+              scrollToTile: _scrollToTile,
+              child: ScrollablePositionedList.builder(
+              key: ValueKey<int>(_listGeneration),
+              initialScrollIndex: _initialRow,
+              initialAlignment: _initialAlignment,
               itemScrollController: _itemScrollController,
               itemPositionsListener: _itemPositionsListener,
               itemCount: scrollableTiles.length + 1,
@@ -692,8 +815,12 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
                       : TileDimensions
                           .bottomPortraitPaddingForTileBatchListOfTiles;
                 }
-                return scrollableTiles[index];
+                final rowKeys = _rowLayout?.rowKeys;
+                return rowKeys == null || index >= rowKeys.length
+                    ? scrollableTiles[index]
+                    : _motion.wrapRow(rowKeys[index], scrollableTiles[index]);
               },
+            ),
             ),
           );
         },
@@ -710,13 +837,18 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           endOfDayTime = evaluatedEndOfTime;
         }
       }
+      // With schedule-update motion off the empty state shows at once.
+      final emptyFades = ScheduleMotion.modeFor(context).animates;
+      if (!emptyFades) _emptyDayOpacity = 1;
       if (widget.dayIndex != null) {
         dayContent = Flex(
           direction: Axis.vertical,
           children: [
             AnimatedOpacity(
               opacity: _emptyDayOpacity,
-              duration: const Duration(milliseconds: 500),
+              duration: emptyFades
+                  ? const Duration(milliseconds: 500)
+                  : Duration.zero,
               child: Container(
                 height: MediaQuery.of(context).size.height - heightMargin,
                 child: EmptyDayTile(

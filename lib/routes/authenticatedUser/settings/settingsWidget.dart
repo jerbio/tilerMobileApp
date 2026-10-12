@@ -21,6 +21,7 @@ import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/scheduleUpdatesSetting.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/themerHelper.dart';
 import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
@@ -109,6 +110,7 @@ class Settings extends StatelessWidget {
               onTap: () =>
                   Navigator.pushNamed(context, '/notificationsPreferences'),
             ),
+            ScheduleUpdatesSettingTile(color: textColor),
             _buildDivider(tileThemeExtension),
             // _buildListTile(
             //   icon: 'assets/icons/settings/Security.svg',
