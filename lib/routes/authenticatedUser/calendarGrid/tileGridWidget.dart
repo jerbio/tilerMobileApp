@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tiler_app/components/scheduleNotices/scheduleNoticeSurface.dart';
 import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
 import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
 import 'package:tiler_app/components/tileUI/tileAccentBar.dart';
@@ -518,7 +519,9 @@ class TileGridWidgetState extends GridPositionableState {
               bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
           child: PreviewDetailsTileWidget(tile),
         );
-        return Container(
+        // Messages about its actions show on the sheet, not behind it.
+        return ScheduleNoticeSurface(
+            child: Container(
           width: MediaQuery.of(sheetContext).size.width,
           child: SingleChildScrollView(
             // The whole sheet is the edit affordance (when editable): tap
@@ -533,7 +536,7 @@ class TileGridWidgetState extends GridPositionableState {
                   )
                 : body,
           ),
-        );
+        ));
       },
     );
   }

@@ -6,6 +6,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/scheduleNotices/scheduleNoticeBus.dart';
+import 'package:tiler_app/components/scheduleNotices/scheduleNoticeSurface.dart';
 import 'package:tiler_app/components/tilelist/dailyView/scheduleChangeSummaryChip.dart';
 import 'package:tiler_app/components/tilelist/dailyView/scheduleChangeSummaryHost.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
@@ -288,12 +290,16 @@ void main() {
 
   group('ScheduleChangeSummaryHost', () {
     late ScheduleBloc bloc;
+    late ScheduleNoticeBus notices;
 
     setUp(() => SharedPreferences.setMockInitialValues({}));
 
     /// The bloc must be created inside the widget test so its events run in
     /// the test's fake-async zone and are delivered by `pump`.
-    void createBloc() => bloc = ScheduleBloc(getContextCallBack: () => null);
+    void createBloc() {
+      bloc = ScheduleBloc(getContextCallBack: () => null);
+      notices = ScheduleNoticeBus();
+    }
 
     Future<void> reload(WidgetTester tester, List<SubCalendarEvent> tiles,
         ScheduleStatus s) async {
@@ -308,18 +314,22 @@ void main() {
 
     /// [bottomBar] is the navigation bar the content runs behind.
     Widget host({DateTime? date, double bottomBar = 0}) =>
-        app(BlocProvider<ScheduleBloc>.value(
-            value: bloc,
-            child: Builder(
-              builder: (context) => MediaQuery(
-                data: MediaQuery.of(context)
-                    .copyWith(padding: EdgeInsets.only(bottom: bottomBar)),
-                child: ScheduleChangeSummaryHost(
-                    currentDate: date ?? _day,
-                    visibleFor: const Duration(seconds: 6),
-                    child: const SizedBox.expand()),
-              ),
-            )));
+        app(RepositoryProvider<ScheduleNoticeBus>.value(
+            value: notices,
+            child: BlocProvider<ScheduleBloc>.value(
+                value: bloc,
+                child: Builder(
+                  builder: (context) => MediaQuery(
+                    data: MediaQuery.of(context)
+                        .copyWith(padding: EdgeInsets.only(bottom: bottomBar)),
+                    child: ScheduleNoticeSurface.calendar(
+                      child: ScheduleChangeSummaryHost(
+                          currentDate: date ?? _day,
+                          visibleFor: const Duration(seconds: 6),
+                          child: const SizedBox.expand()),
+                    ),
+                  ),
+                ))));
 
     testWidgets(
         'the chip sits above the navigation bar, clear of the add button',

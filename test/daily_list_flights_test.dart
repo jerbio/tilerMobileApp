@@ -1,6 +1,8 @@
 // Moved tiles fly in the daily list: the row is hidden while a copy flies
 // from where it was to where it went, an outline stays at the old row, and
 // tiles that leave the screen (or the day) get an edge chip instead.
+import 'dart:async';
+
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/bloc/scheduleMotion/schedule_motion_cubit.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
@@ -220,6 +223,34 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(ghost, findsNothing);
       expect(later, findsNothing);
+    });
+
+    testWidgets(
+        'a read that lands while the change is evaluating still flies, once',
+        (tester) async {
+      final rebuild = await mount(tester);
+      final write = Completer<void>();
+      final pending = bloc.runScheduleChange(() => write.future,
+          kind: ScheduleChangeKind.revise);
+      await tester.pump();
+
+      final moved = withT1At(11.5);
+      await serve(tester, rebuild, moved, moved);
+      expect(bloc.state, isA<ScheduleEvaluationState>());
+      expect(flight, findsOneWidget);
+      await tester.pump();
+      await tester.pump(Duration.zero);
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(flight, findsNothing);
+
+      // Settling on the same revision flies nothing again.
+      write.complete();
+      await pending;
+      await serve(tester, rebuild, moved, moved);
+      expect(flight, findsNothing);
+      expect(rowOpacity(tester, 'T1'), 1);
+      await tester.pump(const Duration(seconds: 1));
     });
 
     testWidgets('a tile that moves into view says where it came from',

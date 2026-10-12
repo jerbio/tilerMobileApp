@@ -1,21 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/scheduleNotices/scheduleNoticeBus.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 
 /// Handler guard as well as API admission: a second tap gets an explanation
-/// naming the change still in progress.
+/// naming the change still in progress, shown where the user is looking
+/// (over an open sheet, not behind it).
 bool scheduleChangesAllowed(BuildContext context) {
   try {
     final bloc = context.read<ScheduleBloc>();
     if (!bloc.scheduleChangesBlocked) return true;
     final l10n = AppLocalizations.of(context)!;
     final evaluation = bloc.activeEvaluation;
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
-        content: Text(evaluation == null
-            ? l10n.scheduleChangesBlocked
-            : l10n.scheduleChangesBlockedBy(
-                scheduleChangeLabel(l10n, evaluation)))));
+    final message = evaluation == null
+        ? l10n.scheduleChangesBlocked
+        : l10n.scheduleChangesBlockedBy(scheduleChangeLabel(l10n, evaluation));
+    final bus = ScheduleNoticeBus.maybeOf(context);
+    if (bus != null) {
+      bus.interrupt(context, message);
+    } else {
+      ScaffoldMessenger.maybeOf(context)
+          ?.showSnackBar(SnackBar(content: Text(message)));
+    }
     return false;
   } on ProviderNotFoundException {
     return true;
@@ -89,8 +96,12 @@ String scheduleChangeFailureMessage(BuildContext context, {String? fallback}) {
 /// Calendar-local feedback preserves the mounted day content and navigation.
 /// The evaluation state owns its lifetime, including after an editor closes.
 class ScheduleEvaluationFeedback extends StatelessWidget {
-  const ScheduleEvaluationFeedback({super.key, required this.state});
+  const ScheduleEvaluationFeedback(
+      {super.key, required this.state, this.inSlot = false});
   final ScheduleEvaluationState state;
+
+  /// Placed by a notice surface: the card only, no alignment or margin.
+  final bool inSlot;
 
   @override
   Widget build(BuildContext context) {
@@ -132,93 +143,145 @@ class ScheduleEvaluationFeedback extends StatelessWidget {
             ? l10n.scheduleChangeFailed
             : scheduleChangeActionTitle(l10n, evaluation?.kind,
                 fallback: state.message);
-    return Align(
-      alignment: Alignment.topCenter,
+    final Widget card = Material(
+      key: const ValueKey('scheduleEvaluationFeedback'),
+      elevation: 3,
+      borderRadius: BorderRadius.circular(12),
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Material(
-          key: const ValueKey('scheduleEvaluationFeedback'),
-          elevation: 3,
-          borderRadius: BorderRadius.circular(12),
-          color: Theme.of(context).colorScheme.surfaceContainerHigh,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Semantics(
-              liveRegion: true,
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                SizedBox(
-                    width: 44,
-                    height: 44,
-                    child: Stack(children: [
-                      Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer),
-                          child: Icon(icon,
-                              key: const ValueKey(
-                                  'scheduleEvaluationActionIcon'),
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onPrimaryContainer)),
-                      if (phase == ScheduleEvaluationPhase.pending)
-                        Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Container(
-                                width: 16,
-                                height: 16,
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .surfaceContainerHigh),
-                                padding: const EdgeInsets.all(2),
-                                child: const CircularProgressIndicator(
-                                    strokeWidth: 2))),
-                    ])),
-                const SizedBox(width: 12),
-                Expanded(
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                      Text(title),
-                      if (evaluation != null &&
-                          phase != ScheduleEvaluationPhase.pending)
-                        Text(command,
-                            style: Theme.of(context).textTheme.labelMedium),
-                      if (target != null)
-                        Tooltip(
-                            message: target,
-                            child: Text(target,
-                                key: const ValueKey('scheduleEvaluationTarget'),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.titleSmall)),
-                      if (phase == ScheduleEvaluationPhase.uncertain)
-                        Text(l10n.scheduleChangeUncertainBody),
-                      if (phase == ScheduleEvaluationPhase.uncertain)
-                        TextButton(
-                            onPressed: context
-                                .read<ScheduleBloc>()
-                                .refreshEvaluationSchedule,
-                            child: Text(l10n.scheduleChangeRefresh)),
-                    ])),
-                if (phase == ScheduleEvaluationPhase.failed)
-                  IconButton(
-                      tooltip: l10n.close,
-                      icon: const Icon(Icons.close),
-                      onPressed:
-                          context.read<ScheduleBloc>().dismissEvaluationFailure)
-              ]),
-            ),
-          ),
+        padding: const EdgeInsets.all(12),
+        child: Semantics(
+          liveRegion: true,
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            SizedBox(
+                width: 44,
+                height: 44,
+                child: Stack(children: [
+                  Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              Theme.of(context).colorScheme.primaryContainer),
+                      child: Icon(icon,
+                          key: const ValueKey('scheduleEvaluationActionIcon'),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimaryContainer)),
+                  if (phase == ScheduleEvaluationPhase.pending)
+                    Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHigh),
+                            padding: const EdgeInsets.all(2),
+                            child: const CircularProgressIndicator(
+                                strokeWidth: 2))),
+                ])),
+            const SizedBox(width: 12),
+            Expanded(
+                child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Text(title),
+                  if (evaluation != null &&
+                      phase != ScheduleEvaluationPhase.pending)
+                    Text(command,
+                        style: Theme.of(context).textTheme.labelMedium),
+                  if (target != null)
+                    Tooltip(
+                        message: target,
+                        child: Text(target,
+                            key: const ValueKey('scheduleEvaluationTarget'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleSmall)),
+                  if (phase == ScheduleEvaluationPhase.uncertain)
+                    Text(l10n.scheduleChangeUncertainBody),
+                  if (phase == ScheduleEvaluationPhase.uncertain)
+                    TextButton(
+                        onPressed: context
+                            .read<ScheduleBloc>()
+                            .refreshEvaluationSchedule,
+                        child: Text(l10n.scheduleChangeRefresh)),
+                ])),
+            if (phase == ScheduleEvaluationPhase.failed)
+              IconButton(
+                  tooltip: l10n.close,
+                  icon: const Icon(Icons.close),
+                  onPressed:
+                      context.read<ScheduleBloc>().dismissEvaluationFailure)
+          ]),
         ),
       ),
     );
+    if (inSlot) return card;
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Padding(padding: const EdgeInsets.all(8), child: card),
+    );
   }
+}
+
+/// Publishes the evaluation card to the calendar's top slot for as long as
+/// the schedule is evaluating a change.
+class ScheduleEvaluationNotices extends StatefulWidget {
+  const ScheduleEvaluationNotices({super.key, required this.child});
+  final Widget child;
+
+  static const Object noticeId = #scheduleEvaluation;
+
+  @override
+  State<ScheduleEvaluationNotices> createState() =>
+      _ScheduleEvaluationNoticesState();
+}
+
+class _ScheduleEvaluationNoticesState extends State<ScheduleEvaluationNotices> {
+  ScheduleNoticeBus? _bus;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final bus = ScheduleNoticeBus.maybeOf(context);
+    if (identical(bus, _bus)) return;
+    _bus?.hide(ScheduleEvaluationNotices.noticeId);
+    _bus = bus;
+    try {
+      _publish(context.read<ScheduleBloc>().state);
+    } on ProviderNotFoundException {}
+  }
+
+  @override
+  void dispose() {
+    _bus?.hide(ScheduleEvaluationNotices.noticeId);
+    super.dispose();
+  }
+
+  void _publish(ScheduleState state) {
+    final bus = _bus;
+    if (bus == null) return;
+    if (state is ScheduleEvaluationState) {
+      bus.show(ScheduleNotice(
+          id: ScheduleEvaluationNotices.noticeId,
+          slot: ScheduleNoticeSlot.top,
+          priority: ScheduleNotice.statusPriority,
+          builder: (_) =>
+              ScheduleEvaluationFeedback(state: state, inSlot: true)));
+    } else {
+      bus.hide(ScheduleEvaluationNotices.noticeId);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      BlocListener<ScheduleBloc, ScheduleState>(
+          listener: (_, state) => _publish(state), child: widget.child);
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/scheduleChipInsets.dart';
+import 'package:tiler_app/components/scheduleNotices/scheduleNoticeBus.dart';
 import 'package:tiler_app/components/tilelist/dailyView/scheduleChangeSummaryChip.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -11,8 +12,9 @@ import 'package:tiler_app/services/scheduleChangeSummary.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridChoreography.dart';
 import 'package:tiler_app/services/scheduleMotion.dart';
 
-/// Lays the "Plan updated" chip over the Daily content (list or grid) after
-/// a schedule change on the day being viewed.
+/// Shows the "Plan updated" chip over the Daily content (list or grid) after
+/// a schedule change on the day being viewed, through the calendar's
+/// [ScheduleNoticeSurface].
 ///
 /// Listens to [ScheduleBloc]; each new server revision is diffed against the
 /// previous one for [currentDate], and a chip shows when the change is worth
@@ -48,9 +50,13 @@ class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
   ScheduleChangeSummary? _moving;
   Timer? _showTimer;
 
+  /// Where the banner and chip are published.
+  ScheduleNoticeBus? _bus;
+
   @override
   void initState() {
     super.initState();
+    _bus = ScheduleNoticeBus.maybeOf(context);
     _changes =
         context.read<ScheduleBloc>().changeFeed.changes.listen(_onChange);
   }
@@ -65,6 +71,8 @@ class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
 
   @override
   void dispose() {
+    _bus?.hide(_movingNotice);
+    _bus?.hide(_summaryNotice);
     _changes?.cancel();
     _hideTimer?.cancel();
     _showTimer?.cancel();
@@ -105,10 +113,9 @@ class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
         : (mode.animates ? const Duration(milliseconds: 300) : Duration.zero);
     void reveal() {
       if (!mounted) return;
-      setState(() {
-        _moving = null;
-        _summary = summary;
-      });
+      _moving = null;
+      _summary = summary;
+      _publish();
       _hideTimer = Timer(widget.visibleFor, _hide);
     }
 
@@ -116,12 +123,9 @@ class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
       reveal();
       return;
     }
-    if (mounted) {
-      setState(() {
-        _summary = null;
-        _moving = steps != null ? summary : null;
-      });
-    }
+    _summary = null;
+    _moving = steps != null ? summary : null;
+    _publish();
     _showTimer = Timer(delay, reveal);
   }
 
@@ -130,11 +134,45 @@ class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
     _hideTimer = null;
     _showTimer?.cancel();
     _showTimer = null;
-    if (mounted && (_summary != null || _moving != null)) {
-      setState(() {
-        _summary = null;
-        _moving = null;
-      });
+    if (_summary != null || _moving != null) {
+      _summary = null;
+      _moving = null;
+      _publish();
+    }
+  }
+
+  static const Object _movingNotice = #scheduleChangeMoving;
+  static const Object _summaryNotice = #scheduleChangeSummary;
+
+  /// Puts what is showing on the calendar's notice surface: the banner in
+  /// the top slot (beneath the evaluation card if it is still up), the chip
+  /// in the bottom slot.
+  void _publish() {
+    final bus = _bus;
+    if (bus == null) return;
+    final moving = _moving;
+    final summary = _summary;
+    if (moving == null) {
+      bus.hide(_movingNotice);
+    } else {
+      bus.show(ScheduleNotice(
+          id: _movingNotice,
+          slot: ScheduleNoticeSlot.top,
+          priority: ScheduleNotice.progressPriority,
+          builder: (_) =>
+              Center(child: ScheduleChangeMovingBanner(summary: moving))));
+    }
+    if (summary == null) {
+      bus.hide(_summaryNotice);
+    } else {
+      bus.show(ScheduleNotice(
+          id: _summaryNotice,
+          slot: ScheduleNoticeSlot.bottom,
+          priority: ScheduleNotice.progressPriority,
+          builder: (_) => ScheduleChangeSummaryChip(
+                summary: summary,
+                onSeeChanges: () => _openDetails(summary),
+              )));
     }
   }
 
@@ -149,53 +187,11 @@ class _ScheduleChangeSummaryHostState extends State<ScheduleChangeSummaryHost> {
 
   @override
   Widget build(BuildContext context) {
-    final summary = _summary;
-    final animates = ScheduleMotion.modeFor(context).animates;
     // The content runs behind the bottom navigation bar; the scaffold
     // reports the bar's height as this body's bottom padding.
-    final bottomBar = MediaQuery.paddingOf(context).bottom;
     return ScheduleChipInsets(
-      bottomBar: bottomBar,
-      child: Stack(
-        // The content keeps the tight size its region gives it.
-        fit: StackFit.expand,
-        children: [
-          widget.child,
-          if (_moving != null)
-            Positioned(
-              top: 8,
-              left: 16,
-              right: 16,
-              child:
-                  Center(child: ScheduleChangeMovingBanner(summary: _moving!)),
-            ),
-          Positioned(
-            left: 16,
-            right: ScheduleChipInsets.fabClearance,
-            bottom: bottomBar + ScheduleChipInsets.summaryGap,
-            child: AnimatedSwitcher(
-              duration:
-                  animates ? const Duration(milliseconds: 250) : Duration.zero,
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                          begin: const Offset(0, 0.4), end: Offset.zero)
-                      .animate(animation),
-                  child: child,
-                ),
-              ),
-              child: summary == null
-                  ? const SizedBox.shrink()
-                  : ScheduleChangeSummaryChip(
-                      key: ValueKey(summary),
-                      summary: summary,
-                      onSeeChanges: () => _openDetails(summary),
-                    ),
-            ),
-          ),
-        ],
-      ),
+      bottomBar: MediaQuery.paddingOf(context).bottom,
+      child: widget.child,
     );
   }
 }

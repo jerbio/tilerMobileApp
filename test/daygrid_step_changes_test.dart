@@ -2,12 +2,15 @@
 // old time, then lift, slide and land in batches of up to 3, leaving an
 // outline where they were. Only Detailed mode, and only for a new revision
 // caused by a re-optimize (or a change that pushed other tiles).
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/bloc/scheduleMotion/schedule_motion_cubit.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -198,6 +201,39 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
       expect(ghost, findsNothing);
+    });
+
+    testWidgets(
+        'a read that lands while the change is evaluating still steps, once',
+        (tester) async {
+      final rebuild = await mount(tester);
+      final write = Completer<void>();
+      final pending = bloc.runScheduleChange(() => write.future,
+          kind: ScheduleChangeKind.revise);
+      await tester.pump();
+
+      // The new schedule arrives before the write settles.
+      await serveMove(tester, rebuild);
+      expect(bloc.state, isA<ScheduleEvaluationState>());
+      expect(dyBetween(tester), closeTo(160, 1));
+      await tester.pump(Duration.zero);
+      expect(ghost, findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+      expect(dyBetween(tester), closeTo(480, 1));
+      expect(ghost, findsNothing);
+
+      // Settling on the same revision plays nothing again.
+      write.complete();
+      await pending;
+      await reload(tester, tiles, status('r1'));
+      rebuild();
+      await tester.pump();
+      await tester.pump(Duration.zero);
+      expect(ghost, findsNothing);
+      expect(dyBetween(tester), closeTo(480, 1));
+      await tester.pumpAndSettle();
     });
 
     testWidgets('a background refresh slides straight away, no outline',

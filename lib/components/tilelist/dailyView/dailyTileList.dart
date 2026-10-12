@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/scheduleChangeScope.dart';
+import 'package:tiler_app/components/scheduleNotices/scheduleNoticeSurface.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
@@ -1167,7 +1168,9 @@ class _DailyTileListState extends TileListState {
               children: [
                 buildDailyRenderSubCalendarTiles(
                     Tuple2(state.timelines, state.subEvents)),
-                ScheduleEvaluationFeedback(state: state),
+                // A calendar notice surface above shows the card itself.
+                if (!ScheduleNoticeSurface.hostsAmbientNotices(context))
+                  ScheduleEvaluationFeedback(state: state),
               ],
             );
           }

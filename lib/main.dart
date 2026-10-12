@@ -17,6 +17,7 @@ import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/scheduleNotices/scheduleNoticeBus.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tutorial/tourHost.dart';
 import 'package:tiler_app/components/tutorial/tours/settingsTour.dart';
@@ -138,6 +139,10 @@ class _TilerAppState extends State<TilerApp> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
         providers: [
+          // Schedule notices: publishers anywhere, shown on the surface the
+          // user is looking at.
+          RepositoryProvider<ScheduleNoticeBus>(
+              create: (context) => ScheduleNoticeBus()),
           BlocProvider(
               create: (context) => SubCalendarTileBloc(getContextCallBack: () {
                     return _navigatorKey.currentState?.overlay?.context ??
