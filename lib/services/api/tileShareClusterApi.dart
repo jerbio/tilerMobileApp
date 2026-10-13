@@ -10,6 +10,7 @@ import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/services/localizationService.dart';
+import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../constants.dart' as Constants;
@@ -56,7 +57,13 @@ class TileShareClusterApi extends AppApi {
           },
         );
 
-        var jsonResult = jsonDecode(response.body);
+        final dynamic jsonResult;
+        try {
+          jsonResult = jsonDecode(response.body);
+        } catch (_) {
+          _dumpCreateFailure(response);
+          rethrow;
+        }
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
           tileShareActivityChanges.value++;
@@ -65,10 +72,14 @@ class TileShareClusterApi extends AppApi {
             return TileShareClusterData.fromJson(jsonResult['Content']);
           }
         }
+        _dumpCreateFailure(response);
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];
           error = TilerError.fromJson(errorJson);
           throw FormatException(error.Message!);
+        } else if (jsonResult is Map && jsonResult['Message'] is String) {
+          // A plain bad request ({"Message": ...}) says why: keep it.
+          error.Message = jsonResult['Message'];
         } else {
           error.Message = "Issues with reaching Tiler servers";
         }
@@ -615,5 +626,19 @@ class TileShareClusterApi extends AppApi {
       }
     }
     throw error;
+  }
+
+  /// A create the server did not accept, as it answered - status, headers
+  /// and the whole body (an exception's details when the server sends them)
+  /// - to troubleshoot from the device log (O30).
+  void _dumpCreateFailure(Response response) {
+    final String headers = response.headers.entries
+        .map((e) => '${e.key}: ${e.value}')
+        .join('; ');
+    TileShareLog.d(
+        'TileShareClusterApi',
+        'create failed: HTTP ${response.statusCode}\n'
+            'headers: $headers\n'
+            'body: ${response.body}');
   }
 }

@@ -153,7 +153,9 @@ class _ShareRosterDetailState extends State<ShareRosterDetail> {
 
   void _start() {
     final String? clusterId = widget.detail.cluster?.id;
-    if (_tilettes.isEmpty || clusterId == null) return;
+    // Started with no tilettes too: a Project can have none (created that
+    // way, or its last one deleted) and still needs its tabs and Add tilette.
+    if (clusterId == null) return;
     _roster = TileShareRosterCubit(
       source: widget.recipients,
       clusterId: clusterId,
@@ -669,7 +671,12 @@ class _Participants extends StatelessWidget {
         if (state.rows.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Text(l10n.broadcastNoParticipants,
+            // A Project has no add field here: people join by being
+            // assigned a tilette.
+            child: Text(
+                mode == RosterMode.project
+                    ? l10n.projectNoParticipants
+                    : l10n.broadcastNoParticipants,
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
           ),

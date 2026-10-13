@@ -7,8 +7,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/create/createProject.dart';
+import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
 import 'helpers/tileshare_fakes.dart';
@@ -84,6 +86,8 @@ void main() {
     expect(k('create_project_deadline'), findsOneWidget);
     expect(k('create_project_add_task'), findsOneWidget);
     expect(k('create_project_effort'), findsOneWidget);
+    expect(k('create_project_length'), findsNothing,
+        reason: 'each tilette has its own length; the total is the effort');
     expect(k('create_project_add_person'), findsNothing,
         reason: 'tilettes are assigned later, on the board');
     expect(
@@ -191,5 +195,22 @@ void main() {
         }
       }
     }
+  });
+
+  testWidgets("a refused create is logged with the server's reason",
+      (t) async {
+    final List<String> logs = <String>[];
+    final void Function(String) original = TileShareLog.sink;
+    TileShareLog.sink = logs.add;
+    addTearDown(() => TileShareLog.sink = original);
+    await open(t);
+    await t.enterText(k('create_project_name'), 'Launch prep');
+    await tilette(t, 'Research');
+    source.failNext(TilerError(Message: 'A recipient email or phone number is required.'));
+    await tap(t, 'create_project_send');
+    expect(
+        logs.where((l) => l.contains('create project failed') &&
+            l.contains('A recipient email or phone number is required.')),
+        hasLength(1));
   });
 }

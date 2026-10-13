@@ -18,6 +18,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/shareDetailsF
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/animatedKeyedColumn.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/personLine.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/revealSlot.dart';
+import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
@@ -404,7 +405,9 @@ class _CreateShareFormState extends State<CreateShareForm> {
     final String id;
     try {
       id = await widget.source.createShare(share);
-    } catch (_) {
+    } catch (error) {
+      TileShareLog.d('TileShareCreate',
+          'create ${widget.mode.wire} failed: ${TileShareLog.describe(error)}');
       if (mounted) {
         setState(() {
           _busy = false;
@@ -526,7 +529,9 @@ class _CreateShareFormState extends State<CreateShareForm> {
                       ]),
                       const SizedBox(height: 12),
                       AddTileSection(children: [
-                        if (!_isClass)
+                        // A Broadcast's one length; Class and Project
+                        // tilettes each have their own.
+                        if (!_hasTilettes)
                           AddTileFieldRow(
                             key: Key('${_prefix}_length'),
                             icon: Icons.hourglass_empty_rounded,

@@ -2672,6 +2672,7 @@
     "broadcastViewAll": "View all ({count})",
     "@broadcastViewAll": {"placeholders": {"count": {"type": "int"}}},
     "broadcastNoParticipants": "No one yet. Add someone above.",
+    "projectNoParticipants": "No one yet. Assign a tilette to someone on the Tilettes tab.",
     "broadcastDeliveryIssues": "{count, plural, =1{1 invitation may not have arrived} other{{count} invitations may not have arrived}}",
     "@broadcastDeliveryIssues": {"placeholders": {"count": {"type": "int"}}},
     "participantInvited": "Invited",

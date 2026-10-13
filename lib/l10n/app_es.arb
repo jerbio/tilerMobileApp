@@ -1835,6 +1835,7 @@
     "broadcastParticipants": "Participantes",
     "broadcastViewAll": "Ver todos ({count})",
     "broadcastNoParticipants": "Nadie todavía. Añade a alguien arriba.",
+    "projectNoParticipants": "Nadie aún. Asigna una tilette a alguien en la pestaña Tilettes.",
     "broadcastDeliveryIssues": "{count, plural, =1{1 invitación puede no haber llegado} other{{count} invitaciones pueden no haber llegado}}",
     "participantInvited": "Invitado",
     "participantAdding": "Añadiendo…",

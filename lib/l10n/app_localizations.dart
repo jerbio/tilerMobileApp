@@ -8288,6 +8288,12 @@ abstract class AppLocalizations {
   /// **'No one yet. Add someone above.'**
   String get broadcastNoParticipants;
 
+  /// No description provided for @projectNoParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'No one yet. Assign a tilette to someone on the Tilettes tab.'**
+  String get projectNoParticipants;
+
   /// No description provided for @broadcastDeliveryIssues.
   ///
   /// In en, this message translates to:

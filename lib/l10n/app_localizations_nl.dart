@@ -4814,6 +4814,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get broadcastNoParticipants => 'No one yet. Add someone above.';
 
   @override
+  String get projectNoParticipants =>
+      'No one yet. Assign a tilette to someone on the Tilettes tab.';
+
+  @override
   String broadcastDeliveryIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

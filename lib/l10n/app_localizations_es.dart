@@ -4826,6 +4826,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Nadie todavía. Añade a alguien arriba.';
 
   @override
+  String get projectNoParticipants =>
+      'Nadie aún. Asigna una tilette a alguien en la pestaña Tilettes.';
+
+  @override
   String broadcastDeliveryIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

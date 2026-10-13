@@ -8,6 +8,9 @@ import 'package:tiler_app/services/api/retryHttpClient.dart';
 class RecordingHttpClient extends RetryHttpClient {
   int nextStatus = 200;
   String nextBody = '{}';
+  Map<String, String> nextHeaders = <String, String>{
+    'content-type': 'application/json'
+  };
   final List<http.BaseRequest> requests = <http.BaseRequest>[];
 
   http.Request get last => requests.last as http.Request;
@@ -18,7 +21,7 @@ class RecordingHttpClient extends RetryHttpClient {
     return http.StreamedResponse(
       Stream.value(utf8.encode(nextBody)),
       nextStatus,
-      headers: {'content-type': 'application/json'},
+      headers: nextHeaders,
     );
   }
 }
