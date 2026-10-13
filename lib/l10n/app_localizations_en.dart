@@ -5270,7 +5270,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String scheduleChangeAcknowledged(String change) {
-    return 'Your schedule was updated after $change. Check that it looks right.';
+    return '$change: Your timeline has been updated. Review the changes.';
   }
 
   @override

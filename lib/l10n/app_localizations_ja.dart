@@ -5146,7 +5146,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String scheduleChangeAcknowledged(String change) {
-    return '$changeの後にスケジュールが更新されました。内容を確認してください。';
+    return '$change：タイムラインが更新されました。変更を確認してください。';
   }
 
   @override

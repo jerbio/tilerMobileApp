@@ -1280,7 +1280,7 @@
   "scheduleChangeUncertainBody": "La modifica potrebbe essere arrivata al server. Aggiorna per verificare se il programma è stato aggiornato. Questo blocco terminerà automaticamente.",
   "scheduleChangeRefreshing": "Aggiornamento della linea temporale…",
   "scheduleChangeUncertain": "Conferma non disponibile",
-  "scheduleChangeAcknowledged": "Il tuo programma è stato aggiornato dopo {change}. Controlla che sia corretto.",
+  "scheduleChangeAcknowledged": "{change}: La tua linea temporale è stata aggiornata. Rivedi le modifiche.",
   "scheduleChangeWentThrough": "{change} è andato a buon fine.",
   "scheduleChangeFailedLate": "{change} non è riuscito.",
   "scheduleChangeUnconfirmed": "Impossibile confermare {change}. Controlla il programma.",

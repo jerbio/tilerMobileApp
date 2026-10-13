@@ -1280,7 +1280,7 @@
   "scheduleChangeUncertainBody": "変更がサーバーに届いている可能性があります。更新して、スケジュールに変更があるか確認してください。この制限は自動的に解除されます。",
   "scheduleChangeRefreshing": "タイムラインを更新しています…",
   "scheduleChangeUncertain": "確認できません",
-  "scheduleChangeAcknowledged": "{change}の後にスケジュールが更新されました。内容を確認してください。",
+  "scheduleChangeAcknowledged": "{change}：タイムラインが更新されました。変更を確認してください。",
   "scheduleChangeWentThrough": "{change}が完了しました。",
   "scheduleChangeFailedLate": "{change}に失敗しました。",
   "scheduleChangeUnconfirmed": "{change}を確認できませんでした。スケジュールを確認してください。",

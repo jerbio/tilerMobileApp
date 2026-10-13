@@ -1280,7 +1280,7 @@
   "scheduleChangeUncertainBody": "A alteração pode ter chegado ao servidor. Atualize para verificar se a agenda foi atualizada. Este bloqueio terminará automaticamente.",
   "scheduleChangeRefreshing": "A atualizar a sua linha temporal…",
   "scheduleChangeUncertain": "Confirmação indisponível",
-  "scheduleChangeAcknowledged": "Sua agenda foi atualizada depois de {change}. Confira se está tudo certo.",
+  "scheduleChangeAcknowledged": "{change}: Sua linha temporal foi atualizada. Confira as alterações.",
   "scheduleChangeWentThrough": "{change} foi concluído.",
   "scheduleChangeFailedLate": "{change} falhou.",
   "scheduleChangeUnconfirmed": "Não foi possível confirmar {change}. Verifique sua agenda.",

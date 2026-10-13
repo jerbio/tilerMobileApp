@@ -9017,7 +9017,7 @@ abstract class AppLocalizations {
   /// An unconfirmed schedule change was followed by a changed schedule; it may have applied. {change} is e.g. 'Complete · Gym'.
   ///
   /// In en, this message translates to:
-  /// **'Your schedule was updated after {change}. Check that it looks right.'**
+  /// **'{change}: Your timeline has been updated. Review the changes.'**
   String scheduleChangeAcknowledged(String change);
 
   /// A late confirmation arrived for a schedule change whose outcome was unknown.

@@ -5331,7 +5331,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String scheduleChangeAcknowledged(String change) {
-    return 'Je planning is bijgewerkt na $change. Controleer of alles klopt.';
+    return '$change: Je tijdlijn is bijgewerkt. Bekijk de wijzigingen.';
   }
 
   @override

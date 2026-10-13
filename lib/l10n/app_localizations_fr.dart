@@ -5359,7 +5359,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String scheduleChangeAcknowledged(String change) {
-    return 'Votre planning a été mis à jour après $change. Vérifiez qu’il est correct.';
+    return '$change : Votre chronologie a été mise à jour. Vérifiez les modifications.';
   }
 
   @override

@@ -5334,7 +5334,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String scheduleChangeAcknowledged(String change) {
-    return 'Il tuo programma è stato aggiornato dopo $change. Controlla che sia corretto.';
+    return '$change: La tua linea temporale è stata aggiornata. Rivedi le modifiche.';
   }
 
   @override

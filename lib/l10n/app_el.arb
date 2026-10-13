@@ -1280,7 +1280,7 @@
   "scheduleChangeUncertainBody": "Η αλλαγή σου μπορεί να έχει φτάσει στον διακομιστή. Ανανέωσε για να ελέγξεις αν το πρόγραμμα ενημερώθηκε. Η αναμονή θα λήξει αυτόματα.",
   "scheduleChangeRefreshing": "Ενημέρωση του χρονολογίου σου…",
   "scheduleChangeUncertain": "Η επιβεβαίωση δεν είναι διαθέσιμη",
-  "scheduleChangeAcknowledged": "Το πρόγραμμά σου ενημερώθηκε μετά από {change}. Έλεγξε ότι είναι σωστό.",
+  "scheduleChangeAcknowledged": "{change}: Το χρονολόγιό σου ενημερώθηκε. Έλεγξε τις αλλαγές.",
   "scheduleChangeWentThrough": "Ολοκληρώθηκε: {change}.",
   "scheduleChangeFailedLate": "Απέτυχε: {change}.",
   "scheduleChangeUnconfirmed": "Δεν ήταν δυνατή η επιβεβαίωση: {change}. Έλεγξε το πρόγραμμά σου.",

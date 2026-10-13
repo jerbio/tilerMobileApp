@@ -2829,7 +2829,7 @@
   "scheduleChangeRefreshing": "Updating your timeline…",
   "@scheduleChangeRefreshing": {"description": "Shown after the server confirmed a schedule change, until the refreshed timeline is on screen."},
   "scheduleChangeUncertain": "Confirmation unavailable",
-  "scheduleChangeAcknowledged": "Your schedule was updated after {change}. Check that it looks right.",
+  "scheduleChangeAcknowledged": "{change}: Your timeline has been updated. Review the changes.",
   "@scheduleChangeAcknowledged": {"description": "An unconfirmed schedule change was followed by a changed schedule; it may have applied. {change} is e.g. 'Complete · Gym'.", "placeholders": {"change": {"type": "String"}}},
   "scheduleChangeWentThrough": "{change} went through.",
   "@scheduleChangeWentThrough": {"description": "A late confirmation arrived for a schedule change whose outcome was unknown.", "placeholders": {"change": {"type": "String"}}},

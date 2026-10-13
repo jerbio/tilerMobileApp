@@ -5361,7 +5361,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String scheduleChangeAcknowledged(String change) {
-    return 'Το πρόγραμμά σου ενημερώθηκε μετά από $change. Έλεγξε ότι είναι σωστό.';
+    return '$change: Το χρονολόγιό σου ενημερώθηκε. Έλεγξε τις αλλαγές.';
   }
 
   @override

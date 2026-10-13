@@ -5355,7 +5355,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String scheduleChangeAcknowledged(String change) {
-    return 'Dein Zeitplan wurde nach $change aktualisiert. Prüfe, ob alles stimmt.';
+    return '$change: Deine Zeitleiste wurde aktualisiert. Prüfe die Änderungen.';
   }
 
   @override
