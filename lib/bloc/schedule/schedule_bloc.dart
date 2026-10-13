@@ -65,9 +65,379 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   bool _sent = false;
   bool _fetching = false;
   final Expando<bool> _managedRequests = Expando<bool>();
+
+  /// Unconfirmed writes no longer on the card (a newer write took it, or
+  /// the user dismissed it), still checked until they resolve.
+  final List<ScheduleEvaluation> _background = <ScheduleEvaluation>[];
+  final StreamController<ScheduleChangeOutcome> _outcomes =
+      StreamController<ScheduleChangeOutcome>.broadcast();
+  ScheduleChangeOutcome? _lastOutcome;
+  ScheduleEvaluation? _lastDeclined;
+  Timer? _reconcileTimer;
+  DateTime? _reconcileSince;
+  bool _reconcilePaused = false;
+  bool _reconcileInFlight = false;
+  int _reconcileAttempt = 0;
+
+  /// Set as soon as [close] starts, so a re-check finishing during close
+  /// cannot schedule another.
+  bool _closing = false;
+
+  /// Timers bounding status reads made while an outcome is in doubt;
+  /// cancelled with the bloc.
+  final Set<Timer> _readTimeouts = <Timer>{};
+
+  /// Writes whose outcome just became unknown, checked once against the
+  /// schedule before anyone is told; each completes with the verdict.
+  final Map<String, Completer<void>> _verdicts = <String, Completer<void>>{};
+
+  /// The most recently admitted write, and the outcomes screens have told.
+  String? _lastAdmittedId;
+
+  /// Completes when the app is back in the foreground; null while it is.
+  Completer<void>? _foreground;
+  final Set<String> _toldOutcomes = <String>{};
   StreamSubscription<ScheduleRevision?>? _revisionSubscription;
 
   ScheduleEvaluation? get activeEvaluation => _evaluation;
+
+  /// Unconfirmed writes being checked in the background (superseded by a
+  /// newer write, or dismissed), oldest first.
+  List<ScheduleEvaluation> get unresolvedChanges =>
+      List.unmodifiable(_background);
+
+  /// How each unconfirmed write turned out.
+  Stream<ScheduleChangeOutcome> get outcomes => _outcomes.stream;
+
+  /// The most recent outcome, for messages shown after the fact.
+  ScheduleChangeOutcome? get lastOutcome => _lastOutcome;
+
+  /// How the most recently admitted write turned out, once known after its
+  /// outcome was in doubt.
+  ScheduleChangeOutcome? get latestOutcome {
+    final outcome = _lastOutcome;
+    return outcome != null && outcome.evaluation.id == _lastAdmittedId
+        ? outcome
+        : null;
+  }
+
+  /// A screen told the user how [evaluationId] turned out; the calendar's
+  /// notice for it is then skipped.
+  void markOutcomeTold(String evaluationId) {
+    _toldOutcomes.add(evaluationId);
+    while (_toldOutcomes.length > 16) {
+      _toldOutcomes.remove(_toldOutcomes.first);
+    }
+  }
+
+  bool outcomeTold(String evaluationId) => _toldOutcomes.contains(evaluationId);
+
+  /// The earlier change the user chose not to send again, until the next
+  /// admission.
+  ScheduleEvaluation? get lastDeclinedChange => _lastDeclined;
+
+  /// Asked before sending a change identical to one still unconfirmed (same
+  /// kind and tile). Resolves true to send it again. Unset: no question.
+  Future<bool> Function(ScheduleEvaluation unconfirmed)? confirmReattempt;
+
+  /// Hides the uncertainty card; the write keeps being checked.
+  void dismissUncertainty() {
+    final evaluation = _evaluation;
+    if (evaluation == null ||
+        evaluation.phase != ScheduleEvaluationPhase.uncertain) return;
+    _trace('uncertain_dismissed', request: evaluation);
+    _moveToBackground(evaluation);
+    _publishEvaluation();
+    if (_reconcileTimer == null && !_reconcileInFlight) _scheduleReconcile();
+  }
+
+  /// The app went to the background or lost its connection: stop
+  /// re-checking until it is back.
+  void pauseReconciliation() {
+    if (_reconcilePaused) return;
+    _reconcilePaused = true;
+    _foreground ??= Completer<void>();
+    _reconcileTimer?.cancel();
+    _reconcileTimer = null;
+    if (_hasUnresolved) _trace('reconcile_paused');
+  }
+
+  /// Back in the foreground or online: check again straight away.
+  void resumeReconciliation() {
+    if (!_reconcilePaused) return;
+    _reconcilePaused = false;
+    final foreground = _foreground;
+    _foreground = null;
+    if (foreground != null && !foreground.isCompleted) foreground.complete();
+    if (_hasUnresolved) unawaited(_reconcileTick());
+  }
+
+  bool get _hasUnresolved =>
+      _evaluation?.phase == ScheduleEvaluationPhase.uncertain ||
+      _background.isNotEmpty;
+
+  List<ScheduleEvaluation> get _unresolved => [
+        if (_evaluation?.phase == ScheduleEvaluationPhase.uncertain)
+          _evaluation!,
+        ..._background,
+      ];
+
+  /// A write's outcome became unknown: re-read the status now, then on the
+  /// cadence, until every unconfirmed write resolves. Reads only; the write
+  /// itself is never sent again.
+  void _startReconciling({bool immediately = true}) {
+    if (isClosed || _closing) return;
+    _reconcileSince = _now();
+    _reconcileTimer?.cancel();
+    _reconcileTimer = null;
+    if (immediately) {
+      unawaited(_reconcileTick());
+    } else {
+      _scheduleReconcile();
+    }
+  }
+
+  /// Reads the schedule status within [timeout], on a timer the bloc can
+  /// cancel when it closes.
+  Future<ScheduleStatus> _readStatus(Duration timeout) {
+    final read = Completer<ScheduleStatus>();
+    late final Timer timer;
+    timer = Timer(timeout, () {
+      _readTimeouts.remove(timer);
+      if (!read.isCompleted) {
+        read.completeError(TimeoutException('Schedule status unavailable'));
+      }
+    });
+    _readTimeouts.add(timer);
+    Future.sync(() => scheduleApi.getScheduleStatus()).then((status) {
+      if (!read.isCompleted) read.complete(status);
+    }, onError: (Object error, StackTrace stack) {
+      if (!read.isCompleted) read.completeError(error, stack);
+    }).whenComplete(() {
+      timer.cancel();
+      _readTimeouts.remove(timer);
+    });
+    return read.future;
+  }
+
+  bool _changedSince(ScheduleEvaluation evaluation) =>
+      _baselineIsFresh &&
+      !revisions.observedAt!.isBefore(evaluation.startedAt) &&
+      revisions.state != evaluation.baseline;
+
+  /// The write's outcome just became unknown. Before telling anyone, read
+  /// the schedule once (bounded by [ScheduleEvaluationConfig
+  /// .uncertaintyGrace]): if it already changed, the write is only
+  /// acknowledged; otherwise the card says it is unconfirmed and re-checks
+  /// continue. Until then it stays on the card as in progress, and the
+  /// screen that sent it waits for the verdict, so the user hears once.
+  void _confirmUncertainty(ScheduleEvaluation evaluation, String reason,
+      {Object? error, Map<String, Object?> fields = const {}}) {
+    final current = _evaluation;
+    if (current == null ||
+        current.id != evaluation.id ||
+        current.phase != ScheduleEvaluationPhase.pending ||
+        _verdicts.containsKey(evaluation.id)) return;
+    final verdict = Completer<void>();
+    _verdicts[evaluation.id] = verdict;
+    _trace('mutation_confirming',
+        request: current, fields: {'reason': reason, ...fields}, error: error);
+    unawaited(_settleUnknownOutcome(current, reason, verdict,
+        error: error, fields: fields));
+  }
+
+  Future<void> _settleUnknownOutcome(
+      ScheduleEvaluation evaluation, String reason, Completer<void> verdict,
+      {Object? error, Map<String, Object?> fields = const {}}) async {
+    final generation = _sessionGeneration;
+    try {
+      // Cut off while the app is away (the system drops its connections):
+      // nothing can be read until it returns, so decide then, not now.
+      await _untilForeground(evaluation);
+      if (isClosed || _closing || generation != _sessionGeneration) return;
+      if (!_changedSince(evaluation)) {
+        try {
+          final status = await _readStatus(evaluationConfig.uncertaintyGrace);
+          if (isClosed || _closing || generation != _sessionGeneration) {
+            return;
+          }
+          revisions.observe(status);
+        } catch (readError) {
+          _trace('mutation_confirm_read_failed',
+              request: evaluation, error: readError);
+        }
+      }
+      if (isClosed || _closing || generation != _sessionGeneration) return;
+      final current = _evaluation;
+      // Settled while checking (a late answer): nothing more to decide.
+      if (current == null ||
+          current.id != evaluation.id ||
+          current.phase != ScheduleEvaluationPhase.pending) return;
+      _evaluation = current.withPhase(ScheduleEvaluationPhase.uncertain);
+      _trace('mutation_uncertain',
+          fields: {'reason': reason, ...fields}, error: error);
+      if (_changedSince(current)) {
+        _releaseUnconfirmedEvaluation(_evaluation!, 'revision_changed');
+        return;
+      }
+      _publishEvaluation();
+      _startReconciling(immediately: false);
+    } finally {
+      _verdicts.remove(evaluation.id);
+      if (!verdict.isCompleted) verdict.complete();
+    }
+  }
+
+  /// Waits while the app is in the background, at most until
+  /// [evaluation]'s deadline, on a timer the bloc cancels when it closes.
+  Future<void> _untilForeground(ScheduleEvaluation evaluation) async {
+    final foreground = _foreground;
+    if (foreground == null) return;
+    _trace('mutation_confirm_waiting_foreground', request: evaluation);
+    final remaining = evaluation.expiresAt.difference(_now());
+    if (remaining <= Duration.zero) return;
+    final waited = Completer<void>();
+    late final Timer timer;
+    timer = Timer(remaining, () {
+      _readTimeouts.remove(timer);
+      if (!waited.isCompleted) waited.complete();
+    });
+    _readTimeouts.add(timer);
+    unawaited(foreground.future.then((_) {
+      if (!waited.isCompleted) waited.complete();
+    }));
+    await waited.future;
+    timer.cancel();
+    _readTimeouts.remove(timer);
+  }
+
+  /// Lets a caller wait for [evaluationId]'s verdict before hearing about it.
+  Future<void> _verdictFor(String evaluationId) =>
+      _verdicts[evaluationId]?.future ?? Future<void>.value();
+
+  void _scheduleReconcile() {
+    _reconcileTimer?.cancel();
+    _reconcileTimer = null;
+    if (isClosed || _closing || _reconcilePaused || !_hasUnresolved) return;
+    final since = _now().difference(_reconcileSince ?? _now());
+    var delay = since < evaluationConfig.reconcileFastWindow
+        ? evaluationConfig.reconcileFastInterval
+        : evaluationConfig.reconcileSlowInterval;
+    for (final evaluation in _unresolved) {
+      final left = evaluation.expiresAt.difference(_now());
+      if (left < delay) delay = left.isNegative ? Duration.zero : left;
+    }
+    _trace('reconcile_scheduled', fields: {
+      'delayMs': delay.inMilliseconds,
+      'unresolved': _unresolved.length,
+    });
+    _reconcileTimer = Timer(delay, () => unawaited(_reconcileTick()));
+  }
+
+  Future<void> _reconcileTick() async {
+    _reconcileTimer = null;
+    if (isClosed || _closing) return;
+    _reconcileRevision();
+    if (!_hasUnresolved) {
+      _trace('reconcile_stopped');
+      return;
+    }
+    if (_reconcilePaused || _reconcileInFlight) return;
+    _reconcileInFlight = true;
+    final generation = _sessionGeneration;
+    final attempt = ++_reconcileAttempt;
+    _trace('reconcile_attempt', fields: {
+      'attempt': attempt,
+      'unresolved': _unresolved.length,
+      'canConfirmMutation': false,
+    });
+    try {
+      final status = await _readStatus(evaluationConfig.initializationTimeout);
+      if (isClosed || generation != _sessionGeneration) return;
+      revisions.observe(status);
+    } catch (error) {
+      _trace('reconcile_failed', error: error, fields: {'attempt': attempt});
+    } finally {
+      _reconcileInFlight = false;
+    }
+    if (isClosed || generation != _sessionGeneration) return;
+    _reconcileRevision();
+    _scheduleReconcile();
+  }
+
+  /// Takes [evaluation] off the card and keeps checking it in the
+  /// background, journalled so a restart keeps it there.
+  void _moveToBackground(ScheduleEvaluation evaluation) {
+    if (_evaluation?.id == evaluation.id) {
+      _evaluationTimer?.cancel();
+      _evaluation = null;
+    }
+    _changeTokens.remove(evaluation.id);
+    if (!_background.any((e) => e.id == evaluation.id)) {
+      _background.add(evaluation);
+    }
+    _clearJournal(evaluation.account, evaluation.id);
+    _persistBackground(evaluation.account);
+    while (_background.length > evaluationConfig.maxUnresolved) {
+      _releaseBackground(_background.first, 'unresolved_limit');
+    }
+  }
+
+  void _persistBackground(String account) {
+    final records = [
+      for (final evaluation in _background)
+        if (evaluation.account == account) evaluation.toRecord()
+    ];
+    unawaited(evaluationStore
+        .writeBackground(account, records)
+        .catchError((Object error) {
+      _trace('mutation_background_journal_failed', error: error);
+    }));
+  }
+
+  void _releaseBackground(ScheduleEvaluation evaluation, String reason) {
+    if (!_background.any((e) => e.id == evaluation.id)) return;
+    _background.removeWhere((e) => e.id == evaluation.id);
+    _persistBackground(evaluation.account);
+    _trace('mutation_released_unconfirmed', request: evaluation, fields: {
+      'reason': reason,
+      'background': true,
+      'canConfirmMutation': false,
+    });
+    _emitOutcome(
+        evaluation,
+        reason == 'revision_changed'
+            ? ScheduleChangeOutcomeKind.acknowledged
+            : ScheduleChangeOutcomeKind.unconfirmed);
+  }
+
+  void _emitOutcome(
+      ScheduleEvaluation evaluation, ScheduleChangeOutcomeKind kind) {
+    final outcome = ScheduleChangeOutcome(evaluation, kind);
+    _lastOutcome = outcome;
+    if (kind == ScheduleChangeOutcomeKind.acknowledged ||
+        kind == ScheduleChangeOutcomeKind.confirmed) {
+      _trace('mutation_acknowledged', request: evaluation, fields: {
+        'reason': kind == ScheduleChangeOutcomeKind.acknowledged
+            ? 'revision_changed'
+            : 'late_response',
+      });
+    }
+    if (!_outcomes.isClosed) _outcomes.add(outcome);
+  }
+
+  /// An unconfirmed write the new one would repeat: same kind, same tile.
+  ScheduleEvaluation? _repeatOf(ScheduleChangeKind kind, List<String> ids) {
+    if (ids.isEmpty) return null;
+    for (final evaluation in _unresolved.reversed) {
+      if (evaluation.kind == kind &&
+          evaluation.affectedTileIds.any(ids.contains)) {
+        return evaluation;
+      }
+    }
+    return null;
+  }
+
   bool get lastChangeUnconfirmed => _unconfirmedRequestId != null;
   bool get scheduleChangesBlocked =>
       _evaluation?.blocksChanges == true &&
@@ -138,10 +508,13 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       'savedRecordPresent': evaluationStore.read(account) != null,
       'sessionRecordPresent': evaluationStore.read('session') != null,
     });
-    if (scheduleChangesBlocked && (_account != 'session' || _sent)) return;
+    final outstanding = _evaluation?.awaitsOutcome == true &&
+        _now().isBefore(_evaluation!.expiresAt);
+    if (outstanding && (_account != 'session' || _sent)) return;
     if (_account != 'session') revisions.reset();
     _account = account;
     if (_evaluation != null) _evaluation = _evaluation!.withAccount(account);
+    _restoreBackground(account);
     final scope = evaluationStore.read(account) != null ? account : 'session';
     final saved = evaluationStore.read(scope);
     if (saved != null) {
@@ -164,6 +537,24 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         }
       }
     }
+  }
+
+  void _restoreBackground(String account) {
+    final scope = evaluationStore.readBackground(account).isNotEmpty
+        ? account
+        : 'session';
+    var restored = 0;
+    for (final record in evaluationStore.readBackground(scope)) {
+      final evaluation = ScheduleEvaluation.fromRecord(record,
+          account: scope, now: _now(), config: evaluationConfig);
+      if (evaluation == null || _background.any((e) => e.id == evaluation.id))
+        continue;
+      _background.add(evaluation);
+      restored++;
+    }
+    if (restored == 0) return;
+    _trace('mutation_restore_background', fields: {'restored': restored});
+    _startReconciling();
   }
 
   bool get _baselineIsFresh {
@@ -217,7 +608,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   void _armEvaluationDeadline() {
     _evaluationTimer?.cancel();
     final evaluation = _evaluation;
-    if (evaluation == null || !evaluation.blocksChanges) return;
+    if (evaluation == null || !evaluation.awaitsOutcome) return;
     final remaining = evaluation.expiresAt.difference(_now());
     if (remaining <= Duration.zero) {
       _expireEvaluation();
@@ -228,7 +619,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void _expireEvaluation() {
     final evaluation = _evaluation;
-    if (evaluation == null || !evaluation.blocksChanges) return;
+    if (evaluation == null || !evaluation.awaitsOutcome) return;
     if (_now().isBefore(evaluation.expiresAt)) {
       _armEvaluationDeadline();
       return;
@@ -241,6 +632,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     _trace('mutation_released_unconfirmed',
         request: evaluation,
         fields: {'reason': reason, 'canConfirmMutation': false});
+    _emitOutcome(
+        evaluation,
+        reason == 'revision_changed'
+            ? ScheduleChangeOutcomeKind.acknowledged
+            : ScheduleChangeOutcomeKind.unconfirmed);
     _clearJournal(evaluation.account, evaluation.id);
     if (reason == 'deadline_expired') _withdrawEvaluation(evaluation);
     if (_evaluation?.id == evaluation.id) {
@@ -271,6 +667,13 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         _restoredEvaluation = null;
         if (revisions.state != restored.baseline) {
           _releaseUnconfirmedEvaluation(restored, 'revision_changed');
+        } else if (_evaluation?.awaitsOutcome == true) {
+          _trace('mutation_restored_uncertain', request: restored, fields: {
+            'liveResponseAttached': false,
+            'background': true,
+          });
+          _moveToBackground(restored);
+          _startReconciling();
         } else {
           _evaluation = restored;
           _sent = false;
@@ -278,6 +681,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           _trace('mutation_restored_uncertain',
               fields: {'liveResponseAttached': false});
           _publishEvaluation();
+          _startReconciling();
         }
       }
     }
@@ -287,6 +691,15 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         !revisions.observedAt!.isBefore(evaluation!.startedAt) &&
         revisions.state != evaluation.baseline) {
       _releaseUnconfirmedEvaluation(evaluation, 'revision_changed');
+    }
+    for (final background in List.of(_background)) {
+      if (!_now().isBefore(background.expiresAt)) {
+        _releaseBackground(background, 'deadline_expired');
+      } else if (_baselineIsFresh &&
+          !revisions.observedAt!.isBefore(background.startedAt) &&
+          revisions.state != background.baseline) {
+        _releaseBackground(background, 'revision_changed');
+      }
     }
   }
 
@@ -362,20 +775,47 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       });
       throw ScheduleChangeBlocked();
     }
+    _lastDeclined = null;
     final generation = _sessionGeneration;
-    if (!_baselineIsFresh || _restoredEvaluation != null) {
+    // While an earlier write is unconfirmed, read the schedule first: a
+    // change there acknowledges it before this one starts.
+    final unresolved = _hasUnresolved;
+    if (!_baselineIsFresh || _restoredEvaluation != null || unresolved) {
       _initializingChange = true;
       try {
-        await _ensureBaseline(force: _restoredEvaluation != null);
+        await _ensureBaseline(force: _restoredEvaluation != null || unresolved);
         _reconcileRevision();
         if (isClosed ||
             generation != _sessionGeneration ||
             scheduleChangesBlocked) {
           throw ScheduleChangeBlocked();
         }
+        final repeat = _repeatOf(kind, ids);
+        final confirm = confirmReattempt;
+        if (repeat != null && confirm != null) {
+          _trace('mutation_reattempt_asked', request: repeat);
+          final again = await confirm(repeat);
+          if (isClosed ||
+              generation != _sessionGeneration ||
+              scheduleChangesBlocked) {
+            throw ScheduleChangeBlocked();
+          }
+          if (!again) {
+            _lastDeclined = repeat;
+            _trace('mutation_reattempt_declined', request: repeat);
+            throw ScheduleChangeDeclined();
+          }
+        }
       } finally {
         if (generation == _sessionGeneration) _initializingChange = false;
       }
+    }
+    final superseded = _evaluation;
+    if (superseded != null &&
+        superseded.phase == ScheduleEvaluationPhase.uncertain) {
+      _trace('mutation_superseded',
+          request: superseded, fields: {'requestedKind': kind.name});
+      _moveToBackground(superseded);
     }
     final startedAt = _now();
     final evaluation = ScheduleEvaluation(
@@ -394,6 +834,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
                 : 1,
         affectedTileIds: List.unmodifiable(ids));
     _evaluation = evaluation;
+    _lastAdmittedId = evaluation.id;
     _attributeEvaluation(evaluation);
     _unconfirmedRequestId = null;
     final deadline = Completer<bool>();
@@ -437,22 +878,22 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       _trace('mutation_callback_error', request: evaluation, error: error);
       if (generation == _sessionGeneration &&
           _evaluation?.id == evaluation.id &&
-          _evaluation?.phase == ScheduleEvaluationPhase.pending) {
+          _evaluation?.phase == ScheduleEvaluationPhase.pending &&
+          !_verdicts.containsKey(evaluation.id)) {
         final cause = error is TilerError ? error.cause ?? error : error;
         if (_sent &&
             (cause is SocketException ||
                 cause is TimeoutException ||
                 cause is http.ClientException)) {
-          _evaluation =
-              _evaluation!.withPhase(ScheduleEvaluationPhase.uncertain);
-          _trace('mutation_uncertain',
-              fields: {'reason': 'callback_transport_error'}, error: error);
-          _publishEvaluation();
-          _reconcileRevision();
+          _confirmUncertainty(_evaluation!, 'callback_transport_error',
+              error: error);
         } else {
           await _finishEvaluation(_evaluation!, success: false);
         }
       }
+      // Tell the caller only once the outcome is as clear as it will get,
+      // so the user hears about this change once.
+      await _verdictFor(evaluation.id);
       rethrow;
     }
   }
@@ -509,13 +950,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       if (uncertain) {
         if (generation == _sessionGeneration &&
             _evaluation?.id == evaluation.id) {
-          _evaluation = evaluation.withPhase(ScheduleEvaluationPhase.uncertain);
-          _trace('mutation_uncertain', fields: {
-            'reason': 'http_response_unconfirmed',
-            'status': response.statusCode,
-          });
-          _publishEvaluation();
-          _reconcileRevision();
+          _confirmUncertainty(evaluation, 'http_response_unconfirmed',
+              fields: {'status': response.statusCode});
         }
       } else {
         await _finishEvaluation(evaluation, success: success);
@@ -523,41 +959,57 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       if (!success || timedOut) {
         unawaited(response.stream.drain<void>().catchError((Object _) {}));
       }
-      if (!success)
+      if (!success) {
+        await _verdictFor(evaluation.id);
         throw http.ClientException('Schedule change was not confirmed');
+      }
       return response;
-    }, onError: (Object error, StackTrace stack) {
+    }, onError: (Object error, StackTrace stack) async {
       if (generation == _sessionGeneration &&
           _evaluation?.id == evaluation.id) {
-        _evaluation = evaluation.withPhase(ScheduleEvaluationPhase.uncertain);
-        _trace('mutation_uncertain',
-            fields: {'reason': 'transport_error'}, error: error);
-        _publishEvaluation();
-        _reconcileRevision();
+        _confirmUncertainty(evaluation, 'transport_error', error: error);
       }
+      await _verdictFor(evaluation.id);
       Error.throwWithStackTrace(error, stack);
     });
     final remaining = evaluation.expiresAt.difference(_now());
     final responseTimeout = timeout < remaining ? timeout : remaining;
-    return original.timeout(responseTimeout, onTimeout: () {
+    return original.timeout(responseTimeout, onTimeout: () async {
       timedOut = true;
       if (generation == _sessionGeneration &&
           _evaluation?.id == evaluation.id) {
-        _evaluation = evaluation.withPhase(ScheduleEvaluationPhase.uncertain);
-        _trace('mutation_uncertain', fields: {
-          'reason': 'response_timeout',
+        _confirmUncertainty(evaluation, 'response_timeout', fields: {
           'responseTimeoutMs': timeout.inMilliseconds,
           'liveResponseAttached': true,
         });
-        _publishEvaluation();
-        _reconcileRevision();
       }
+      await _verdictFor(evaluation.id);
       throw TimeoutException('Schedule change confirmation unavailable');
     });
   }
 
   Future<void> _finishEvaluation(ScheduleEvaluation evaluation,
       {required bool success}) async {
+    final background = _background.indexWhere((e) => e.id == evaluation.id);
+    if (background >= 0) {
+      final unconfirmed = _background.removeAt(background);
+      _persistBackground(unconfirmed.account);
+      _trace('mutation_finished',
+          request: unconfirmed,
+          fields: {'success': success, 'background': true});
+      _emitOutcome(
+          unconfirmed,
+          success
+              ? ScheduleChangeOutcomeKind.confirmed
+              : ScheduleChangeOutcomeKind.failed);
+      if (success) {
+        add(GetScheduleEvent(forceRefresh: true, emitOnlyLoadedStated: true));
+      }
+      return;
+    }
+    final wasUnconfirmed = _evaluation?.id == evaluation.id &&
+        (_evaluation!.phase == ScheduleEvaluationPhase.uncertain ||
+            _verdicts.containsKey(evaluation.id));
     if (success && _unconfirmedRequestId == evaluation.id)
       _unconfirmedRequestId = null;
     final saved = evaluationStore.read(evaluation.account);
@@ -588,6 +1040,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     }
     _trace('mutation_finished',
         request: evaluation, fields: {'success': success});
+    if (success && wasUnconfirmed) {
+      _emitOutcome(evaluation, ScheduleChangeOutcomeKind.confirmed);
+    }
     _publishEvaluation();
     if (success) {
       revisions.checkAfterChange(baseline: evaluation.baseline);
@@ -781,18 +1236,27 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         if (!isClosed && !tutorialMode && state is! ScheduleLoggedOutState) {
           _reconcileRevision();
           revisions.recover();
+          resumeReconciliation();
         }
       },
       onSuspend: () {
         _trace('recovery_suspended');
         revisions.suspend();
+        pauseReconciliation();
       },
     )..start();
   }
 
   @override
   Future<void> close() async {
+    _closing = true;
     _evaluationTimer?.cancel();
+    _reconcileTimer?.cancel();
+    for (final timer in List.of(_readTimeouts)) {
+      timer.cancel();
+    }
+    _readTimeouts.clear();
+    await _outcomes.close();
     _presentationTimer?.cancel();
     await _revisionSubscription?.cancel();
     _recoveryMonitor?.close();
@@ -922,6 +1386,13 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     _evaluation = null;
     _unconfirmedRequestId = null;
     _restoredEvaluation = null;
+    _background.clear();
+    _lastOutcome = null;
+    _lastAdmittedId = null;
+    _toldOutcomes.clear();
+    _lastDeclined = null;
+    _reconcileTimer?.cancel();
+    _reconcileTimer = null;
     _evaluationTimer?.cancel();
     _presentationTimer?.cancel();
     _baselineFetch = null;
@@ -945,6 +1416,13 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     _evaluation = null;
     _unconfirmedRequestId = null;
     _restoredEvaluation = null;
+    _background.clear();
+    _lastOutcome = null;
+    _lastAdmittedId = null;
+    _toldOutcomes.clear();
+    _lastDeclined = null;
+    _reconcileTimer?.cancel();
+    _reconcileTimer = null;
     _evaluationTimer?.cancel();
     _presentationTimer?.cancel();
     _baselineFetch = null;

@@ -217,7 +217,7 @@ void main() {
                     child: const Text('Report')))));
     await tester.tap(find.text('Report'));
     await tester.pump();
-    expect(find.text(l10n.scheduleChangeHoldEnded), findsOneWidget);
+    expect(find.text(l10n.scheduleChangeUnconfirmedGeneric), findsOneWidget);
     expect(find.text(l10n.addTileRetry), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });

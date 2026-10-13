@@ -80,10 +80,51 @@ class ScheduleEvaluationConfig {
     this.baselineMaxAge = const Duration(
         seconds: int.fromEnvironment('TILER_SCHEDULE_BASELINE_MAX_AGE_SECONDS',
             defaultValue: 30)),
+    this.reconcileFastInterval = const Duration(seconds: 5),
+    this.reconcileFastWindow = const Duration(seconds: 30),
+    this.reconcileSlowInterval = const Duration(seconds: 15),
+    this.maxUnresolved = 3,
+    this.uncertaintyGrace = const Duration(seconds: 3),
   });
   final Duration operationTimeout;
   final Duration initializationTimeout;
   final Duration baselineMaxAge;
+
+  /// While a write's outcome is unknown, the schedule status is re-read
+  /// every [reconcileFastInterval] for the first [reconcileFastWindow],
+  /// then every [reconcileSlowInterval] until its deadline. Reads only.
+  final Duration reconcileFastInterval;
+  final Duration reconcileFastWindow;
+  final Duration reconcileSlowInterval;
+
+  /// Unconfirmed writes still checked in the background; beyond this the
+  /// oldest is let go.
+  final int maxUnresolved;
+
+  /// When a write's outcome becomes unknown, the schedule is read once,
+  /// for at most this long, before the user is told anything.
+  final Duration uncertaintyGrace;
+}
+
+/// How a write whose outcome was unknown turned out, for a notice.
+enum ScheduleChangeOutcomeKind {
+  /// The schedule changed after the write started; it may have applied.
+  acknowledged,
+
+  /// Its own late 2xx arrived.
+  confirmed,
+
+  /// Its own late refusal arrived.
+  failed,
+
+  /// Its deadline passed with no evidence either way.
+  unconfirmed,
+}
+
+class ScheduleChangeOutcome {
+  const ScheduleChangeOutcome(this.evaluation, this.kind);
+  final ScheduleEvaluation evaluation;
+  final ScheduleChangeOutcomeKind kind;
 }
 
 /// A request owned by ScheduleBloc; revisions only describe data freshness.
@@ -113,7 +154,13 @@ class ScheduleEvaluation extends Equatable {
   /// Snapshot of the command's target, independent of subsequent calendar reads.
   final String? eventName;
   final int affectedEventCount;
-  bool get blocksChanges => phase != ScheduleEvaluationPhase.failed;
+
+  /// Only a write still in flight holds other writes back. One whose outcome
+  /// is unknown informs the user but leaves them free to carry on.
+  bool get blocksChanges => phase == ScheduleEvaluationPhase.pending;
+
+  /// Still waiting to learn whether it applied (in flight or unknown).
+  bool get awaitsOutcome => phase != ScheduleEvaluationPhase.failed;
   ScheduleEvaluation withPhase(ScheduleEvaluationPhase phase) =>
       ScheduleEvaluation(
           id: id,
@@ -233,6 +280,12 @@ class ScheduleInitializationFailed extends TilerError {
       : super(Message: 'Refresh the schedule before making a change.');
 }
 
+/// The user chose not to send a change again while an earlier, identical
+/// one was still unconfirmed. Nothing was sent.
+class ScheduleChangeDeclined extends TilerError {
+  ScheduleChangeDeclined() : super(Message: 'The change was not sent again.');
+}
+
 class ScheduleChangeBlocked extends TilerError {
   ScheduleChangeBlocked()
       : super(
@@ -272,6 +325,23 @@ class ScheduleEvaluationStore {
     return ScheduleEvaluationStore._(preferences, records);
   }
 
+  /// Unconfirmed writes checked in the background (superseded or dismissed)
+  /// for [account], oldest first.
+  List<Map<String, dynamic>> readBackground(String account) {
+    final records = _records[_backgroundKey(account)];
+    if (records is! List) return const [];
+    return [
+      for (final record in records)
+        if (record is Map) Map<String, dynamic>.from(record)
+    ];
+  }
+
+  Future<void> writeBackground(
+          String account, List<Map<String, dynamic>> records) =>
+      write(_backgroundKey(account), records.isEmpty ? null : records);
+
+  static String _backgroundKey(String account) => '$account#background';
+
   Map<String, dynamic>? read(String account) {
     final record = _records[account];
     if (record == null) return null;
@@ -283,7 +353,7 @@ class ScheduleEvaluationStore {
     return Map<String, dynamic>.from(record);
   }
 
-  Future<void> write(String account, Map<String, dynamic>? record) {
+  Future<void> write(String account, Object? record) {
     if (record == null) {
       _records.remove(account);
     } else {

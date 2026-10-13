@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -86,6 +88,27 @@ String scheduleChangeLabel(
     '${scheduleChangeActionTitle(l10n, evaluation.kind)} · '
     '${scheduleChangeTarget(l10n, evaluation)}';
 
+/// The change as a finished command, e.g. "Complete · Gym".
+String scheduleChangeDoneLabel(
+        AppLocalizations l10n, ScheduleEvaluation evaluation) =>
+    '${scheduleChangeCommand(l10n, evaluation.kind)} · '
+    '${scheduleChangeTarget(l10n, evaluation)}';
+
+/// What to tell the user about how an unconfirmed change turned out.
+String scheduleChangeOutcomeMessage(
+    AppLocalizations l10n, ScheduleChangeOutcome outcome) {
+  final change = scheduleChangeDoneLabel(l10n, outcome.evaluation);
+  return switch (outcome.kind) {
+    ScheduleChangeOutcomeKind.acknowledged =>
+      l10n.scheduleChangeAcknowledged(change),
+    ScheduleChangeOutcomeKind.confirmed =>
+      l10n.scheduleChangeWentThrough(change),
+    ScheduleChangeOutcomeKind.failed => l10n.scheduleChangeFailedLate(change),
+    ScheduleChangeOutcomeKind.unconfirmed =>
+      l10n.scheduleChangeUnconfirmed(change),
+  };
+}
+
 /// The command label, used for failures rather than an in-progress verb.
 String scheduleChangeCommand(AppLocalizations l10n, ScheduleChangeKind kind) =>
     switch (kind) {
@@ -110,6 +133,18 @@ String scheduleChangeFailureMessage(BuildContext context,
   final l10n = AppLocalizations.of(context)!;
   try {
     final bloc = context.read<ScheduleBloc>();
+    final declined = bloc.lastDeclinedChange;
+    if (declined != null) {
+      return l10n.scheduleChangeReattemptDeclined(
+          scheduleChangeDoneLabel(l10n, declined));
+    }
+    // The change's outcome became known before its screen reported the
+    // error: say how it turned out, once (the calendar then stays quiet).
+    final latest = bloc.latestOutcome;
+    if (latest != null) {
+      bloc.markOutcomeTold(latest.evaluation.id);
+      return scheduleChangeOutcomeMessage(l10n, latest);
+    }
     final evaluation = bloc.activeEvaluation;
     if (evaluation?.phase == ScheduleEvaluationPhase.uncertain) {
       return '${l10n.scheduleChangeUncertain} · '
@@ -123,7 +158,10 @@ String scheduleChangeFailureMessage(BuildContext context,
               .scheduleChangesBlockedBy(scheduleChangeLabel(l10n, evaluation));
     }
     if (bloc.lastChangeUnconfirmed) {
-      return l10n.scheduleChangeHoldEnded;
+      final outcome = bloc.lastOutcome;
+      if (outcome == null) return l10n.scheduleChangeUnconfirmedGeneric;
+      bloc.markOutcomeTold(outcome.evaluation.id);
+      return scheduleChangeOutcomeMessage(l10n, outcome);
     }
   } on ProviderNotFoundException {}
   if (kind != null) {
@@ -157,7 +195,10 @@ String scheduleChangeFailureMessage(BuildContext context,
 bool scheduleChangeRetryAllowed(BuildContext context) {
   try {
     final bloc = context.read<ScheduleBloc>();
-    return !bloc.scheduleChangesBlocked && !bloc.lastChangeUnconfirmed;
+    return !bloc.scheduleChangesBlocked &&
+        !bloc.lastChangeUnconfirmed &&
+        bloc.latestOutcome == null &&
+        bloc.activeEvaluation?.phase != ScheduleEvaluationPhase.uncertain;
   } on ProviderNotFoundException {
     return true;
   }
@@ -326,7 +367,15 @@ class ScheduleEvaluationFeedback extends StatelessWidget {
                   tooltip: l10n.close,
                   icon: const Icon(Icons.close),
                   onPressed:
-                      context.read<ScheduleBloc>().dismissEvaluationFailure)
+                      context.read<ScheduleBloc>().dismissEvaluationFailure),
+            // Hides the card only; the change is still checked and its
+            // outcome still told.
+            if (phase == ScheduleEvaluationPhase.uncertain)
+              IconButton(
+                  key: const ValueKey('scheduleEvaluationDismiss'),
+                  tooltip: l10n.close,
+                  icon: const Icon(Icons.close),
+                  onPressed: context.read<ScheduleBloc>().dismissUncertainty)
           ]),
         ),
       ),
@@ -337,6 +386,116 @@ class ScheduleEvaluationFeedback extends StatelessWidget {
       child: Padding(padding: const EdgeInsets.all(8), child: card),
     );
   }
+}
+
+/// Tells the user how unconfirmed changes turned out, and asks before an
+/// identical change is sent again.
+class ScheduleChangeOutcomeNotices extends StatefulWidget {
+  const ScheduleChangeOutcomeNotices({super.key, required this.child});
+  final Widget child;
+
+  @override
+  State<ScheduleChangeOutcomeNotices> createState() =>
+      _ScheduleChangeOutcomeNoticesState();
+}
+
+class _ScheduleChangeOutcomeNoticesState
+    extends State<ScheduleChangeOutcomeNotices> {
+  ScheduleBloc? _bloc;
+  StreamSubscription<ScheduleChangeOutcome>? _subscription;
+  final Set<Timer> _pending = <Timer>{};
+
+  /// How long an outcome waits for the screen that sent the change to tell
+  /// it first; told by the screen, the calendar skips it.
+  static const Duration _screenFirst = Duration(milliseconds: 250);
+  late final Future<bool> Function(ScheduleEvaluation) _confirm = _ask;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    ScheduleBloc? bloc;
+    try {
+      bloc = context.read<ScheduleBloc>();
+    } on ProviderNotFoundException {
+      bloc = null;
+    }
+    if (identical(bloc, _bloc)) return;
+    _release();
+    _bloc = bloc;
+    if (bloc == null) return;
+    _subscription = bloc.outcomes.listen(_tell);
+    bloc.confirmReattempt = _confirm;
+  }
+
+  void _release() {
+    unawaited(_subscription?.cancel());
+    _subscription = null;
+    final bloc = _bloc;
+    if (bloc != null && identical(bloc.confirmReattempt, _confirm)) {
+      bloc.confirmReattempt = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final timer in _pending) {
+      timer.cancel();
+    }
+    _pending.clear();
+    _release();
+    super.dispose();
+  }
+
+  void _tell(ScheduleChangeOutcome outcome) {
+    late final Timer timer;
+    timer = Timer(_screenFirst, () {
+      _pending.remove(timer);
+      _show(outcome);
+    });
+    _pending.add(timer);
+  }
+
+  void _show(ScheduleChangeOutcome outcome) {
+    if (!mounted) return;
+    final bloc = _bloc;
+    if (bloc != null && bloc.outcomeTold(outcome.evaluation.id)) return;
+    bloc?.markOutcomeTold(outcome.evaluation.id);
+    final message =
+        scheduleChangeOutcomeMessage(AppLocalizations.of(context)!, outcome);
+    final bus = ScheduleNoticeBus.maybeOf(context);
+    if (bus != null) {
+      bus.interrupt(context, message);
+    } else {
+      // The newest outcome replaces one still showing.
+      ScaffoldMessenger.maybeOf(context)
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
+
+  Future<bool> _ask(ScheduleEvaluation unconfirmed) async {
+    if (!mounted) return false;
+    final l10n = AppLocalizations.of(context)!;
+    final again = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+              title: Text(l10n.scheduleChangeReattemptTitle),
+              content: Text(l10n.scheduleChangeReattemptBody(
+                  scheduleChangeDoneLabel(l10n, unconfirmed))),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    child: Text(l10n.cancel)),
+                TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    child: Text(l10n.scheduleChangeReattemptConfirm)),
+              ],
+            ));
+    return again ?? false;
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// Publishes the evaluation card to the calendar's top slot for as long as

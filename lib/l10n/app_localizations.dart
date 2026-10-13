@@ -7370,11 +7370,59 @@ abstract class AppLocalizations {
   /// **'Confirmation unavailable'**
   String get scheduleChangeUncertain;
 
-  /// No description provided for @scheduleChangeHoldEnded.
+  /// An unconfirmed schedule change was followed by a changed schedule; it may have applied. {change} is e.g. 'Complete · Gym'.
   ///
   /// In en, this message translates to:
-  /// **'The previous schedule change could not be confirmed. Check your schedule before making another change.'**
-  String get scheduleChangeHoldEnded;
+  /// **'Your schedule was updated after {change}. Check that it looks right.'**
+  String scheduleChangeAcknowledged(String change);
+
+  /// A late confirmation arrived for a schedule change whose outcome was unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} went through.'**
+  String scheduleChangeWentThrough(String change);
+
+  /// A late refusal arrived for a schedule change whose outcome was unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} failed.'**
+  String scheduleChangeFailedLate(String change);
+
+  /// The time to confirm a schedule change ran out with no answer either way.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t confirm {change}. Check your schedule.'**
+  String scheduleChangeUnconfirmed(String change);
+
+  /// As scheduleChangeUnconfirmed, when the change can't be named.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t confirm your last schedule change. Check your schedule.'**
+  String get scheduleChangeUnconfirmedGeneric;
+
+  /// Title of the question asked before repeating a schedule change that may already have applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Send again?'**
+  String get scheduleChangeReattemptTitle;
+
+  /// Asked before repeating a schedule change whose outcome is still unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} may already have gone through. Send it again?'**
+  String scheduleChangeReattemptBody(String change);
+
+  /// Button that repeats the schedule change.
+  ///
+  /// In en, this message translates to:
+  /// **'Send again'**
+  String get scheduleChangeReattemptConfirm;
+
+  /// Shown after the user chose not to repeat a schedule change.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} wasn\'t sent again.'**
+  String scheduleChangeReattemptDeclined(String change);
 
   /// No description provided for @scheduleChangeAdding.
   ///

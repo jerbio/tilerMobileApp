@@ -4256,8 +4256,44 @@ class AppLocalizationsNl extends AppLocalizations {
   String get scheduleChangeUncertain => 'Bevestiging niet beschikbaar';
 
   @override
-  String get scheduleChangeHoldEnded =>
-      'De vorige wijziging van de planning kon niet worden bevestigd. Controleer je planning voordat je nog een wijziging aanbrengt.';
+  String scheduleChangeAcknowledged(String change) {
+    return 'Je planning is bijgewerkt na $change. Controleer of alles klopt.';
+  }
+
+  @override
+  String scheduleChangeWentThrough(String change) {
+    return '$change is gelukt.';
+  }
+
+  @override
+  String scheduleChangeFailedLate(String change) {
+    return '$change is mislukt.';
+  }
+
+  @override
+  String scheduleChangeUnconfirmed(String change) {
+    return '$change kon niet worden bevestigd. Controleer je planning.';
+  }
+
+  @override
+  String get scheduleChangeUnconfirmedGeneric =>
+      'Je laatste wijziging van de planning kon niet worden bevestigd. Controleer je planning.';
+
+  @override
+  String get scheduleChangeReattemptTitle => 'Opnieuw verzenden?';
+
+  @override
+  String scheduleChangeReattemptBody(String change) {
+    return '$change is mogelijk al gelukt. Opnieuw verzenden?';
+  }
+
+  @override
+  String get scheduleChangeReattemptConfirm => 'Opnieuw verzenden';
+
+  @override
+  String scheduleChangeReattemptDeclined(String change) {
+    return '$change is niet opnieuw verzonden.';
+  }
 
   @override
   String get scheduleChangeAdding => 'Afspraak toevoegen';

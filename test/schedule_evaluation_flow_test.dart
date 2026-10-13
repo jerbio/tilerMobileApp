@@ -408,8 +408,9 @@ void main() {
     await expectLater(pending, throwsStateError);
   });
 
-  test('a recovered account lock prevents the first new write from being sent',
-      () async {
+  test(
+      'a recovered unconfirmed write is checked in the background and does '
+      'not block the first new write', () async {
     final store = await ScheduleEvaluationStore.load();
     await store.write('user', interrupted().toRecord());
     final scoped =
@@ -418,14 +419,16 @@ void main() {
     final inner = ControlledClient((_) async => response());
     final client =
         RetryHttpClient(scheduleLifecycle: () => scoped, innerClient: inner);
-    await expectLater(scoped.runScheduleChange(() {
+    await scoped.runScheduleChange(() {
       scoped.bindEvaluationAccount('user');
       return client.post(Uri.https('example.test', 'api/Schedule/Revise'));
-    }), throwsA(isA<ScheduleChangeBlocked>()));
-    expect(inner.requests, isEmpty);
-    expect(scoped.activeEvaluation!.id, 'interrupted');
-    expect(scoped.activeEvaluation!.kind, ScheduleChangeKind.delete);
-    expect(scoped.activeEvaluation!.phase, ScheduleEvaluationPhase.uncertain);
+    });
+    expect(inner.requests, hasLength(1));
+    expect(scoped.activeEvaluation, isNull);
+    final unresolved = scoped.unresolvedChanges.single;
+    expect(unresolved.id, 'interrupted');
+    expect(unresolved.kind, ScheduleChangeKind.delete);
+    expect(unresolved.phase, ScheduleEvaluationPhase.uncertain);
     client.close();
     await scoped.close();
   });
@@ -465,7 +468,8 @@ void main() {
       bloc.add(GetScheduleEvent(forceRefresh: true));
       await flush();
       expect((bloc.state as ScheduleEvaluationState).evaluation!.phase, phase);
-      expect(bloc.scheduleChangesBlocked, status != 400);
+      // Neither a refusal nor an unknown outcome holds other writes back.
+      expect(bloc.scheduleChangesBlocked, isFalse);
       expect(inner.requests.length, 1);
       client.close();
     });
@@ -539,7 +543,8 @@ void main() {
     bloc.revisions.recover();
     bloc.add(GetScheduleEvent(forceRefresh: true));
     await flush();
-    expect(bloc.scheduleChangesBlocked, isTrue);
+    expect(bloc.activeEvaluation!.phase, ScheduleEvaluationPhase.uncertain);
+    expect(bloc.scheduleChangesBlocked, isFalse);
     expect(inner.requests.length, 1);
     wire.complete(response());
     await flush();
@@ -602,7 +607,7 @@ void main() {
     expect(restored.activeEvaluation, isNull);
     await flush();
     expect(restored.activeEvaluation!.kind, ScheduleChangeKind.delete);
-    expect(restored.scheduleChangesBlocked, isTrue);
+    expect(restored.scheduleChangesBlocked, isFalse);
     expect(restored.activeEvaluation!.phase, ScheduleEvaluationPhase.uncertain);
     expect(restored.activeEvaluation!.startedAt.millisecondsSinceEpoch,
         record.startedAt.millisecondsSinceEpoch);
@@ -971,13 +976,16 @@ void main() {
     final l10n = lookupAppLocalizations(const Locale('en'));
     expect(find.textContaining(l10n.scheduleChangeUncertain), findsOneWidget);
     expect(find.text(l10n.scheduleChangeFailed), findsNothing);
-    expect(bloc.scheduleChangesBlocked, isTrue);
+    expect(bloc.scheduleChangesBlocked, isFalse);
     now = now.add(const Duration(minutes: 4));
     bloc.refreshEvaluationSchedule();
     await tester.pump();
     await tester.pump();
     expect(bloc.scheduleChangesBlocked, isFalse);
-    expect(find.text(l10n.scheduleChangeHoldEnded), findsOneWidget);
+    expect(
+        find.text(l10n.scheduleChangeUnconfirmed(
+            '${l10n.reOptimizeChip} · ${l10n.scheduleChangeTargetSchedule}')),
+        findsOneWidget);
     expect(find.text(l10n.scheduleChangeFailed), findsNothing);
     client.close();
     await tester.pumpWidget(const SizedBox.shrink());

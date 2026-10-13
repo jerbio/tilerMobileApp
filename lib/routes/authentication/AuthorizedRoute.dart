@@ -8,7 +8,7 @@ import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
-import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
@@ -510,13 +510,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
         BlocListener<ScheduleBloc, ScheduleState>(
           listener: (context, state) {
-            if (state is ScheduleEvaluationReleasedState) {
-              NotificationOverlayMessage().showToast(
-                context,
-                AppLocalizations.of(context)!.scheduleChangeHoldEnded,
-                NotificationOverlayMessageType.info,
-              );
-            }
             if (state is ScheduleLoadingState || state is ScheduleLoadedState) {
               final previewSummaryBloc =
                   BlocProvider.of<PreviewSummaryBloc>(context);
@@ -540,10 +533,12 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       child: TourHost(
         tourId: TourPreferencesHelper.homeTourId,
         stepCount: kTutorialStepCount,
-        child:
-            BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
-          return renderAuthorizedUserPageView();
-        }),
+        child: ScheduleChangeOutcomeNotices(
+          child: BlocBuilder<ScheduleBloc, ScheduleState>(
+              builder: (context, state) {
+            return renderAuthorizedUserPageView();
+          }),
+        ),
       ),
     );
   }

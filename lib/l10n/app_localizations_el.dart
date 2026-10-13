@@ -4280,8 +4280,44 @@ class AppLocalizationsEl extends AppLocalizations {
   String get scheduleChangeUncertain => 'Η επιβεβαίωση δεν είναι διαθέσιμη';
 
   @override
-  String get scheduleChangeHoldEnded =>
-      'Η προηγούμενη αλλαγή στο πρόγραμμα δεν μπόρεσε να επιβεβαιωθεί. Έλεγξε το πρόγραμμά σου πριν κάνεις άλλη αλλαγή.';
+  String scheduleChangeAcknowledged(String change) {
+    return 'Το πρόγραμμά σου ενημερώθηκε μετά από $change. Έλεγξε ότι είναι σωστό.';
+  }
+
+  @override
+  String scheduleChangeWentThrough(String change) {
+    return 'Ολοκληρώθηκε: $change.';
+  }
+
+  @override
+  String scheduleChangeFailedLate(String change) {
+    return 'Απέτυχε: $change.';
+  }
+
+  @override
+  String scheduleChangeUnconfirmed(String change) {
+    return 'Δεν ήταν δυνατή η επιβεβαίωση: $change. Έλεγξε το πρόγραμμά σου.';
+  }
+
+  @override
+  String get scheduleChangeUnconfirmedGeneric =>
+      'Δεν ήταν δυνατή η επιβεβαίωση της τελευταίας αλλαγής στο πρόγραμμα. Έλεγξε το πρόγραμμά σου.';
+
+  @override
+  String get scheduleChangeReattemptTitle => 'Αποστολή ξανά;';
+
+  @override
+  String scheduleChangeReattemptBody(String change) {
+    return 'Μπορεί να έχει ήδη γίνει: $change. Να σταλεί ξανά;';
+  }
+
+  @override
+  String get scheduleChangeReattemptConfirm => 'Αποστολή ξανά';
+
+  @override
+  String scheduleChangeReattemptDeclined(String change) {
+    return 'Δεν στάλθηκε ξανά: $change.';
+  }
 
   @override
   String get scheduleChangeAdding => 'Προσθήκη συμβάντος';

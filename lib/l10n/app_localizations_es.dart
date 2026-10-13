@@ -4256,8 +4256,44 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scheduleChangeUncertain => 'Confirmación no disponible';
 
   @override
-  String get scheduleChangeHoldEnded =>
-      'No se pudo confirmar el cambio anterior. Revisa tu horario antes de hacer otro cambio.';
+  String scheduleChangeAcknowledged(String change) {
+    return 'Tu horario se actualizó después de $change. Comprueba que esté bien.';
+  }
+
+  @override
+  String scheduleChangeWentThrough(String change) {
+    return '$change se completó.';
+  }
+
+  @override
+  String scheduleChangeFailedLate(String change) {
+    return '$change falló.';
+  }
+
+  @override
+  String scheduleChangeUnconfirmed(String change) {
+    return 'No se pudo confirmar $change. Revisa tu horario.';
+  }
+
+  @override
+  String get scheduleChangeUnconfirmedGeneric =>
+      'No se pudo confirmar tu último cambio de horario. Revisa tu horario.';
+
+  @override
+  String get scheduleChangeReattemptTitle => '¿Enviar de nuevo?';
+
+  @override
+  String scheduleChangeReattemptBody(String change) {
+    return 'Es posible que $change ya se haya aplicado. ¿Enviarlo de nuevo?';
+  }
+
+  @override
+  String get scheduleChangeReattemptConfirm => 'Enviar de nuevo';
+
+  @override
+  String scheduleChangeReattemptDeclined(String change) {
+    return '$change no se volvió a enviar.';
+  }
 
   @override
   String get scheduleChangeAdding => 'Añadiendo evento';

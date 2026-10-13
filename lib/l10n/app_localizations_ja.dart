@@ -4135,8 +4135,44 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scheduleChangeUncertain => '確認できません';
 
   @override
-  String get scheduleChangeHoldEnded =>
-      '前のスケジュール変更を確認できませんでした。次の変更を行う前に、スケジュールを確認してください。';
+  String scheduleChangeAcknowledged(String change) {
+    return '$changeの後にスケジュールが更新されました。内容を確認してください。';
+  }
+
+  @override
+  String scheduleChangeWentThrough(String change) {
+    return '$changeが完了しました。';
+  }
+
+  @override
+  String scheduleChangeFailedLate(String change) {
+    return '$changeに失敗しました。';
+  }
+
+  @override
+  String scheduleChangeUnconfirmed(String change) {
+    return '$changeを確認できませんでした。スケジュールを確認してください。';
+  }
+
+  @override
+  String get scheduleChangeUnconfirmedGeneric =>
+      '直前のスケジュール変更を確認できませんでした。スケジュールを確認してください。';
+
+  @override
+  String get scheduleChangeReattemptTitle => 'もう一度送信しますか？';
+
+  @override
+  String scheduleChangeReattemptBody(String change) {
+    return '$changeはすでに反映されている可能性があります。もう一度送信しますか？';
+  }
+
+  @override
+  String get scheduleChangeReattemptConfirm => 'もう一度送信';
+
+  @override
+  String scheduleChangeReattemptDeclined(String change) {
+    return '$changeは再送信されませんでした。';
+  }
 
   @override
   String get scheduleChangeAdding => '予定を追加中';

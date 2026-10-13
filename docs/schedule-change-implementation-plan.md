@@ -24,6 +24,7 @@ Status keys:
 | 1 | Repair the 6 grid drag-gesture tests | 1 Stabilize | ⏸ | 6 failures → 25 passing | n/a | ☐ | — |
 | 2 | Network loss mid-request shows *uncertain*, not *failed* | 1 Stabilize | ◐ | 12 transport tests passing | pending fault injection | ☐ | — |
 | 3 | Every blocked path tells the user why | 1 Stabilize | ◐ | 5 path tests + existing notice tests passing | pending | ☐ | — |
+| 10 | Uncertainty informs but no longer locks the app | 1 Stabilize | ⏸ | 14 red → 15 passing; 7 contract tests updated; told-once follow-up 4 red → 5 passing; background follow-up 1 red → passing | pending (L3′, L6′, L9, L10) | ☐ | — |
 | 4 | Device verification pass | 2 Verify | ◐ | n/a | staging smoke pass; matrix open | ☐ | — |
 | 5 | Translations and string review | 3 Polish | ◐ | 8 locale coverage tests passing | pending; native review open | ☐ | — |
 | 6 | Retire `userDrag`, retain current motion | 3 Polish | ◐ | grid attribution + tracker/summary tests passing | pending | decision approved; diff review open | — |
@@ -33,7 +34,7 @@ Status keys:
 
 Order:
 
-- Steps 1–3 come before the device pass, so it tests the finished behaviour.
+- Steps 1–3 and 10 come before the device pass, so it tests the finished behaviour. Step 10 was added on October 12 and is listed after Step 3.
 - Steps 5–8 are independent of each other and can be reordered.
 - Step 9 is last.
 
@@ -228,6 +229,128 @@ Each shows the "Finish the current schedule change (…)" notice where you're lo
 | Date | Feedback | Action |
 |---|---|---|
 | | | |
+
+---
+
+#### Step 10 — Uncertainty informs but no longer locks the app
+
+Added October 12, 2026 at your request. It runs after Step 3 and before the Step 4 device pass, because it changes what L2, L3 and L6 expect.
+
+**Goal.** When a write's outcome is unknown, the user is told exactly as today, and is free to use the rest of the app. That includes starting another schedule change.
+
+- The app keeps checking, by reads only, whether the schedule changed, and acknowledges the change when it sees it.
+- The uncertainty card can be dismissed.
+- The unconfirmed request is never resent. Only the user can try again, as a new request.
+
+**Evidence (current behaviour at `d62a505a`).**
+
+- `ScheduleEvaluation.blocksChanges` is true for *pending and uncertain*. An uncertain write therefore refuses every other schedule write until it is confirmed, the revision changes, or the 180 s deadline passes.
+- The uncertain card has Refresh but no close button. Only *failed* has one (`dismissEvaluationFailure`).
+- Nothing polls by itself while a write is uncertain. A revision is only re-checked:
+  - on Refresh, app resume or connectivity recovery;
+  - in the short 0.5 / 1 / 2 s retry burst after a *successful* change.
+- The release notice says "Check your schedule before making another change", which no longer fits once uncertainty stops blocking.
+
+**Behaviour to build.**
+
+| # | Rule |
+|---|---|
+| U1 | **Same communication.** The uncertain card keeps its title ("Confirmation unavailable"), action and target ("Completing · Gym"), explanation and Refresh button. Screens that started the write still get the uncertain message, never "failed" and never a Retry button. |
+| U2 | **No lock while uncertain.** Only *pending* blocks other writes. Reads, navigation, editing drafts and new schedule writes all proceed while a write is uncertain. |
+| U3 | **A new write while uncertain.** <ul><li>It always fetches a fresh baseline first. That fetch is also a reconciliation check, so a changed revision acknowledges the old write before the new one starts.</li><li>If the old write is still unresolved, it moves to the background: its baseline, start time, deadline and live response listener are kept, and the card switches to the new pending write.</li><li>The background write keeps reconciling, and its outcome arrives as a notice (U5, U6, U9).</li></ul> |
+| U4 | **Active reconciliation, reads only.** <ul><li>On becoming uncertain, check the schedule status immediately.</li><li>Then every 5 s for the first 30 s, then every 15 s until the deadline.</li><li>Also check on app resume, connectivity recovery and Refresh.</li><li>Pause while the app is in the background or offline. Only one check runs at a time.</li></ul> |
+| U5 | **Acknowledge a changed schedule.** When a status observed after the write started differs from its baseline: <ul><li>load the new schedule (the existing revision-driven read);</li><li>clear the card;</li><li>play the change as that write's change (the cause is kept, not withdrawn);</li><li>show a short notice: *"Your schedule was updated after Completing · Gym. Check that it looks right."*</li></ul>This acknowledges the update without claiming the request succeeded. |
+| U6 | **Late answers still count.** A late 2xx settles the write with a brief *"Completing · Gym went through"* and a refresh. A late 4xx shows *"Completing · Gym failed"* (dismissible). This applies to background writes too. |
+| U7 | **Dismissible.** The uncertain card gets a close (×) button. <ul><li>Dismissing hides only the card. Reconciliation continues, and U5, U6 and U9 notices still appear.</li><li>The dismissal is remembered for that request, including after a restart, so the card doesn't reappear for it.</li><li>The top slot is then free for other notices, such as "N Tiles moving".</li></ul> |
+| U8 | **Never resend.** No automatic retry, ever, including after reconnecting or restarting. A user re-tap is a new request with its own admission. |
+| U9 | **Deadline.** At 180 s from the original start: <ul><li>polling stops;</li><li>the card (if shown) clears;</li><li>the notice reads *"Couldn't confirm Completing · Gym. Check your schedule."*</li></ul>The cause is withdrawn so a later revision plays as a background refresh, and the next write still fetches a fresh baseline. |
+| U10 | **Restart.** A restored uncertain write doesn't lock either. It resumes polling for its *remaining* time and keeps its dismissed state. |
+
+**Decisions (approved October 12, 2026).**
+
+1. **Re-attempting the same action on the same tile while it is unresolved.** Approved: ask first, with *"Completing Gym may already have gone through. Complete it again?"* (Cancel / Complete again).
+2. **Polling cadence.** Approved: 5 s for the first 30 s, then 15 s until the deadline, as status-only reads.
+3. **Unresolved writes kept in the background.** Approved: up to 3, oldest released first with the U9 notice. The journal changes from one record to a list.
+
+**Red (tests to write first).** Add these to `schedule_evaluation_flow_test.dart`, or a new `schedule_uncertain_unlock_test.dart`:
+
+1. Uncertain doesn't block: `scheduleChangesBlocked` is false, and a second write is admitted and sent.
+2. Pending still blocks: a second write is refused with the "Finish the current schedule change (…)" notice.
+3. A new write while uncertain fetches a fresh baseline first. A changed revision acknowledges the old write before the new one is reserved.
+4. A superseded uncertain write keeps reconciling. A later late 2xx or changed revision produces its notice without disturbing the new pending card.
+5. Polling: on entering uncertain, a status check runs at once and then on the agreed cadence (fake clock). It stops at the deadline, on acknowledgement and on a late answer, and pauses while suspended.
+6. Polling never sends a mutation. The request count to every mutation endpoint stays at 1 across polls, reconnects and restarts.
+7. A changed revision during polling refreshes the schedule, clears the card and shows the acknowledgement notice. The change is attributed to the write: `ScheduleChange.attribution.origin` is `userComplete` for a Complete.
+8. Deadline: the notice shows, polling stops, the cause is withdrawn, and the next write fetches a fresh baseline.
+9. Dismiss: the × hides the card, polling continues, a later acknowledgement still shows its notice, and the card stays hidden after a rebuild and after a restart.
+10. Screens that started the write show the uncertain message, never "failed" and never Retry.
+11. (Decision 1) Re-tapping the same action on the same unresolved tile asks first. Cancel sends nothing; confirm sends exactly one new request.
+12. Restart with a stored uncertain write: no lock, polling resumes with the remaining time, dismissed state kept.
+
+Existing tests that assert uncertain blocks writes are updated to the new contract, and each such change is listed at review.
+
+**Green (outline).**
+
+- `ScheduleEvaluation.blocksChanges` becomes true for `pending` only.
+- `ScheduleBloc`:
+  - keeps a small list of unresolved writes alongside the active evaluation;
+  - forces a fresh baseline when admitting a write while any is unresolved;
+  - a reconciliation timer drives `ScheduleRevisionCubit` status checks on the U4 cadence, and reuses its suspend and resume;
+  - the release path splits into acknowledged (revision changed or late 2xx), failed (late 4xx) and unconfirmed (deadline).
+- Journal: a list of records, with a `dismissed` flag on each.
+- `ScheduleEvaluationFeedback`: a close button in the uncertain phase, calling a new `dismissUncertainty()`.
+- `ScheduleNoticeBus`: the acknowledgement, late-answer and deadline notices.
+- New strings in all 9 locales:
+  - acknowledged;
+  - went through;
+  - failed late;
+  - couldn't confirm;
+  - the re-attempt confirmation.
+- `scheduleChangeHoldEnded` is retired, because it tells the user not to make another change.
+
+**Logging.**
+
+| Event | Fields |
+|---|---|
+| `reconcile_scheduled` / `reconcile_attempt` | `requestId`, `attempt`, `delayMs`, `remainingMs` |
+| `mutation_acknowledged` | `reason`: `revision_changed` or `late_response` |
+| `mutation_superseded` | old and new request ids, and whether the baseline fetch changed |
+| `uncertain_dismissed` | `requestId` |
+| `mutation_released_unconfirmed` | `reason: deadline_expired` (existing) |
+| `mutation_blocked` | must never appear with `activePhase: uncertain` |
+
+**Device check.**
+
+- **L3′.** Complete a tile, then go offline before the response. The uncertain card appears.
+  1. Dismiss it.
+  2. Complete a different tile: it is admitted.
+  3. Reconnect. The first write is acknowledged or confirmed by notice.
+  4. Logs show exactly one request per tap, with `reconcile_attempt` lines between them.
+- **L6′.** Use a short timeout, keep the server's schedule unchanged, and wait past it. The "Couldn't confirm" notice appears, and the app was usable throughout.
+- **L9 (new).** While uncertain, re-tap Complete on the same tile. The confirmation is asked, and Cancel sends nothing.
+
+**Review checklist.**
+
+- Wording of the new notices and the confirmation.
+- The polling cadence.
+- The behaviour when a new write supersedes an uncertain one.
+- No path resends a request.
+
+**Done when.**
+
+- Tests 1–12 pass, and the full suite is at baseline, with every changed existing test listed.
+- `docs/schedule-operation-ui-flow-plan.md` is updated to the new contract.
+- The device checks pass.
+
+**Feedback log.**
+
+| Date | Feedback | Action |
+|---|---|---|
+| 2026-10-12 | Uncertain should communicate as before but not lock the app; actively re-check for a schedule change and acknowledge it; make the card dismissible; never resend, only the user re-attempts. | Step 10 added. |
+| 2026-10-12 | Decisions: ask before re-attempting the same action; re-check at 5 s for 30 s then 15 s; keep up to 3 unresolved writes. | Recorded; red tests can start. |
+| 2026-10-12 | Implementation. | Red: 14 of 15 new tests failed for the intended reasons (lock still applied, no re-reads, repeat blocked instead of asked, no close button, no outcome notices, Retry offered while uncertain); the 15th (pending still blocks) is a compatibility check. Green: all 15 pass, stable over 5 runs; full suite 2369 passed, 4 skipped, 0 failed. Awaiting review. |
+| 2026-10-12 | The "not sure" message arrives before the schedule is checked, so two messages sometimes come back to back. | Confirmed on device: uncertain and acknowledged in the same millisecond (22:12:53.546, 22:21:59.737). Fixed by checking once before telling; see "Told once" below. |
+| 2026-10-12 | The sequence still occurred after Start Now (screenshots at 10:40 and 10:41). | Device log: the app was backgrounded at 22:40:38, Android aborted its connection at 22:40:42 ("Software caused connection abort"), and the check before telling timed out while the app was away (22:40:45), so "unconfirmed" was decided then; the change was seen at 22:41:03. Fix: decide only once the app is back in the foreground; see "Background" below. |
 
 ---
 
@@ -493,6 +616,9 @@ When filing a finding, include:
 | 2026-10-11 | working tree on `c97e2b69` | 2341 | 4 | 0 | none |
 | 2026-10-11 | working tree with app feedback follow-up | 2352 | 4 | 0 | none |
 | 2026-10-11 | pre-commit snapshot including blocked Shuffle fix | 2354 | 4 | 0 | none |
+| 2026-10-12 | working tree on `d62a505a` with Step 10 | 2369 | 4 | 0 | none (15 new tests; same 4 skips) |
+| 2026-10-12 | Step 10 with the told-once follow-up | 2374 | 4 | 0 | none (5 more tests; same 4 skips) |
+| 2026-10-12 | plus the background follow-up | 2375 | 4 | 0 | none (1 more test; same 4 skips) |
 
 ## 6. Execution record — October 11, 2026
 
@@ -523,3 +649,78 @@ The preview sheet's Shuffle button bypassed the UI admission guard: it dispatche
 The user explicitly approved committing the relevant changes for branch testing. The snapshot includes schedule lifecycle and motion fixes, action-specific app feedback, translations, regression tests and related documentation. Generated platform/plugin files, unrelated drafts, local build evidence, `pubspec.lock` and constants are excluded. No push, PR publication or merge is authorized by this commit request.
 
 Final pre-commit validation: **2354 passed, 4 existing skips, 0 failed**. Analysis of 57 targets has no errors and 23 existing warning/info findings; the wider scope includes unchanged notification/API code and test imports. Evidence: `pre-commit-full-suite.txt` and `pre-commit-analyze.txt`. This snapshot remains subject to the device, translation, accessibility/performance/platform and backend checks above.
+
+### Step 10 — uncertainty no longer locks (October 12, 2026)
+
+Evidence: [`build/schedule-change-verification/2026-10-12/`](../build/schedule-change-verification/2026-10-12/) (`uncertain-unlock-red.txt`, `uncertain-unlock-green.txt`, `uncertain-unlock-full-suite.txt`, `uncertain-unlock-analyze.txt`). Git ignores this folder.
+
+**What changed**
+
+- `ScheduleEvaluation.blocksChanges` is true for *pending* only. The new `awaitsOutcome` (pending or uncertain) drives deadlines and account pinning.
+- `ScheduleBloc`:
+  - keeps unconfirmed writes in a background list (cap 3, oldest let go with a notice);
+  - re-reads the status on the agreed cadence with its own cancellable timers, paused and resumed by the recovery monitor;
+  - re-reads before admitting a write while anything is unconfirmed;
+  - asks `confirmReattempt` before repeating the same kind on the same tile (declining throws `ScheduleChangeDeclined` and sends nothing);
+  - publishes `outcomes`: acknowledged, confirmed, failed or unconfirmed.
+- Journal: background writes are stored under `<account>#background`, so dismissed writes stay hidden after a restart. A restored write found while another is in flight joins the background instead of replacing it.
+- UI:
+  - the uncertainty card has a close button (`dismissUncertainty`);
+  - `ScheduleChangeOutcomeNotices` (in AuthorizedRoute) shows outcomes through the notice bus and provides the re-attempt dialog;
+  - Retry stays hidden while the active write is uncertain.
+- Strings: 9 new keys in all 9 locales. `scheduleChangeHoldEnded` is retired, because it told users not to make another change.
+
+**Existing tests changed to the new contract** (no assertion loosened beyond the lock):
+
+1. `HTTP 408/500 retains failure or uncertainty across reads`: `scheduleChangesBlocked` is false for 408/500 (was true).
+2. `timeout and unchanged revision retain uncertainty…`: the phase stays uncertain; `scheduleChangesBlocked` is false (was true).
+3. `a recovered account lock prevents the first new write from being sent` is renamed `a recovered unconfirmed write is checked in the background and does not block the first new write`: the write is sent and the restored one is in `unresolvedChanges`.
+4. `restart restores an interrupted request as uncertain…`: `scheduleChangesBlocked` is false (was true).
+5. `local failure feedback distinguishes an uncertain response`: not blocked while uncertain; after the deadline the message names the change ("Couldn't confirm Re-optimize · Your schedule…") instead of the retired text.
+6. `operation_feedback_test` `an expired unconfirmed change does not offer replay`: expects the unnamed fallback `scheduleChangeUnconfirmedGeneric`; still no Retry.
+
+**Found while implementing**
+
+- A re-check finishing while the bloc closed could schedule another timer. A closing flag now stops it.
+- The re-check's status read used `Future.timeout`, whose timer the bloc could not cancel. It now uses its own timer, cancelled on close.
+
+**Open**
+
+- Device checks L3′, L6′ and L9 (Step 10), and L2/L3/L6 re-run under the new contract (Step 4).
+- The uncertainty body text still ends "This hold will end automatically", kept as agreed ("communication as before"). It may read oddly now that nothing is held.
+- The new strings in de, el, fr, it, ja, nl and pt are machine-written and need the native review (Step 5).
+
+#### Told once (follow-up, October 12, 2026)
+
+**Problem.** When a write's outcome became unknown, the card and the screen that sent the write said "Confirmation unavailable" straight away. The first schedule read then often showed the change had applied (a read during the write had already seen it), so "Your schedule was updated…" followed immediately. The device logs show the two in the same millisecond.
+
+**Change.**
+
+- On an unknown outcome the bloc first reads the schedule once, bounded by `uncertaintyGrace` (3 s). Meanwhile the card keeps showing the action in progress.
+  - If the schedule changed, the write is only acknowledged.
+  - Otherwise the card turns to "unconfirmed" and the re-checks continue on the cadence (without repeating the read just made).
+- The screen that sent the write waits for that verdict before it hears the error.
+- The shared message helper tells the latest write's outcome (acknowledged, or gone through for a late 2xx during the check) and marks it told.
+- The calendar's outcome notice waits 250 ms and skips an outcome a screen already told. Retry is hidden once an outcome is known.
+- New log events: `mutation_confirming` (the check started; `mutation_uncertain` follows only if it stays unknown) and `mutation_confirm_read_failed`.
+
+**Tests.** Five new tests in the "told once" group. Four were red first:
+
+1. the caller hears before the check, and the card shows uncertain early;
+2. an already-applied change is acknowledged only;
+3. a late 2xx during the check is told as gone through;
+4. the screen's message and the calendar notice are not both shown.
+
+The fifth, that the check is bounded, is a compatibility check. The existing test "outcomes are told to the user" now uses one write per outcome, because a write resolves only once.
+
+**Device check (L10).** Complete or re-optimize on a flaky connection. Expect one message per change: either "Confirmation unavailable" followed later by an outcome, or only "Your schedule was updated…".
+
+#### Background (follow-up, October 12, 2026)
+
+**Problem.** Android drops an app's connections a few seconds after it leaves the foreground. A schedule change sent just before the user switched away was cut off ("Software caused connection abort", after the server had applied it). The check before telling then ran while the app was still away; its read could not get through and timed out, so "unconfirmed" was decided. The change was acknowledged on return, giving the user two messages. The device log shows this for both Complete (22:39:01 paused, 22:39:06 abort) and Start Now (22:40:38, 22:40:42).
+
+**Change.** If the outcome becomes unknown while re-checking is paused (the app is away or offline), the check waits until the app is back (`mutation_confirm_waiting_foreground`), bounded by the write's deadline. The card keeps the action in progress, and the sending screen waits for the verdict. On return the schedule is read once and the user is told once.
+
+**Test.** "a change cut off while the app is in the background is checked when it returns, and told once": red (decided while away), then green. Full suite: 2375 passed, 4 skipped, 0 failed.
+
+**Not addressed (separate decision).** The request itself is still lost when Android drops the connection. Keeping it alive in the background would need platform work (for example a short foreground task while a schedule change is in flight). That would avoid the uncertainty entirely in this case.
