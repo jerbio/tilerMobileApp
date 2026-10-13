@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_diagnostics.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/accessManager.dart';
@@ -20,6 +21,37 @@ import '../localAuthentication.dart';
 import 'package:async/async.dart'; // Import necessary packages.
 
 import '../../constants.dart' as Constants;
+
+/// The server answered with something other than JSON (an error page from
+/// a gateway, or a server still starting).
+class ScheduleServerUnavailable extends TilerError {
+  ScheduleServerUnavailable({required this.status, this.contentType})
+      : super(Message: 'The server is unavailable (HTTP $status).');
+  final int status;
+  final String? contentType;
+}
+
+/// Decodes a schedule response, telling an unavailable server apart from a
+/// malformed answer.
+Map<String, dynamic> decodeServerJson(Response response,
+    {required String operation}) {
+  Object? decoded;
+  try {
+    decoded = jsonDecode(response.body);
+  } on FormatException {
+    decoded = null;
+  }
+  if (decoded is Map<String, dynamic>) return decoded;
+  final contentType = response.headers['content-type']?.split(';').first.trim();
+  // Status and content type only: never the body.
+  scheduleFlowLog('server_unavailable', fields: {
+    'operation': operation,
+    'status': response.statusCode,
+    'contentType': contentType,
+  });
+  throw ScheduleServerUnavailable(
+      status: response.statusCode, contentType: contentType);
+}
 
 abstract class AppApi {
   static const String _analyzePath = 'api/Analysis/Analyze';

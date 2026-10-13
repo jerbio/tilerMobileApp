@@ -1286,6 +1286,7 @@
   "scheduleChangeWentThrough": "{change} is gelukt.",
   "scheduleChangeFailedLate": "{change} is mislukt.",
   "scheduleChangeUnconfirmed": "{change} kon niet worden bevestigd. Controleer je planning.",
+  "scheduleChangeNotSent": "Tiler was niet bereikbaar, dus {change} is niet verzonden. Probeer het opnieuw.",
   "scheduleChangeUnconfirmedGeneric": "Je laatste wijziging van de planning kon niet worden bevestigd. Controleer je planning.",
   "scheduleChangeReattemptTitle": "Opnieuw verzenden?",
   "scheduleChangeReattemptBody": "{change} is mogelijk al gelukt. Opnieuw verzenden?",

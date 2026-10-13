@@ -4298,6 +4298,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String scheduleChangeNotSent(String change) {
+    return 'Tiler war nicht erreichbar, daher wurde $change nicht gesendet. Versuche es erneut.';
+  }
+
+  @override
   String get scheduleChangeUnconfirmedGeneric =>
       'Deine letzte Zeitplanänderung konnte nicht bestätigt werden. Prüfe deinen Zeitplan.';
 

@@ -1286,6 +1286,7 @@
   "scheduleChangeWentThrough": "{change} wurde übernommen.",
   "scheduleChangeFailedLate": "{change} ist fehlgeschlagen.",
   "scheduleChangeUnconfirmed": "{change} konnte nicht bestätigt werden. Prüfe deinen Zeitplan.",
+  "scheduleChangeNotSent": "Tiler war nicht erreichbar, daher wurde {change} nicht gesendet. Versuche es erneut.",
   "scheduleChangeUnconfirmedGeneric": "Deine letzte Zeitplanänderung konnte nicht bestätigt werden. Prüfe deinen Zeitplan.",
   "scheduleChangeReattemptTitle": "Erneut senden?",
   "scheduleChangeReattemptBody": "{change} wurde möglicherweise schon übernommen. Erneut senden?",

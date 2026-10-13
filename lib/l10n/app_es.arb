@@ -1716,6 +1716,7 @@
   "scheduleChangeWentThrough": "{change} se completó.",
   "scheduleChangeFailedLate": "{change} falló.",
   "scheduleChangeUnconfirmed": "No se pudo confirmar {change}. Revisa tu horario.",
+  "scheduleChangeNotSent": "No se pudo conectar con Tiler, así que {change} no se envió. Inténtalo de nuevo.",
   "scheduleChangeUnconfirmedGeneric": "No se pudo confirmar tu último cambio de horario. Revisa tu horario.",
   "scheduleChangeReattemptTitle": "¿Enviar de nuevo?",
   "scheduleChangeReattemptBody": "Es posible que {change} ya se haya aplicado. ¿Enviarlo de nuevo?",

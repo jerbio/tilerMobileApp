@@ -85,6 +85,7 @@ class ScheduleEvaluationConfig {
     this.reconcileSlowInterval = const Duration(seconds: 15),
     this.maxUnresolved = 3,
     this.uncertaintyGrace = const Duration(seconds: 3),
+    this.reconcileReadTimeout = const Duration(seconds: 5),
   });
   final Duration operationTimeout;
   final Duration initializationTimeout;
@@ -104,6 +105,10 @@ class ScheduleEvaluationConfig {
   /// When a write's outcome becomes unknown, the schedule is read once,
   /// for at most this long, before the user is told anything.
   final Duration uncertaintyGrace;
+
+  /// How long one re-check waits for the status before giving up, so a
+  /// struggling server does not stretch the re-check cadence.
+  final Duration reconcileReadTimeout;
 }
 
 /// How a write whose outcome was unknown turned out, for a notice.
@@ -119,6 +124,10 @@ enum ScheduleChangeOutcomeKind {
 
   /// Its deadline passed with no evidence either way.
   unconfirmed,
+
+  /// It could not start (the schedule could not be read first), so nothing
+  /// reached the server and trying again is safe.
+  notSent,
 }
 
 class ScheduleChangeOutcome {

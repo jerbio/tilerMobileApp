@@ -4283,6 +4283,11 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String scheduleChangeNotSent(String change) {
+    return 'Não foi possível acessar o Tiler, então $change não foi enviado. Tente novamente.';
+  }
+
+  @override
   String get scheduleChangeUnconfirmedGeneric =>
       'Não foi possível confirmar sua última alteração na agenda. Verifique sua agenda.';
 

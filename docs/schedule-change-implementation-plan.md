@@ -24,7 +24,7 @@ Status keys:
 | 1 | Repair the 6 grid drag-gesture tests | 1 Stabilize | ⏸ | 6 failures → 25 passing | n/a | ☐ | — |
 | 2 | Network loss mid-request shows *uncertain*, not *failed* | 1 Stabilize | ◐ | 12 transport tests passing | pending fault injection | ☐ | — |
 | 3 | Every blocked path tells the user why | 1 Stabilize | ◐ | 5 path tests + existing notice tests passing | pending | ☐ | — |
-| 10 | Uncertainty informs but no longer locks the app | 1 Stabilize | ⏸ | 14 red → 15 passing; 7 contract tests updated; told-once follow-up 4 red → 5 passing; background follow-up 1 red → passing | pending (L3′, L6′, L9, L10) | ☐ | — |
+| 10 | Uncertainty informs but no longer locks the app | 1 Stabilize | ✔ | 14 red → 15 passing; 7 contract tests updated; told-once follow-up 4 red → 5 passing; background follow-up 1 red → passing | pending (L3′, L6′, L9, L10) | approved 2026-10-12 | `f904cd38` |
 | 4 | Device verification pass | 2 Verify | ◐ | n/a | staging smoke pass; matrix open | ☐ | — |
 | 5 | Translations and string review | 3 Polish | ◐ | 8 locale coverage tests passing | pending; native review open | ☐ | — |
 | 6 | Retire `userDrag`, retain current motion | 3 Polish | ◐ | grid attribution + tracker/summary tests passing | pending | decision approved; diff review open | — |
@@ -619,6 +619,7 @@ When filing a finding, include:
 | 2026-10-12 | working tree on `d62a505a` with Step 10 | 2369 | 4 | 0 | none (15 new tests; same 4 skips) |
 | 2026-10-12 | Step 10 with the told-once follow-up | 2374 | 4 | 0 | none (5 more tests; same 4 skips) |
 | 2026-10-12 | plus the background follow-up | 2375 | 4 | 0 | none (1 more test; same 4 skips) |
+| 2026-10-12 | plus the not-sent follow-up (uncommitted) | 2381 | 4 | 0 | none (6 more tests; same 4 skips) |
 
 ## 6. Execution record — October 11, 2026
 
@@ -724,3 +725,28 @@ The fifth, that the check is bounded, is a compatibility check. The existing tes
 **Test.** "a change cut off while the app is in the background is checked when it returns, and told once": red (decided while away), then green. Full suite: 2375 passed, 4 skipped, 0 failed.
 
 **Not addressed (separate decision).** The request itself is still lost when Android drops the connection. Keeping it alive in the background would need platform work (for example a short foreground task while a schedule change is in flight). That would avoid the uncertainty entirely in this case.
+
+#### Not sent (follow-up after L6′, October 12, 2026; awaiting review)
+
+**Reported.** After the connection was restored, Complete showed no "Completing" card.
+
+**Cause (device log).** Every attempt from 22:58:36 to 23:00:25 failed *before* admission. Before a write, the app reads the schedule status, and that read threw `FormatException`: `getScheduleStatus` decoded the body as JSON without checking it, and the local server was still answering with a non-JSON page while it started up. No write was admitted, so no card appeared, and the user was told nothing. A probe from the host minutes later showed the server answering with JSON again.
+
+**Change.**
+
+- `decodeServerJson` (in `appApi.dart`) is used by the status and schedule reads. A non-JSON answer becomes `ScheduleServerUnavailable` with the HTTP status and content type. It logs `server_unavailable` with those fields, never the body.
+- A change that cannot start (status unreadable, unknown hashes, initialization timeout) publishes a `notSent` outcome. Users see "Couldn't reach Tiler, so Complete · Gym wasn't sent. Try again." once (screen first, calendar otherwise), and Retry is offered because nothing reached the server. Log: `mutation_not_sent`.
+- Re-check reads are bounded by `reconcileReadTimeout` (5 s), so a silent server no longer stretches the cadence to about 45 s (the L6′ finding).
+- 1 new string in all 9 locales.
+
+**Tests.** `test/schedule_change_not_sent_test.dart`, 6 tests. Five were red first:
+
+1. an error page threw `FormatException`;
+2. an empty body threw `FormatException`;
+3. no not-sent outcome was published;
+4. Retry was hidden;
+5. a silent server gave 1 read instead of 3 or more.
+
+The sixth, that JSON decodes as before, is a compatibility check. All are now green and stable over 3 runs. Full suite: 2381 passed, 4 skipped, 0 failed.
+
+**Device check.** Stop the backend, or catch it while it is starting, and tap Complete. Expect one "Couldn't reach Tiler…" message with Retry, no card, and no POST in the log. Then Retry once the server is up: expect the Completing card and a 2xx.

@@ -2507,6 +2507,8 @@
   "@scheduleChangeFailedLate": {"description": "A late refusal arrived for a schedule change whose outcome was unknown.", "placeholders": {"change": {"type": "String"}}},
   "scheduleChangeUnconfirmed": "Couldn't confirm {change}. Check your schedule.",
   "@scheduleChangeUnconfirmed": {"description": "The time to confirm a schedule change ran out with no answer either way.", "placeholders": {"change": {"type": "String"}}},
+  "scheduleChangeNotSent": "Couldn't reach Tiler, so {change} wasn't sent. Try again.",
+  "@scheduleChangeNotSent": {"description": "A schedule change could not start because the schedule could not be read first; nothing was sent.", "placeholders": {"change": {"type": "String"}}},
   "scheduleChangeUnconfirmedGeneric": "Couldn't confirm your last schedule change. Check your schedule.",
   "@scheduleChangeUnconfirmedGeneric": {"description": "As scheduleChangeUnconfirmed, when the change can't be named."},
   "scheduleChangeReattemptTitle": "Send again?",

@@ -1286,6 +1286,7 @@
   "scheduleChangeWentThrough": "{change} a abouti.",
   "scheduleChangeFailedLate": "{change} a échoué.",
   "scheduleChangeUnconfirmed": "Impossible de confirmer {change}. Vérifiez votre planning.",
+  "scheduleChangeNotSent": "Impossible de joindre Tiler : {change} n’a pas été envoyé. Réessayez.",
   "scheduleChangeUnconfirmedGeneric": "Impossible de confirmer votre dernière modification du planning. Vérifiez votre planning.",
   "scheduleChangeReattemptTitle": "Renvoyer ?",
   "scheduleChangeReattemptBody": "{change} a peut-être déjà abouti. Le renvoyer ?",

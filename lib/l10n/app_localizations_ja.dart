@@ -4155,6 +4155,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String scheduleChangeNotSent(String change) {
+    return 'Tilerに接続できなかったため、$changeは送信されませんでした。もう一度お試しください。';
+  }
+
+  @override
   String get scheduleChangeUnconfirmedGeneric =>
       '直前のスケジュール変更を確認できませんでした。スケジュールを確認してください。';
 

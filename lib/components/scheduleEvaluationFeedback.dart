@@ -106,6 +106,7 @@ String scheduleChangeOutcomeMessage(
     ScheduleChangeOutcomeKind.failed => l10n.scheduleChangeFailedLate(change),
     ScheduleChangeOutcomeKind.unconfirmed =>
       l10n.scheduleChangeUnconfirmed(change),
+    ScheduleChangeOutcomeKind.notSent => l10n.scheduleChangeNotSent(change),
   };
 }
 
@@ -197,7 +198,8 @@ bool scheduleChangeRetryAllowed(BuildContext context) {
     final bloc = context.read<ScheduleBloc>();
     return !bloc.scheduleChangesBlocked &&
         !bloc.lastChangeUnconfirmed &&
-        bloc.latestOutcome == null &&
+        (bloc.latestOutcome == null ||
+            bloc.latestOutcome!.kind == ScheduleChangeOutcomeKind.notSent) &&
         bloc.activeEvaluation?.phase != ScheduleEvaluationPhase.uncertain;
   } on ProviderNotFoundException {
     return true;

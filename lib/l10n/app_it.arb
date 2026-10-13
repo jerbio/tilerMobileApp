@@ -1286,6 +1286,7 @@
   "scheduleChangeWentThrough": "{change} è andato a buon fine.",
   "scheduleChangeFailedLate": "{change} non è riuscito.",
   "scheduleChangeUnconfirmed": "Impossibile confermare {change}. Controlla il programma.",
+  "scheduleChangeNotSent": "Impossibile raggiungere Tiler, quindi {change} non è stato inviato. Riprova.",
   "scheduleChangeUnconfirmedGeneric": "Impossibile confermare l’ultima modifica al programma. Controlla il programma.",
   "scheduleChangeReattemptTitle": "Inviare di nuovo?",
   "scheduleChangeReattemptBody": "{change} potrebbe essere già andato a buon fine. Inviarlo di nuovo?",

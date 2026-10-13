@@ -4276,6 +4276,11 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String scheduleChangeNotSent(String change) {
+    return 'Tiler was niet bereikbaar, dus $change is niet verzonden. Probeer het opnieuw.';
+  }
+
+  @override
   String get scheduleChangeUnconfirmedGeneric =>
       'Je laatste wijziging van de planning kon niet worden bevestigd. Controleer je planning.';
 

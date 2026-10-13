@@ -311,6 +311,33 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     _readTimeouts.remove(timer);
   }
 
+  /// A change could not start because the schedule could not be read
+  /// first. Nothing reached the server; the user is told once, and trying
+  /// again is safe.
+  void _tellNotSent(
+      ScheduleChangeKind kind, String? name, List<String> ids, Object error) {
+    final now = _now();
+    final unsent = ScheduleEvaluation(
+        id: 'unsent_${now.microsecondsSinceEpoch}_${++_sequence}',
+        kind: kind,
+        account: _account,
+        startedAt: now,
+        expiresAt: now,
+        baseline: revisions.state ?? const ScheduleRevision(null, null),
+        baselineObservedAt: now,
+        phase: ScheduleEvaluationPhase.failed,
+        eventName: name,
+        affectedEventCount: ids.isNotEmpty
+            ? ids.length
+            : name == null
+                ? 0
+                : 1,
+        affectedTileIds: List.unmodifiable(ids));
+    _trace('mutation_not_sent', request: unsent, error: error);
+    _lastAdmittedId = unsent.id;
+    _emitOutcome(unsent, ScheduleChangeOutcomeKind.notSent);
+  }
+
   /// Lets a caller wait for [evaluationId]'s verdict before hearing about it.
   Future<void> _verdictFor(String evaluationId) =>
       _verdicts[evaluationId]?.future ?? Future<void>.value();
@@ -352,7 +379,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       'canConfirmMutation': false,
     });
     try {
-      final status = await _readStatus(evaluationConfig.initializationTimeout);
+      final status = await _readStatus(evaluationConfig.reconcileReadTimeout);
       if (isClosed || generation != _sessionGeneration) return;
       revisions.observe(status);
     } catch (error) {
@@ -806,6 +833,16 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             throw ScheduleChangeDeclined();
           }
         }
+      } on ScheduleChangeBlocked {
+        rethrow;
+      } on ScheduleChangeDeclined {
+        rethrow;
+      } catch (error) {
+        // The schedule could not be read first, so nothing was sent.
+        if (!isClosed && generation == _sessionGeneration) {
+          _tellNotSent(kind, name, ids, error);
+        }
+        rethrow;
       } finally {
         if (generation == _sessionGeneration) _initializingChange = false;
       }

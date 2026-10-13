@@ -4276,6 +4276,11 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String scheduleChangeNotSent(String change) {
+    return 'No se pudo conectar con Tiler, así que $change no se envió. Inténtalo de nuevo.';
+  }
+
+  @override
   String get scheduleChangeUnconfirmedGeneric =>
       'No se pudo confirmar tu último cambio de horario. Revisa tu horario.';
 

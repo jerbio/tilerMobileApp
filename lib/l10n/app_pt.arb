@@ -1286,6 +1286,7 @@
   "scheduleChangeWentThrough": "{change} foi concluído.",
   "scheduleChangeFailedLate": "{change} falhou.",
   "scheduleChangeUnconfirmed": "Não foi possível confirmar {change}. Verifique sua agenda.",
+  "scheduleChangeNotSent": "Não foi possível acessar o Tiler, então {change} não foi enviado. Tente novamente.",
   "scheduleChangeUnconfirmedGeneric": "Não foi possível confirmar sua última alteração na agenda. Verifique sua agenda.",
   "scheduleChangeReattemptTitle": "Enviar novamente?",
   "scheduleChangeReattemptBody": "{change} pode já ter sido aplicado. Enviar novamente?",

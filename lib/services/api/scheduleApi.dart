@@ -76,7 +76,7 @@ class ScheduleApi extends AppApi {
                     'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
           },
         );
-        var jsonResult = jsonDecode(response.body);
+        var jsonResult = decodeServerJson(response, operation: 'schedule_read');
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult) &&
               jsonResult['Content'].containsKey('subCalendarEvents')) {
@@ -240,7 +240,7 @@ class ScheduleApi extends AppApi {
                   'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
         },
       );
-      var jsonResult = jsonDecode(response.body);
+      var jsonResult = decodeServerJson(response, operation: 'schedule_status');
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
           Map<String, dynamic> scheduleStatusJson = jsonResult['Content'];

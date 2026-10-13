@@ -4300,6 +4300,11 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
+  String scheduleChangeNotSent(String change) {
+    return 'Δεν ήταν δυνατή η σύνδεση με το Tiler, οπότε δεν στάλθηκε: $change. Δοκίμασε ξανά.';
+  }
+
+  @override
   String get scheduleChangeUnconfirmedGeneric =>
       'Δεν ήταν δυνατή η επιβεβαίωση της τελευταίας αλλαγής στο πρόγραμμα. Έλεγξε το πρόγραμμά σου.';
 

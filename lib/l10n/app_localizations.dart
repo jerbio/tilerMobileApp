@@ -7394,6 +7394,12 @@ abstract class AppLocalizations {
   /// **'Couldn\'t confirm {change}. Check your schedule.'**
   String scheduleChangeUnconfirmed(String change);
 
+  /// A schedule change could not start because the schedule could not be read first; nothing was sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach Tiler, so {change} wasn\'t sent. Try again.'**
+  String scheduleChangeNotSent(String change);
+
   /// As scheduleChangeUnconfirmed, when the change can't be named.
   ///
   /// In en, this message translates to:
