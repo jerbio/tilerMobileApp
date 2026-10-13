@@ -5,6 +5,7 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/util.dart';
 import 'dart:convert';
 
@@ -71,7 +72,12 @@ class CalendarEventApi extends AppApi {
     });
   }
 
-  Future<CalendarEvent> delete(String eventId, String thirdPartyId) async {
+  Future<CalendarEvent> delete(String eventId, String thirdPartyId) =>
+      runScheduleMutation(
+          ScheduleChangeKind.delete, () => _delete(eventId, thirdPartyId),
+          affectedTileIds: [eventId]);
+
+  Future<CalendarEvent> _delete(String eventId, String thirdPartyId) async {
     TilerError error = new TilerError();
     print('deleting ' + eventId);
     if ((await this.authentication.isUserAuthenticated()).item1) {

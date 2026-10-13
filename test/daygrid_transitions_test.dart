@@ -14,8 +14,12 @@
 // hour — which drives the initial scroll — never moves either.
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tiler_app/bloc/scheduleMotion/schedule_motion_cubit.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/services/scheduleMotionPreferences.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
@@ -279,6 +283,33 @@ void main() {
 
       // Reduced motion -> jump straight to the new top.
       expect(dyBetween(tester, 'Alpha', 'Beta'), closeTo(480, 1));
+    });
+
+    testWidgets('the "Schedule updates" Off setting yields a jump cut',
+        (tester) async {
+      SharedPreferences.setMockInitialValues(
+          {ScheduleMotionPreferences.modeKey: 'off'});
+      final cubit = ScheduleMotionCubit();
+      // Let the cubit restore Off from prefs before the grid mounts.
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 50)));
+      expect(cubit.state, ScheduleUpdateMode.off);
+
+      List<SubCalendarEvent> tiles = tilesWithBetaAt(10);
+      final rebuild = await pumpGrid(
+        tester,
+        () => tiles,
+        wrap: (context, body) =>
+            BlocProvider<ScheduleMotionCubit>.value(value: cubit, child: body),
+      );
+      expect(dyBetween(tester, 'Alpha', 'Beta'), closeTo(160, 1));
+
+      tiles = tilesWithBetaAt(14);
+      rebuild();
+      await tester.pump();
+
+      expect(dyBetween(tester, 'Alpha', 'Beta'), closeTo(480, 1));
+      await cubit.close();
     });
 
     testWidgets('a day change swaps keys so there is no cross-day slide',

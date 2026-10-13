@@ -9,6 +9,43 @@ class AppLocalizationsEl extends AppLocalizations {
   AppLocalizationsEl([String locale = 'el']) : super(locale);
 
   @override
+  String get notesLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση των σημειώσεών σας. Ανοίξτε ξανά τον επεξεργαστή σημειώσεων.';
+
+  @override
+  String get onboardingSubmitFailed =>
+      'Δεν ήταν δυνατή η αποθήκευση της ρύθμισης. Οι επιλογές σας διατηρούνται. Δοκιμάστε ξανά ή παραλείψτε αυτό το βήμα προς το παρόν.';
+
+  @override
+  String operationFailed(String operation) {
+    return 'Η ενέργεια $operation απέτυχε. Δοκιμάστε ξανά.';
+  }
+
+  @override
+  String get scheduleLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση του προγράμματός σας. Ανανεώστε για να δοκιμάσετε ξανά.';
+
+  @override
+  String get chatConnectionFailed =>
+      'Δεν ήταν δυνατή η σύνδεση στη συνομιλία. Ανοίξτε ξανά τη συνομιλία.';
+
+  @override
+  String get chatHistoryFailed =>
+      'Δεν ήταν δυνατή η φόρτωση του ιστορικού συνομιλίας. Ανοίξτε ξανά τη συνομιλία.';
+
+  @override
+  String get chatSendFailed =>
+      'Δεν ήταν δυνατή η αποστολή του μηνύματός σας. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.';
+
+  @override
+  String get chatRecordingFailed =>
+      'Δεν ήταν δυνατή η έναρξη της ηχογράφησης. Ελέγξτε την πρόσβαση στο μικρόφωνο και δοκιμάστε ξανά.';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      'Δεν ήταν δυνατή η ακύρωση της ηχογράφησης. Δοκιμάστε ξανά να τη σταματήσετε.';
+
+  @override
   String get whiteSpace => ' ';
 
   @override
@@ -729,10 +766,11 @@ class AppLocalizationsEl extends AppLocalizations {
   String get todayStatusClearDay => 'Η μέρα σας είναι ελεύθερη.';
 
   @override
-  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+  String get todayStatusClearDayHeadline => 'Ήρεμη μέρα, χωρίς επείγοντα.';
 
   @override
-  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+  String get todayStatusClearDaySubtext =>
+      'Αφήστε τον Tiler να δουλεύει για εσάς.';
 
   @override
   String get todayStatusPreviewCta => 'Προεπισκόπηση βελτιωμένου προγράμματος';
@@ -1051,11 +1089,11 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get tileShareActivityInvitationUnknown =>
-      'Invitation send outcome unknown';
+      'Άγνωστο αποτέλεσμα αποστολής πρόσκλησης';
 
   @override
   String get tileShareActivityExplicitResend =>
-      'The invitation may have been sent. Resend explicitly if needed.';
+      'Η πρόσκληση ενδέχεται να έχει σταλεί. Επαναστείλετε την πρόσκληση ρητά, εάν χρειάζεται.';
 
   @override
   String get tileShareActivityEmail => 'Email';
@@ -1064,76 +1102,77 @@ class AppLocalizationsEl extends AppLocalizations {
   String get tileShareActivitySms => 'SMS';
 
   @override
-  String get tileShareActivityPush => 'Push notification';
+  String get tileShareActivityPush => 'Ειδοποίηση push';
 
   @override
-  String get tileShareActivityTitle => 'Activities';
+  String get tileShareActivityTitle => 'Δραστηριότητες';
 
   @override
-  String get tileShareActivityRefresh => 'Refresh';
+  String get tileShareActivityRefresh => 'Ενημέρωση';
 
   @override
-  String get tileShareActivityRetry => 'Retry';
+  String get tileShareActivityRetry => 'Επανάληψη';
 
   @override
-  String get tileShareActivityEmpty => 'No activity yet.';
+  String get tileShareActivityEmpty => 'Καμία δραστηριότητα ακόμη.';
 
   @override
   String get tileShareActivityFailed =>
-      'Activity could not be loaded. Check your connection and try again.';
+      'Δεν ήταν δυνατή η φόρτωση της δραστηριότητας. Ελέγξτε τη σύνδεσή σας και ξαναδοκιμάστε.';
 
   @override
   String get tileShareActivityAccess =>
-      'This activity is no longer available to you.';
+      'Αυτή η δραστηριότητα δεν είναι πλέον διαθέσιμη για εσάς.';
 
   @override
-  String get tileShareActivityUnknown => 'Activity updated';
+  String get tileShareActivityUnknown => 'Η δραστηριότητα ενημερώθηκε';
 
   @override
-  String get tileShareActivityUnavailable => 'Item no longer available';
+  String get tileShareActivityUnavailable =>
+      'Το στοιχείο δεν είναι πλέον διαθέσιμο';
 
   @override
-  String get tileShareActivityMore => 'Load more';
+  String get tileShareActivityMore => 'Περισσότερα';
 
   @override
-  String get tileShareActivityClusterCreated => 'TileShare created';
+  String get tileShareActivityClusterCreated => 'Δημιουργήθηκε TileShare';
 
   @override
-  String get tileShareActivityClusterDeleted => 'TileShare deleted';
+  String get tileShareActivityClusterDeleted => 'Διαγράφηκε TileShare';
 
   @override
-  String get tileShareActivityTiletteAdded => 'Tilette added';
+  String get tileShareActivityTiletteAdded => 'Προστέθηκε Tilette';
 
   @override
-  String get tileShareActivityTiletteEdited => 'Tilette updated';
+  String get tileShareActivityTiletteEdited => 'Ενημερώθηκε Tilette';
 
   @override
-  String get tileShareActivityTiletteDeleted => 'Tilette deleted';
+  String get tileShareActivityTiletteDeleted => 'Διαγράφηκε Tilette';
 
   @override
-  String get tileShareActivityTiletteRestored => 'Tilette restored';
+  String get tileShareActivityTiletteRestored => 'Επαναφέρθηκε Tilette';
 
   @override
-  String get tileShareActivityRecipientAdded => 'Participant added';
+  String get tileShareActivityRecipientAdded => 'Προστέθηκε συμμετέχων';
 
   @override
-  String get tileShareActivityRecipientRemoved => 'Participant removed';
+  String get tileShareActivityRecipientRemoved => 'Αφαιρέθηκε συμμετέχων';
 
   @override
-  String get tileShareActivityRecipientRestored => 'Participant restored';
+  String get tileShareActivityRecipientRestored => 'Επαναφέρθηκε συμμετέχων';
 
   @override
-  String get tileShareActivityAccepted => 'Assignment accepted';
+  String get tileShareActivityAccepted => 'Η ανάθεση αποδεκτή';
 
   @override
-  String get tileShareActivityDeclined => 'Assignment declined';
+  String get tileShareActivityDeclined => 'Η ανάθεση απορρίφθηκε';
 
   @override
-  String get tileShareActivityInvitationSent => 'Invitation sent';
+  String get tileShareActivityInvitationSent => 'Απεστάλη η πρόσκληση';
 
   @override
   String get tileShareActivityInvitationFailed =>
-      'Invitation could not be sent';
+      'Δεν ήταν δυνατή η αποστολή της πρόσκλησης';
 
   @override
   String get update => 'Ενημέρωση';
@@ -1922,6 +1961,16 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String durationHoursMinutesShort(int hours, int minutes) {
     return '$hoursω $minutesλ';
+  }
+
+  @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '$daysημ $hoursω';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '$daysημ';
   }
 
   @override
@@ -3770,22 +3819,22 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count more days affected',
-      one: '1 more day affected',
+      other: '$count επιπλέον ημέρες επηρεάστηκαν',
+      one: '1 επιπλέον ημέρα επηρεάστηκε',
     );
     return '$_temp0';
   }
 
   @override
-  String get editTileWhatIfUnplaced => 'Unplaced';
+  String get editTileWhatIfUnplaced => 'Μη τοποθετημένο';
 
   @override
   String editTileWhatIfAffectedCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count affected tiles',
-      one: '1 affected tile',
+      other: '$count πλακίδια επηρεάστηκαν',
+      one: '1 πλακίδιο επηρεάστηκε',
     );
     return '$_temp0';
   }
@@ -3956,13 +4005,13 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String addTileHoursEndsNextDay(String day, String time) {
-    return 'Ends $day at $time';
+    return 'Λήγει $day στις $time';
   }
 
   @override
   String addTileRestrictionWindowNextDay(
       String days, String start, String end) {
-    return '$days · $start – $end (next day)';
+    return '$days · $start – $end (επόμενη ημέρα)';
   }
 
   @override
@@ -4162,7 +4211,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get commentsAttachmentPickFailed =>
-      'Couldn\'t attach that file. Please try again.';
+      'Δεν ήταν δυνατή η σύνδεση του αρχείου. Παρακαλώ ξαναδοκιμάστε.';
 
   @override
   String commentsAttachmentRemove(String name) {
@@ -5261,4 +5310,322 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get tileShareSaveChanges => 'Save changes';
+
+  @override
+  String get scheduleChangeRefresh => 'Ανανέωση προγράμματος';
+
+  @override
+  String get scheduleChangeUncertainBody =>
+      'Η αλλαγή σου μπορεί να έχει φτάσει στον διακομιστή. Ανανέωσε για να ελέγξεις αν το πρόγραμμα ενημερώθηκε. Η αναμονή θα λήξει αυτόματα.';
+
+  @override
+  String get scheduleChangeUncertain => 'Η επιβεβαίωση δεν είναι διαθέσιμη';
+
+  @override
+  String scheduleChangeAcknowledged(String change) {
+    return 'Το πρόγραμμά σου ενημερώθηκε μετά από $change. Έλεγξε ότι είναι σωστό.';
+  }
+
+  @override
+  String scheduleChangeWentThrough(String change) {
+    return 'Ολοκληρώθηκε: $change.';
+  }
+
+  @override
+  String scheduleChangeFailedLate(String change) {
+    return 'Απέτυχε: $change.';
+  }
+
+  @override
+  String scheduleChangeUnconfirmed(String change) {
+    return 'Δεν ήταν δυνατή η επιβεβαίωση: $change. Έλεγξε το πρόγραμμά σου.';
+  }
+
+  @override
+  String scheduleChangeNotSent(String change) {
+    return 'Δεν ήταν δυνατή η σύνδεση με το Tiler, οπότε δεν στάλθηκε: $change. Δοκίμασε ξανά.';
+  }
+
+  @override
+  String get scheduleChangeUnconfirmedGeneric =>
+      'Δεν ήταν δυνατή η επιβεβαίωση της τελευταίας αλλαγής στο πρόγραμμα. Έλεγξε το πρόγραμμά σου.';
+
+  @override
+  String get scheduleChangeReattemptTitle => 'Αποστολή ξανά;';
+
+  @override
+  String scheduleChangeReattemptBody(String change) {
+    return 'Μπορεί να έχει ήδη γίνει: $change. Να σταλεί ξανά;';
+  }
+
+  @override
+  String get scheduleChangeReattemptConfirm => 'Αποστολή ξανά';
+
+  @override
+  String scheduleChangeReattemptDeclined(String change) {
+    return 'Δεν στάλθηκε ξανά: $change.';
+  }
+
+  @override
+  String get scheduleChangeAdding => 'Προσθήκη συμβάντος';
+
+  @override
+  String get scheduleChangeSettings => 'Ενημέρωση ρυθμίσεων προγράμματος';
+
+  @override
+  String get scheduleChangeAccepting => 'Αποδοχή αλλαγών';
+
+  @override
+  String get scheduleChangeTargetSchedule => 'Το πρόγραμμά σου';
+
+  @override
+  String get scheduleChangeTargetEvent => 'Συμβάν';
+
+  @override
+  String get scheduleChangeAllEvents => 'Όλα τα συμβάντα';
+
+  @override
+  String scheduleChangeEventCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count συμβάντα',
+      one: '1 συμβάν',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangesBlocked =>
+      'Ολοκλήρωσε την τρέχουσα αλλαγή στο πρόγραμμα πριν ξεκινήσεις άλλη.';
+
+  @override
+  String scheduleChangesBlockedBy(String change) {
+    return 'Ολοκλήρωσε την τρέχουσα αλλαγή στο πρόγραμμα ($change) πριν ξεκινήσεις άλλη.';
+  }
+
+  @override
+  String get scheduleChangeFailed => 'Η αλλαγή στο πρόγραμμα απέτυχε';
+
+  @override
+  String get scheduleUpdates => 'Ενημερώσεις προγράμματος';
+
+  @override
+  String get scheduleUpdatesDescription =>
+      'Πώς κινείται η μέρα σου όταν αλλάζει το πρόγραμμά σου.';
+
+  @override
+  String get scheduleUpdatesDetailed => 'Λεπτομερής';
+
+  @override
+  String get scheduleUpdatesDetailedDescription =>
+      'Δείχνει κάθε αλλαγή βήμα προς βήμα.';
+
+  @override
+  String get scheduleUpdatesMinimal => 'Ελάχιστη';
+
+  @override
+  String get scheduleUpdatesMinimalDescription =>
+      'Τα πλακίδια μετακινούνται ομαλά στις νέες ώρες.';
+
+  @override
+  String get scheduleUpdatesOff => 'Απενεργοποίηση';
+
+  @override
+  String get scheduleUpdatesOffDescription => 'Άμεση ενημέρωση, χωρίς κίνηση.';
+
+  @override
+  String get scheduleChangePlanUpdated => 'Το πλάνο ενημερώθηκε';
+
+  @override
+  String get scheduleChangeDayCleared => 'Η μέρα άδειασε';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινήθηκαν',
+      one: '1 πλακίδιο μετακινήθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινήθηκαν σε άλλες μέρες',
+      one: '1 πλακίδιο μετακινήθηκε σε άλλη μέρα',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια προστέθηκαν',
+      one: '1 πλακίδιο προστέθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια αφαιρέθηκαν',
+      one: '1 πλακίδιο αφαιρέθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString χρόνοι μετακίνησης ενημερώθηκαν',
+      one: '1 χρόνος μετακίνησης ενημερώθηκε',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(String duration) {
+    return '+$duration ελεύθερα';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => 'Δες τις αλλαγές';
+
+  @override
+  String get scheduleChangeWhatChanged => 'Τι άλλαξε';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return 'Προστέθηκε · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => 'Αφαιρέθηκε';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return 'Μετακίνηση προς $name';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => 'Ελεύθερος χρόνος';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return 'Μετακινήθηκε από τις $time';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return 'Μετακινήθηκε στις $time';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$name μετακινήθηκε στις $when';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινήθηκαν στις $when',
+      one: '1 πλακίδιο μετακινήθηκε στις $when',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινήθηκαν αργότερα',
+      one: '1 πλακίδιο μετακινήθηκε αργότερα',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινήθηκαν νωρίτερα',
+      one: '1 πλακίδιο μετακινήθηκε νωρίτερα',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString πλακίδια μετακινούνται',
+      one: '1 πλακίδιο μετακινείται',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangeTabChanges => 'Αλλαγές';
+
+  @override
+  String get scheduleChangeTabBeforeAfter => 'Πριν & μετά';
+
+  @override
+  String get scheduleChangeBefore => 'Πριν';
+
+  @override
+  String get scheduleChangeAfter => 'Μετά';
 }

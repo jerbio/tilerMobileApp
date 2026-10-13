@@ -23,6 +23,7 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
@@ -38,7 +39,10 @@ import 'package:tiler_app/theme/theme_data.dart';
 class _RecordingScheduleBloc extends ScheduleBloc {
   final List<ScheduleEvent> events = <ScheduleEvent>[];
 
-  _RecordingScheduleBloc() : super(getContextCallBack: () => null);
+  _RecordingScheduleBloc() : super(getContextCallBack: () => null) {
+    revisions.observe(
+        ScheduleStatus.fromJson({'analysisId': 'a', 'evaluationId': 'e'}));
+  }
 
   @override
   void add(ScheduleEvent event) {

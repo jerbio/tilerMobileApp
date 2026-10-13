@@ -11,12 +11,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:tiler_app/services/api/comments_api.dart';
 import 'package:tiler_app/services/localizationService.dart';
+import 'package:tiler_app/components/operationFeedback.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 
 part 'comments_event.dart';
 part 'comments_bloc.dart';
+
 /// Progress of a comment thread read.
 enum CommentsStep { initial, loading, loaded, error }
+
 /// The kind of toast message [CommentsState.showToast] is asking the UI to
 /// display.
 enum CommentToastKind {
@@ -34,6 +37,7 @@ enum CommentToastKind {
   /// `MissingPluginException` after a native rebuild is pending).
   attachmentOpenFailed,
 }
+
 /// Lifecycle of one in-flight attachment inside the composer.
 ///
 /// [local] means the file has been picked but has not been uploaded yet:
@@ -47,6 +51,7 @@ enum ComposerAttachmentStep {
   rejected,
   failed,
 }
+
 /// A file the composer has picked but not yet claimed into a comment.
 class ComposerAttachmentDraft extends Equatable {
   final String localPath;
@@ -67,6 +72,7 @@ class ComposerAttachmentDraft extends Equatable {
   });
   bool get isClaimable =>
       step == ComposerAttachmentStep.ready && attachmentId != null;
+
   /// Can be included in the next post: already uploaded ([isClaimable]) or
   /// still local (the bloc uploads it at send time).
   bool get isSendable => isClaimable || step == ComposerAttachmentStep.local;
@@ -91,6 +97,7 @@ class ComposerAttachmentDraft extends Equatable {
           clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
     );
   }
+
   @override
   List<Object?> get props => [
         localPath,
@@ -102,6 +109,7 @@ class ComposerAttachmentDraft extends Equatable {
         errorMessage,
       ];
 }
+
 /// Lazily loaded, paged replies for one root comment.
 class RootRepliesData extends Equatable {
   final List<Comment> replies;
@@ -132,18 +140,22 @@ class RootRepliesData extends Equatable {
       error: clearError ? null : (error ?? this.error),
     );
   }
+
   @override
   List<Object?> get props => [replies, nextCursor, hasMore, isLoading, error];
 }
+
 class CommentsState extends Equatable {
   final CommentsStep step;
   final String error;
+
   /// When true, the UI should surface a toast: [error] for
   /// [CommentToastKind.error], or the localized "attachment saved" for
   /// [CommentToastKind.attachmentSaved]. Permanent (non-toast) problems also
   /// live in [error]; the toast flag distinguishes the two so the same field
   /// drives both surfaces.
   final bool showToast;
+
   /// The kind of message the toast shows when [showToast] is true.
   final CommentToastKind toastKind;
   // ---- thread (roots, oldest – newest for display)
@@ -162,15 +174,19 @@ class CommentsState extends Equatable {
   final List<MentionSelection> mentionSelections;
   final List<ComposerAttachmentDraft> attachmentDrafts;
   final bool isSending;
+
   /// The attachment currently being downloaded, or null.
   final String? downloadingFileId;
+
   /// Download progress of [downloadingFileId] in 0..1, or null while the
   /// total size is unknown (indeterminate).
   final double? downloadProgress;
+
   /// The most recent attachment whose file is stored on this device, or
   /// null. [savedFileName] is the on-device display name the user will find.
   final String? savedFileId;
   final String? savedFileName;
+
   /// True while the composer targets a root (reply mode).
   bool get isReplying => replyTargetRootId != null;
   const CommentsState({
@@ -195,10 +211,9 @@ class CommentsState extends Equatable {
     this.savedFileId,
     this.savedFileName,
   });
-  bool get hasPendingAttachments =>
-      attachmentDrafts.any((d) =>
-          d.step == ComposerAttachmentStep.uploading ||
-          d.step == ComposerAttachmentStep.checking);
+  bool get hasPendingAttachments => attachmentDrafts.any((d) =>
+      d.step == ComposerAttachmentStep.uploading ||
+      d.step == ComposerAttachmentStep.checking);
   bool get hasClaimableAttachments =>
       attachmentDrafts.any((d) => d.isClaimable);
   CommentsState copyWith({
@@ -254,6 +269,7 @@ class CommentsState extends Equatable {
       savedFileName: clearSaved ? null : (savedFileName ?? this.savedFileName),
     );
   }
+
   @override
   List<Object?> get props => [
         step,

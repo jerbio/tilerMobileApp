@@ -1,3 +1,4 @@
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
@@ -12,7 +13,6 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
-import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -30,11 +30,12 @@ class _MonthlyTileListState extends TileListState {
   void initState() {
     super.initState();
     initializingSwipingAnimation();
-    List<DateTime> daysInMonth =
-        Utility.getDaysInMonth(Utility.currentTime().dayDate);
+    List<DateTime> daysInMonth = Utility.getDaysInMonth(
+        context.read<MonthlyUiDateManagerBloc>().state.selectedDate.dayDate);
     timeLine = Timeline.fromDateTime(
         daysInMonth.first, daysInMonth.last.add(Duration(days: 1)));
     incrementalTilerScrollId = "monthly-incremental-get-schedule";
+    loadViewTimeline();
   }
 
   reloadSchedule({required DateTime dateManageSelectedMonth}) {
@@ -204,7 +205,9 @@ class _MonthlyTileListState extends TileListState {
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
           final summaryState = context.watch<ScheduleSummaryBloc>().state;
-          if (summaryState is ScheduleDaySummaryLoading && isInitialLoad) {
+          if (summaryState is ScheduleDaySummaryLoading &&
+              isInitialLoad &&
+              state is ScheduleInitialState) {
             return PendingWidget();
           }
           isInitialLoad = false;
@@ -257,9 +260,7 @@ class _MonthlyTileListState extends TileListState {
               children: [
                 buildMonthlyRenderSubCalendarTiles(
                     Tuple2(state.timelines, state.subEvents)),
-                PendingWidget(
-                  imageAsset: TileThemeNew.evaluatingScheduleAsset,
-                ),
+                ScheduleEvaluationFeedback(state: state),
               ],
             );
           }

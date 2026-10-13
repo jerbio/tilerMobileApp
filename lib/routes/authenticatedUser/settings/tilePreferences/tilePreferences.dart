@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
@@ -407,7 +409,9 @@ class TilePreferencesScreen extends StatelessWidget {
         if (state is PreferencesError) {
           notificationOverlayMessage.showToast(
             context,
-            state.message,
+            scheduleChangeFailureMessage(context,
+                kind: ScheduleChangeKind.settings,
+                eventName: AppLocalizations.of(context)!.tilePreferences),
             NotificationOverlayMessageType.error,
           );
         }

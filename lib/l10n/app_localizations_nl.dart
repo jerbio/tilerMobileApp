@@ -9,6 +9,43 @@ class AppLocalizationsNl extends AppLocalizations {
   AppLocalizationsNl([String locale = 'nl']) : super(locale);
 
   @override
+  String get notesLoadFailed =>
+      'Je notities konden niet worden geladen. Open de notitie-editor opnieuw.';
+
+  @override
+  String get onboardingSubmitFailed =>
+      'Je instellingen konden niet worden opgeslagen. Je keuzes blijven bewaard. Probeer het opnieuw of sla deze stap voorlopig over.';
+
+  @override
+  String operationFailed(String operation) {
+    return '$operation is mislukt. Probeer het opnieuw.';
+  }
+
+  @override
+  String get scheduleLoadFailed =>
+      'Je planning kon niet worden geladen. Vernieuw om het opnieuw te proberen.';
+
+  @override
+  String get chatConnectionFailed =>
+      'Er kon geen verbinding met de chat worden gemaakt. Open de chat opnieuw.';
+
+  @override
+  String get chatHistoryFailed =>
+      'Je chatgeschiedenis kon niet worden geladen. Open het gesprek opnieuw.';
+
+  @override
+  String get chatSendFailed =>
+      'Je bericht kon niet worden verzonden. Controleer je verbinding en probeer het opnieuw.';
+
+  @override
+  String get chatRecordingFailed =>
+      'De spraakopname kon niet worden gestart. Controleer de microfoontoegang en probeer het opnieuw.';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      'De spraakopname kon niet worden geannuleerd. Probeer de opname opnieuw te stoppen.';
+
+  @override
   String get whiteSpace => ' ';
 
   @override
@@ -728,10 +765,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get todayStatusClearDay => 'Uw dag is vrij.';
 
   @override
-  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+  String get todayStatusClearDayHeadline => 'Rustige dag, geen urgente zaken.';
 
   @override
-  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+  String get todayStatusClearDaySubtext => 'Laat Tiler voor je werken.';
 
   @override
   String get todayStatusPreviewCta => 'Bekijk een beter plan';
@@ -1053,89 +1090,89 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get tileShareActivityInvitationUnknown =>
-      'Invitation send outcome unknown';
+      'Uitkomst van de uitnodiging onbekend';
 
   @override
   String get tileShareActivityExplicitResend =>
-      'The invitation may have been sent. Resend explicitly if needed.';
+      'De uitnodiging is mogelijk al verzonden. Verstuur deze expliciet opnieuw indien nodig.';
 
   @override
-  String get tileShareActivityEmail => 'Email';
+  String get tileShareActivityEmail => 'E-mail';
 
   @override
   String get tileShareActivitySms => 'SMS';
 
   @override
-  String get tileShareActivityPush => 'Push notification';
+  String get tileShareActivityPush => 'Pushmelding';
 
   @override
-  String get tileShareActivityTitle => 'Activities';
+  String get tileShareActivityTitle => 'Activiteiten';
 
   @override
-  String get tileShareActivityRefresh => 'Refresh';
+  String get tileShareActivityRefresh => 'Vernieuwen';
 
   @override
-  String get tileShareActivityRetry => 'Retry';
+  String get tileShareActivityRetry => 'Opnieuw proberen';
 
   @override
-  String get tileShareActivityEmpty => 'No activity yet.';
+  String get tileShareActivityEmpty => 'Nog geen activiteiten.';
 
   @override
   String get tileShareActivityFailed =>
-      'Activity could not be loaded. Check your connection and try again.';
+      'Activiteiten konden niet worden geladen. Controleer je verbinding en probeer het opnieuw.';
 
   @override
   String get tileShareActivityAccess =>
-      'This activity is no longer available to you.';
+      'Deze activiteit is niet meer voor je beschikbaar.';
 
   @override
-  String get tileShareActivityUnknown => 'Activity updated';
+  String get tileShareActivityUnknown => 'Activiteit bijgewerkt';
 
   @override
-  String get tileShareActivityUnavailable => 'Item no longer available';
+  String get tileShareActivityUnavailable => 'Item niet meer beschikbaar';
 
   @override
-  String get tileShareActivityMore => 'Load more';
+  String get tileShareActivityMore => 'Meer laden';
 
   @override
-  String get tileShareActivityClusterCreated => 'TileShare created';
+  String get tileShareActivityClusterCreated => 'TileShare aangemaakt';
 
   @override
-  String get tileShareActivityClusterDeleted => 'TileShare deleted';
+  String get tileShareActivityClusterDeleted => 'TileShare verwijderd';
 
   @override
-  String get tileShareActivityTiletteAdded => 'Tilette added';
+  String get tileShareActivityTiletteAdded => 'Tegeltje toegevoegd';
 
   @override
-  String get tileShareActivityTiletteEdited => 'Tilette updated';
+  String get tileShareActivityTiletteEdited => 'Tegeltje bijgewerkt';
 
   @override
-  String get tileShareActivityTiletteDeleted => 'Tilette deleted';
+  String get tileShareActivityTiletteDeleted => 'Tegeltje verwijderd';
 
   @override
-  String get tileShareActivityTiletteRestored => 'Tilette restored';
+  String get tileShareActivityTiletteRestored => 'Tegeltje hersteld';
 
   @override
-  String get tileShareActivityRecipientAdded => 'Participant added';
+  String get tileShareActivityRecipientAdded => 'Deelnemer toegevoegd';
 
   @override
-  String get tileShareActivityRecipientRemoved => 'Participant removed';
+  String get tileShareActivityRecipientRemoved => 'Deelnemer verwijderd';
 
   @override
-  String get tileShareActivityRecipientRestored => 'Participant restored';
+  String get tileShareActivityRecipientRestored => 'Deelnemer hersteld';
 
   @override
-  String get tileShareActivityAccepted => 'Assignment accepted';
+  String get tileShareActivityAccepted => 'Toewijzing geaccepteerd';
 
   @override
-  String get tileShareActivityDeclined => 'Assignment declined';
+  String get tileShareActivityDeclined => 'Toewijzing afgewezen';
 
   @override
-  String get tileShareActivityInvitationSent => 'Invitation sent';
+  String get tileShareActivityInvitationSent => 'Uitnodiging verzonden';
 
   @override
   String get tileShareActivityInvitationFailed =>
-      'Invitation could not be sent';
+      'Uitnodiging kon niet worden verzonden';
 
   @override
   String get update => 'Bijwerken';
@@ -1922,6 +1959,16 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String durationHoursMinutesShort(int hours, int minutes) {
     return '${hours}u ${minutes}m';
+  }
+
+  @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '${days}d ${hours}u';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '${days}d';
   }
 
   @override
@@ -3755,22 +3802,22 @@ class AppLocalizationsNl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count more days affected',
-      one: '1 more day affected',
+      other: 'nog $count dagen beïnvloed',
+      one: 'nog 1 dag beïnvloed',
     );
     return '$_temp0';
   }
 
   @override
-  String get editTileWhatIfUnplaced => 'Unplaced';
+  String get editTileWhatIfUnplaced => 'Niet geplaatst';
 
   @override
   String editTileWhatIfAffectedCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count affected tiles',
-      one: '1 affected tile',
+      other: '$count beïnvloede tegeltjes',
+      one: '1 beïnvloed tegeltje',
     );
     return '$_temp0';
   }
@@ -3939,13 +3986,13 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String addTileHoursEndsNextDay(String day, String time) {
-    return 'Ends $day at $time';
+    return 'Eindigt $day om $time';
   }
 
   @override
   String addTileRestrictionWindowNextDay(
       String days, String start, String end) {
-    return '$days · $start – $end (next day)';
+    return '$days · $start – $end (volgende dag)';
   }
 
   @override
@@ -4141,7 +4188,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get commentsAttachmentPickFailed =>
-      'Couldn\'t attach that file. Please try again.';
+      'Het bestand kon niet worden bijgevoegd. Probeer het opnieuw.';
 
   @override
   String commentsAttachmentRemove(String name) {
@@ -5239,4 +5286,323 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get tileShareSaveChanges => 'Save changes';
+
+  @override
+  String get scheduleChangeRefresh => 'Planning vernieuwen';
+
+  @override
+  String get scheduleChangeUncertainBody =>
+      'Je wijziging heeft de server mogelijk bereikt. Vernieuw om te controleren of de planning is bijgewerkt. Deze blokkering eindigt automatisch.';
+
+  @override
+  String get scheduleChangeUncertain => 'Bevestiging niet beschikbaar';
+
+  @override
+  String scheduleChangeAcknowledged(String change) {
+    return 'Je planning is bijgewerkt na $change. Controleer of alles klopt.';
+  }
+
+  @override
+  String scheduleChangeWentThrough(String change) {
+    return '$change is gelukt.';
+  }
+
+  @override
+  String scheduleChangeFailedLate(String change) {
+    return '$change is mislukt.';
+  }
+
+  @override
+  String scheduleChangeUnconfirmed(String change) {
+    return '$change kon niet worden bevestigd. Controleer je planning.';
+  }
+
+  @override
+  String scheduleChangeNotSent(String change) {
+    return 'Tiler was niet bereikbaar, dus $change is niet verzonden. Probeer het opnieuw.';
+  }
+
+  @override
+  String get scheduleChangeUnconfirmedGeneric =>
+      'Je laatste wijziging van de planning kon niet worden bevestigd. Controleer je planning.';
+
+  @override
+  String get scheduleChangeReattemptTitle => 'Opnieuw verzenden?';
+
+  @override
+  String scheduleChangeReattemptBody(String change) {
+    return '$change is mogelijk al gelukt. Opnieuw verzenden?';
+  }
+
+  @override
+  String get scheduleChangeReattemptConfirm => 'Opnieuw verzenden';
+
+  @override
+  String scheduleChangeReattemptDeclined(String change) {
+    return '$change is niet opnieuw verzonden.';
+  }
+
+  @override
+  String get scheduleChangeAdding => 'Afspraak toevoegen';
+
+  @override
+  String get scheduleChangeSettings => 'Planningsinstellingen bijwerken';
+
+  @override
+  String get scheduleChangeAccepting => 'Wijzigingen accepteren';
+
+  @override
+  String get scheduleChangeTargetSchedule => 'Je planning';
+
+  @override
+  String get scheduleChangeTargetEvent => 'Afspraak';
+
+  @override
+  String get scheduleChangeAllEvents => 'Alle afspraken';
+
+  @override
+  String scheduleChangeEventCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count afspraken',
+      one: '1 afspraak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangesBlocked =>
+      'Rond de huidige wijziging van de planning af voordat je een nieuwe begint.';
+
+  @override
+  String scheduleChangesBlockedBy(String change) {
+    return 'Rond de huidige wijziging van de planning ($change) af voordat je een nieuwe begint.';
+  }
+
+  @override
+  String get scheduleChangeFailed => 'Wijziging van de planning mislukt';
+
+  @override
+  String get scheduleUpdates => 'Planningupdates';
+
+  @override
+  String get scheduleUpdatesDescription =>
+      'Hoe je dag beweegt wanneer je planning verandert.';
+
+  @override
+  String get scheduleUpdatesDetailed => 'Gedetailleerd';
+
+  @override
+  String get scheduleUpdatesDetailedDescription =>
+      'Toont elke wijziging stap voor stap.';
+
+  @override
+  String get scheduleUpdatesMinimal => 'Minimaal';
+
+  @override
+  String get scheduleUpdatesMinimalDescription =>
+      'Schuift tegeltjes naar hun nieuwe tijden.';
+
+  @override
+  String get scheduleUpdatesOff => 'Uit';
+
+  @override
+  String get scheduleUpdatesOffDescription =>
+      'Direct bijwerken, zonder animatie.';
+
+  @override
+  String get scheduleChangePlanUpdated => 'Planning bijgewerkt';
+
+  @override
+  String get scheduleChangeDayCleared => 'Dag vrijgemaakt';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes verplaatst',
+      one: '1 tegeltje verplaatst',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes naar andere dagen verplaatst',
+      one: '1 tegeltje naar een andere dag verplaatst',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes toegevoegd',
+      one: '1 tegeltje toegevoegd',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes verwijderd',
+      one: '1 tegeltje verwijderd',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString reistijden bijgewerkt',
+      one: '1 reistijd bijgewerkt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(String duration) {
+    return '+$duration vrij';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => 'Wijzigingen bekijken';
+
+  @override
+  String get scheduleChangeWhatChanged => 'Wat er is veranderd';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return 'Toegevoegd · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => 'Verwijderd';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return 'Reis naar $name';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => 'Vrije tijd';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return 'Verplaatst van $time';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return 'Verplaatst naar $time';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$name verplaatst naar $when';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes verplaatst naar $when',
+      one: '1 tegeltje verplaatst naar $when',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes later gezet',
+      one: '1 tegeltje later gezet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes eerder gezet',
+      one: '1 tegeltje eerder gezet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tegeltjes worden verplaatst',
+      one: '1 tegeltje wordt verplaatst',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangeTabChanges => 'Wijzigingen';
+
+  @override
+  String get scheduleChangeTabBeforeAfter => 'Voor & na';
+
+  @override
+  String get scheduleChangeBefore => 'Voor';
+
+  @override
+  String get scheduleChangeAfter => 'Na';
 }

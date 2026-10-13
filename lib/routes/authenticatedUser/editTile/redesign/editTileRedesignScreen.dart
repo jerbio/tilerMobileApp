@@ -19,6 +19,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/components/thirdPartyDecisionBar.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
@@ -250,6 +252,8 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
   Future<void> _rsvp(RsvpStatus status) async {
     final EditTileDraft d = draft!;
     if (_rsvpProcessing) return;
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.edit)) return;
     setState(() {
       _rsvpProcessing = true;
       _rsvpError = null;
@@ -264,7 +268,10 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
     }
     setState(() {
       _rsvpProcessing = false;
-      _rsvpError = AppLocalizations.of(context)!.editTileRsvpFailed;
+      _rsvpError = scheduleChangeFailureMessage(context,
+          kind: ScheduleChangeKind.edit,
+          eventName: d.original.name,
+          fallback: AppLocalizations.of(context)!.editTileRsvpFailed);
     });
   }
 
@@ -378,6 +385,8 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
   Future<void> _save() async {
     final EditTileDraft? d = draft;
     if (d == null || _submitting || !d.canSave) return;
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.edit)) return;
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() => _submitting = true);
     final EditTileSaveResult result = await widget.submission.save(d);
@@ -391,11 +400,14 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
         return;
       case EditTileSaveOutcome.failure:
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        showScheduleChangeFailure(
+          context,
           key: const ValueKey('editTileSaveError'),
-          content: Text(l10n.editTileSaveFailed),
-          action: SnackBarAction(label: l10n.addTileRetry, onPressed: _save),
-        ));
+          kind: ScheduleChangeKind.edit,
+          eventName: d.name,
+          fallback: l10n.editTileSaveFailed,
+          onRetry: _save,
+        );
     }
   }
 
@@ -407,6 +419,13 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
   Future<void> _runAction(EditTileAction action) async {
     final EditTileDraft d = draft!;
     if (_submitting) return;
+    final kind = switch (action) {
+      EditTileAction.complete => ScheduleChangeKind.complete,
+      EditTileAction.startNow => ScheduleChangeKind.startNow,
+      EditTileAction.defer => ScheduleChangeKind.defer,
+      EditTileAction.delete => ScheduleChangeKind.delete,
+    };
+    if (!scheduleChangesAllowed(context, requestedKind: kind)) return;
     final l10n = AppLocalizations.of(context)!;
     final String title = d.name.trim().isEmpty ? l10n.tileName : d.name.trim();
     final String question;
@@ -454,6 +473,7 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
       if (deferBy == null || !mounted) return;
     }
 
+    if (!scheduleChangesAllowed(context, requestedKind: kind)) return;
     setState(() => _submitting = true);
     final SubCalendarEvent tile = d.original;
     final EditTileSaveResult result = switch (action) {
@@ -468,10 +488,12 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
       Navigator.of(context).pop(result.tile);
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    showScheduleChangeFailure(
+      context,
       key: const ValueKey('editTileActionError'),
-      content: Text(l10n.editTileActionFailed),
-    ));
+      kind: kind,
+      eventName: tile.name,
+    );
   }
 
   /// "Create as new tile" hands the suggestion to Add Tile with a prefill.
@@ -562,39 +584,41 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
               ),
           ],
         ),
-        body: _loading
-            ? const TileLoadSkeleton(sweepKey: ValueKey('editTileLoadingSweep'))
-            : _loadFailure != null
-                ? TileLoadFailure(
-                    retryKey: const ValueKey('editTileRetryLoad'),
-                    message: l10n.editTileLoadFailed,
-                    onRetry: _load)
-                : _Frame(
-                    draft: d!,
-                    submitting: _submitting,
-                    titleController: _titleController,
-                    titleFocus: _titleFocus,
-                    onTitleChanged: _onTitleChanged,
-                    suggestions: _suggestions,
-                    onStartDateTap: _editStartDate,
-                    onStartTimeTap: _editStartTime,
-                    onEndDateTap: _editEndDate,
-                    onEndTimeTap: _editEndTime,
-                    onDurationTap: _editDuration,
-                    onDeadlineTap: _editDeadline,
-                    onAction: _runAction,
-                    onSuggestionTap: _createFromSuggestion,
-                    onNotesTap: _openNotes,
-                    onProgressTap: _openSeries,
-                    onSave: _save,
-                    rsvpProcessing: _rsvpProcessing,
-                    rsvpError: _rsvpError,
-                    onRsvp: _rsvp,
-                    whatIf: _whatIf,
-                    whatIfPending: _whatIfPending,
-                    onWhatIfTap: _showWhatIf,
-                    onWhatIfRetry: _retryWhatIf,
-                  ),
+        body: ScheduleEvaluationProgress(
+            child: _loading
+                ? const TileLoadSkeleton(
+                    sweepKey: ValueKey('editTileLoadingSweep'))
+                : _loadFailure != null
+                    ? TileLoadFailure(
+                        retryKey: const ValueKey('editTileRetryLoad'),
+                        message: l10n.editTileLoadFailed,
+                        onRetry: _load)
+                    : _Frame(
+                        draft: d!,
+                        submitting: _submitting,
+                        titleController: _titleController,
+                        titleFocus: _titleFocus,
+                        onTitleChanged: _onTitleChanged,
+                        suggestions: _suggestions,
+                        onStartDateTap: _editStartDate,
+                        onStartTimeTap: _editStartTime,
+                        onEndDateTap: _editEndDate,
+                        onEndTimeTap: _editEndTime,
+                        onDurationTap: _editDuration,
+                        onDeadlineTap: _editDeadline,
+                        onAction: _runAction,
+                        onSuggestionTap: _createFromSuggestion,
+                        onNotesTap: _openNotes,
+                        onProgressTap: _openSeries,
+                        onSave: _save,
+                        rsvpProcessing: _rsvpProcessing,
+                        rsvpError: _rsvpError,
+                        onRsvp: _rsvp,
+                        whatIf: _whatIf,
+                        whatIfPending: _whatIfPending,
+                        onWhatIfTap: _showWhatIf,
+                        onWhatIfRetry: _retryWhatIf,
+                      )),
       ),
     );
   }

@@ -9,6 +9,43 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get notesLoadFailed =>
+      'Couldn’t load your notes. Reopen the notes editor to try again.';
+
+  @override
+  String get onboardingSubmitFailed =>
+      'Couldn’t save your setup. Your choices are kept. Try again or skip for now.';
+
+  @override
+  String operationFailed(String operation) {
+    return '$operation failed. Please try again.';
+  }
+
+  @override
+  String get scheduleLoadFailed =>
+      'Couldn’t load your schedule. Refresh to try again.';
+
+  @override
+  String get chatConnectionFailed =>
+      'Couldn’t connect to chat. Reopen chat to try again.';
+
+  @override
+  String get chatHistoryFailed =>
+      'Couldn’t load your chat history. Reopen the conversation to try again.';
+
+  @override
+  String get chatSendFailed =>
+      'Your message couldn’t be sent. Check your connection and try again.';
+
+  @override
+  String get chatRecordingFailed =>
+      'Couldn’t start voice recording. Check microphone access and try again.';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      'Couldn’t cancel voice recording. Try stopping the recording again.';
+
+  @override
   String get whiteSpace => ' ';
 
   @override
@@ -1911,6 +1948,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String durationHoursMinutesShort(int hours, int minutes) {
     return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '${days}d ${hours}h';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '${days}d';
   }
 
   @override
@@ -5207,4 +5254,322 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tileShareSaveChanges => 'Save changes';
+
+  @override
+  String get scheduleChangeRefresh => 'Refresh schedule';
+
+  @override
+  String get scheduleChangeUncertainBody =>
+      'Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.';
+
+  @override
+  String get scheduleChangeUncertain => 'Confirmation unavailable';
+
+  @override
+  String scheduleChangeAcknowledged(String change) {
+    return 'Your schedule was updated after $change. Check that it looks right.';
+  }
+
+  @override
+  String scheduleChangeWentThrough(String change) {
+    return '$change went through.';
+  }
+
+  @override
+  String scheduleChangeFailedLate(String change) {
+    return '$change failed.';
+  }
+
+  @override
+  String scheduleChangeUnconfirmed(String change) {
+    return 'Couldn\'t confirm $change. Check your schedule.';
+  }
+
+  @override
+  String scheduleChangeNotSent(String change) {
+    return 'Couldn\'t reach Tiler, so $change wasn\'t sent. Try again.';
+  }
+
+  @override
+  String get scheduleChangeUnconfirmedGeneric =>
+      'Couldn\'t confirm your last schedule change. Check your schedule.';
+
+  @override
+  String get scheduleChangeReattemptTitle => 'Send again?';
+
+  @override
+  String scheduleChangeReattemptBody(String change) {
+    return '$change may already have gone through. Send it again?';
+  }
+
+  @override
+  String get scheduleChangeReattemptConfirm => 'Send again';
+
+  @override
+  String scheduleChangeReattemptDeclined(String change) {
+    return '$change wasn\'t sent again.';
+  }
+
+  @override
+  String get scheduleChangeAdding => 'Adding event';
+
+  @override
+  String get scheduleChangeSettings => 'Updating schedule settings';
+
+  @override
+  String get scheduleChangeAccepting => 'Accepting changes';
+
+  @override
+  String get scheduleChangeTargetSchedule => 'Your schedule';
+
+  @override
+  String get scheduleChangeTargetEvent => 'Event';
+
+  @override
+  String get scheduleChangeAllEvents => 'All events';
+
+  @override
+  String scheduleChangeEventCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count events',
+      one: '1 event',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangesBlocked =>
+      'Finish the current schedule change before starting another.';
+
+  @override
+  String scheduleChangesBlockedBy(String change) {
+    return 'Finish the current schedule change ($change) before starting another.';
+  }
+
+  @override
+  String get scheduleChangeFailed => 'Schedule change failed';
+
+  @override
+  String get scheduleUpdates => 'Schedule updates';
+
+  @override
+  String get scheduleUpdatesDescription =>
+      'How your day moves when your schedule changes.';
+
+  @override
+  String get scheduleUpdatesDetailed => 'Detailed';
+
+  @override
+  String get scheduleUpdatesDetailedDescription =>
+      'Show each change step by step.';
+
+  @override
+  String get scheduleUpdatesMinimal => 'Minimal';
+
+  @override
+  String get scheduleUpdatesMinimalDescription =>
+      'Slide Tiles to their new times.';
+
+  @override
+  String get scheduleUpdatesOff => 'Off';
+
+  @override
+  String get scheduleUpdatesOffDescription => 'Update instantly, no animation.';
+
+  @override
+  String get scheduleChangePlanUpdated => 'Plan updated';
+
+  @override
+  String get scheduleChangeDayCleared => 'Day cleared';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString Tiles moved',
+      one: '1 Tile moved',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString Tiles moved to other days',
+      one: '1 Tile moved to another day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString Tiles added',
+      one: '1 Tile added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString Tiles removed',
+      one: '1 Tile removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString travel times updated',
+      one: '1 travel time updated',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(String duration) {
+    return '+$duration free';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => 'See changes';
+
+  @override
+  String get scheduleChangeWhatChanged => 'What changed';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return 'Added · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => 'Removed';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return 'Travel to $name';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => 'Free time';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return 'Moved from $time';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return 'Moved to $time';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$name moved to $when';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString Tiles moved to $when',
+      one: '1 Tile moved to $when',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString Tiles moved later',
+      one: '1 Tile moved later',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString Tiles moved earlier',
+      one: '1 Tile moved earlier',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString Tiles moving',
+      one: '1 Tile moving',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangeTabChanges => 'Changes';
+
+  @override
+  String get scheduleChangeTabBeforeAfter => 'Before & after';
+
+  @override
+  String get scheduleChangeBefore => 'Before';
+
+  @override
+  String get scheduleChangeAfter => 'After';
 }

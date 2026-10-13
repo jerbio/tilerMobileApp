@@ -9,6 +9,38 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get notesLoadFailed => 'メモを読み込めませんでした。メモエディターを開き直してください。';
+
+  @override
+  String get onboardingSubmitFailed =>
+      '初期設定を保存できませんでした。選択内容は保持されています。もう一度試すか、今はスキップしてください。';
+
+  @override
+  String operationFailed(String operation) {
+    return '$operationに失敗しました。もう一度お試しください。';
+  }
+
+  @override
+  String get scheduleLoadFailed => 'スケジュールを読み込めませんでした。更新してもう一度お試しください。';
+
+  @override
+  String get chatConnectionFailed => 'チャットに接続できませんでした。チャットを開き直してください。';
+
+  @override
+  String get chatHistoryFailed => 'チャット履歴を読み込めませんでした。会話を開き直してください。';
+
+  @override
+  String get chatSendFailed => 'メッセージを送信できませんでした。接続を確認してもう一度お試しください。';
+
+  @override
+  String get chatRecordingFailed =>
+      '音声録音を開始できませんでした。マイクへのアクセスを確認してもう一度お試しください。';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      '音声録音をキャンセルできませんでした。もう一度録音の停止をお試しください。';
+
+  @override
   String get whiteSpace => ' ';
 
   @override
@@ -707,10 +739,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get todayStatusClearDay => '今日は空いています。';
 
   @override
-  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+  String get todayStatusClearDayHeadline => '軽めの一日、至急の予定はありません。';
 
   @override
-  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+  String get todayStatusClearDaySubtext => 'Tilerにあなたの代わりに働かせてください。';
 
   @override
   String get todayStatusPreviewCta => 'より良いプランをプレビュー';
@@ -1023,90 +1055,86 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tileShare => 'タイル共有';
 
   @override
-  String get tileShareActivityInvitationUnknown =>
-      'Invitation send outcome unknown';
+  String get tileShareActivityInvitationUnknown => '招待の送信結果は不明です';
 
   @override
   String get tileShareActivityExplicitResend =>
-      'The invitation may have been sent. Resend explicitly if needed.';
+      '招待は送信されている可能性があります。必要に応じて明示的に再送信してください。';
 
   @override
-  String get tileShareActivityEmail => 'Email';
+  String get tileShareActivityEmail => 'メール';
 
   @override
   String get tileShareActivitySms => 'SMS';
 
   @override
-  String get tileShareActivityPush => 'Push notification';
+  String get tileShareActivityPush => 'プッシュ通知';
 
   @override
-  String get tileShareActivityTitle => 'Activities';
+  String get tileShareActivityTitle => 'アクティビティ';
 
   @override
-  String get tileShareActivityRefresh => 'Refresh';
+  String get tileShareActivityRefresh => '更新';
 
   @override
-  String get tileShareActivityRetry => 'Retry';
+  String get tileShareActivityRetry => '再試行';
 
   @override
-  String get tileShareActivityEmpty => 'No activity yet.';
+  String get tileShareActivityEmpty => 'まだアクティビティはありません。';
 
   @override
-  String get tileShareActivityFailed =>
-      'Activity could not be loaded. Check your connection and try again.';
+  String get tileShareActivityFailed => 'アクティビティを読み込めませんでした。接続を確認して再試行してください。';
 
   @override
-  String get tileShareActivityAccess =>
-      'This activity is no longer available to you.';
+  String get tileShareActivityAccess => 'このアクティビティはもう利用できません。';
 
   @override
-  String get tileShareActivityUnknown => 'Activity updated';
+  String get tileShareActivityUnknown => 'アクティビティが更新されました';
 
   @override
-  String get tileShareActivityUnavailable => 'Item no longer available';
+  String get tileShareActivityUnavailable => 'この項目はもう利用できません';
 
   @override
-  String get tileShareActivityMore => 'Load more';
+  String get tileShareActivityMore => 'さらに読み込む';
 
   @override
-  String get tileShareActivityClusterCreated => 'TileShare created';
+  String get tileShareActivityClusterCreated => 'TileShareを作成しました';
 
   @override
-  String get tileShareActivityClusterDeleted => 'TileShare deleted';
+  String get tileShareActivityClusterDeleted => 'TileShareを削除しました';
 
   @override
-  String get tileShareActivityTiletteAdded => 'Tilette added';
+  String get tileShareActivityTiletteAdded => 'Tiletteを追加しました';
 
   @override
-  String get tileShareActivityTiletteEdited => 'Tilette updated';
+  String get tileShareActivityTiletteEdited => 'Tiletteを更新しました';
 
   @override
-  String get tileShareActivityTiletteDeleted => 'Tilette deleted';
+  String get tileShareActivityTiletteDeleted => 'Tiletteを削除しました';
 
   @override
-  String get tileShareActivityTiletteRestored => 'Tilette restored';
+  String get tileShareActivityTiletteRestored => 'Tiletteを復元しました';
 
   @override
-  String get tileShareActivityRecipientAdded => 'Participant added';
+  String get tileShareActivityRecipientAdded => '参加者を追加しました';
 
   @override
-  String get tileShareActivityRecipientRemoved => 'Participant removed';
+  String get tileShareActivityRecipientRemoved => '参加者を削除しました';
 
   @override
-  String get tileShareActivityRecipientRestored => 'Participant restored';
+  String get tileShareActivityRecipientRestored => '参加者を復元しました';
 
   @override
-  String get tileShareActivityAccepted => 'Assignment accepted';
+  String get tileShareActivityAccepted => '割り当てを承諾しました';
 
   @override
-  String get tileShareActivityDeclined => 'Assignment declined';
+  String get tileShareActivityDeclined => '割り当てを辞退しました';
 
   @override
-  String get tileShareActivityInvitationSent => 'Invitation sent';
+  String get tileShareActivityInvitationSent => '招待を送信しました';
 
   @override
-  String get tileShareActivityInvitationFailed =>
-      'Invitation could not be sent';
+  String get tileShareActivityInvitationFailed => '招待を送信できませんでした';
 
   @override
   String get update => '更新';
@@ -1878,12 +1906,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String durationHoursMinutesShort(int hours, int minutes) {
-    return '${hours}h$minutes分';
+    return '$hours時間$minutes分';
+  }
+
+  @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '$days日$hours時間';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '$days日';
   }
 
   @override
   String durationHoursShort(int hours) {
-    return '${hours}h';
+    return '$hours時間';
   }
 
   @override
@@ -3663,22 +3701,22 @@ class AppLocalizationsJa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count more days affected',
-      one: '1 more day affected',
+      other: '追加で$count日影響',
+      one: '追加で1日影響',
     );
     return '$_temp0';
   }
 
   @override
-  String get editTileWhatIfUnplaced => 'Unplaced';
+  String get editTileWhatIfUnplaced => '未配置';
 
   @override
   String editTileWhatIfAffectedCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count affected tiles',
-      one: '1 affected tile',
+      other: '影響を受けたタイル$count件',
+      one: '影響を受けたタイル1件',
     );
     return '$_temp0';
   }
@@ -3833,13 +3871,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String addTileHoursEndsNextDay(String day, String time) {
-    return 'Ends $day at $time';
+    return '$day $timeに終了';
   }
 
   @override
   String addTileRestrictionWindowNextDay(
       String days, String start, String end) {
-    return '$days · $start – $end (next day)';
+    return '$days · $start – $end（翌日）';
   }
 
   @override
@@ -4032,8 +4070,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commentsAttachmentUploadFailed => 'アップロードに失敗しました';
 
   @override
-  String get commentsAttachmentPickFailed =>
-      'Couldn\'t attach that file. Please try again.';
+  String get commentsAttachmentPickFailed => 'そのファイルを添付できませんでした。もう一度お試しください。';
 
   @override
   String commentsAttachmentRemove(String name) {
@@ -5128,4 +5165,303 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tileShareSaveChanges => 'Save changes';
+
+  @override
+  String get scheduleChangeRefresh => 'スケジュールを更新';
+
+  @override
+  String get scheduleChangeUncertainBody =>
+      '変更がサーバーに届いている可能性があります。更新して、スケジュールに変更があるか確認してください。この制限は自動的に解除されます。';
+
+  @override
+  String get scheduleChangeUncertain => '確認できません';
+
+  @override
+  String scheduleChangeAcknowledged(String change) {
+    return '$changeの後にスケジュールが更新されました。内容を確認してください。';
+  }
+
+  @override
+  String scheduleChangeWentThrough(String change) {
+    return '$changeが完了しました。';
+  }
+
+  @override
+  String scheduleChangeFailedLate(String change) {
+    return '$changeに失敗しました。';
+  }
+
+  @override
+  String scheduleChangeUnconfirmed(String change) {
+    return '$changeを確認できませんでした。スケジュールを確認してください。';
+  }
+
+  @override
+  String scheduleChangeNotSent(String change) {
+    return 'Tilerに接続できなかったため、$changeは送信されませんでした。もう一度お試しください。';
+  }
+
+  @override
+  String get scheduleChangeUnconfirmedGeneric =>
+      '直前のスケジュール変更を確認できませんでした。スケジュールを確認してください。';
+
+  @override
+  String get scheduleChangeReattemptTitle => 'もう一度送信しますか？';
+
+  @override
+  String scheduleChangeReattemptBody(String change) {
+    return '$changeはすでに反映されている可能性があります。もう一度送信しますか？';
+  }
+
+  @override
+  String get scheduleChangeReattemptConfirm => 'もう一度送信';
+
+  @override
+  String scheduleChangeReattemptDeclined(String change) {
+    return '$changeは再送信されませんでした。';
+  }
+
+  @override
+  String get scheduleChangeAdding => '予定を追加中';
+
+  @override
+  String get scheduleChangeSettings => 'スケジュール設定を更新中';
+
+  @override
+  String get scheduleChangeAccepting => '変更を承認中';
+
+  @override
+  String get scheduleChangeTargetSchedule => 'あなたのスケジュール';
+
+  @override
+  String get scheduleChangeTargetEvent => '予定';
+
+  @override
+  String get scheduleChangeAllEvents => 'すべての予定';
+
+  @override
+  String scheduleChangeEventCount(int count) {
+    return '$count件の予定';
+  }
+
+  @override
+  String get scheduleChangesBlocked => '現在のスケジュール変更が完了してから、次の変更を開始してください。';
+
+  @override
+  String scheduleChangesBlockedBy(String change) {
+    return '現在のスケジュール変更（$change）が完了してから、次の変更を開始してください。';
+  }
+
+  @override
+  String get scheduleChangeFailed => 'スケジュール変更に失敗しました';
+
+  @override
+  String get scheduleUpdates => 'スケジュールの更新';
+
+  @override
+  String get scheduleUpdatesDescription => 'スケジュールが変わったときの一日の動き方。';
+
+  @override
+  String get scheduleUpdatesDetailed => '詳細';
+
+  @override
+  String get scheduleUpdatesDetailedDescription => '変更を一つずつ順に表示します。';
+
+  @override
+  String get scheduleUpdatesMinimal => 'シンプル';
+
+  @override
+  String get scheduleUpdatesMinimalDescription => 'タイルを新しい時間へスライドします。';
+
+  @override
+  String get scheduleUpdatesOff => 'オフ';
+
+  @override
+  String get scheduleUpdatesOffDescription => 'アニメーションなしですぐに更新します。';
+
+  @override
+  String get scheduleChangePlanUpdated => 'プランを更新しました';
+
+  @override
+  String get scheduleChangeDayCleared => 'この日は空になりました';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを別の日に移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを追加',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを削除',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件の移動時間を更新',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(String duration) {
+    return '空き時間 +$duration';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => '変更を見る';
+
+  @override
+  String get scheduleChangeWhatChanged => '変更内容';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return '追加 · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => '削除';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return '$nameへの移動';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => '空き時間';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return '$timeから移動';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return '$timeに移動';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$nameを$whenに移動';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを$whenに移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを後ろに移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを前に移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを移動中',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangeTabChanges => '変更';
+
+  @override
+  String get scheduleChangeTabBeforeAfter => '変更前と変更後';
+
+  @override
+  String get scheduleChangeBefore => '変更前';
+
+  @override
+  String get scheduleChangeAfter => '変更後';
 }

@@ -16,7 +16,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -24,6 +26,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridControlle
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/travelBandWidget.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
 /// Records `ScheduleBloc` events WITHOUT running the network-bound
@@ -33,7 +36,11 @@ import 'package:tiler_app/theme/theme_data.dart';
 class _RecordingScheduleBloc extends ScheduleBloc {
   final List<ScheduleEvent> events = <ScheduleEvent>[];
 
-  _RecordingScheduleBloc() : super(getContextCallBack: () => null);
+  _RecordingScheduleBloc({bool knownBaseline = true})
+      : super(getContextCallBack: () => null) {
+    scheduleApi = _FakeScheduleApi();
+    if (knownBaseline) revisions.observe(_FakeScheduleApi.status);
+  }
 
   @override
   void add(ScheduleEvent event) {
@@ -43,6 +50,17 @@ class _RecordingScheduleBloc extends ScheduleBloc {
     }
     super.add(event);
   }
+}
+
+class _FakeScheduleApi extends ScheduleApi {
+  _FakeScheduleApi() : super(getContextCallBack: () => null);
+  static final status =
+      ScheduleStatus.fromJson({'analysisId': 'a', 'evaluationId': 'e'});
+  Completer<ScheduleStatus>? pendingStatus;
+
+  @override
+  Future<ScheduleStatus> getScheduleStatus() async =>
+      pendingStatus == null ? status : await pendingStatus!.future;
 }
 
 /// `SubCalendarEventApi` double — captures the `EditTilerEvent` of a drag
@@ -107,6 +125,7 @@ SubCalendarEvent _tile(
   if (travelTimeBefore != null) t.travelTimeBefore = travelTimeBefore;
   return t;
 }
+
 Widget _buildApp({
   required ScheduleBloc bloc,
   required SubCalendarEventApi api,
@@ -174,16 +193,19 @@ Future<void> _dragTile(WidgetTester tester, Offset start, Offset delta) async {
   await gesture.up();
   await tester.pump();
 }
+
 /// The tile's own position (content y, scroll-independent): the nearest
 /// `AnimatedPositioned` ancestor of the tile's name caption.
 double _tileTop(WidgetTester tester, String name) {
   final positioned = tester.widget<AnimatedPositioned>(
     find
-        .ancestor(of: find.text(name), matching: find.byType(AnimatedPositioned))
+        .ancestor(
+            of: find.text(name), matching: find.byType(AnimatedPositioned))
         .first,
   );
   return positioned.top!;
 }
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -205,8 +227,7 @@ void main() {
       double? calendarEventStart,
       double? calendarEventEnd,
     }) {
-      DateTime at(int h, int m) =>
-          dayStart.add(Duration(hours: h, minutes: m));
+      DateTime at(int h, int m) => dayStart.add(Duration(hours: h, minutes: m));
       return _tile(
         't',
         at(h1, m1),
@@ -240,7 +261,8 @@ void main() {
         );
         expect(seed.start, DateTime(2027, 1, 15, h1, m1),
             reason: 'px/h $px, drop 9:07');
-        expect(seed.end, DateTime(2027, 1, 15, h1, m1).add(const Duration(hours: 1)),
+        expect(seed.end,
+            DateTime(2027, 1, 15, h1, m1).add(const Duration(hours: 1)),
             reason: 'px/h $px (duration preserved)');
         expect(seed.withinRange, isTrue, reason: 'px/h $px');
         expect(seed.blockReason, isNull, reason: 'px/h $px');
@@ -295,7 +317,7 @@ void main() {
       expect(before.start, DateTime(2027, 1, 15, 0, 0));
       expect(before.end, DateTime(2027, 1, 15, 1, 0));
     });
-test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
+    test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
       final day8 = dayStart.add(const Duration(hours: 8));
       final day11 = dayStart.add(const Duration(hours: 11));
       // A 1h tile with an 08:00–11:00 window.
@@ -335,7 +357,8 @@ test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
       expect(early.withinRange, isFalse);
     });
 
-    test('calendarEventStart/End window is used when the range fields are absent',
+    test(
+        'calendarEventStart/End window is used when the range fields are absent',
         () {
       final day8 = dayStart.add(const Duration(hours: 8));
       final day10 = dayStart.add(const Duration(hours: 10));
@@ -376,7 +399,8 @@ test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
       expect(seed.withinRange, isTrue);
     });
 
-    test('rangeStart == rangeEnd (single-instant anchor) falls back to the '
+    test(
+        'rangeStart == rangeEnd (single-instant anchor) falls back to the '
         'calendarEvent window (real-data shape)', () {
       final anchor = dayStart.add(const Duration(hours: 8));
       // Real data carries rangeStart == rangeEnd == the parent event's start
@@ -387,9 +411,10 @@ test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
           rangeStart: anchor.millisecondsSinceEpoch.toDouble(),
           rangeEnd: anchor.millisecondsSinceEpoch.toDouble(),
           calendarEventStart: anchor.millisecondsSinceEpoch.toDouble(),
-          calendarEventEnd:
-              dayStart.add(const Duration(days: 3)).millisecondsSinceEpoch
-                  .toDouble());
+          calendarEventEnd: dayStart
+              .add(const Duration(days: 3))
+              .millisecondsSinceEpoch
+              .toDouble());
 
       // 10:45 → 10:45, end 11:45. Under the old zero-length range window this
       // was permanently blocked; under the parent-event fallback the whole
@@ -422,7 +447,8 @@ test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
       expect(seed.withinRange, isTrue);
     });
 
-    test('a drop beyond the parent-event window is still blocked '
+    test(
+        'a drop beyond the parent-event window is still blocked '
         '(no over-permission)', () {
       final anchor = dayStart.add(const Duration(hours: 8));
       final parentEnd = dayStart.add(const Duration(hours: 11));
@@ -430,8 +456,7 @@ test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
           rangeStart: anchor.millisecondsSinceEpoch.toDouble(),
           rangeEnd: anchor.millisecondsSinceEpoch.toDouble(),
           calendarEventStart: anchor.millisecondsSinceEpoch.toDouble(),
-          calendarEventEnd:
-              parentEnd.millisecondsSinceEpoch.toDouble());
+          calendarEventEnd: parentEnd.millisecondsSinceEpoch.toDouble());
 
       // 10:45 → end 11:45 > 11:00 → genuinely outside the parent slot → blocked.
       final blocked = DayGridWidget.computeDragSeed(
@@ -455,8 +480,7 @@ test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
       expect(ok.withinRange, isTrue);
     });
 
-    test('bottomZoneStartY parks the bottom zone at the visible bottom',
-        () {
+    test('bottomZoneStartY parks the bottom zone at the visible bottom', () {
       // No occlusion: the zone hugs the raw viewport bottom (600 - 48).
       expect(
         DayGridWidget.bottomZoneStartY(600, bottomOcclusion: 0),
@@ -563,6 +587,35 @@ test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
       await _closeBloc(tester, bloc);
     });
 
+    testWidgets('a drop waits for an unknown baseline and commits exactly once',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc(knownBaseline: false);
+      final baseline = Completer<ScheduleStatus>();
+      (bloc.scheduleApi as _FakeScheduleApi).pendingStatus = baseline;
+      final api = _FakeSubCalendarEventApi();
+      final controller = DayGridController()..setPxPerHour(80);
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        api: api,
+        tiles: [
+          _tile('a', DateTime(2027, 1, 15, 9), DateTime(2027, 1, 15, 10))
+        ],
+        now: now,
+        day: dayStart,
+        controller: controller,
+      ));
+      await tester.pump();
+      await _dragTile(tester, const Offset(200, 40), const Offset(0, 120));
+      expect(api.updateCount, 0);
+      baseline.complete(_FakeScheduleApi.status);
+      await tester.pump(const Duration(milliseconds: 1));
+      expect(api.updateCount, 1);
+      expect(api.captured!.startTime, DateTime(2027, 1, 15, 10, 30));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(api.updateCount, 1);
+      await _closeBloc(tester, bloc);
+    });
+
     testWidgets('drag move snaps the ghost to the drop Y (10:30 at 80 px/h)',
         (tester) async {
       final bloc = _RecordingScheduleBloc();
@@ -597,6 +650,10 @@ test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
       expect(api.updateCount, 1);
       expect(api.captured!.startTime, DateTime(2027, 1, 15, 10, 30));
       expect(api.captured!.endTime, DateTime(2027, 1, 15, 11, 30));
+      final attribution =
+          bloc.changeTracker.resolve(const ScheduleRevision('a2', 'e2'));
+      expect(attribution.origin, ScheduleChangeOrigin.userEdit);
+      expect(attribution.subjectId, 'a');
       // Optimistic settle: the tile holds the dropped slot (content y
       // 840) while the parent re-serves the server-confirmed data.
       expect(_tileTop(tester, 'a'), closeTo(840, 0.5));
@@ -604,7 +661,7 @@ test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
       expect(controller.mode, DayGridMode.idle);
       await _closeBloc(tester, bloc);
     });
-testWidgets('drop outside rangeStart/rangeEnd → blocked, tile returns',
+    testWidgets('drop outside rangeStart/rangeEnd → blocked, tile returns',
         (tester) async {
       final day8 = dayStart.add(const Duration(hours: 8));
       final day11 = dayStart.add(const Duration(hours: 11));
@@ -678,7 +735,7 @@ testWidgets('drop outside rangeStart/rangeEnd → blocked, tile returns',
       expect(tester.getTopLeft(find.text('g')).dy, closeTo(10, 0.5));
       await _closeBloc(tester, bloc);
     });
-testWidgets('preview grid ignores long-press', (tester) async {
+    testWidgets('preview grid ignores long-press', (tester) async {
       final bloc = _RecordingScheduleBloc();
       final api = _FakeSubCalendarEventApi();
       final controller = DayGridController()..setPxPerHour(80);
@@ -745,8 +802,7 @@ testWidgets('preview grid ignores long-press', (tester) async {
       await _closeBloc(tester, bloc);
     });
 
-    testWidgets('plain vertical drag on a tile still scrolls',
-        (tester) async {
+    testWidgets('plain vertical drag on a tile still scrolls', (tester) async {
       final bloc = _RecordingScheduleBloc();
       final api = _FakeSubCalendarEventApi();
       final controller = DayGridController()..setPxPerHour(80);
@@ -782,7 +838,7 @@ testWidgets('preview grid ignores long-press', (tester) async {
       expect(api.updateCount, 0);
       await _closeBloc(tester, bloc);
     });
-testWidgets('travel bands dim while a drag is active', (tester) async {
+    testWidgets('travel bands dim while a drag is active', (tester) async {
       final bloc = _RecordingScheduleBloc();
       final api = _FakeSubCalendarEventApi();
       final controller = DayGridController()..setPxPerHour(80);
@@ -803,20 +859,20 @@ testWidgets('travel bands dim while a drag is active', (tester) async {
       ));
       await tester.pump();
 
-      expect(tester.widget<TravelBandWidget>(find.byType(TravelBandWidget))
-              .dimmed,
+      expect(
+          tester.widget<TravelBandWidget>(find.byType(TravelBandWidget)).dimmed,
           isFalse);
 
       final gesture = await tester.startGesture(const Offset(200, 40));
       await tester.pump(kLongPressTimeout);
-      expect(tester.widget<TravelBandWidget>(find.byType(TravelBandWidget))
-              .dimmed,
+      expect(
+          tester.widget<TravelBandWidget>(find.byType(TravelBandWidget)).dimmed,
           isTrue);
 
       await gesture.up();
       await tester.pump();
-      expect(tester.widget<TravelBandWidget>(find.byType(TravelBandWidget))
-              .dimmed,
+      expect(
+          tester.widget<TravelBandWidget>(find.byType(TravelBandWidget)).dimmed,
           isFalse);
       await _closeBloc(tester, bloc);
     });
@@ -849,8 +905,10 @@ testWidgets('travel bands dim while a drag is active', (tester) async {
       // auto-scroll arms.
       await gesture.moveBy(const Offset(0, -20));
       await tester.pump();
-      final ghostBefore = tester.widget<AnimatedPositioned>(
-          find.byKey(const Key('daygrid_drag_ghost'))).top!;
+      final ghostBefore = tester
+          .widget<AnimatedPositioned>(
+              find.byKey(const Key('daygrid_drag_ghost')))
+          .top!;
       expect(ghostBefore, closeTo(700, 0.5));
 
       // Let the auto-scroll run: each tick moves the grid toward the
@@ -863,8 +921,10 @@ testWidgets('travel bands dim while a drag is active', (tester) async {
       expect(tester.getTopLeft(find.text('a')).dy, greaterThan(100));
       // The ghost tracks the finger's (unchanged) viewport point: its
       // drop slot rolled earlier as the grid scrolled.
-      final ghostAfter = tester.widget<AnimatedPositioned>(
-          find.byKey(const Key('daygrid_drag_ghost'))).top!;
+      final ghostAfter = tester
+          .widget<AnimatedPositioned>(
+              find.byKey(const Key('daygrid_drag_ghost')))
+          .top!;
       expect(ghostAfter, lessThan(ghostBefore));
       expect(controller.mode, DayGridMode.dragging); // still mid-drag.
 
@@ -979,7 +1039,8 @@ testWidgets('travel bands dim while a drag is active', (tester) async {
         await gesture.moveBy(Offset(0, i.isEven ? 0.5 : -0.5));
         await tester.pump(const Duration(milliseconds: 16));
       }
-      expect(scroll.position.pixels, closeTo(scroll.position.maxScrollExtent, 0.5),
+      expect(
+          scroll.position.pixels, closeTo(scroll.position.maxScrollExtent, 0.5),
           reason: 'must keep scrolling to the very bottom, not stop early');
       expect(controller.mode, DayGridMode.dragging);
 
@@ -1016,8 +1077,10 @@ testWidgets('travel bands dim while a drag is active', (tester) async {
       // zone (560 > 600 - 48): the auto-scroll arms.
       await gesture.moveBy(const Offset(0, 500));
       await tester.pump();
-      final ghostBefore = tester.widget<AnimatedPositioned>(
-          find.byKey(const Key('daygrid_drag_ghost'))).top!;
+      final ghostBefore = tester
+          .widget<AnimatedPositioned>(
+              find.byKey(const Key('daygrid_drag_ghost')))
+          .top!;
       // 20:15 raw → already on a 15-min snap (content top 1620).
       expect(ghostBefore, closeTo(1620, 0.5));
 
@@ -1030,8 +1093,10 @@ testWidgets('travel bands dim while a drag is active', (tester) async {
       expect(tester.getTopLeft(find.text('b')).dy, lessThan(10));
       // The ghost tracks the finger's viewport point: its drop slot
       // rolled later as the grid scrolled (22:45 at the content bottom).
-      final ghostAfter = tester.widget<AnimatedPositioned>(
-          find.byKey(const Key('daygrid_drag_ghost'))).top!;
+      final ghostAfter = tester
+          .widget<AnimatedPositioned>(
+              find.byKey(const Key('daygrid_drag_ghost')))
+          .top!;
       expect(ghostAfter, greaterThan(ghostBefore));
       expect(controller.mode, DayGridMode.dragging); // still mid-drag.
 
@@ -1073,10 +1138,7 @@ testWidgets('travel bands dim while a drag is active', (tester) async {
             extendBody: true,
             body: DayGridWidget(
               tiles: [
-                _tile(
-                    'b',
-                    DateTime(2027, 1, 15, 14),
-                    DateTime(2027, 1, 15, 15))
+                _tile('b', DateTime(2027, 1, 15, 14), DateTime(2027, 1, 15, 15))
               ],
               now: now,
               day: dayStart,

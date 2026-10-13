@@ -1,9 +1,12 @@
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/scheduleChangeScope.dart';
+import 'package:tiler_app/components/scheduleNotices/scheduleNoticeSurface.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
@@ -16,7 +19,6 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
-import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/constants.dart' as Constants;
@@ -129,7 +131,39 @@ class _DailyTileListState extends TileListState {
         Duration(days: 7));
     incrementalTilerScrollId = "incremental-get-schedule";
     previousTimeline = this.timeLine;
+    final schedule = context.read<ScheduleBloc>().state;
+    if (schedule is ScheduleLoadedState ||
+        schedule is ScheduleEvaluationState) {
+      final snapshot = ScheduleState.generatePriorScheduleState(schedule);
+      loadedTimeline = snapshot.timelines;
+      loadedSubCalendarEvent = snapshot.subEvents;
+      _carouselSpanId = carouselDaySpanId(snapshot.previousLookupTimeline);
+      _updateCarouselKey(snapshot.previousLookupTimeline);
+    }
+    final dateState = context.read<UiDateManagerBloc>().state;
+    final selectedDate = dateState is UiDateManagerUpdated
+        ? dateState.currentDate
+        : Utility.currentTime();
+    if (!timeLine.isDateTimeWithin(selectedDate)) {
+      timeLine = Timeline.fromDateTimeAndDuration(
+          selectedDate.dayDate.subtract(const Duration(days: 4)),
+          const Duration(days: 7));
+    }
+    loadViewTimeline(visibleDate: selectedDate);
     _fetchUserEndOfDay();
+  }
+
+  void _updateCarouselKey(Timeline window) {
+    final dateState = context.read<UiDateManagerBloc>().state;
+    final day = dateState is UiDateManagerUpdated
+        ? dateState.currentDate.universalDayIndex
+        : Utility.currentTime().universalDayIndex;
+    final signature =
+        'gridwin_${window.startTime.universalDayIndex}_${window.endTime.universalDayIndex}_d${day}_r$_forceRefreshCounter';
+    if (signature != _carouselStructureSignature) {
+      _carouselStructureSignature = signature;
+      carouselKey = ValueKey(_generateCarouselKeyId(signature));
+    }
   }
 
   void _fetchUserEndOfDay() {
@@ -501,7 +535,8 @@ class _DailyTileListState extends TileListState {
         tiles: [],
         endOfDayTime: _endOfDayFor(currentTime.universalDayIndex),
         onEndOfDayUpdated: _fetchUserEndOfDay,
-        showDaySummaryHeader: (this.widget as DailyTileList).showDaySummaryHeader,
+        showDaySummaryHeader:
+            (this.widget as DailyTileList).showDaySummaryHeader,
       );
       DayGridPage todayPage = DayGridPage(
         dayIndex: currentTime.universalDayIndex,
@@ -678,6 +713,16 @@ class _DailyTileListState extends TileListState {
   }
 
   Widget buildDailyRenderSubCalendarTiles(
+      Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
+    // Every day page receives a schedule change in the same build as the
+    // tiles it belongs to, so a view can never draw one without the other.
+    return ScheduleChangeScope(
+      change: this.context.read<ScheduleBloc>().changeFeed.latest,
+      child: _buildDayCarousel(tileData),
+    );
+  }
+
+  Widget _buildDayCarousel(
       Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
     Tuple2<int, List<Widget>> carouselData = buildCarousel(tileData);
     int initialCarouselIndex = carouselData.item1;
@@ -964,24 +1009,7 @@ class _DailyTileListState extends TileListState {
                   // single-day swap) still lands here and always changes the
                   // signature, so it remounts as [shouldRemountCarousel]
                   // requires.
-                  final int windowStart =
-                      state.lookupTimeline.startTime.universalDayIndex;
-                  final int windowEnd =
-                      state.lookupTimeline.endTime.universalDayIndex;
-                  int currentViewDay =
-                      Utility.currentTime().universalDayIndex;
-                  final uiDateState = context.read<UiDateManagerBloc>().state;
-                  if (uiDateState is UiDateManagerUpdated) {
-                    currentViewDay =
-                        uiDateState.currentDate.universalDayIndex;
-                  }
-                  final String structureSignature =
-                      'gridwin_${windowStart}_${windowEnd}_d${currentViewDay}_r$_forceRefreshCounter';
-                  if (structureSignature != _carouselStructureSignature) {
-                    _carouselStructureSignature = structureSignature;
-                    carouselKey =
-                        ValueKey(_generateCarouselKeyId(structureSignature));
-                  }
+                  _updateCarouselKey(state.lookupTimeline);
                 }
                 if (spanChanged) {
                   // A different run of days: the old page index no longer
@@ -1140,9 +1168,9 @@ class _DailyTileListState extends TileListState {
               children: [
                 buildDailyRenderSubCalendarTiles(
                     Tuple2(state.timelines, state.subEvents)),
-                PendingWidget(
-                  imageAsset: TileThemeNew.evaluatingScheduleAsset,
-                ),
+                // A calendar notice surface above shows the card itself.
+                if (!ScheduleNoticeSurface.hostsAmbientNotices(context))
+                  ScheduleEvaluationFeedback(state: state),
               ],
             );
           }

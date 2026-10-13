@@ -73,7 +73,7 @@ class TileColors {
   static const Color outlineDark = Color(0xFF938F99);
   static const Color outlineVariantLight = Color(0xFFCAC4D0);
   static const Color outlineVariantDark = Color(0xFF2A2E36);
-  static const Color inverseSurfaceLight = Colors.black54;
+  static const Color inverseSurfaceLight = Color(0xFF313033);
   static const Color inverseSurfaceDark = Color(0xFFE6E1E5);
   static const Color onInverseSurfaceDark = Color(0xFF23272C);
   static const Color inversePrimaryLight = Color(0xFF4A4A4A);

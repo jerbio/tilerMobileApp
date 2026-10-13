@@ -27,6 +27,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/location.dart';
@@ -796,15 +797,17 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     context
         .read<SubCalendarTileBloc>()
         .add(NewSubCalendarTileBlocEvent(subEvent: created));
-    final scheduleState = context.read<ScheduleBloc>().state;
-    if (scheduleState is ScheduleEvaluationState) {
-      context.read<ScheduleBloc>().add(GetScheduleEvent(
-            isAlreadyLoaded: true,
-            previousSubEvents: scheduleState.subEvents,
-            scheduleTimeline: scheduleState.lookupTimeline,
-            previousTimeline: scheduleState.lookupTimeline,
-          ));
-    }
+    final ScheduleBloc scheduleBloc = context.read<ScheduleBloc>();
+    // Reload now so the new tile, and whatever it moved, arrives straight
+    // away rather than on the next background check.
+    final preserved = ScheduleBloc.preserveState(scheduleBloc.state);
+    scheduleBloc.add(GetScheduleEvent(
+      isAlreadyLoaded: true,
+      previousSubEvents: preserved.item1,
+      scheduleTimeline: preserved.item3,
+      previousTimeline: preserved.item3,
+      forceRefresh: true,
+    ));
   }
 
   /// A submission failure has to SAY something.
@@ -815,15 +818,13 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
   /// offer.
   void _showSubmissionFailure() {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        key: const ValueKey('addTileSubmitError'),
-        content: Text(l10n.addTileSubmitFailed),
-        action: SnackBarAction(
-          label: l10n.addTileRetry,
-          onPressed: _attemptSubmit,
-        ),
-      ),
+    showScheduleChangeFailure(
+      context,
+      key: const ValueKey('addTileSubmitError'),
+      kind: ScheduleChangeKind.add,
+      eventName: _draft.name,
+      fallback: l10n.addTileSubmitFailed,
+      onRetry: _attemptSubmit,
     );
   }
 
@@ -856,7 +857,12 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       _nameFocus.requestFocus();
       return;
     }
+    if (!scheduleChangesAllowed(context, requestedKind: ScheduleChangeKind.add))
+      return;
     setState(() => _submitting = true);
+    // The change this submission makes, recorded before the request so the
+    // revision it produces shows as an added tile (the tiles it pushes step
+    // into place, with the "Plan updated" chip). Withdrawn on failure.
     // Drops the keyboard immediately. `ExcludeFocus` below keeps it down for
     // the duration of the request (D50).
     FocusManager.instance.primaryFocus?.unfocus();
@@ -929,7 +935,8 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
           onPressed: _onClosePressed,
         ),
       ),
-      body: Column(
+      body: ScheduleEvaluationProgress(
+          child: Column(
         children: [
           const SizedBox(height: 12),
           Padding(
@@ -1008,7 +1015,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
             onTap: _attemptSubmit,
           ),
         ],
-      ),
+      )),
     );
   }
 

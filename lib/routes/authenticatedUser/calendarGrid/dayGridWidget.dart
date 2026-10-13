@@ -1,3 +1,4 @@
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'dart:async';
 import 'dart:math' show max;
 import 'package:flutter/gestures.dart';
@@ -6,6 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/scheduleChipInsets.dart';
+import 'package:tiler_app/components/scheduleChangeScope.dart';
 import 'package:tiler_app/constants.dart' as constant;
 import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
@@ -15,6 +19,13 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridChoreography.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/freeGapFlash.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridHandoff.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridHandoffChip.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/gridStepPlayer.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/moveRail.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/motion/moveGhost.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/overlapColumns.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/occupancyRail.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.dart';
@@ -25,6 +36,8 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTileEntry.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
+import 'package:tiler_app/services/scheduleDelta.dart';
+import 'package:tiler_app/services/scheduleMotion.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
@@ -385,7 +398,8 @@ class DayGridWidget extends StatefulWidget {
   DayGridWidgetState createState() => DayGridWidgetState();
 }
 
-class DayGridWidgetState extends State<DayGridWidget> {
+class DayGridWidgetState extends State<DayGridWidget>
+    with ScheduleChangeConsumer<DayGridWidget> {
   /// Created in [initState] with `initialScrollOffset` = the initial
   /// auto-scroll target, so a freshly mounted grid (a carousel day page
   /// sliding into view) PAINTS its first frame already at the first tile
@@ -453,6 +467,21 @@ class DayGridWidgetState extends State<DayGridWidget> {
 
   /// One-shot timer that drops the fading-out ghosts once the fade finishes.
   Timer? _removeTimer;
+
+  // Step-by-step schedule changes (Detailed "Schedule updates" mode).
+  /// Holds, lifts and releases moving tiles batch by batch.
+  late final GridStepPlayer _stepPlayer = GridStepPlayer(apply: (change) {
+    if (mounted) {
+      setState(change);
+    }
+  });
+
+  /// Edge chips for tiles that moved out of view or to another day.
+  late final GridHandoffQueue _handoffs = GridHandoffQueue(apply: (change) {
+    if (mounted) {
+      setState(change);
+    }
+  });
 
   // TileCast preview bookkeeping.
   /// One-shot target px for the highlight auto-scroll (align the
@@ -614,6 +643,11 @@ class DayGridWidgetState extends State<DayGridWidget> {
     if (oldWidget.selectedActionEntityId != widget.selectedActionEntityId) {
       _onSelectedActionChanged();
     }
+    // A different day is a fresh grid: nothing carries over.
+    if (oldWidget.dayKey != widget.dayKey) {
+      _stepPlayer.stop(notify: false);
+      _handoffs.stop(notify: false);
+    }
     // Diff the tile set for add/remove enter/exit animations
     // (runs before build so the result is visible in the upcoming frame).
     _diffTiles(oldWidget, widget);
@@ -662,13 +696,21 @@ class DayGridWidgetState extends State<DayGridWidget> {
     final Set<String> prevIds = _lastTilesById.keys.toSet();
     final Set<String> curIds = newTiles.map((t) => t.uniqueId).toSet();
 
-    // Added: staggered enter (~40ms each, capped ~400ms total).
+    // Added: staggered enter (~40ms each, capped ~400ms total). When most
+    // of the day was replaced, the new tiles come in together as the old
+    // ones fade out: one cross-fade rather than a cascade.
+    final bool crossFade = ScheduleDelta.mostlyReplaced(
+        before: prevIds.length,
+        after: curIds.length,
+        added: curIds.difference(prevIds).length,
+        removed: prevIds.difference(curIds).length);
     _enterDelays.clear();
     int i = 0;
     for (final t in newTiles) {
       if (!prevIds.contains(t.uniqueId)) {
-        _enterDelays[t.uniqueId] =
-            Duration(milliseconds: (i * 40).clamp(0, 400));
+        _enterDelays[t.uniqueId] = crossFade
+            ? Duration.zero
+            : Duration(milliseconds: (i * 40).clamp(0, 400));
         i++;
       }
     }
@@ -707,9 +749,161 @@ class DayGridWidgetState extends State<DayGridWidget> {
     }
   }
 
-  /// The initial auto-scroll target: in preview mode the selected action's
-  /// start hour, otherwise the first tile's (or [defaultScrollHour] on an
-  /// empty day), at the current zoom.
+  /// A new schedule revision arrived with this grid's tiles (delivered
+  /// once, before the build that draws them, by [ScheduleChangeConsumer]):
+  /// - in Detailed mode, play it in steps: moved tiles wait at their old
+  ///   time, then lift, slide and land in batches, leaving an outline and a
+  ///   gutter line from where they were;
+  /// - in every mode, tiles that were on screen and moved out of view or to
+  ///   another day get an edge chip once they have moved.
+  /// Background refreshes keep the plain transition and get no chips.
+  @override
+  void didReceiveScheduleChange(ScheduleChange change) {
+    final attribution = change.attribution;
+    final dayStart = _gridDayStart();
+    if (widget.preview ||
+        attribution.isRefresh ||
+        dayStart == null ||
+        _controller.mode != DayGridMode.idle) {
+      return;
+    }
+    final mode = ScheduleMotion.modeFor(context,
+        origin: attribution.origin, listen: false);
+    final day = Timeline.fromDateTime(
+        dayStart, DateTime(dayStart.year, dayStart.month, dayStart.day + 1));
+    bool otherDay(SubCalendarEvent t) =>
+        t.start != null && (t.start! < day.start! || t.start! >= day.end!);
+    // The change's own before/after, limited to tiles this grid draws (now
+    // or just before) plus other days, so hidden tiles never animate and an
+    // early draw of the new tiles cannot erase what moved.
+    final drawn = <String>{
+      ..._lastTilesById.keys,
+      for (final t in widget.tiles) t.uniqueId,
+    };
+    final delta = ScheduleDelta.compute(
+      before: [
+        for (final t in change.before)
+          if (otherDay(t) || drawn.contains(t.uniqueId)) t,
+      ],
+      after: [...widget.tiles, ...change.after.where(otherDay)],
+      day: day,
+    );
+
+    GridChoreography? steps;
+    if (mode.choreographs) {
+      steps = GridChoreography.plan(delta, subjectId: attribution.subjectId);
+      if (steps != null) {
+        Utility.debugPrint('DayGrid::steps ${attribution.origin.name}: '
+            '${steps.batches.map((b) => b.ids.length).join('+')} tiles');
+        _startSteps(steps,
+            before: change.beforeById,
+            grownGaps: delta.grownGaps,
+            conflicts: delta.newConflicts);
+      } else if (delta.newConflicts.isNotEmpty) {
+        _stepPlayer.flashConflicts(delta.newConflicts);
+      }
+    }
+    _queueHandoffs(delta, dayStart,
+        skipId: attribution.subjectId,
+        // Chips appear once their tiles have moved.
+        delay: steps != null
+            ? steps.end - GridChoreography.ghostLinger
+            : (mode.animates
+                ? const Duration(milliseconds: 300)
+                : Duration.zero));
+  }
+
+  /// Queues edge chips for tiles that were visible and now sit above or
+  /// below the viewport, or on another day.
+  void _queueHandoffs(ScheduleDelta delta, DateTime dayStart,
+      {String? skipId, required Duration delay}) {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+    final position = _scrollController.position;
+    final top = position.pixels;
+    final bottom =
+        top + position.viewportDimension - _edgeScrollBottomClearance();
+    int place(int startMs, int endMs) {
+      final y0 = _topPx(dayStart: dayStart, startMs: startMs);
+      final y1 = _topPx(dayStart: dayStart, startMs: endMs);
+      if (y1 <= top) return -1;
+      if (y0 >= bottom) return 1;
+      return 0;
+    }
+
+    final handoffs = GridHandoff.fromDelta(delta, place: place, skipId: skipId);
+    if (handoffs.isNotEmpty) {
+      Utility.debugPrint('DayGrid::handoff '
+          '${handoffs.map((h) => '${h.direction.name}:${h.tiles.length}').join(' ')}');
+    }
+    // Tiles stepping out of view shrink into their chip as they go.
+    _stepPlayer.depart({
+      for (final handoff in handoffs)
+        if (!handoff.isOtherDay)
+          for (final tile in handoff.tiles)
+            tile.uniqueId: handoff.direction == HandoffDirection.earlier,
+    });
+    _handoffs.show(handoffs, delay: delay);
+  }
+
+  /// Takes the user to where a chip's tiles went: scrolls this day, or
+  /// switches to the destination day.
+  void _onHandoffTap(GridHandoff handoff) {
+    _handoffs.dismiss(handoff);
+    AnalysticsSignal.send('daygrid_handoff_tapped',
+        additionalInfo: {'direction': handoff.direction.name});
+    if (handoff.isOtherDay) {
+      final target = Utility.localDateTimeFromMs(handoff.targetStartMs);
+      try {
+        context.read<UiDateManagerBloc>().add(DateChangeEvent(
+              previousSelectedDate: widget.day,
+              selectedDate: DateTime(target.year, target.month, target.day),
+              dateChangeTrigger: DateChangeTrigger.buttonPress,
+            ));
+      } on ProviderNotFoundException {
+        // Hosts without day navigation (isolated grids) only dismiss.
+      }
+      return;
+    }
+    final dayStart = _gridDayStart();
+    if (dayStart == null || !_scrollController.hasClients) {
+      return;
+    }
+    final position = _scrollController.position;
+    // Land the first moved tile about a third of the way down.
+    final target = (_topPx(dayStart: dayStart, startMs: handoff.targetStartMs) -
+            position.viewportDimension / 3)
+        .clamp(0.0, position.maxScrollExtent);
+    if (ScheduleMotion.modeFor(context, listen: false).animates) {
+      _scrollController.animateTo(target,
+          duration: const Duration(milliseconds: 450),
+          curve: Curves.easeInOutCubic);
+    } else {
+      _scrollController.jumpTo(target);
+    }
+  }
+
+  void _startSteps(GridChoreography steps,
+      {required Map<String, SubCalendarEvent> before,
+      List<FreeGap> grownGaps = const <FreeGap>[],
+      Set<String> conflicts = const <String>{}}) {
+    _stepPlayer.start(
+      grownGaps: grownGaps,
+      conflicts: conflicts,
+      steps,
+      // Held at the times from before the change, whatever was last drawn.
+      before: before,
+      after: {for (final t in widget.tiles) t.uniqueId: t},
+      layoutOf: (id) {
+        final layout = _lastLayoutById[id];
+        return (layout?.left ?? 80.0, layout?.width ?? 270.0);
+      },
+    );
+  }
+
+  /// The initial auto-scroll target: the first tile's start hour (or
+  /// [defaultScrollHour] on an empty day) at the current zoom.
   double _initialScrollTarget() {
     final firstHour = _selectedTileStartHour() ?? _firstTileStartHour();
     return _pxPerHour * (firstHour ?? defaultScrollHour);
@@ -1377,11 +1571,16 @@ class DayGridWidgetState extends State<DayGridWidget> {
     }
 
     final dayStart = _gridDayStart();
-    final request = (widget.subCalendarEventApi ??
-            (_subCalendarEventApi ??
-                (_subCalendarEventApi =
-                    SubCalendarEventApi(getContextCallBack: () => context))))
-        .updateSubEvent(edit);
+    if (!scheduleChangesAllowed(context)) return;
+    final api = (widget.subCalendarEventApi ??
+        (_subCalendarEventApi ??
+            (_subCalendarEventApi =
+                SubCalendarEventApi(getContextCallBack: () => context))));
+    final request = context.read<ScheduleBloc>().runScheduleChange(
+        () => api.updateSubEvent(edit),
+        kind: ScheduleChangeKind.edit,
+        eventName: tile.name,
+        affectedTileIds: [tile.uniqueId]);
     final move = _SettlingMove(
       tileId: tile.uniqueId,
       topPx: _topPx(
@@ -1434,7 +1633,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
         });
       }
       _rollbackDragMove();
-      _showDragErrorToast();
+      _showDragErrorToast(tile.name);
     });
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: preDragSubEvents,
@@ -1470,11 +1669,14 @@ class DayGridWidgetState extends State<DayGridWidget> {
 
   /// Localized failure toast (best-effort — a missing localization
   /// never blocks the rollback itself).
-  void _showDragErrorToast() {
+  void _showDragErrorToast(String? eventName) {
     try {
       final l10n = AppLocalizations.of(context);
       Fluttertoast.showToast(
-        msg: l10n?.failedToUpdateTile ?? 'Failed to move the tile.',
+        msg: l10n == null
+            ? 'The tile move could not be confirmed. Refresh your schedule.'
+            : scheduleChangeFailureMessage(context,
+                kind: ScheduleChangeKind.edit, eventName: eventName),
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
       );
@@ -1731,6 +1933,15 @@ class DayGridWidgetState extends State<DayGridWidget> {
     // Everything below is derived fresh from
     // [DayGridWidget.tiles] — no state-list appends, no in-place sort.
     final sortedTiles = _sortedTiles();
+    // The user's "Schedule updates" setting and OS reduced motion; Off
+    // jump-cuts every schedule-update transition below.
+    final motionAnimates = ScheduleMotion.modeFor(context).animates;
+    // A pinch or drag takes over the tiles: any step-by-step change in
+    // flight snaps to its end.
+    if (_controller.mode != DayGridMode.idle) {
+      _stepPlayer.stop(notify: false);
+      _handoffs.stop(notify: false);
+    }
 
     // Invariant: no duplicate tile ids per build.
     final seenIds = <String>{};
@@ -1898,7 +2109,8 @@ class DayGridWidgetState extends State<DayGridWidget> {
             // pinch/drag the tiles track the controller directly (no double
             // animation). Day-scope the per-tile keys so a tile's element never
             // carries across days.
-            final animate = _controller.mode == DayGridMode.idle;
+            final animate =
+                _controller.mode == DayGridMode.idle && motionAnimates;
             final keyPrefix = (widget.dayKey == null || widget.dayKey!.isEmpty)
                 ? ''
                 : 'day_${widget.dayKey}_';
@@ -1913,6 +2125,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
                 final isDragSource =
                     _dragTile != null && _dragTile!.uniqueId == tile.uniqueId;
                 final settleOverride = _settledStartOverride(tile);
+                final held = _stepPlayer.heldTile(tile.uniqueId);
                 return TileGridWidget(
                   // Stable per-tile identity: add/remove/replace of
                   // tiles maps to element remove/update — never a stale
@@ -1958,6 +2171,12 @@ class DayGridWidgetState extends State<DayGridWidget> {
                   // Drag-commit save badge (overlay-only): the committed
                   // tile shows saving/saved/error; every other tile idle.
                   saveStatus: _saveStatusFor(tile),
+                  // Step-by-step change: wait at the old time, lift with
+                  // the batch, and fade the rest back a little meanwhile.
+                  heldRange: held == null ? null : (held.start!, held.end!),
+                  emphasis: _stepPlayer.emphasisFor(tile.uniqueId),
+                  moveDuration: _stepPlayer.moveDurationFor(tile.uniqueId),
+                  flash: _stepPlayer.flashFor(tile.uniqueId),
                 );
               },
             ).toList();
@@ -1986,7 +2205,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
                 previousTileById[tile.uniqueId] = previousTile;
                 previousTile = tile;
               }
-              for (final tile in renderable) {
+              for (final renderedTile in renderable) {
+                // A held tile's bands stay with it at its old time.
+                final tile =
+                    _stepPlayer.heldTile(renderedTile.uniqueId) ?? renderedTile;
                 final column = columnLayout[tile.uniqueId];
                 final bands = TravelBand.bandsForTile(
                   tile: tile,
@@ -2022,6 +2244,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
                         : null,
                     animate: animate,
                     dimmed: bandDimming,
+                    // The travel into this tile changed and pushed the
+                    // tiles about to move: shown first.
+                    flash: band.kind == TravelBandKind.pre &&
+                        _stepPlayer.travelFlashing(tile.uniqueId),
                   ));
                 }
               }
@@ -2062,6 +2288,63 @@ class DayGridWidgetState extends State<DayGridWidget> {
                   ),
                 )
                 .toList();
+
+            // Gutter lines from each moving tile's old time to its new one.
+            final moveRailWidgets = <Widget>[
+              if (dayStart != null)
+                for (final entry in _stepPlayer.rails.entries)
+                  MoveRailWidget(
+                    key: ValueKey<String>(
+                        'daygrid_rail_${keyPrefix}${entry.key}'),
+                    rail: entry.value,
+                    fromY: _topPx(
+                        dayStart: dayStart, startMs: entry.value.fromStartMs),
+                    toY: _topPx(
+                        dayStart: dayStart, startMs: entry.value.toStartMs),
+                    left: 2,
+                    animate: animate,
+                  ),
+            ];
+
+            // Free time the change opened up, briefly highlighted.
+            final freeGapWidgets = <Widget>[
+              if (dayStart != null)
+                for (final entry in _stepPlayer.gapFlashes)
+                  FreeGapFlashWidget(
+                    key: FreeGapFlashWidget.keyFor(entry.key),
+                    gap: entry.key,
+                    top: _topPx(dayStart: dayStart, startMs: entry.key.startMs),
+                    height: _topPx(
+                            dayStart: dayStart, startMs: entry.key.endMs) -
+                        _topPx(dayStart: dayStart, startMs: entry.key.startMs),
+                    left: tileLeft,
+                    width: tileWidth,
+                    yOf: (ms) => _topPx(dayStart: dayStart, startMs: ms),
+                    fading: entry.value,
+                    animate: animate,
+                  ),
+            ];
+
+            // Outlines where moving tiles were, drawn under the tiles.
+            final moveGhostWidgets = <Widget>[
+              if (dayStart != null)
+                for (final entry in _stepPlayer.ghosts.entries)
+                  MoveGhostWidget(
+                    key: ValueKey<String>(
+                        'daygrid_tile_from_${keyPrefix}${entry.key}'),
+                    ghost: entry.value,
+                    top: ((entry.value.from.start! -
+                                dayStart.millisecondsSinceEpoch) /
+                            Duration.millisecondsPerHour *
+                            pxPerHour)
+                        .clamp(0.0, 24 * pxPerHour),
+                    height: ((entry.value.from.end! - entry.value.from.start!) /
+                            Duration.millisecondsPerHour *
+                            pxPerHour)
+                        .clamp(18.0, 24 * pxPerHour),
+                    animate: animate,
+                  ),
+            ];
 
             if (_pendingScrollTo != null) {
               WidgetsBinding.instance.addPostFrameCallback(_applyPendingScroll);
@@ -2171,6 +2454,9 @@ class DayGridWidgetState extends State<DayGridWidget> {
                 ...gutterWidgets,
                 ...railWidgets,
                 ...travelBandWidgets,
+                ...freeGapWidgets,
+                ...moveGhostWidgets,
+                ...moveRailWidgets,
                 ...tileWidgets,
                 if (_dragTile != null && _dragTargetStart != null) _dragGhost(),
                 ...ghostWidgets,
@@ -2274,10 +2560,18 @@ class DayGridWidgetState extends State<DayGridWidget> {
               // chrome; TileCast's own header sheet is the chrome there.
               return gridBody;
             }
-            return RefreshIndicator(
-              color: Theme.of(context).colorScheme.tertiary,
-              onRefresh: _onGridRefresh,
-              child: gridBody,
+            // Always a Stack, so chips coming and going never remount the
+            // scroll view.
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                RefreshIndicator(
+                  color: Theme.of(context).colorScheme.tertiary,
+                  onRefresh: _onGridRefresh,
+                  child: gridBody,
+                ),
+                ..._handoffChips(),
+              ],
             );
           },
         );
@@ -2285,10 +2579,53 @@ class DayGridWidgetState extends State<DayGridWidget> {
     );
   }
 
+  /// The edge chips over the viewport: earlier at the top; later and
+  /// other days at the bottom, above the day's "Plan updated" chip.
+  List<Widget> _handoffChips() {
+    final visible = _handoffs.visible;
+    if (visible.isEmpty) {
+      return const <Widget>[];
+    }
+    Widget chip(GridHandoff handoff) =>
+        GridHandoffChip(handoff: handoff, onTap: () => _onHandoffTap(handoff));
+    final top =
+        visible.where((h) => h.direction == HandoffDirection.earlier).toList();
+    final bottom =
+        visible.where((h) => h.direction != HandoffDirection.earlier).toList();
+    return <Widget>[
+      if (top.isNotEmpty)
+        Positioned(
+          top: 8,
+          left: 16,
+          right: 16,
+          child: Center(child: chip(top.first)),
+        ),
+      if (bottom.isNotEmpty)
+        Positioned(
+          bottom: ScheduleChipInsets.bottomBarOf(context) +
+              ScheduleChipInsets.edgeChipGap,
+          left: 16,
+          right: ScheduleChipInsets.fabClearance,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final handoff in bottom)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: chip(handoff),
+                ),
+            ],
+          ),
+        ),
+    ];
+  }
+
   @override
   void dispose() {
     _nowLineTimer?.cancel(); // no leaked minute timers
     _removeTimer?.cancel(); // no leaked ghost-cleanup timers
+    _stepPlayer.stop(notify: false); // no leaked step timers
+    _handoffs.stop(notify: false); // no leaked chip timers
     _edgeScrollTimer?.cancel(); // no leaked drag auto-scroll timers
     _ownedController?.dispose(); // own resources first (dispose order)
     _scrollController.dispose();

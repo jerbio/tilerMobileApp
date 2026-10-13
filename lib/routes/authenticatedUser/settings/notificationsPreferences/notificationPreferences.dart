@@ -180,7 +180,8 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
           if (state is NotificationPreferencesError) {
             notificationOverlayMessage.showToast(
               context,
-              state.message,
+              AppLocalizations.of(context)!.operationFailed(
+                  AppLocalizations.of(context)!.notificationsPreferences),
               NotificationOverlayMessageType.error,
             );
           }

@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/notes/markdownNoteEditor.dart';
+import 'package:tiler_app/components/operationFeedback.dart';
+
 import 'package:tiler_app/data/notesPayload.dart';
-import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/notesApi.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -271,7 +272,8 @@ class _EditTileNoteState extends State<EditTileNote> {
       if (!mounted) return;
       setState(() {
         _status = NotesSaveStatus.error;
-        _errorMessage = e is TilerError ? e.Message : e.toString();
+        _errorMessage = operationFailureMessage(AppLocalizations.of(context)!,
+            fallback: AppLocalizations.of(context)!.notesLoadFailed, error: e);
       });
     }
   }
@@ -323,7 +325,8 @@ class _EditTileNoteState extends State<EditTileNote> {
       if (!mounted) return;
       setState(() {
         _status = NotesSaveStatus.error;
-        _errorMessage = e is TilerError ? e.Message : e.toString();
+        _errorMessage = operationFailureMessage(AppLocalizations.of(context)!,
+            fallback: AppLocalizations.of(context)!.notesSaveError, error: e);
       });
     }
   }

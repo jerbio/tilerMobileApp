@@ -1,3 +1,4 @@
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,7 +18,6 @@ import 'package:tiler_app/routes/authenticatedUser/todayStatusScreen.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
-import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -44,6 +44,7 @@ class _WeeklyTileListState extends TileListState {
     timeLine = Timeline.fromDateTime(weeklyState.selectedWeek.first,
         weeklyState.selectedWeek.last.add(Duration(days: 1)));
     incrementalTilerScrollId = "weekly-incremental-get-schedule";
+    loadViewTimeline();
   }
 
   @override
@@ -263,7 +264,9 @@ class _WeeklyTileListState extends TileListState {
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
           final summaryState = context.watch<ScheduleSummaryBloc>().state;
-          if (summaryState is ScheduleDaySummaryLoading && isInitialLoad) {
+          if (summaryState is ScheduleDaySummaryLoading &&
+              isInitialLoad &&
+              state is ScheduleInitialState) {
             return PendingWidget();
           }
           isInitialLoad = false;
@@ -319,9 +322,7 @@ class _WeeklyTileListState extends TileListState {
               children: [
                 buildWeeklyRenderSubCalendarTiles(
                     Tuple2(state.timelines, state.subEvents)),
-                PendingWidget(
-                  imageAsset: TileThemeNew.evaluatingScheduleAsset,
-                ),
+                ScheduleEvaluationFeedback(state: state),
               ],
             );
           }

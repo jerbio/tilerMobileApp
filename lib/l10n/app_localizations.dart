@@ -112,6 +112,60 @@ abstract class AppLocalizations {
     Locale('pt')
   ];
 
+  /// No description provided for @notesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load your notes. Reopen the notes editor to try again.'**
+  String get notesLoadFailed;
+
+  /// No description provided for @onboardingSubmitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t save your setup. Your choices are kept. Try again or skip for now.'**
+  String get onboardingSubmitFailed;
+
+  /// An unsuccessful operation, naming the command and its target rather than a generic error.
+  ///
+  /// In en, this message translates to:
+  /// **'{operation} failed. Please try again.'**
+  String operationFailed(String operation);
+
+  /// No description provided for @scheduleLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load your schedule. Refresh to try again.'**
+  String get scheduleLoadFailed;
+
+  /// No description provided for @chatConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t connect to chat. Reopen chat to try again.'**
+  String get chatConnectionFailed;
+
+  /// No description provided for @chatHistoryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load your chat history. Reopen the conversation to try again.'**
+  String get chatHistoryFailed;
+
+  /// No description provided for @chatSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message couldn’t be sent. Check your connection and try again.'**
+  String get chatSendFailed;
+
+  /// No description provided for @chatRecordingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t start voice recording. Check microphone access and try again.'**
+  String get chatRecordingFailed;
+
+  /// No description provided for @chatCancelRecordingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t cancel voice recording. Try stopping the recording again.'**
+  String get chatCancelRecordingFailed;
+
   /// No description provided for @whiteSpace.
   ///
   /// In en, this message translates to:
@@ -3474,6 +3528,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{hours}h {minutes}m'**
   String durationHoursMinutesShort(int hours, int minutes);
+
+  /// Duration of days and hours in short format
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d {hours}h'**
+  String durationDaysHoursShort(int days, int hours);
+
+  /// Duration in days short format
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d'**
+  String durationDaysShort(int days);
 
   /// Duration in hours short format
   ///
@@ -8923,6 +8989,342 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save changes'**
   String get tileShareSaveChanges;
+
+  /// No description provided for @scheduleChangeRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh schedule'**
+  String get scheduleChangeRefresh;
+
+  /// No description provided for @scheduleChangeUncertainBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.'**
+  String get scheduleChangeUncertainBody;
+
+  /// No description provided for @scheduleChangeUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation unavailable'**
+  String get scheduleChangeUncertain;
+
+  /// An unconfirmed schedule change was followed by a changed schedule; it may have applied. {change} is e.g. 'Complete · Gym'.
+  ///
+  /// In en, this message translates to:
+  /// **'Your schedule was updated after {change}. Check that it looks right.'**
+  String scheduleChangeAcknowledged(String change);
+
+  /// A late confirmation arrived for a schedule change whose outcome was unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} went through.'**
+  String scheduleChangeWentThrough(String change);
+
+  /// A late refusal arrived for a schedule change whose outcome was unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} failed.'**
+  String scheduleChangeFailedLate(String change);
+
+  /// The time to confirm a schedule change ran out with no answer either way.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t confirm {change}. Check your schedule.'**
+  String scheduleChangeUnconfirmed(String change);
+
+  /// A schedule change could not start because the schedule could not be read first; nothing was sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach Tiler, so {change} wasn\'t sent. Try again.'**
+  String scheduleChangeNotSent(String change);
+
+  /// As scheduleChangeUnconfirmed, when the change can't be named.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t confirm your last schedule change. Check your schedule.'**
+  String get scheduleChangeUnconfirmedGeneric;
+
+  /// Title of the question asked before repeating a schedule change that may already have applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Send again?'**
+  String get scheduleChangeReattemptTitle;
+
+  /// Asked before repeating a schedule change whose outcome is still unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} may already have gone through. Send it again?'**
+  String scheduleChangeReattemptBody(String change);
+
+  /// Button that repeats the schedule change.
+  ///
+  /// In en, this message translates to:
+  /// **'Send again'**
+  String get scheduleChangeReattemptConfirm;
+
+  /// Shown after the user chose not to repeat a schedule change.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} wasn\'t sent again.'**
+  String scheduleChangeReattemptDeclined(String change);
+
+  /// No description provided for @scheduleChangeAdding.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding event'**
+  String get scheduleChangeAdding;
+
+  /// No description provided for @scheduleChangeSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating schedule settings'**
+  String get scheduleChangeSettings;
+
+  /// No description provided for @scheduleChangeAccepting.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepting changes'**
+  String get scheduleChangeAccepting;
+
+  /// No description provided for @scheduleChangeTargetSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Your schedule'**
+  String get scheduleChangeTargetSchedule;
+
+  /// No description provided for @scheduleChangeTargetEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Event'**
+  String get scheduleChangeTargetEvent;
+
+  /// No description provided for @scheduleChangeAllEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'All events'**
+  String get scheduleChangeAllEvents;
+
+  /// Number of events affected by the current schedule command.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 event} other{{count} events}}'**
+  String scheduleChangeEventCount(int count);
+
+  /// No description provided for @scheduleChangesBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the current schedule change before starting another.'**
+  String get scheduleChangesBlocked;
+
+  /// Shown when the user starts a schedule change while another is still in progress. {change} names it, e.g. 'Completing · Gym'.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the current schedule change ({change}) before starting another.'**
+  String scheduleChangesBlockedBy(String change);
+
+  /// No description provided for @scheduleChangeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule change failed'**
+  String get scheduleChangeFailed;
+
+  /// Settings row and sheet title for how much motion schedule changes get (Off / Minimal / Detailed).
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule updates'**
+  String get scheduleUpdates;
+
+  /// No description provided for @scheduleUpdatesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'How your day moves when your schedule changes.'**
+  String get scheduleUpdatesDescription;
+
+  /// No description provided for @scheduleUpdatesDetailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed'**
+  String get scheduleUpdatesDetailed;
+
+  /// No description provided for @scheduleUpdatesDetailedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Show each change step by step.'**
+  String get scheduleUpdatesDetailedDescription;
+
+  /// No description provided for @scheduleUpdatesMinimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal'**
+  String get scheduleUpdatesMinimal;
+
+  /// No description provided for @scheduleUpdatesMinimalDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide Tiles to their new times.'**
+  String get scheduleUpdatesMinimalDescription;
+
+  /// No description provided for @scheduleUpdatesOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get scheduleUpdatesOff;
+
+  /// No description provided for @scheduleUpdatesOffDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Update instantly, no animation.'**
+  String get scheduleUpdatesOffDescription;
+
+  /// Title of the chip shown after Tiler changes the day.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan updated'**
+  String get scheduleChangePlanUpdated;
+
+  /// No description provided for @scheduleChangeDayCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Day cleared'**
+  String get scheduleChangeDayCleared;
+
+  /// No description provided for @scheduleChangeTilesMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved} other{{count} Tiles moved}}'**
+  String scheduleChangeTilesMoved(int count);
+
+  /// No description provided for @scheduleChangeTilesMovedToOtherDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved to another day} other{{count} Tiles moved to other days}}'**
+  String scheduleChangeTilesMovedToOtherDays(int count);
+
+  /// No description provided for @scheduleChangeTilesAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile added} other{{count} Tiles added}}'**
+  String scheduleChangeTilesAdded(int count);
+
+  /// No description provided for @scheduleChangeTilesRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile removed} other{{count} Tiles removed}}'**
+  String scheduleChangeTilesRemoved(int count);
+
+  /// No description provided for @scheduleChangeTravelUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 travel time updated} other{{count} travel times updated}}'**
+  String scheduleChangeTravelUpdated(int count);
+
+  /// Free time a schedule change gained, e.g. "+1h 15m free".
+  ///
+  /// In en, this message translates to:
+  /// **'+{duration} free'**
+  String scheduleChangeFreeGained(String duration);
+
+  /// No description provided for @scheduleChangeSeeChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'See changes'**
+  String get scheduleChangeSeeChanges;
+
+  /// No description provided for @scheduleChangeWhatChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'What changed'**
+  String get scheduleChangeWhatChanged;
+
+  /// No description provided for @scheduleChangeAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added · {time}'**
+  String scheduleChangeAdded(String time);
+
+  /// No description provided for @scheduleChangeRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed'**
+  String get scheduleChangeRemoved;
+
+  /// No description provided for @scheduleChangeTravelTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel to {name}'**
+  String scheduleChangeTravelTo(String name);
+
+  /// No description provided for @scheduleChangeFreeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Free time'**
+  String get scheduleChangeFreeTime;
+
+  /// Caption on a Tile in the daily list that moved into view from a time that was off screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved from {time}'**
+  String scheduleChangeMovedFrom(String time);
+
+  /// Caption on the faint outline left where a Tile was, while it slides to its new time.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved to {time}'**
+  String scheduleChangeMovedTo(String time);
+
+  /// Edge chip for a Tile that moved out of view or to another day. {when} is a time or a date.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} moved to {when}'**
+  String scheduleChangeTileMovedTo(String name, String when);
+
+  /// No description provided for @scheduleChangeTilesMovedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved to {when}} other{{count} Tiles moved to {when}}}'**
+  String scheduleChangeTilesMovedTo(int count, String when);
+
+  /// No description provided for @scheduleChangeTilesMovedLater.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved later} other{{count} Tiles moved later}}'**
+  String scheduleChangeTilesMovedLater(int count);
+
+  /// No description provided for @scheduleChangeTilesMovedEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved earlier} other{{count} Tiles moved earlier}}'**
+  String scheduleChangeTilesMovedEarlier(int count);
+
+  /// Banner while a schedule change plays step by step.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moving} other{{count} Tiles moving}}'**
+  String scheduleChangeTilesMoving(int count);
+
+  /// No description provided for @scheduleChangeTabChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes'**
+  String get scheduleChangeTabChanges;
+
+  /// Tab in the What changed sheet showing the day before and after side by side.
+  ///
+  /// In en, this message translates to:
+  /// **'Before & after'**
+  String get scheduleChangeTabBeforeAfter;
+
+  /// No description provided for @scheduleChangeBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Before'**
+  String get scheduleChangeBefore;
+
+  /// No description provided for @scheduleChangeAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'After'**
+  String get scheduleChangeAfter;
 }
 
 class _AppLocalizationsDelegate

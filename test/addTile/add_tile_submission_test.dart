@@ -74,6 +74,7 @@ Future<void> pumpShell(
   required AddTileDraft draft,
   AddTileSubmission? submission,
   Map<String, dynamic>? newTileParams,
+  ScheduleBloc? scheduleBloc,
 }) async {
   tester.view.physicalSize =
       AddTileTestMatrix.physicalSizeOf(AddTileTestMatrix.standard);
@@ -83,9 +84,12 @@ Future<void> pumpShell(
       BlocProvider<SubCalendarTileBloc>(
         create: (_) => SubCalendarTileBloc(getContextCallBack: () => null),
       ),
-      BlocProvider<ScheduleBloc>(
-        create: (_) => ScheduleBloc(getContextCallBack: () => null),
-      ),
+      if (scheduleBloc != null)
+        BlocProvider<ScheduleBloc>.value(value: scheduleBloc)
+      else
+        BlocProvider<ScheduleBloc>(
+          create: (_) => ScheduleBloc(getContextCallBack: () => null),
+        ),
     ],
     child: MaterialApp(
       theme: TileThemeData.lightTheme,

@@ -65,7 +65,7 @@ void main() {
     await tester.pump();
 
     final Rect title = tester.getRect(find.byKey(WhatIfSummarySheet.titleKey));
-    expect(find.text('12 tiles affected'), findsOneWidget);
+    expect(find.text('12 affected tiles'), findsOneWidget);
     final Finder list = find.byType(ListView);
     expect(list, findsOneWidget);
     // The list starts below the header, so the header cannot scroll away.
@@ -151,7 +151,7 @@ void main() {
 
     // Collapsed: 3 days, the rest behind the line. The count is of ALL
     // affected tiles, not just the visible tiers.
-    expect(find.text('5 tiles affected'), findsOneWidget);
+    expect(find.text('5 affected tiles'), findsOneWidget);
     expect(find.text('2 more days affected'), findsOneWidget);
     expect(find.byKey(WhatIfSummarySheet.rowKey('t${day4.day}')), findsNothing);
 
@@ -226,7 +226,7 @@ void main() {
     await tester.pumpWidget(_app(summary));
     await tester.pump();
 
-    expect(find.text('NO SLOT FOUND'), findsOneWidget);
+    expect(find.text('UNPLACED'), findsOneWidget);
     expect(find.byKey(WhatIfSummarySheet.rowKey('nowhere')), findsOneWidget);
     // Listed after the dated group.
     expect(tester.getRect(find.byKey(WhatIfSummarySheet.rowKey('nowhere'))).top,

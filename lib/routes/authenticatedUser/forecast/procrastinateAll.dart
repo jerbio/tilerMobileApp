@@ -1,4 +1,6 @@
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
@@ -60,6 +62,7 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
   /// awaited before popping so a caller refreshing on return (the preview
   /// sheet does) sees the deferred schedule, not the old one.
   Future<void> _deferAll(Duration duration) async {
+    if (!scheduleChangesAllowed(context)) return;
     if (_submitting || duration.inMilliseconds <= 0) return;
     // Busy from the first frame: the picker dims and shows a spinner so the
     // tap is visibly acknowledged while the request is in flight.
@@ -74,7 +77,8 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _submitting = false);
-      showErrorMessage(AppLocalizations.of(context)!.errorOccurred);
+      showErrorMessage(scheduleChangeFailureMessage(context,
+          kind: ScheduleChangeKind.defer));
     }
   }
 
