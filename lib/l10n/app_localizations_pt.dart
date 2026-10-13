@@ -5327,6 +5327,9 @@ class AppLocalizationsPt extends AppLocalizations {
       'A alteração pode ter chegado ao servidor. Atualize para verificar se a agenda foi atualizada. Este bloqueio terminará automaticamente.';
 
   @override
+  String get scheduleChangeRefreshing => 'A atualizar a sua linha temporal…';
+
+  @override
   String get scheduleChangeUncertain => 'Confirmação indisponível';
 
   @override

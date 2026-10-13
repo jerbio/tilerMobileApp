@@ -750,3 +750,82 @@ The fifth, that the check is bounded, is a compatibility check. The existing tes
 The sixth, that JSON decodes as before, is a compatibility check. All are now green and stable over 3 runs. Full suite: 2381 passed, 4 skipped, 0 failed.
 
 **Device check.** Stop the backend, or catch it while it is starting, and tap Complete. Expect one "Couldn't reach Tiler…" message with Retry, no card, and no POST in the log. Then Retry once the server is up: expect the Completing card and a 2xx.
+
+#### Change timings (October 13, 2026; awaiting review)
+
+**Asked.** Measure how long the POST, the refresh read and the UI refresh take. Using the app, the calendar can look stuck and the messages can seem to conflict.
+
+**Change.** `ScheduleChangeTimings` (`lib/bloc/schedule/schedule_change_timings.dart`), wired into `ScheduleBloc`, reports each change once as `schedule_change_timing` (schedule log and analytics):
+
+- spans: `prepareMs`, `sendMs`, `waitForDataMs` (done but still showing old data), `readMs`, `renderMs` (to the first painted frame) and `totalMs`;
+- marks, in ms since the tap: `reserved`, `cardShown`, `sent`, `responded`, `uncertain`, `told`, `settled`, `readStarted`, `applied`, `readFinished`, `rendered`;
+- fields: `outcome` (success, failed, acknowledged, confirmed, unconfirmed, not_sent, declined, blocked, incomplete), HTTP `status`, and `told`.
+
+Failures report at once. A change still open after 4 minutes is reported as incomplete at the next timing event; no timer is kept per change.
+
+**Tests.** `test/schedule_change_timings_test.dart`, 6 tests, all red first (nothing reported). A first version kept a 4-minute timer per change, which left pending timers in 6 existing widget tests on `feature/tileShare-9.19-classCreate`. It was replaced by the sweep. Full suite on that branch: 3396 passed, 4 skipped, 0 failed.
+
+**Reading it on device:**
+
+```bash
+adb logcat | grep schedule_change_timing
+```
+
+**First device samples (October 13, 2026):**
+
+| Change | Total | Server (POST) | Card gone, old schedule shown | Read | Render |
+|---|---|---|---|---|---|
+| Start Now | 23.6 s | 14.8 s | 6.6 s | 6.6 s | 0.16 s |
+| Complete | about 20 s | 13.8 s | 4.7 s | 4.7 s | – |
+
+**Correction.** The Complete exposed a measurement flaw. A schedule update that landed while it was in flight (the earlier Start Now's result) was counted as its refresh, giving a negative `waitForDataMs` and a report before its own data arrived. Updates before the answer are now `appliedWhilePending`, and the report waits for the read that follows the answer. One more test was red first: 7 tests in total. Full suite: 3397 passed, 4 skipped, 0 failed.
+
+**Findings.**
+
+1. The server's POST is the largest share, about 14 s.
+2. After the card disappears, the calendar shows the old schedule for 4.7 to 6.6 s with no indicator. This is the likely cause of the "stuck" feeling.
+3. A stale version check adds about 1.2 s before each change.
+
+#### "Updating your schedule…" (October 13, 2026; awaiting review)
+
+**Problem (from the timings).** After the server answered, the card disappeared, but the calendar kept showing the old schedule for 4.5 to 6.6 s while the refresh read ran. Nothing on screen said so, which is the likely cause of the "stuck" feeling.
+
+**Change.**
+
+- A confirmed change moves to a new card phase, `refreshing`: "Updating your schedule…", with a spinner and the action and target. The card leaves in the same update that brings the refreshed schedule.
+  - Only a read that began after the answer ends it. A read already in flight carries older data.
+  - A failed, skipped or superseded read also ends it. A newer read that takes over ends it in turn, so the card does not blink out.
+- The phase holds nothing back: new changes start normally and take the card.
+- There is no timeout timer; the card lasts exactly as long as that read, which is itself bounded by the HTTP timeout. An earlier version with a 30 s timer left pending timers in 6 widget tests and was dropped.
+- Timings gain a `cardCleared` mark, which should match `applied`.
+- 1 new string in all 9 locales.
+
+**Tests.** `test/schedule_change_refreshing_test.dart`, 7 tests. Four were red first:
+
+1. there was no updating card;
+2. there was no `cardCleared` mark;
+3. the card text was missing;
+4. there was no timeout (later replaced by the superseding-read test).
+
+The others pass as compatibility checks. Three existing tests asserted the old contract (the card gone on the answer while the read was held) and now expect the updating card until the read completes: `complete remains evaluating through GET and local reload`, `Completing feedback and real daily grid survive GET…`, and `the calendar hosts the evaluation card`. The last now uses a fixed pump instead of settling, since the card's spinner runs while its read is out.
+
+**Device check.** Complete a tile. When the server answers, the card should read "Updating your schedule…" and disappear exactly when the calendar changes. In the log, `refresh_card_cleared` with `reason: read_applied`, and in `schedule_change_timing`, `cardCleared` equal to `applied`.
+
+**Look of the switch (follow-up).** Processing keeps the action's glyph (✓, ▶, …) on the brand colour. Updating shows a sync glyph, badge and spinner in the accent: the calendar's "moved" colour via `ChangeFlash.moved`, so dark mode follows it too. The badge cross-fades over 250 ms, and switches instantly when the OS asks for reduced motion. Three tests were red first, checking the glyph and colours in light and dark, and that both glyphs are visible mid-fade.
+
+**Wording and transition (follow-up).**
+- The card now says "Updating your timeline…", using the app's existing term for "timeline" in each language (Zeitleiste, χρονολόγιο, línea de tiempo, chronologie, linea temporale, タイムライン, tijdlijn, linha temporal).
+- The switch from processing to updating eases over 400 ms, instead of a 250 ms fade:
+  - the badge cross-fades while the sync glyph grows from 70% and turns a quarter turn into place (ease-out in, ease-in out);
+  - the title cross-fades;
+  - the spinner's colour shifts from brand to accent.
+- All of it switches instantly when the OS asks for reduced motion.
+- Two tests were red first: the wording in every locale, and that midway through the switch the glyph is scaled and turned, both titles are visible, and the spinner colour is between the two.
+
+**Flag (follow-up).** Timings are controlled by `TILER_SCHEDULE_TIMINGS`:
+
+- on by default in debug builds, off in release and profile builds;
+- `--dart-define=TILER_SCHEDULE_TIMINGS=true` turns them on, to troubleshoot a release build;
+- `--dart-define=TILER_SCHEDULE_TIMINGS=false` turns them off.
+
+When off, nothing is recorded, logged or sent to analytics. In release, the log line also needs `TILER_SCHEDULE_LOGS=true`; the analytics event does not. Three tests were red first: resolving the flag, a disabled tracker reporting nothing, and the bloc reporting nothing when off.

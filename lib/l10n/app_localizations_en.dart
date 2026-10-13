@@ -5263,6 +5263,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.';
 
   @override
+  String get scheduleChangeRefreshing => 'Updating your timeline…';
+
+  @override
   String get scheduleChangeUncertain => 'Confirmation unavailable';
 
   @override

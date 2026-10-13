@@ -5,6 +5,7 @@ import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/bloc/schedule/schedule_diagnostics.dart';
 export 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/bloc/schedule/schedule_change_feed.dart';
+import 'package:tiler_app/bloc/schedule/schedule_change_timings.dart';
 import 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart';
 import 'package:tiler_app/bloc/schedule/schedule_recovery_monitor.dart';
 import 'package:tiler_app/bloc/schedule/schedule_revision_cubit.dart';
@@ -29,6 +30,8 @@ import '../../services/api/subCalendarEventApi.dart';
 // origin types without a second import.
 export 'package:tiler_app/bloc/schedule/schedule_change_tracker.dart'
     show ScheduleChangeOrigin, ScheduleChangeAttribution, ScheduleRevisionGate;
+export 'package:tiler_app/bloc/schedule/schedule_change_timings.dart'
+    show ScheduleChangeTimings, ScheduleChangeTiming;
 export 'package:tiler_app/bloc/schedule/schedule_change_feed.dart'
     show ScheduleChange, ScheduleChangeFeed;
 
@@ -47,6 +50,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   static ScheduleBloc? get ofCurrentChange =>
       Zone.current[_ownerZoneKey] as ScheduleBloc?;
   final ScheduleEvaluationStore evaluationStore;
+
+  /// Times each schedule change from the tap to the refreshed calendar.
+  final ScheduleChangeTimings timings;
   final ScheduleEvaluationConfig evaluationConfig;
   final DateTime Function() _now;
   ScheduleEvaluation? _evaluation;
@@ -93,6 +99,20 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   /// The most recently admitted write, and the outcomes screens have told.
   String? _lastAdmittedId;
+
+  /// The timing of each admitted write, by evaluation id (bounded).
+  final Map<String, ScheduleChangeTiming> _timings =
+      <String, ScheduleChangeTiming>{};
+
+  ScheduleChangeTiming? _timingFor(String? evaluationId) =>
+      evaluationId == null ? null : _timings[evaluationId];
+
+  /// A change the server confirmed, shown as "Updating your schedule…"
+  /// until the schedule read after it is on screen. Holds nothing back.
+  ScheduleEvaluation? _refreshing;
+
+  /// What the card shows: the write in progress, else the refresh.
+  ScheduleEvaluation? get _shown => _evaluation ?? _refreshing;
 
   /// Completes when the app is back in the foreground; null while it is.
   Completer<void>? _foreground;
@@ -274,6 +294,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           current.id != evaluation.id ||
           current.phase != ScheduleEvaluationPhase.pending) return;
       _evaluation = current.withPhase(ScheduleEvaluationPhase.uncertain);
+      timings.mark(_timingFor(current.id), 'uncertain');
       _trace('mutation_uncertain',
           fields: {'reason': reason, ...fields}, error: error);
       if (_changedSince(current)) {
@@ -449,6 +470,18 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             ? 'revision_changed'
             : 'late_response',
       });
+    }
+    final timing = _timingFor(evaluation.id);
+    timings.mark(timing, 'told', fields: {'told': kind.name});
+    switch (kind) {
+      case ScheduleChangeOutcomeKind.acknowledged:
+      case ScheduleChangeOutcomeKind.confirmed:
+        timings.finish(timing, kind.name, awaitRefresh: true);
+      case ScheduleChangeOutcomeKind.failed:
+      case ScheduleChangeOutcomeKind.unconfirmed:
+        timings.finish(timing, kind.name);
+      case ScheduleChangeOutcomeKind.notSent:
+        break;
     }
     if (!_outcomes.isClosed) _outcomes.add(outcome);
   }
@@ -803,6 +836,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       throw ScheduleChangeBlocked();
     }
     _lastDeclined = null;
+    final timing = timings.start(kind);
     final generation = _sessionGeneration;
     // While an earlier write is unconfirmed, read the schedule first: a
     // change there acknowledges it before this one starts.
@@ -834,14 +868,18 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           }
         }
       } on ScheduleChangeBlocked {
+        timings.finish(timing, 'blocked');
         rethrow;
       } on ScheduleChangeDeclined {
+        timings.finish(timing, 'declined');
         rethrow;
       } catch (error) {
         // The schedule could not be read first, so nothing was sent.
         if (!isClosed && generation == _sessionGeneration) {
           _tellNotSent(kind, name, ids, error);
         }
+        timings.mark(timing, 'told', fields: {'told': 'notSent'});
+        timings.finish(timing, 'not_sent');
         rethrow;
       } finally {
         if (generation == _sessionGeneration) _initializingChange = false;
@@ -872,6 +910,12 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         affectedTileIds: List.unmodifiable(ids));
     _evaluation = evaluation;
     _lastAdmittedId = evaluation.id;
+    timing.requestId = evaluation.id;
+    _timings[evaluation.id] = timing;
+    while (_timings.length > 16) {
+      _timings.remove(_timings.keys.first);
+    }
+    timings.mark(timing, 'reserved');
     _attributeEvaluation(evaluation);
     _unconfirmedRequestId = null;
     final deadline = Completer<bool>();
@@ -970,11 +1014,14 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       throw ScheduleChangeBlocked();
     }
     _sent = true;
+    timings.mark(_timingFor(evaluation.id), 'sent');
     _trace('mutation_sent',
         request: evaluation,
         fields: {'responseTimeoutMs': timeout.inMilliseconds});
     var timedOut = false;
     final original = Future.sync(send).then((response) async {
+      timings.mark(_timingFor(evaluation.id), 'responded',
+          fields: {'status': response.statusCode});
       _trace('mutation_response', request: evaluation, fields: {
         'status': response.statusCode,
         'late': timedOut,
@@ -1079,12 +1126,35 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         request: evaluation, fields: {'success': success});
     if (success && wasUnconfirmed) {
       _emitOutcome(evaluation, ScheduleChangeOutcomeKind.confirmed);
+    } else {
+      timings.finish(_timingFor(evaluation.id), success ? 'success' : 'failed',
+          awaitRefresh: success);
     }
+    if (success) _startRefreshing(evaluation);
     _publishEvaluation();
     if (success) {
       revisions.checkAfterChange(baseline: evaluation.baseline);
       add(GetScheduleEvent(forceRefresh: true, emitOnlyLoadedStated: true));
     }
+  }
+
+  void _startRefreshing(ScheduleEvaluation evaluation) {
+    final refreshing = evaluation.withPhase(ScheduleEvaluationPhase.refreshing);
+    _refreshing = refreshing;
+    _trace('refresh_card_shown', request: refreshing);
+  }
+
+  /// The read after the answer ends the "Updating your schedule…" card for
+  /// [evaluationId]: with the new schedule, or however else it ends.
+  void _endRefreshing(String evaluationId, String reason,
+      {bool publish = false}) {
+    final refreshing = _refreshing;
+    if (refreshing == null || refreshing.id != evaluationId) return;
+    _refreshing = null;
+    timings.mark(_timingFor(evaluationId), 'cardCleared');
+    _trace('refresh_card_cleared',
+        request: refreshing, fields: {'reason': reason});
+    if (publish) _publishEvaluation();
   }
 
   void dismissEvaluationFailure() {
@@ -1098,11 +1168,13 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   /// snapshot captured before another handler started/finished a mutation.
   void _emitCalendar(ScheduleState next, Emitter<ScheduleState> emit) {
     if (emit.isDone) return;
-    if (_evaluation == null) {
+    final shown = _shown;
+    if (shown == null) {
       emit(next);
       return;
     }
     final snapshot = ScheduleState.generatePriorScheduleState(next);
+    timings.mark(_timingFor(shown.id), 'cardShown');
     _trace('calendar_preserved_evaluation', fields: {
       'readState': next.runtimeType.toString(),
       'tileCount': snapshot.subEvents.length,
@@ -1115,8 +1187,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         lookupTimeline: snapshot.previousLookupTimeline,
         scheduleStatus: snapshot.scheduleStatus,
         currentView: next.currentView,
-        evaluationTime: _evaluation!.startedAt,
-        evaluation: _evaluation,
+        evaluationTime: shown.startedAt,
+        evaluation: shown,
         isFetching: _fetching));
   }
 
@@ -1214,7 +1286,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     super.onChange(change);
     // Before any listener or widget sees the state, so the change and its
     // tiles always arrive together.
-    changeFeed.observe(change.nextState, attribute: changeTracker.resolve);
+    if (changeFeed.observe(change.nextState,
+            attribute: changeTracker.resolve) !=
+        null) {
+      timings.applied();
+    }
   }
 
   /// What a write of [kind] is, as a cause of schedule changes.
@@ -1287,6 +1363,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   @override
   Future<void> close() async {
     _closing = true;
+    timings.dispose();
     _evaluationTimer?.cancel();
     _reconcileTimer?.cancel();
     for (final timer in List.of(_readTimeouts)) {
@@ -1311,8 +1388,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       {required Function this.getContextCallBack,
       ScheduleEvaluationStore? evaluationStore,
       this.evaluationConfig = const ScheduleEvaluationConfig(),
-      DateTime Function()? now})
+      DateTime Function()? now,
+      ScheduleChangeTimings? timings})
       : evaluationStore = evaluationStore ?? ScheduleEvaluationStore(),
+        timings = timings ?? ScheduleChangeTimings(now: now),
         _now = now ?? DateTime.now,
         super(ScheduleInitialState(
             currentView: AuthorizedRouteTileListPage.Daily)) {
@@ -1424,6 +1503,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     _unconfirmedRequestId = null;
     _restoredEvaluation = null;
     _background.clear();
+    _refreshing = null;
     _lastOutcome = null;
     _lastAdmittedId = null;
     _toldOutcomes.clear();
@@ -1454,6 +1534,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     _unconfirmedRequestId = null;
     _restoredEvaluation = null;
     _background.clear();
+    _refreshing = null;
     _lastOutcome = null;
     _lastAdmittedId = null;
     _toldOutcomes.clear();
@@ -1485,10 +1566,14 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   Future<void> _onGetSchedule(
       GetScheduleEvent event, Emitter<ScheduleState> emit) async {
     _reconcileRevision();
+    final endsRefresh = _refreshing?.id;
     if (tutorialMode || state is ScheduleLoggedOutState) {
       _trace('read_skipped', fields: {
         'reason': tutorialMode ? 'tutorial' : 'logged_out',
       });
+      if (endsRefresh != null) {
+        _endRefreshing(endsRefresh, 'read_skipped', publish: true);
+      }
       return;
     }
     final elapsed = Stopwatch()..start();
@@ -1503,6 +1588,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             (state as ScheduleLoadingState).isAlreadyLoaded);
     _fetching = true;
     _readsInFlight++;
+    timings.readStarted();
     _trace('read_started', fields: {
       'forceRefresh': event.forceRefresh,
       'quietRefresh': event.emitOnlyLoadedStated,
@@ -1571,6 +1657,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         revisions.observe(data.item3);
         _reconcileRevision();
         _fetching = false;
+        // The card leaves in the same update that shows the new schedule.
+        if (endsRefresh != null) _endRefreshing(endsRefresh, 'read_applied');
         _emitCalendar(
             ScheduleLoadedState(
                 subEvents: data.item2,
@@ -1587,6 +1675,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           'elapsedMs': elapsed.elapsedMilliseconds
         });
         _fetching = false;
+        if (endsRefresh != null) _endRefreshing(endsRefresh, 'read_reused');
         _emitCalendar(
             LocalScheduleLoadedState(
                 subEvents: snapshot.subEvents,
@@ -1610,6 +1699,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           generation != _sessionGeneration ||
           read != _readGeneration) return;
       _fetching = false;
+      if (endsRefresh != null) _endRefreshing(endsRefresh, 'read_failed');
       // Failure of a read cannot settle a mutation or remove its feedback.
       final current = ScheduleState.generatePriorScheduleState(state);
       _emitCalendar(
@@ -1626,6 +1716,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     } finally {
       _readsInFlight--;
       if (read == _readGeneration) _fetching = false;
+      if (endsRefresh != null && read == _readGeneration) {
+        _endRefreshing(endsRefresh, 'read_finished', publish: true);
+      }
+      timings.readFinished();
       _trace('read_finished', fields: {
         'readAttempt': read,
         'elapsedMs': elapsed.elapsedMilliseconds,

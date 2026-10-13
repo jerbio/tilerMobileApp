@@ -1979,6 +1979,7 @@
   "commentsAttachmentPickFailed": "No se pudo adjuntar ese archivo. Inténtalo de nuevo.",
   "scheduleChangeRefresh": "Actualizar horario",
   "scheduleChangeUncertainBody": "Tu cambio puede haber llegado al servidor. Actualiza para comprobar si el horario cambió. Esta pausa terminará automáticamente.",
+  "scheduleChangeRefreshing": "Actualizando tu línea de tiempo…",
   "scheduleChangeUncertain": "Confirmación no disponible",
   "scheduleChangeAcknowledged": "Tu horario se actualizó después de {change}. Comprueba que esté bien.",
   "scheduleChangeWentThrough": "{change} se completó.",

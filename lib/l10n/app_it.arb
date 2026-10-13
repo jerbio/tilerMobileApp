@@ -1278,6 +1278,7 @@
   "scheduleChangeAfter": "Dopo",
   "scheduleChangeRefresh": "Aggiorna programma",
   "scheduleChangeUncertainBody": "La modifica potrebbe essere arrivata al server. Aggiorna per verificare se il programma è stato aggiornato. Questo blocco terminerà automaticamente.",
+  "scheduleChangeRefreshing": "Aggiornamento della linea temporale…",
   "scheduleChangeUncertain": "Conferma non disponibile",
   "scheduleChangeAcknowledged": "Il tuo programma è stato aggiornato dopo {change}. Controlla che sia corretto.",
   "scheduleChangeWentThrough": "{change} è andato a buon fine.",

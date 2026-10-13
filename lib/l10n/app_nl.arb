@@ -1278,6 +1278,7 @@
   "scheduleChangeAfter": "Na",
   "scheduleChangeRefresh": "Planning vernieuwen",
   "scheduleChangeUncertainBody": "Je wijziging heeft de server mogelijk bereikt. Vernieuw om te controleren of de planning is bijgewerkt. Deze blokkering eindigt automatisch.",
+  "scheduleChangeRefreshing": "Je tijdlijn wordt bijgewerkt…",
   "scheduleChangeUncertain": "Bevestiging niet beschikbaar",
   "scheduleChangeAcknowledged": "Je planning is bijgewerkt na {change}. Controleer of alles klopt.",
   "scheduleChangeWentThrough": "{change} is gelukt.",

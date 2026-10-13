@@ -5314,6 +5314,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Tu cambio puede haber llegado al servidor. Actualiza para comprobar si el horario cambió. Esta pausa terminará automáticamente.';
 
   @override
+  String get scheduleChangeRefreshing => 'Actualizando tu línea de tiempo…';
+
+  @override
   String get scheduleChangeUncertain => 'Confirmación no disponible';
 
   @override

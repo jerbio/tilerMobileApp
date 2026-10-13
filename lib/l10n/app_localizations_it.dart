@@ -5327,6 +5327,9 @@ class AppLocalizationsIt extends AppLocalizations {
       'La modifica potrebbe essere arrivata al server. Aggiorna per verificare se il programma è stato aggiornato. Questo blocco terminerà automaticamente.';
 
   @override
+  String get scheduleChangeRefreshing => 'Aggiornamento della linea temporale…';
+
+  @override
   String get scheduleChangeUncertain => 'Conferma non disponibile';
 
   @override

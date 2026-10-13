@@ -5324,6 +5324,9 @@ class AppLocalizationsNl extends AppLocalizations {
       'Je wijziging heeft de server mogelijk bereikt. Vernieuw om te controleren of de planning is bijgewerkt. Deze blokkering eindigt automatisch.';
 
   @override
+  String get scheduleChangeRefreshing => 'Je tijdlijn wordt bijgewerkt…';
+
+  @override
   String get scheduleChangeUncertain => 'Bevestiging niet beschikbaar';
 
   @override

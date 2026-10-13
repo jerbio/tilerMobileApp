@@ -1278,6 +1278,7 @@
   "scheduleChangeAfter": "Μετά",
   "scheduleChangeRefresh": "Ανανέωση προγράμματος",
   "scheduleChangeUncertainBody": "Η αλλαγή σου μπορεί να έχει φτάσει στον διακομιστή. Ανανέωσε για να ελέγξεις αν το πρόγραμμα ενημερώθηκε. Η αναμονή θα λήξει αυτόματα.",
+  "scheduleChangeRefreshing": "Ενημέρωση του χρονολογίου σου…",
   "scheduleChangeUncertain": "Η επιβεβαίωση δεν είναι διαθέσιμη",
   "scheduleChangeAcknowledged": "Το πρόγραμμά σου ενημερώθηκε μετά από {change}. Έλεγξε ότι είναι σωστό.",
   "scheduleChangeWentThrough": "Ολοκληρώθηκε: {change}.",

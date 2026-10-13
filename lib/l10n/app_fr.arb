@@ -1278,6 +1278,7 @@
   "scheduleChangeAfter": "Après",
   "scheduleChangeRefresh": "Actualiser le planning",
   "scheduleChangeUncertainBody": "Votre modification a peut-être atteint le serveur. Actualisez pour vérifier si le planning a été mis à jour. Ce blocage prendra fin automatiquement.",
+  "scheduleChangeRefreshing": "Mise à jour de votre chronologie…",
   "scheduleChangeUncertain": "Confirmation indisponible",
   "scheduleChangeAcknowledged": "Votre planning a été mis à jour après {change}. Vérifiez qu’il est correct.",
   "scheduleChangeWentThrough": "{change} a abouti.",

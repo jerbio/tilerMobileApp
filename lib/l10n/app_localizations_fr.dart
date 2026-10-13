@@ -5352,6 +5352,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Votre modification a peut-être atteint le serveur. Actualisez pour vérifier si le planning a été mis à jour. Ce blocage prendra fin automatiquement.';
 
   @override
+  String get scheduleChangeRefreshing => 'Mise à jour de votre chronologie…';
+
+  @override
   String get scheduleChangeUncertain => 'Confirmation indisponible';
 
   @override

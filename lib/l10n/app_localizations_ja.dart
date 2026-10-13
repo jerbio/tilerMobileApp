@@ -5139,6 +5139,9 @@ class AppLocalizationsJa extends AppLocalizations {
       '変更がサーバーに届いている可能性があります。更新して、スケジュールに変更があるか確認してください。この制限は自動的に解除されます。';
 
   @override
+  String get scheduleChangeRefreshing => 'タイムラインを更新しています…';
+
+  @override
   String get scheduleChangeUncertain => '確認できません';
 
   @override

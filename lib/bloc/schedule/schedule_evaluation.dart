@@ -65,7 +65,16 @@ ScheduleChangeKind? scheduleMutationKind(String method, String path) {
   return routes[route];
 }
 
-enum ScheduleEvaluationPhase { pending, uncertain, failed }
+enum ScheduleEvaluationPhase {
+  pending,
+  uncertain,
+  failed,
+
+  /// The server confirmed the change; the refreshed schedule is still on
+  /// its way. Holds nothing back, and ends with the read that follows the
+  /// answer, however that read ends.
+  refreshing,
+}
 
 /// Wall-clock bounds; neither refresh nor process restart extends a deadline.
 class ScheduleEvaluationConfig {
@@ -169,7 +178,9 @@ class ScheduleEvaluation extends Equatable {
   bool get blocksChanges => phase == ScheduleEvaluationPhase.pending;
 
   /// Still waiting to learn whether it applied (in flight or unknown).
-  bool get awaitsOutcome => phase != ScheduleEvaluationPhase.failed;
+  bool get awaitsOutcome =>
+      phase == ScheduleEvaluationPhase.pending ||
+      phase == ScheduleEvaluationPhase.uncertain;
   ScheduleEvaluation withPhase(ScheduleEvaluationPhase phase) =>
       ScheduleEvaluation(
           id: id,

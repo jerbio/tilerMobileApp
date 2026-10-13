@@ -9002,6 +9002,12 @@ abstract class AppLocalizations {
   /// **'Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.'**
   String get scheduleChangeUncertainBody;
 
+  /// Shown after the server confirmed a schedule change, until the refreshed timeline is on screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating your timeline…'**
+  String get scheduleChangeRefreshing;
+
   /// No description provided for @scheduleChangeUncertain.
   ///
   /// In en, this message translates to:

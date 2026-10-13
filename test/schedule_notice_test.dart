@@ -49,8 +49,8 @@ void main() {
       final bus = ScheduleNoticeBus();
       await tester.pumpWidget(app(bus, calendar()));
 
-      bus.show(notice('moving', ScheduleNoticeSlot.top,
-          ScheduleNotice.progressPriority));
+      bus.show(notice(
+          'moving', ScheduleNoticeSlot.top, ScheduleNotice.progressPriority));
       bus.show(notice(
           'status', ScheduleNoticeSlot.top, ScheduleNotice.statusPriority));
       await tester.pump();
@@ -59,8 +59,8 @@ void main() {
       final moving = find.byKey(const ValueKey('notice:moving'));
       expect(status, findsOneWidget);
       expect(moving, findsOneWidget);
-      expect(tester.getTopLeft(status).dy,
-          lessThan(tester.getTopLeft(moving).dy));
+      expect(
+          tester.getTopLeft(status).dy, lessThan(tester.getTopLeft(moving).dy));
 
       // At most two: a third, lower one waits.
       bus.show(notice('extra', ScheduleNoticeSlot.top, 0));
@@ -76,7 +76,8 @@ void main() {
 
     testWidgets('the bottom slot shows one; an interruption takes it a while',
         (tester) async {
-      final bus = ScheduleNoticeBus(interruptionFor: const Duration(seconds: 2));
+      final bus =
+          ScheduleNoticeBus(interruptionFor: const Duration(seconds: 2));
       await tester.pumpWidget(app(bus, calendar()));
       bus.show(notice('low', ScheduleNoticeSlot.bottom, 1));
       bus.show(notice('summary', ScheduleNoticeSlot.bottom,
@@ -99,14 +100,11 @@ void main() {
     testWidgets('notices published while the frame builds still show',
         (tester) async {
       final bus = ScheduleNoticeBus();
-      await tester.pumpWidget(app(
-          bus,
-          Scaffold(
-              body: ScheduleNoticeSurface.calendar(
-                  child: Builder(builder: (context) {
-            bus.show(notice('built', ScheduleNoticeSlot.top, 1));
-            return const SizedBox.expand();
-          })))));
+      await tester.pumpWidget(app(bus, Scaffold(body:
+          ScheduleNoticeSurface.calendar(child: Builder(builder: (context) {
+        bus.show(notice('built', ScheduleNoticeSlot.top, 1));
+        return const SizedBox.expand();
+      })))));
       await tester.pump();
       expect(find.byKey(const ValueKey('notice:built')), findsOneWidget);
     });
@@ -121,7 +119,8 @@ void main() {
               body: ScheduleNoticeSurface.calendar(
                   child: ScheduleEvaluationNotices(child: SizedBox.expand()))),
           bloc: bloc));
-      final window = Timeline.fromDateTime(DateTime(2026), DateTime(2026, 1, 8));
+      final window =
+          Timeline.fromDateTime(DateTime(2026), DateTime(2026, 1, 8));
       bloc.add(ReloadLocalScheduleEvent(
           subEvents: const [],
           timelines: const [],
@@ -147,9 +146,16 @@ void main() {
       await pending;
       await tester.pump();
       await tester.pump();
-      expect(find.byKey(const ValueKey('scheduleEvaluationFeedback')),
-          findsNothing);
-      await tester.pumpAndSettle();
+      // Settled: the slot now says the schedule is updating, until the
+      // refresh read after the answer ends.
+      expect(
+          find.descendant(
+              of: find.byKey(const ValueKey('scheduleNoticeTopSlot')),
+              matching: find.text(lookupAppLocalizations(const Locale('en'))
+                  .scheduleChangeRefreshing)),
+          findsOneWidget);
+      // Its spinner keeps going while the read is out, so no settling here.
+      await tester.pump(const Duration(milliseconds: 300));
     });
   });
 
@@ -211,8 +217,8 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       bloc = ScheduleBloc(getContextCallBack: () => null);
       final bus = ScheduleNoticeBus();
-      await tester.pumpWidget(
-          app(bus, home(sheetSurface: sheetSurface), bloc: bloc));
+      await tester
+          .pumpWidget(app(bus, home(sheetSurface: sheetSurface), bloc: bloc));
       bloc.add(ReloadLocalScheduleEvent(
           subEvents: const [],
           timelines: const [],
@@ -261,8 +267,8 @@ void main() {
       await open(tester, sheetSurface: true);
       Navigator.of(tester.element(find.text('Complete'))).pop();
       await tester.pumpAndSettle();
-      expect(scheduleChangesAllowed(tester.element(find.text('Open'))),
-          isFalse);
+      expect(
+          scheduleChangesAllowed(tester.element(find.text('Open'))), isFalse);
       await tester.pump();
       expect(
           find.descendant(

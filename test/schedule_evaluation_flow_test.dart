@@ -135,10 +135,15 @@ void main() {
     await pending;
     await flush();
     expect(bloc.activeEvaluation, isNull);
-    expect(bloc.state, isA<ScheduleLoadedState>());
-    expect((bloc.state as ScheduleLoadedState).subEvents, [tile]);
+    // Settled: the card says it is updating until the refreshed schedule
+    // is shown, keeping the calendar it already had.
+    final updating = bloc.state as ScheduleEvaluationState;
+    expect(updating.evaluation!.phase, ScheduleEvaluationPhase.refreshing);
+    expect(updating.subEvents, [tile]);
     api.heldRead!.complete();
     await flush();
+    expect(bloc.state, isA<ScheduleLoadedState>());
+    expect((bloc.state as ScheduleLoadedState).subEvents, [tile]);
   });
 
   test('the revision an admitted write produces is attributed to it, once',
@@ -1207,11 +1212,18 @@ void main() {
       mutation.complete(visible);
       await pending;
       await tester.pump();
-      expect(find.byType(ScheduleEvaluationFeedback), findsNothing);
-      expect(find.text('Visible tile'), findsOneWidget);
+      // Settled, refresh still on its way: the card says so.
+      expect(
+          find.text(lookupAppLocalizations(const Locale('en'))
+              .scheduleChangeRefreshing),
+          findsOneWidget);
       expect(tester.state(grid), same(original));
       api.heldRead!.complete();
       await tester.pump();
+      await tester.pump();
+      expect(find.byType(ScheduleEvaluationFeedback), findsNothing);
+      expect(find.text('Visible tile'), findsOneWidget);
+      expect(tester.state(grid), same(original));
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.runAsync(() async {
         await dates.close();

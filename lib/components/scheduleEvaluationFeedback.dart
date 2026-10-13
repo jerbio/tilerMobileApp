@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/scheduleNotices/scheduleNoticeBus.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/services/changeFlash.dart';
 
 /// Handler guard as well as API admission: a second tap gets an explanation
 /// naming the change still in progress, shown where the user is looking
@@ -259,6 +260,8 @@ class ScheduleEvaluationProgress extends StatelessWidget {
 /// Calendar-local feedback preserves the mounted day content and navigation.
 /// The evaluation state owns its lifetime, including after an editor closes.
 class ScheduleEvaluationFeedback extends StatelessWidget {
+  static const Duration _switchDuration = Duration(milliseconds: 400);
+
   const ScheduleEvaluationFeedback(
       {super.key, required this.state, this.inSlot = false});
   final ScheduleEvaluationState state;
@@ -300,12 +303,24 @@ class ScheduleEvaluationFeedback extends StatelessWidget {
     };
     final target =
         evaluation == null ? null : scheduleChangeTarget(l10n, evaluation);
+    final scheme = Theme.of(context).colorScheme;
+    final updating = phase == ScheduleEvaluationPhase.refreshing;
+    final accent = ChangeFlash.moved.color(scheme);
+    // Processing → updating eases over [_switchDuration] (instant when the
+    // OS asks for reduced motion): the badge cross-fades while the sync
+    // glyph grows and turns into place, the title cross-fades, and the
+    // spinner's colour shifts.
+    final switchDuration = MediaQuery.maybeDisableAnimationsOf(context) ?? false
+        ? Duration.zero
+        : _switchDuration;
     final title = phase == ScheduleEvaluationPhase.uncertain
         ? l10n.scheduleChangeUncertain
         : phase == ScheduleEvaluationPhase.failed
             ? l10n.scheduleChangeFailed
-            : scheduleChangeActionTitle(l10n, evaluation?.kind,
-                fallback: state.message);
+            : phase == ScheduleEvaluationPhase.refreshing
+                ? l10n.scheduleChangeRefreshing
+                : scheduleChangeActionTitle(l10n, evaluation?.kind,
+                    fallback: state.message);
     final Widget card = Material(
       key: const ValueKey('scheduleEvaluationFeedback'),
       elevation: 3,
@@ -320,21 +335,55 @@ class ScheduleEvaluationFeedback extends StatelessWidget {
                 width: 44,
                 height: 44,
                 child: Stack(alignment: Alignment.center, children: [
-                  Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color:
-                              Theme.of(context).colorScheme.primaryContainer),
-                      child: Icon(icon,
-                          key: const ValueKey('scheduleEvaluationActionIcon'),
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onPrimaryContainer)),
-                  if (phase == ScheduleEvaluationPhase.pending)
-                    const Positioned.fill(
-                        child: CircularProgressIndicator(strokeWidth: 2)),
+                  // Processing shows the action on the brand colour; once the
+                  // server has answered, a sync glyph in the accent (the
+                  // calendar's "moved" colour) while the schedule is fetched.
+                  // The two cross-fade so the switch is noticed.
+                  AnimatedSwitcher(
+                    duration: switchDuration,
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: ScaleTransition(
+                        scale: Tween<double>(begin: 0.7, end: 1)
+                            .animate(animation),
+                        child: RotationTransition(
+                          turns: Tween<double>(begin: -0.25, end: 0)
+                              .animate(animation),
+                          child: child,
+                        ),
+                      ),
+                    ),
+                    child: KeyedSubtree(
+                      key: ValueKey<bool>(updating),
+                      child: Container(
+                          key: const ValueKey('scheduleEvaluationBadge'),
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: updating
+                                  ? accent.withValues(alpha: 0.16)
+                                  : scheme.primaryContainer),
+                          child: Icon(updating ? Icons.sync : icon,
+                              key: const ValueKey(
+                                  'scheduleEvaluationActionIcon'),
+                              color: updating
+                                  ? accent
+                                  : scheme.onPrimaryContainer)),
+                    ),
+                  ),
+                  if (phase == ScheduleEvaluationPhase.pending || updating)
+                    Positioned.fill(
+                        child: TweenAnimationBuilder<Color?>(
+                            tween: ColorTween(
+                                end: updating ? accent : scheme.primary),
+                            duration: switchDuration,
+                            curve: Curves.easeInOut,
+                            builder: (_, color, __) =>
+                                CircularProgressIndicator(
+                                    strokeWidth: 2, color: color))),
                 ])),
             const SizedBox(width: 12),
             Expanded(
@@ -342,7 +391,15 @@ class ScheduleEvaluationFeedback extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  Text(title),
+                  AnimatedSwitcher(
+                      duration: switchDuration,
+                      layoutBuilder: (current, previous) => Stack(
+                              alignment: AlignmentDirectional.centerStart,
+                              children: [
+                                ...previous,
+                                if (current != null) current
+                              ]),
+                      child: Text(title, key: ValueKey<String>(title))),
                   if (evaluation != null &&
                       phase != ScheduleEvaluationPhase.pending)
                     Text(command,

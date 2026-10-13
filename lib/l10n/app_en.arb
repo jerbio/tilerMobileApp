@@ -2826,6 +2826,8 @@
   "tileShareSaveChanges": "Save changes",
   "scheduleChangeRefresh": "Refresh schedule",
   "scheduleChangeUncertainBody": "Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.",
+  "scheduleChangeRefreshing": "Updating your timeline…",
+  "@scheduleChangeRefreshing": {"description": "Shown after the server confirmed a schedule change, until the refreshed timeline is on screen."},
   "scheduleChangeUncertain": "Confirmation unavailable",
   "scheduleChangeAcknowledged": "Your schedule was updated after {change}. Check that it looks right.",
   "@scheduleChangeAcknowledged": {"description": "An unconfirmed schedule change was followed by a changed schedule; it may have applied. {change} is e.g. 'Complete · Gym'.", "placeholders": {"change": {"type": "String"}}},

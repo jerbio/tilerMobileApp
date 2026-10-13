@@ -1278,6 +1278,7 @@
   "scheduleChangeAfter": "Nachher",
   "scheduleChangeRefresh": "Zeitplan aktualisieren",
   "scheduleChangeUncertainBody": "Deine Änderung hat den Server möglicherweise erreicht. Aktualisiere den Zeitplan, um nach Änderungen zu suchen. Diese Sperre endet automatisch.",
+  "scheduleChangeRefreshing": "Deine Zeitleiste wird aktualisiert …",
   "scheduleChangeUncertain": "Bestätigung nicht verfügbar",
   "scheduleChangeAcknowledged": "Dein Zeitplan wurde nach {change} aktualisiert. Prüfe, ob alles stimmt.",
   "scheduleChangeWentThrough": "{change} wurde übernommen.",

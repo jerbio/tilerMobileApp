@@ -5348,6 +5348,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Deine Änderung hat den Server möglicherweise erreicht. Aktualisiere den Zeitplan, um nach Änderungen zu suchen. Diese Sperre endet automatisch.';
 
   @override
+  String get scheduleChangeRefreshing => 'Deine Zeitleiste wird aktualisiert …';
+
+  @override
   String get scheduleChangeUncertain => 'Bestätigung nicht verfügbar';
 
   @override

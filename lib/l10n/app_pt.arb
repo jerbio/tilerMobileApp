@@ -1278,6 +1278,7 @@
   "scheduleChangeAfter": "Depois",
   "scheduleChangeRefresh": "Atualizar agenda",
   "scheduleChangeUncertainBody": "A alteração pode ter chegado ao servidor. Atualize para verificar se a agenda foi atualizada. Este bloqueio terminará automaticamente.",
+  "scheduleChangeRefreshing": "A atualizar a sua linha temporal…",
   "scheduleChangeUncertain": "Confirmação indisponível",
   "scheduleChangeAcknowledged": "Sua agenda foi atualizada depois de {change}. Confira se está tudo certo.",
   "scheduleChangeWentThrough": "{change} foi concluído.",

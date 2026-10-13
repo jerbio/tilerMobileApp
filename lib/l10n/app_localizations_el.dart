@@ -5354,6 +5354,9 @@ class AppLocalizationsEl extends AppLocalizations {
       'Η αλλαγή σου μπορεί να έχει φτάσει στον διακομιστή. Ανανέωσε για να ελέγξεις αν το πρόγραμμα ενημερώθηκε. Η αναμονή θα λήξει αυτόματα.';
 
   @override
+  String get scheduleChangeRefreshing => 'Ενημέρωση του χρονολογίου σου…';
+
+  @override
   String get scheduleChangeUncertain => 'Η επιβεβαίωση δεν είναι διαθέσιμη';
 
   @override
