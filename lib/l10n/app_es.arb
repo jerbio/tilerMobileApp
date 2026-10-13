@@ -2033,5 +2033,9 @@
   "scheduleChangeTabChanges": "Cambios",
   "scheduleChangeTabBeforeAfter": "Antes y después",
   "scheduleChangeBefore": "Antes",
-  "scheduleChangeAfter": "Después"
+  "scheduleChangeAfter": "Después",
+  "tileShareActivityCommentAdded": "Comentario añadido",
+  "tileShareActivityCommentReplied": "Respuesta a comentario añadida",
+  "tileShareActivityCommentEdited": "Comentario editado",
+  "tileShareActivityCommentDeleted": "Comentario eliminado"
 }

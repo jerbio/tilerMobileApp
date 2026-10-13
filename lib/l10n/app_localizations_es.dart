@@ -5026,16 +5026,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get projectRemoveBody => 'Sus tilettes quedarán sin asignar.';
 
   @override
-  String get tileShareActivityCommentAdded => 'Comment added';
+  String get tileShareActivityCommentAdded => 'Comentario añadido';
 
   @override
-  String get tileShareActivityCommentReplied => 'Comment reply added';
+  String get tileShareActivityCommentReplied =>
+      'Respuesta a comentario añadida';
 
   @override
-  String get tileShareActivityCommentEdited => 'Comment edited';
+  String get tileShareActivityCommentEdited => 'Comentario editado';
 
   @override
-  String get tileShareActivityCommentDeleted => 'Comment deleted';
+  String get tileShareActivityCommentDeleted => 'Comentario eliminado';
 
   @override
   String get commitmentYourTasks => 'Tus tilettes';

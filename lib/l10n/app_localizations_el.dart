@@ -4261,133 +4261,134 @@ class AppLocalizationsEl extends AppLocalizations {
       'Η περιήγηση στην εφαρμογή σου πρόκειται να αρχίσει.';
 
   @override
-  String get attentionTabTitle => 'Attention';
+  String get attentionTabTitle => 'Προσοχή';
 
   @override
-  String get attentionFilterAll => 'All';
+  String get attentionFilterAll => 'Όλα';
 
   @override
-  String get attentionFilterInvitations => 'Invitations';
+  String get attentionFilterInvitations => 'Προσκλήσεις';
 
   @override
-  String get attentionFilterChanges => 'Changes';
+  String get attentionFilterChanges => 'Αλλαγές';
 
   @override
-  String get attentionFilterAtRisk => 'At risk';
+  String get attentionFilterAtRisk => 'Σε κίνδυνο';
 
   @override
-  String get attentionFilterResponses => 'Responses';
+  String get attentionFilterResponses => 'Απαντήσεις';
 
   @override
-  String get attentionPillInvitation => 'Invitation';
+  String get attentionPillInvitation => 'Πρόσκληση';
 
   @override
-  String get attentionPillChanged => 'Changed';
+  String get attentionPillChanged => 'Τροποποιήθηκε';
 
   @override
-  String get attentionPillAtRisk => 'At risk';
+  String get attentionPillAtRisk => 'Σε κίνδυνο';
 
   @override
-  String get attentionPillDeclined => 'Declined';
+  String get attentionPillDeclined => 'Απορρίφθηκε';
 
   @override
-  String get attentionPillCompleted => 'Completed';
+  String get attentionPillCompleted => 'Ολοκληρώθηκε';
 
   @override
-  String get attentionPillNotSent => 'Not sent';
+  String get attentionPillNotSent => 'Δεν στάλθηκε';
 
   @override
-  String get attentionSomeone => 'Someone';
+  String get attentionSomeone => 'Κάποιος';
 
   @override
   String attentionReasonInvited(String inviter) {
-    return '$inviter invited you';
+    return 'Ο/Η $inviter σας προσκάλεσε';
   }
 
   @override
   String attentionReasonInvitedMany(String inviter, int count) {
-    return '$inviter invited you to $count tilettes';
+    return 'Ο/Η $inviter σας προσκάλεσε σε $count tilettes';
   }
 
   @override
   String attentionReasonAtRiskOne(String task) {
-    return '“$task” no longer fits your schedule';
+    return 'Το «$task» δεν χωρά πλέον στο πρόγραμμά σας';
   }
 
   @override
   String get attentionReasonAtRiskUntitled =>
-      'A tilette no longer fits your schedule';
+      'Μια tilette δεν χωρά πλέον στο πρόγραμμά σας';
 
   @override
   String attentionReasonAtRiskMany(int count) {
-    return '$count tilettes no longer fit your schedule';
+    return '$count tilettes δεν χωρούν πλέον στο πρόγραμμά σας';
   }
 
   @override
   String attentionReasonDeadlineMoved(String actor, String from, String to) {
-    return '$actor moved the deadline from $from to $to';
+    return 'Ο/Η $actor μετέφερε την προθεσμία από $from σε $to';
   }
 
   @override
   String attentionReasonDeadlineChanged(String actor) {
-    return '$actor changed the deadline';
+    return 'Ο/Η $actor άλλαξε την προθεσμία';
   }
 
   @override
   String attentionReasonRenamed(String actor) {
-    return '$actor renamed a tilette';
+    return 'Ο/Η $actor μετονόμασε μια tilette';
   }
 
   @override
   String attentionReasonNotesUpdated(String actor) {
-    return '$actor updated the notes';
+    return 'Ο/Η $actor ενημέρωσε τις σημειώσεις';
   }
 
   @override
   String attentionReasonUpdated(String actor) {
-    return '$actor updated a tilette';
+    return 'Ο/Η $actor ενημέρωσε μια tilette';
   }
 
   @override
   String attentionReasonManyChanges(String actor, int count) {
-    return '$actor made $count changes';
+    return 'Ο/Η $actor έκανε $count αλλαγές';
   }
 
   @override
   String attentionReasonDeclined(String actor) {
-    return '$actor declined';
+    return 'Ο/Η $actor απέρριψε';
   }
 
   @override
   String attentionReasonDeclinedMany(int count) {
-    return '$count people declined';
+    return '$count άτομα απέρριψαν';
   }
 
   @override
-  String get attentionReasonNotSent => 'Couldn’t send an invitation';
+  String get attentionReasonNotSent =>
+      'Δεν ήταν δυνατή η αποστολή μιας πρόσκλησης';
 
   @override
   String attentionReasonNotSentMany(int count) {
-    return 'Couldn’t send $count invitations';
+    return 'Δεν ήταν δυνατή η αποστολή $count προσκλήσεων';
   }
 
   @override
   String get attentionReasonSendUnknown =>
-      'An invitation may not have been sent — resend if needed';
+      'Μια πρόσκληση ενδέχεται να μην στάλθηκε — στείλτε την ξανά αν χρειάζεται';
 
   @override
   String attentionReasonCompleted(String actor, String task) {
-    return '$actor completed $task';
+    return 'Ο/Η $actor ολοκλήρωσε το $task';
   }
 
   @override
   String attentionReasonCompletedUntitled(String actor) {
-    return '$actor completed a tilette';
+    return 'Ο/Η $actor ολοκλήρωσε μια tilette';
   }
 
   @override
   String attentionReasonCompletedMany(int count) {
-    return '$count tilettes completed';
+    return 'Ολοκληρώθηκαν $count tilettes';
   }
 
   @override
@@ -4403,121 +4404,127 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String attentionMetaDue(String date) {
-    return 'Due $date';
+    return 'Προθεσμία: $date';
   }
 
   @override
-  String get attentionCtaReview => 'Review';
+  String get attentionCtaReview => 'Έλεγχος';
 
   @override
-  String get attentionCtaReviewChanges => 'Review changes';
+  String get attentionCtaReviewChanges => 'Έλεγχος αλλαγών';
 
   @override
-  String get attentionCtaReviewPlan => 'Review plan';
+  String get attentionCtaReviewPlan => 'Έλεγχος πλάνου';
 
   @override
-  String get attentionCtaView => 'View';
+  String get attentionCtaView => 'Προβολή';
 
   @override
-  String get attentionMenuTooltip => 'More';
+  String get attentionMenuTooltip => 'Περισσότερα';
 
   @override
-  String get attentionDismiss => 'Dismiss';
+  String get attentionDismiss => 'Απόκρυψη';
 
   @override
-  String get attentionDismissed => 'Dismissed';
+  String get attentionDismissed => 'Αποκρύφτηκε';
 
   @override
-  String get attentionUndo => 'Undo';
+  String get attentionUndo => 'Αναίρεση';
 
   @override
-  String get attentionDismissFailed => 'Couldn’t dismiss it. Try again.';
+  String get attentionDismissFailed =>
+      'Δεν ήταν δυνατή η απόκρυψη. Δοκιμάστε ξανά.';
 
   @override
-  String get attentionUndoFailed => 'Couldn’t restore it. Try again.';
+  String get attentionUndoFailed =>
+      'Δεν ήταν δυνατή η επαναφορά. Δοκιμάστε ξανά.';
 
   @override
-  String get attentionEmptyTitle => 'You’re all caught up';
+  String get attentionEmptyTitle => 'Είστε πλήρως ενημερωμένοι';
 
   @override
-  String get attentionEmptyBody => 'Nothing needs your attention right now.';
+  String get attentionEmptyBody =>
+      'Τίποτα δεν χρειάζεται την προσοχή σας αυτή τη στιγμή.';
 
   @override
-  String get attentionEmptyFiltered => 'Nothing to show here';
+  String get attentionEmptyFiltered => 'Δεν υπάρχει τίποτα για προβολή';
 
   @override
-  String get attentionLoadFailed => 'Some updates couldn’t load';
+  String get attentionLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση ορισμένων ενημερώσεων';
 
   @override
-  String get attentionLoadFailedAll => 'Attention couldn’t load';
+  String get attentionLoadFailedAll => 'Δεν ήταν δυνατή η φόρτωση της Προσοχής';
 
   @override
-  String get attentionRetry => 'Retry';
+  String get attentionRetry => 'Νέα προσπάθεια';
 
   @override
-  String get tileShareModeBroadcast => 'Broadcast';
+  String get tileShareModeBroadcast => 'Μετάδοση';
 
   @override
-  String get tileShareModeProject => 'Project';
+  String get tileShareModeProject => 'Έργο';
 
   @override
-  String get tileShareModeClass => 'Class';
+  String get tileShareModeClass => 'Μάθημα';
 
   @override
-  String get attentionAccept => 'Accept';
+  String get attentionAccept => 'Αποδοχή';
 
   @override
-  String get attentionDecline => 'Decline';
+  String get attentionDecline => 'Απόρριψη';
 
   @override
-  String get attentionAcceptAll => 'Accept all';
+  String get attentionAcceptAll => 'Αποδοχή όλων';
 
   @override
-  String get attentionDeclineAll => 'Decline all';
+  String get attentionDeclineAll => 'Απόρριψη όλων';
 
   @override
-  String get attentionAcceptDone => 'Accepted';
+  String get attentionAcceptDone => 'Έγινε αποδοχή';
 
   @override
   String attentionAcceptDoneMany(int count) {
-    return 'Accepted $count tilettes';
+    return 'Έγινε αποδοχή $count tilettes';
   }
 
   @override
-  String get attentionDeclineDone => 'Declined';
+  String get attentionDeclineDone => 'Έγινε απόρριψη';
 
   @override
   String attentionDeclineDoneMany(int count) {
-    return 'Declined $count tilettes';
+    return 'Έγινε απόρριψη $count tilettes';
   }
 
   @override
-  String get attentionAcceptFailed => 'Couldn’t accept it. Try again.';
+  String get attentionAcceptFailed =>
+      'Δεν ήταν δυνατή η αποδοχή. Δοκιμάστε ξανά.';
 
   @override
-  String get attentionDeclineFailed => 'Couldn’t decline it. Try again.';
+  String get attentionDeclineFailed =>
+      'Δεν ήταν δυνατή η απόρριψη. Δοκιμάστε ξανά.';
 
   @override
   String get attentionScheduleRefreshFailed =>
-      'Accepted, but your schedule couldn’t refresh yet.';
+      'Έγινε αποδοχή, αλλά το πρόγραμμά σας δεν μπόρεσε ακόμη να ανανεωθεί.';
 
   @override
-  String get clusterTitleFallback => 'Untitled share';
+  String get clusterTitleFallback => 'Κοινοποίηση χωρίς τίτλο';
 
   @override
-  String get clusterRoleMine => 'Created by you';
+  String get clusterRoleMine => 'Δημιουργήθηκε από εσάς';
 
   @override
   String clusterRoleFrom(String name) {
-    return 'From $name';
+    return 'Από $name';
   }
 
   @override
-  String get clusterRoleShared => 'Shared with you';
+  String get clusterRoleShared => 'Κοινοποιήθηκε σε εσάς';
 
   @override
   String clusterRsvpAccepted(int accepted, int total) {
-    return '$accepted of $total accepted';
+    return 'Έγινε αποδοχή $accepted από $total';
   }
 
   @override
@@ -4525,10 +4532,10 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       total,
       locale: localeName,
-      other: '$total people',
-      one: '1 person',
+      other: '$total άτομα αποδέχτηκαν',
+      one: '1 άτομο αποδέχτηκε',
     );
-    return '$accepted of $_temp0 accepted';
+    return '$accepted από $_temp0';
   }
 
   @override
@@ -4539,412 +4546,428 @@ class AppLocalizationsEl extends AppLocalizations {
       other: '$total tilettes',
       one: '1 tilette',
     );
-    return '$accepted of $_temp0 accepted';
+    return 'Έγινε αποδοχή $accepted από $_temp0';
   }
 
   @override
-  String get clusterRsvpUnavailable => 'Responses unavailable';
+  String get clusterRsvpUnavailable => 'Οι απαντήσεις δεν είναι διαθέσιμες';
 
   @override
-  String get clusterMineAccepted => 'You accepted';
+  String get clusterMineAccepted => 'Αποδεχτήκατε';
 
   @override
-  String get clusterMineDeclined => 'You declined';
+  String get clusterMineDeclined => 'Απορρίψατε';
 
   @override
-  String get clusterMinePending => 'Needs your answer';
+  String get clusterMinePending => 'Χρειάζεται η απάντησή σας';
 
   @override
-  String get clusterMineMixed => 'Partly answered';
+  String get clusterMineMixed => 'Έχει απαντηθεί εν μέρει';
 
   @override
   String clusterProjectNeedsAnswer(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes need your response',
-      one: '1 tilette needs your response',
+      other: '$count tilettes χρειάζονται την απάντησή σας',
+      one: '1 tilette χρειάζεται την απάντησή σας',
     );
     return '$_temp0';
   }
 
   @override
-  String get clusterOverdue => 'Overdue';
+  String get clusterOverdue => 'Εκπρόθεσμο';
 
   @override
-  String get clusterMenuTooltip => 'More actions';
+  String get clusterMenuTooltip => 'Περισσότερες ενέργειες';
 
   @override
-  String get clusterDelete => 'Delete';
+  String get clusterDelete => 'Διαγραφή';
 
   @override
-  String get clusterDeleteTitle => 'Delete this share?';
+  String get clusterDeleteTitle => 'Διαγραφή αυτής της κοινοποίησης;';
 
   @override
   String clusterDeleteBody(String name) {
-    return '“$name” will be deleted. This can’t be undone.';
+    return 'Το «$name» θα διαγραφεί. Δεν είναι δυνατή η αναίρεση.';
   }
 
   @override
   String clusterDeleteFailed(String name) {
-    return 'Couldn’t delete “$name”. It’s back in your list.';
+    return 'Δεν ήταν δυνατή η διαγραφή του «$name». Επανήλθε στη λίστα σας.';
   }
 
   @override
-  String get clusterFilterAll => 'All';
+  String get clusterFilterAll => 'Όλα';
 
   @override
-  String get clusterFilterShared => 'Shared with me';
+  String get clusterFilterShared => 'Κοινοποιήθηκε σε εμένα';
 
   @override
-  String get clusterFilterCreated => 'Created by me';
+  String get clusterFilterCreated => 'Δημιουργήθηκε από εμένα';
 
   @override
-  String get clusterEmptyAllTitle => 'Nothing shared yet';
+  String get clusterEmptyAllTitle => 'Δεν έχει κοινοποιηθεί τίποτα ακόμη';
 
   @override
   String get clusterEmptyAllBody =>
-      'Share a tile with someone and it will show up here.';
+      'Κοινοποιήστε ένα πλακίδιο σε κάποιον και θα εμφανιστεί εδώ.';
 
   @override
-  String get clusterEmptySharedTitle => 'Nothing shared with you';
+  String get clusterEmptySharedTitle => 'Δεν σας έχει κοινοποιηθεί τίποτα';
 
   @override
   String get clusterEmptySharedBody =>
-      'When someone shares a tile with you it will appear here.';
+      'Όταν κάποιος σας κοινοποιήσει ένα πλακίδιο, θα εμφανιστεί εδώ.';
 
   @override
-  String get clusterEmptyCreatedTitle => 'You haven’t shared anything';
+  String get clusterEmptyCreatedTitle => 'Δεν έχετε κοινοποιήσει τίποτα ακόμη';
 
   @override
   String get clusterEmptyCreatedBody =>
-      'Share a tile to see who has accepted it.';
+      'Κοινοποιήστε ένα πλακίδιο για να δείτε ποιος το αποδέχτηκε.';
 
   @override
-  String get clusterEmptyAction => 'Share a tile';
+  String get clusterEmptyAction => 'Κοινοποίηση πλακιδίου';
 
   @override
-  String get clusterLoadFailed => 'Some shares couldn’t load';
+  String get clusterLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση ορισμένων κοινοποιήσεων';
 
   @override
-  String get clusterLoadFailedAll => 'Shares couldn’t load';
+  String get clusterLoadFailedAll =>
+      'Δεν ήταν δυνατή η φόρτωση των κοινοποιήσεων';
 
   @override
-  String get clusterLoadMore => 'Load more';
+  String get clusterLoadMore => 'Φόρτωση περισσότερων';
 
   @override
-  String get clusterLoadMoreFailed => 'Couldn’t load more';
+  String get clusterLoadMoreFailed => 'Δεν ήταν δυνατή η φόρτωση περισσότερων';
 
   @override
-  String get clustersTabTitle => 'Shares';
+  String get clustersTabTitle => 'Κοινοποιήσεις';
 
   @override
-  String get previewTitleFallback => 'Review schedule';
+  String get previewTitleFallback => 'Έλεγχος προγράμματος';
 
   @override
-  String get previewRegenerate => 'Generate new preview';
+  String get previewRegenerate => 'Δημιουργία νέας προεπισκόπησης';
 
   @override
-  String get previewSuggested => 'Suggested schedule';
+  String get previewSuggested => 'Προτεινόμενο πρόγραμμα';
 
   @override
-  String get previewSelected => 'Selected schedule';
+  String get previewSelected => 'Επιλεγμένο πρόγραμμα';
 
   @override
   String previewMoves(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Moves $count flexible tiles',
-      one: 'Moves 1 flexible tile',
+      other: 'Μετακινεί $count ευέλικτα πλακίδια',
+      one: 'Μετακινεί 1 ευέλικτο πλακίδιο',
     );
     return '$_temp0';
   }
 
   @override
-  String get previewAccept => 'Accept';
+  String get previewAccept => 'Αποδοχή';
 
   @override
-  String get previewAcceptAndLock => 'Accept & lock';
+  String get previewAcceptAndLock => 'Αποδοχή και κλείδωμα';
 
   @override
-  String get previewAcceptHint => 'Tiler may move flexible work later.';
+  String get previewAcceptHint =>
+      'Το Tiler μπορεί να μετακινήσει ευέλικτες εργασίες αργότερα.';
 
   @override
   String previewLockHint(String when) {
-    return 'Locks $when. Other sessions stay flexible.';
+    return 'Κλειδώνει το $when. Οι άλλες συνεδρίες παραμένουν ευέλικτες.';
   }
 
   @override
-  String get previewDecline => 'Decline';
+  String get previewDecline => 'Απόρριψη';
 
   @override
-  String get previewCannotFit => 'It can’t be fitted before its deadline.';
+  String get previewCannotFit =>
+      'Δεν μπορεί να χωρέσει πριν από την προθεσμία.';
 
   @override
   String previewOutsideWindow(String when) {
-    return 'Scheduled outside the days shown: $when';
+    return 'Προγραμματίστηκε εκτός των ημερών που εμφανίζονται: $when';
   }
 
   @override
-  String get previewNothingThisDay => 'Nothing scheduled this day';
+  String get previewNothingThisDay =>
+      'Δεν υπάρχει τίποτα προγραμματισμένο αυτή την ημέρα';
 
   @override
-  String get previewPrevDay => 'Previous day';
+  String get previewPrevDay => 'Προηγούμενη ημέρα';
 
   @override
-  String get previewNextDay => 'Next day';
+  String get previewNextDay => 'Επόμενη ημέρα';
 
   @override
-  String get previewStale => 'This preview is out of date.';
+  String get previewStale => 'Αυτή η προεπισκόπηση δεν είναι ενημερωμένη.';
 
   @override
-  String get previewRefresh => 'Refresh preview';
+  String get previewRefresh => 'Ανανέωση προεπισκόπησης';
 
   @override
   String get previewSessionInvalid =>
-      'That time can no longer be locked. You can still accept.';
+      'Αυτή η ώρα δεν μπορεί πλέον να κλειδωθεί. Μπορείτε ακόμη να αποδεχτείτε.';
 
   @override
-  String get previewLoading => 'Checking your schedule…';
+  String get previewLoading => 'Έλεγχος του προγράμματός σας…';
 
   @override
-  String get previewLoadFailed => 'Couldn’t build the preview.';
+  String get previewLoadFailed =>
+      'Δεν ήταν δυνατή η δημιουργία της προεπισκόπησης.';
 
   @override
-  String get previewGone => 'This invitation is no longer available.';
+  String get previewGone => 'Αυτή η πρόσκληση δεν είναι πλέον διαθέσιμη.';
 
   @override
-  String get previewSwitchedOff => 'Previews aren’t available right now.';
+  String get previewSwitchedOff =>
+      'Οι προεπισκοπήσεις δεν είναι διαθέσιμες αυτή τη στιγμή.';
 
   @override
-  String get previewSignIn => 'Sign in again to see the preview.';
+  String get previewSignIn => 'Συνδεθείτε ξανά για να δείτε την προεπισκόπηση.';
 
   @override
-  String get previewInvalid => 'That request wasn’t accepted. Try again.';
+  String get previewInvalid =>
+      'Αυτό το αίτημα δεν έγινε αποδεκτό. Δοκιμάστε ξανά.';
 
   @override
-  String get previewUnsupportedAccepted => 'You’ve already accepted this.';
+  String get previewUnsupportedAccepted => 'Το έχετε ήδη αποδεχτεί.';
 
   @override
-  String get previewUnsupportedDeadline => 'Its deadline has passed.';
+  String get previewUnsupportedDeadline => 'Η προθεσμία του έχει παρέλθει.';
 
   @override
   String get previewUnsupportedConstraints =>
-      'This tilette repeats, has a place, or has limits a preview can’t show yet. You can still answer it from the list.';
+      'Αυτή η tilette επαναλαμβάνεται, έχει τοποθεσία ή περιορισμούς που η προεπισκόπηση δεν μπορεί ακόμη να δείξει. Μπορείτε να απαντήσετε από τη λίστα.';
 
   @override
-  String get previewUnsupportedOther => 'This tilette can’t be previewed.';
+  String get previewUnsupportedOther =>
+      'Δεν είναι δυνατή η προεπισκόπηση αυτής της tilette.';
 
   @override
-  String get previewAdding => 'Adding to your calendar…';
+  String get previewAdding => 'Προσθήκη στο ημερολόγιό σας…';
 
   @override
-  String get previewAdded => 'Added to your calendar';
+  String get previewAdded => 'Προστέθηκε στο ημερολόγιό σας';
 
   @override
-  String get previewNeedsReview => 'Added, but its time couldn’t be confirmed.';
+  String get previewNeedsReview =>
+      'Προστέθηκε, αλλά δεν ήταν δυνατή η επιβεβαίωση της ώρας.';
 
   @override
-  String get previewNotAdded => 'Not added';
+  String get previewNotAdded => 'Δεν προστέθηκε';
 
   @override
   String get previewReasonScheduleChanged =>
-      'Your schedule changed since this preview.';
+      'Το πρόγραμμά σας άλλαξε από αυτή την προεπισκόπηση.';
 
   @override
-  String get previewReasonAnswered => 'It was answered or changed elsewhere.';
+  String get previewReasonAnswered => 'Απαντήθηκε ή τροποποιήθηκε αλλού.';
 
   @override
-  String get previewReasonExpired => 'The preview expired.';
+  String get previewReasonExpired => 'Η προεπισκόπηση έληξε.';
 
   @override
-  String get previewReasonOther => 'It couldn’t be scheduled as previewed.';
+  String get previewReasonOther =>
+      'Δεν ήταν δυνατός ο προγραμματισμός όπως στην προεπισκόπηση.';
 
   @override
-  String get previewReviewAgain => 'Review again';
+  String get previewReviewAgain => 'Έλεγχος ξανά';
 
   @override
-  String get previewUnconfirmed => 'We couldn’t confirm your answer.';
+  String get previewUnconfirmed =>
+      'Δεν ήταν δυνατή η επιβεβαίωση της απάντησής σας.';
 
   @override
-  String get previewTryAgain => 'Try again';
+  String get previewTryAgain => 'Νέα προσπάθεια';
 
   @override
-  String get previewCheckStatus => 'Check status';
+  String get previewCheckStatus => 'Έλεγχος κατάστασης';
 
   @override
-  String get previewStillAdding => 'Still adding…';
+  String get previewStillAdding => 'Η προσθήκη συνεχίζεται…';
 
   @override
-  String get previewDeclined => 'Declined';
+  String get previewDeclined => 'Απορρίφθηκε';
 
   @override
-  String get previewDeclineFailed => 'Couldn’t decline. Try again.';
+  String get previewDeclineFailed =>
+      'Δεν ήταν δυνατή η απόρριψη. Δοκιμάστε ξανά.';
 
   @override
-  String get previewDone => 'Done';
+  String get previewDone => 'Τέλος';
 
   @override
-  String get previewCheckFit => 'Check fit';
+  String get previewCheckFit => 'Έλεγχος διαθεσιμότητας';
 
   @override
-  String get previewDetails => 'Details';
+  String get previewDetails => 'Λεπτομέρειες';
 
   @override
-  String get previewOtherTimes => 'Other times';
+  String get previewOtherTimes => 'Άλλες ώρες';
 
   @override
-  String get previewOriginalSuggestion => 'Original suggestion';
+  String get previewOriginalSuggestion => 'Αρχική πρόταση';
 
   @override
-  String get previewFindAnotherTime => 'Find another time';
+  String get previewFindAnotherTime => 'Εύρεση άλλης ώρας';
 
   @override
-  String get previewFindingTimes => 'Looking for other times…';
+  String get previewFindingTimes => 'Αναζήτηση άλλων ωρών…';
 
   @override
-  String get previewNoDifferentTime => 'No different time found';
+  String get previewNoDifferentTime => 'Δεν βρέθηκε άλλη ώρα';
 
   @override
-  String get previewOptionsFailed => 'Couldn’t load other times.';
+  String get previewOptionsFailed => 'Δεν ήταν δυνατή η φόρτωση άλλων ωρών.';
 
   @override
-  String get previewSelectFailed => 'Couldn’t switch to that time.';
+  String get previewSelectFailed => 'Δεν ήταν δυνατή η αλλαγή σε αυτή την ώρα.';
 
   @override
-  String get previewNoMoves => 'Moves nothing else';
+  String get previewNoMoves => 'Δεν μετακινεί τίποτα άλλο';
 
   @override
-  String get previewSessions => 'Sessions';
+  String get previewSessions => 'Συνεδρίες';
 
   @override
   String previewSessionN(int n) {
-    return 'Session $n';
+    return 'Συνεδρία $n';
   }
 
   @override
-  String get previewSessionUnplaced => 'Couldn’t be placed';
+  String get previewSessionUnplaced => 'Δεν ήταν δυνατή η τοποθέτηση';
 
   @override
-  String get previewSessionOutside => 'Outside the days shown';
+  String get previewSessionOutside => 'Εκτός των ημερών που εμφανίζονται';
 
   @override
   String previewIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count scheduling issues',
-      one: '1 scheduling issue',
+      other: '$count προβλήματα προγραμματισμού',
+      one: '1 πρόβλημα προγραμματισμού',
     );
     return '$_temp0';
   }
 
   @override
-  String get previewIssueUnscheduled => 'Couldn’t be scheduled';
+  String get previewIssueUnscheduled => 'Δεν ήταν δυνατός ο προγραμματισμός';
 
   @override
-  String get previewIssueConflict => 'Overlaps other work';
+  String get previewIssueConflict => 'Επικαλύπτει άλλες εργασίες';
 
   @override
   String previewIssueWindow(String from, String to) {
-    return 'Can go $from – $to';
+    return 'Δυνατό από $from έως $to';
   }
 
   @override
-  String get previewViewInCalendar => 'View in calendar';
+  String get previewViewInCalendar => 'Προβολή στο ημερολόγιο';
 
   @override
-  String get detailLoadFailed => 'Couldn’t load this share.';
+  String get detailLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση αυτής της κοινοποίησης.';
 
   @override
-  String get detailNotFound => 'This share is no longer available.';
+  String get detailNotFound => 'Αυτή η κοινοποίηση δεν είναι πλέον διαθέσιμη.';
 
   @override
   String get detailRefreshFailed =>
-      'Couldn’t refresh. Showing what was loaded.';
+      'Δεν ήταν δυνατή η ανανέωση. Εμφανίζονται τα ήδη φορτωμένα δεδομένα.';
 
   @override
-  String get detailTasksFailed => 'Couldn’t load its tilettes.';
+  String get detailTasksFailed => 'Δεν ήταν δυνατή η φόρτωση των tilettes της.';
 
   @override
   String get detailTasks => 'Tilettes';
 
   @override
-  String get forecastDeadlinePassed => 'Deadline passed';
+  String get forecastDeadlinePassed => 'Η προθεσμία παρήλθε';
 
   @override
-  String get broadcastParticipants => 'Participants';
+  String get broadcastParticipants => 'Συμμετέχοντες';
 
   @override
   String broadcastViewAll(int count) {
-    return 'View all ($count)';
+    return 'Προβολή όλων ($count)';
   }
 
   @override
-  String get broadcastNoParticipants => 'No one yet. Add someone above.';
+  String get broadcastNoParticipants =>
+      'Κανείς ακόμη. Προσθέστε κάποιον παραπάνω.';
 
   @override
   String get projectNoParticipants =>
-      'No one yet. Assign a tilette to someone on the Tilettes tab.';
+      'Κανείς ακόμη. Αναθέστε μια tilette σε κάποιον από την καρτέλα Tilettes.';
 
   @override
   String broadcastDeliveryIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count invitations may not have arrived',
-      one: '1 invitation may not have arrived',
+      other: '$count προσκλήσεις ενδέχεται να μην έφτασαν',
+      one: '1 πρόσκληση ενδέχεται να μην έφτασε',
     );
     return '$_temp0';
   }
 
   @override
-  String get participantInvited => 'Invited';
+  String get participantInvited => 'Προσκλήθηκε';
 
   @override
-  String get participantAdding => 'Adding…';
+  String get participantAdding => 'Προσθήκη…';
 
   @override
-  String get participantAddFailed => 'Couldn’t add.';
+  String get participantAddFailed => 'Δεν ήταν δυνατή η προσθήκη.';
 
   @override
-  String get participantRemoveFailed => 'Couldn’t remove.';
+  String get participantRemoveFailed => 'Δεν ήταν δυνατή η αφαίρεση.';
 
   @override
   String participantAlreadyInvited(String who) {
-    return '$who is already invited.';
+    return 'Ο/Η $who έχει ήδη προσκληθεί.';
   }
 
   @override
-  String get participantRemove => 'Remove';
+  String get participantRemove => 'Αφαίρεση';
 
   @override
   String participantRemoveTitle(String who) {
-    return 'Remove $who?';
+    return 'Αφαίρεση του/της $who;';
   }
 
   @override
-  String get participantRemoveBody => 'They will no longer have this tilette.';
+  String get participantRemoveBody =>
+      'Αυτό το άτομο δεν θα έχει πλέον αυτή την tilette.';
 
   @override
   String deliverySent(String channel) {
-    return 'Sent by $channel';
+    return 'Στάλθηκε μέσω $channel';
   }
 
   @override
-  String get deliverySentPlain => 'Invitation sent';
+  String get deliverySentPlain => 'Η πρόσκληση στάλθηκε';
 
   @override
   String deliveryFailed(String channel) {
-    return 'Couldn’t send by $channel';
+    return 'Δεν ήταν δυνατή η αποστολή μέσω $channel';
   }
 
   @override
-  String get deliveryFailedPlain => 'Invitation couldn’t be sent';
+  String get deliveryFailedPlain => 'Δεν ήταν δυνατή η αποστολή της πρόσκλησης';
 
   @override
-  String get deliveryUnknown => 'Delivery unknown';
+  String get deliveryUnknown => 'Άγνωστη παράδοση';
 
   @override
   String get channelEmail => 'email';
@@ -4953,15 +4976,15 @@ class AppLocalizationsEl extends AppLocalizations {
   String get channelSms => 'SMS';
 
   @override
-  String get channelPush => 'notification';
+  String get channelPush => 'ειδοποίηση';
 
   @override
   String classPeopleIncomplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count people are missing from some tilettes',
-      one: '1 person is missing from some tilettes',
+      other: '$count άτομα λείπουν από ορισμένες tilettes',
+      one: '1 άτομο λείπει από ορισμένες tilettes',
     );
     return '$_temp0';
   }
@@ -4971,53 +4994,55 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Not on $count tilettes',
-      one: 'Not on 1 tilette',
+      other: 'Δεν συμμετέχει σε $count tilettes',
+      one: 'Δεν συμμετέχει σε 1 tilette',
     );
     return '$_temp0';
   }
 
   @override
-  String get classAddToAll => 'Add to all tilettes';
+  String get classAddToAll => 'Προσθήκη σε όλες τις tilettes';
 
   @override
-  String get classRemoveBody => 'They will be removed from every tilette.';
+  String get classRemoveBody =>
+      'Αυτό το άτομο θα αφαιρεθεί από όλες τις tilettes.';
 
   @override
-  String get classTaskNotAdded => 'Not added';
+  String get classTaskNotAdded => 'Δεν προστέθηκε';
 
   @override
-  String get classAddFailed => 'Couldn’t add to every tilette.';
+  String get classAddFailed =>
+      'Δεν ήταν δυνατή η προσθήκη σε όλες τις tilettes.';
 
   @override
-  String get projectUnassigned => 'No one assigned';
+  String get projectUnassigned => 'Δεν έχει ανατεθεί σε κανέναν';
 
   @override
   String projectTasksUnassigned(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes have no one assigned',
-      one: '1 tilette has no one assigned',
+      other: '$count tilettes δεν έχουν ανατεθεί σε κανέναν',
+      one: '1 tilette δεν έχει ανατεθεί σε κανέναν',
     );
     return '$_temp0';
   }
 
   @override
-  String get projectAssign => 'Assign';
+  String get projectAssign => 'Ανάθεση';
 
   @override
-  String get projectReassign => 'Reassign';
+  String get projectReassign => 'Εκ νέου ανάθεση';
 
   @override
-  String get projectReassigning => 'Reassigning…';
+  String get projectReassigning => 'Εκ νέου ανάθεση…';
 
   @override
-  String get projectReassignFailed => 'Couldn’t reassign.';
+  String get projectReassignFailed => 'Δεν ήταν δυνατή η εκ νέου ανάθεση.';
 
   @override
   String projectAssignTitle(String task) {
-    return 'Assign $task';
+    return 'Ανάθεση του $task';
   }
 
   @override
@@ -5025,135 +5050,142 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Owns $count tilettes',
-      one: 'Owns 1 tilette',
+      other: 'Υπεύθυνος για $count tilettes',
+      one: 'Υπεύθυνος για 1 tilette',
     );
     return '$_temp0';
   }
 
   @override
-  String get projectAlreadyIn => 'Already in this project';
+  String get projectAlreadyIn => 'Ήδη σε αυτό το έργο';
 
   @override
-  String get projectRemoveBody => 'Their tilettes will have no one assigned.';
+  String get projectRemoveBody =>
+      'Οι tilettes αυτού του ατόμου δεν θα είναι ανατεθειμένες σε κανέναν.';
 
   @override
-  String get tileShareActivityCommentAdded => 'Comment added';
+  String get tileShareActivityCommentAdded => 'Προστέθηκε σχόλιο';
 
   @override
-  String get tileShareActivityCommentReplied => 'Comment reply added';
+  String get tileShareActivityCommentReplied => 'Προστέθηκε απάντηση σε σχόλιο';
 
   @override
-  String get tileShareActivityCommentEdited => 'Comment edited';
+  String get tileShareActivityCommentEdited => 'Τροποποιήθηκε σχόλιο';
 
   @override
-  String get tileShareActivityCommentDeleted => 'Comment deleted';
+  String get tileShareActivityCommentDeleted => 'Διαγράφηκε σχόλιο';
 
   @override
-  String get commitmentYourTasks => 'Your tilettes';
+  String get commitmentYourTasks => 'Οι tilettes σας';
 
   @override
-  String get commitmentYourTask => 'Your tilette';
+  String get commitmentYourTask => 'Η tilette σας';
 
   @override
   String commitmentPartialAnswered(int done, int total) {
-    return '$done of $total answered; the rest are still pending.';
+    return 'Απαντήθηκαν $done από $total· οι υπόλοιπες εκκρεμούν.';
   }
 
   @override
-  String get commitmentOpenTile => 'Open tile';
+  String get commitmentOpenTile => 'Άνοιγμα πλακιδίου';
 
   @override
-  String get detailEditShare => 'Edit share';
+  String get detailEditShare => 'Επεξεργασία κοινοποίησης';
 
   @override
-  String get detailEditTask => 'Edit tilette';
+  String get detailEditTask => 'Επεξεργασία tilette';
 
   @override
-  String get detailAddTask => 'Add tilette';
+  String get detailAddTask => 'Προσθήκη tilette';
 
   @override
-  String get detailDeleteTask => 'Delete tilette';
+  String get detailDeleteTask => 'Διαγραφή tilette';
 
   @override
   String detailDeleteTaskTitle(String name) {
-    return 'Delete “$name”?';
+    return 'Διαγραφή του «$name»;';
   }
 
   @override
   String get detailDeleteTaskBody =>
-      'Everyone on it loses it from their schedule.';
+      'Θα αφαιρεθεί από το πρόγραμμα όλων των συμμετεχόντων.';
 
   @override
-  String get detailEditFailed => 'Couldn’t save your change. Try again.';
+  String get detailEditFailed =>
+      'Δεν ήταν δυνατή η αποθήκευση της αλλαγής σας. Δοκιμάστε ξανά.';
 
   @override
   String get detailTaskLengthFixed =>
-      'A tilette’s length can’t change once it’s shared.';
+      'Η διάρκεια μιας tilette δεν μπορεί να αλλάξει μετά την κοινοποίηση.';
 
   @override
-  String get taskSheetAssignee => 'ASSIGNEE';
+  String get taskSheetAssignee => 'ΑΝΑΤΕΘΗΚΕ ΣΕ';
 
   @override
-  String get taskSheetEveryone => 'Everyone in this class has this tilette.';
+  String get taskSheetEveryone =>
+      'Όλοι σε αυτό το μάθημα έχουν αυτή την tilette.';
 
   @override
   String taskSheetAfterShareDeadline(String when) {
-    return 'This is after the share’s deadline ($when).';
+    return 'Αυτό είναι μετά την προθεσμία της κοινοποίησης ($when).';
   }
 
   @override
-  String get taskSheetNameTooShort => 'Use at least 3 characters';
+  String get taskSheetNameTooShort => 'Χρησιμοποιήστε τουλάχιστον 3 χαρακτήρες';
 
   @override
   String get taskSheetPeopleHintClass =>
-      'Anyone you add here gets every tilette in this class. People changes are sent when you save.';
+      'Όποιος προστίθεται εδώ λαμβάνει κάθε tilette αυτού του μαθήματος. Οι αλλαγές συμμετεχόντων αποστέλλονται κατά την αποθήκευση.';
 
   @override
   String get taskSheetPeopleHintProject =>
-      'A new assignee is sent when you save.';
+      'Η νέα ανάθεση αποστέλλεται κατά την αποθήκευση.';
 
   @override
-  String get tiletteNameLabel => 'TILETTE NAME';
+  String get tiletteNameLabel => 'ΟΝΟΜΑ TILETTE';
 
   @override
-  String get detailEditDetails => 'Edit details';
+  String get detailEditDetails => 'Επεξεργασία λεπτομερειών';
 
   @override
-  String get detailDeleteShare => 'Delete share';
+  String get detailDeleteShare => 'Διαγραφή κοινοποίησης';
 
   @override
   String get detailDeleteShareBody =>
-      'Everyone loses its tilettes from their schedule.';
+      'Οι tilettes της θα αφαιρεθούν από το πρόγραμμα όλων.';
 
   @override
-  String get detailDeleteShareFailed => 'Couldn’t delete the share. Try again.';
+  String get detailDeleteShareFailed =>
+      'Δεν ήταν δυνατή η διαγραφή της κοινοποίησης. Δοκιμάστε ξανά.';
 
   @override
-  String get shareNameLabel => 'SHARE NAME';
+  String get shareNameLabel => 'ΟΝΟΜΑ ΚΟΙΝΟΠΟΙΗΣΗΣ';
 
   @override
-  String get shareModeLabel => 'MODE';
+  String get shareModeLabel => 'ΤΡΟΠΟΣ';
 
   @override
-  String get shareEditModeFixed => 'The mode can’t change after sharing.';
+  String get shareEditModeFixed =>
+      'Ο τρόπος δεν μπορεί να αλλάξει μετά την κοινοποίηση.';
 
   @override
-  String get shareEditEffort => 'TOTAL EFFORT';
+  String get shareEditEffort => 'ΣΥΝΟΛΙΚΗ ΠΡΟΣΠΑΘΕΙΑ';
 
   @override
-  String get shareEditEffortHelper => 'The sum of its tilettes’ durations.';
+  String get shareEditEffortHelper =>
+      'Το άθροισμα της διάρκειας των tilettes της.';
 
   @override
-  String get shareEditDiscardBody => 'Your edits to this share will be lost.';
+  String get shareEditDiscardBody =>
+      'Οι αλλαγές σας σε αυτή την κοινοποίηση θα χαθούν.';
 
   @override
   String shareEditTilettesPulledIn(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count accepted tilettes will be moved to this deadline.',
-      one: '1 accepted tilette will be moved to this deadline.',
+      other: '$count αποδεκτές tilettes θα μεταφερθούν σε αυτή την προθεσμία.',
+      one: '1 αποδεκτή tilette θα μεταφερθεί σε αυτή την προθεσμία.',
     );
     return '$_temp0';
   }
@@ -5163,95 +5195,98 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes nobody has accepted keep their later deadlines.',
-      one: '1 tilette nobody has accepted keeps its later deadline.',
+      other:
+          '$count tilettes που κανείς δεν έχει αποδεχτεί διατηρούν τις μεταγενέστερες προθεσμίες τους.',
+      one:
+          '1 tilette που κανείς δεν έχει αποδεχτεί διατηρεί τη μεταγενέστερη προθεσμία της.',
     );
     return '$_temp0';
   }
 
   @override
   String taskSheetMoveShareDeadline(String when) {
-    return 'Also move the share’s deadline to $when';
+    return 'Μεταφορά και της προθεσμίας της κοινοποίησης σε $when';
   }
 
   @override
-  String get createChooserTitle => 'Share work';
+  String get createChooserTitle => 'Κοινοποίηση εργασίας';
 
   @override
-  String get createChooserSubtitle => 'How should people take part?';
+  String get createChooserSubtitle => 'Πώς θα συμμετέχουν τα άτομα;';
 
   @override
   String get createModeBroadcastBody =>
-      'Everyone gets their own copy of one tilette';
+      'Όλοι λαμβάνουν το δικό τους αντίγραφο μιας tilette';
 
   @override
   String get createModeClassBody =>
-      'Everyone gets their own copy of a set of tilettes';
+      'Όλοι λαμβάνουν το δικό τους αντίγραφο ενός συνόλου tilettes';
 
   @override
   String get createModeProjectBody =>
-      'Everyone works on one shared set of tilettes';
+      'Όλοι εργάζονται σε ένα κοινό σύνολο tilettes';
 
   @override
-  String get createComingSoon => 'Coming soon';
+  String get createComingSoon => 'Σύντομα διαθέσιμο';
 
   @override
-  String get createBroadcastTitle => 'New broadcast';
+  String get createBroadcastTitle => 'Νέα μετάδοση';
 
   @override
   String get createBroadcastPeopleHint =>
-      'Each person gets their own copy and is asked to accept.';
+      'Κάθε άτομο λαμβάνει το δικό του αντίγραφο και καλείται να το αποδεχτεί.';
 
   @override
-  String get createSend => 'Send';
+  String get createSend => 'Αποστολή';
 
   @override
   String createSendTo(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Send to $count people',
-      one: 'Send to 1 person',
+      other: 'Αποστολή σε $count άτομα',
+      one: 'Αποστολή σε 1 άτομο',
     );
     return '$_temp0';
   }
 
   @override
-  String get createSending => 'Sending…';
+  String get createSending => 'Αποστολή…';
 
   @override
-  String get createNeedsPerson => 'Add at least one person';
+  String get createNeedsPerson => 'Προσθέστε τουλάχιστον ένα άτομο';
 
   @override
-  String get createFailed => 'Could not send right now. Your details are kept.';
+  String get createFailed =>
+      'Δεν είναι δυνατή η αποστολή τώρα. Τα στοιχεία σας διατηρούνται.';
 
   @override
-  String get createDiscardTitle => 'Discard this share?';
+  String get createDiscardTitle => 'Απόρριψη αυτής της κοινοποίησης;';
 
   @override
-  String get createDiscardBody => 'What you’ve entered won’t be sent.';
+  String get createDiscardBody => 'Όσα έχετε εισαγάγει δεν θα αποσταλούν.';
 
   @override
-  String get createClassTitle => 'New class';
+  String get createClassTitle => 'Νέο μάθημα';
 
   @override
-  String get createNeedsTask => 'Add at least one tilette';
+  String get createNeedsTask => 'Προσθέστε τουλάχιστον μια tilette';
 
   @override
   String get createClassPeopleHint =>
-      'Each person gets their own copy of every tilette and is asked to accept.';
+      'Κάθε άτομο λαμβάνει το δικό του αντίγραφο κάθε tilette και καλείται να το αποδεχτεί.';
 
   @override
   String get createTilettesLabel => 'TILETTES';
 
   @override
   String createTiletteWithShare(String length) {
-    return '$length · due with the share';
+    return '$length · προθεσμία της κοινοποίησης';
   }
 
   @override
   String createTiletteDue(String length, String when) {
-    return '$length · due $when';
+    return '$length · προθεσμία: $when';
   }
 
   @override
@@ -5262,54 +5297,54 @@ class AppLocalizationsEl extends AppLocalizations {
       other: '$count tilettes',
       one: '1 tilette',
     );
-    return '$_temp0 · $effort · due $when';
+    return '$_temp0 · $effort · προθεσμία: $when';
   }
 
   @override
   String createStepOf(int step, int total) {
-    return 'Step $step of $total';
+    return 'Βήμα $step από $total';
   }
 
   @override
-  String get createNextPeople => 'Next: people';
+  String get createNextPeople => 'Επόμενο: άτομα';
 
   @override
-  String get createProjectTitle => 'New project';
+  String get createProjectTitle => 'Νέο έργο';
 
   @override
-  String get createProjectSend => 'Create project';
+  String get createProjectSend => 'Δημιουργία έργου';
 
   @override
-  String get createCreating => 'Creating…';
+  String get createCreating => 'Δημιουργία…';
 
   @override
   String get createProjectHint =>
-      'Assign tilettes to people from the board once it’s created, or keep them for yourself.';
+      'Αναθέστε tilettes σε άτομα από τον πίνακα μετά τη δημιουργία ή κρατήστε τις για εσάς.';
 
   @override
-  String get detailLoading => 'Loading share…';
+  String get detailLoading => 'Φόρτωση κοινοποίησης…';
 
   @override
-  String get taskSheetPeopleLabel => 'PEOPLE';
+  String get taskSheetPeopleLabel => 'ΑΤΟΜΑ';
 
   @override
-  String get taskSheetAddPerson => 'ADD PERSON';
+  String get taskSheetAddPerson => 'ΠΡΟΣΘΗΚΗ ΑΤΟΜΟΥ';
 
   @override
-  String get taskSheetWillBeAdded => 'Will be added';
+  String get taskSheetWillBeAdded => 'Θα προστεθεί';
 
   @override
-  String get taskSheetWillBeRemoved => 'Will be removed';
+  String get taskSheetWillBeRemoved => 'Θα αφαιρεθεί';
 
   @override
-  String get taskSheetWillBeAssigned => 'Will be assigned when you save';
+  String get taskSheetWillBeAssigned => 'Θα ανατεθεί κατά την αποθήκευση';
 
   @override
   String get taskSheetPeopleFailed =>
-      'Some people changes couldn’t be saved. Retry them below.';
+      'Δεν ήταν δυνατή η αποθήκευση ορισμένων αλλαγών συμμετεχόντων. Δοκιμάστε ξανά παρακάτω.';
 
   @override
-  String get tileShareSaveChanges => 'Save changes';
+  String get tileShareSaveChanges => 'Αποθήκευση αλλαγών';
 
   @override
   String get scheduleChangeRefresh => 'Ανανέωση προγράμματος';

@@ -4237,133 +4237,134 @@ class AppLocalizationsNl extends AppLocalizations {
       'Je rondleiding door de app staat op het punt te beginnen.';
 
   @override
-  String get attentionTabTitle => 'Attention';
+  String get attentionTabTitle => 'Aandacht';
 
   @override
-  String get attentionFilterAll => 'All';
+  String get attentionFilterAll => 'Alles';
 
   @override
-  String get attentionFilterInvitations => 'Invitations';
+  String get attentionFilterInvitations => 'Uitnodigingen';
 
   @override
-  String get attentionFilterChanges => 'Changes';
+  String get attentionFilterChanges => 'Wijzigingen';
 
   @override
-  String get attentionFilterAtRisk => 'At risk';
+  String get attentionFilterAtRisk => 'In gevaar';
 
   @override
-  String get attentionFilterResponses => 'Responses';
+  String get attentionFilterResponses => 'Reacties';
 
   @override
-  String get attentionPillInvitation => 'Invitation';
+  String get attentionPillInvitation => 'Uitnodiging';
 
   @override
-  String get attentionPillChanged => 'Changed';
+  String get attentionPillChanged => 'Gewijzigd';
 
   @override
-  String get attentionPillAtRisk => 'At risk';
+  String get attentionPillAtRisk => 'In gevaar';
 
   @override
-  String get attentionPillDeclined => 'Declined';
+  String get attentionPillDeclined => 'Afgewezen';
 
   @override
-  String get attentionPillCompleted => 'Completed';
+  String get attentionPillCompleted => 'Voltooid';
 
   @override
-  String get attentionPillNotSent => 'Not sent';
+  String get attentionPillNotSent => 'Niet verzonden';
 
   @override
-  String get attentionSomeone => 'Someone';
+  String get attentionSomeone => 'Iemand';
 
   @override
   String attentionReasonInvited(String inviter) {
-    return '$inviter invited you';
+    return '$inviter heeft je uitgenodigd';
   }
 
   @override
   String attentionReasonInvitedMany(String inviter, int count) {
-    return '$inviter invited you to $count tilettes';
+    return '$inviter heeft je uitgenodigd voor $count tegeltjes';
   }
 
   @override
   String attentionReasonAtRiskOne(String task) {
-    return '“$task” no longer fits your schedule';
+    return '‘$task’ past niet meer in je planning';
   }
 
   @override
   String get attentionReasonAtRiskUntitled =>
-      'A tilette no longer fits your schedule';
+      'Een tegeltje past niet meer in je planning';
 
   @override
   String attentionReasonAtRiskMany(int count) {
-    return '$count tilettes no longer fit your schedule';
+    return '$count tegeltjes passen niet meer in je planning';
   }
 
   @override
   String attentionReasonDeadlineMoved(String actor, String from, String to) {
-    return '$actor moved the deadline from $from to $to';
+    return '$actor heeft de deadline verplaatst van $from naar $to';
   }
 
   @override
   String attentionReasonDeadlineChanged(String actor) {
-    return '$actor changed the deadline';
+    return '$actor heeft de deadline gewijzigd';
   }
 
   @override
   String attentionReasonRenamed(String actor) {
-    return '$actor renamed a tilette';
+    return '$actor heeft een tegeltje hernoemd';
   }
 
   @override
   String attentionReasonNotesUpdated(String actor) {
-    return '$actor updated the notes';
+    return '$actor heeft de notities bijgewerkt';
   }
 
   @override
   String attentionReasonUpdated(String actor) {
-    return '$actor updated a tilette';
+    return '$actor heeft een tegeltje bijgewerkt';
   }
 
   @override
   String attentionReasonManyChanges(String actor, int count) {
-    return '$actor made $count changes';
+    return '$actor heeft $count wijzigingen aangebracht';
   }
 
   @override
   String attentionReasonDeclined(String actor) {
-    return '$actor declined';
+    return '$actor heeft afgewezen';
   }
 
   @override
   String attentionReasonDeclinedMany(int count) {
-    return '$count people declined';
+    return '$count personen hebben afgewezen';
   }
 
   @override
-  String get attentionReasonNotSent => 'Couldn’t send an invitation';
+  String get attentionReasonNotSent =>
+      'Een uitnodiging kon niet worden verzonden';
 
   @override
   String attentionReasonNotSentMany(int count) {
-    return 'Couldn’t send $count invitations';
+    return '$count uitnodigingen konden niet worden verzonden';
   }
 
   @override
   String get attentionReasonSendUnknown =>
-      'An invitation may not have been sent — resend if needed';
+      'Een uitnodiging is mogelijk niet verzonden — verstuur deze zo nodig opnieuw';
 
   @override
   String attentionReasonCompleted(String actor, String task) {
-    return '$actor completed $task';
+    return '$actor heeft $task voltooid';
   }
 
   @override
   String attentionReasonCompletedUntitled(String actor) {
-    return '$actor completed a tilette';
+    return '$actor heeft een tegeltje voltooid';
   }
 
   @override
   String attentionReasonCompletedMany(int count) {
-    return '$count tilettes completed';
+    return '$count tegeltjes voltooid';
   }
 
   @override
@@ -4371,129 +4372,135 @@ class AppLocalizationsNl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes',
-      one: '1 tilette',
+      other: '$count tegeltjes',
+      one: '1 tegeltje',
     );
     return '$_temp0';
   }
 
   @override
   String attentionMetaDue(String date) {
-    return 'Due $date';
+    return 'Deadline: $date';
   }
 
   @override
-  String get attentionCtaReview => 'Review';
+  String get attentionCtaReview => 'Bekijken';
 
   @override
-  String get attentionCtaReviewChanges => 'Review changes';
+  String get attentionCtaReviewChanges => 'Wijzigingen bekijken';
 
   @override
-  String get attentionCtaReviewPlan => 'Review plan';
+  String get attentionCtaReviewPlan => 'Plan bekijken';
 
   @override
-  String get attentionCtaView => 'View';
+  String get attentionCtaView => 'Weergeven';
 
   @override
-  String get attentionMenuTooltip => 'More';
+  String get attentionMenuTooltip => 'Meer';
 
   @override
-  String get attentionDismiss => 'Dismiss';
+  String get attentionDismiss => 'Verbergen';
 
   @override
-  String get attentionDismissed => 'Dismissed';
+  String get attentionDismissed => 'Verborgen';
 
   @override
-  String get attentionUndo => 'Undo';
+  String get attentionUndo => 'Ongedaan maken';
 
   @override
-  String get attentionDismissFailed => 'Couldn’t dismiss it. Try again.';
+  String get attentionDismissFailed =>
+      'Kon niet worden verborgen. Probeer het opnieuw.';
 
   @override
-  String get attentionUndoFailed => 'Couldn’t restore it. Try again.';
+  String get attentionUndoFailed =>
+      'Kon niet worden hersteld. Probeer het opnieuw.';
 
   @override
-  String get attentionEmptyTitle => 'You’re all caught up';
+  String get attentionEmptyTitle => 'Je bent helemaal bij';
 
   @override
-  String get attentionEmptyBody => 'Nothing needs your attention right now.';
+  String get attentionEmptyBody =>
+      'Er is op dit moment niets dat je aandacht nodig heeft.';
 
   @override
-  String get attentionEmptyFiltered => 'Nothing to show here';
+  String get attentionEmptyFiltered => 'Hier is niets te tonen';
 
   @override
-  String get attentionLoadFailed => 'Some updates couldn’t load';
+  String get attentionLoadFailed =>
+      'Sommige updates konden niet worden geladen';
 
   @override
-  String get attentionLoadFailedAll => 'Attention couldn’t load';
+  String get attentionLoadFailedAll => 'Aandacht kon niet worden geladen';
 
   @override
-  String get attentionRetry => 'Retry';
+  String get attentionRetry => 'Opnieuw proberen';
 
   @override
-  String get tileShareModeBroadcast => 'Broadcast';
+  String get tileShareModeBroadcast => 'Uitzending';
 
   @override
   String get tileShareModeProject => 'Project';
 
   @override
-  String get tileShareModeClass => 'Class';
+  String get tileShareModeClass => 'Klas';
 
   @override
-  String get attentionAccept => 'Accept';
+  String get attentionAccept => 'Accepteren';
 
   @override
-  String get attentionDecline => 'Decline';
+  String get attentionDecline => 'Afwijzen';
 
   @override
-  String get attentionAcceptAll => 'Accept all';
+  String get attentionAcceptAll => 'Alles accepteren';
 
   @override
-  String get attentionDeclineAll => 'Decline all';
+  String get attentionDeclineAll => 'Alles afwijzen';
 
   @override
-  String get attentionAcceptDone => 'Accepted';
+  String get attentionAcceptDone => 'Geaccepteerd';
 
   @override
   String attentionAcceptDoneMany(int count) {
-    return 'Accepted $count tilettes';
+    return '$count tegeltjes geaccepteerd';
   }
 
   @override
-  String get attentionDeclineDone => 'Declined';
+  String get attentionDeclineDone => 'Afgewezen';
 
   @override
   String attentionDeclineDoneMany(int count) {
-    return 'Declined $count tilettes';
+    return '$count tegeltjes afgewezen';
   }
 
   @override
-  String get attentionAcceptFailed => 'Couldn’t accept it. Try again.';
+  String get attentionAcceptFailed =>
+      'Kon niet worden geaccepteerd. Probeer het opnieuw.';
 
   @override
-  String get attentionDeclineFailed => 'Couldn’t decline it. Try again.';
+  String get attentionDeclineFailed =>
+      'Kon niet worden afgewezen. Probeer het opnieuw.';
 
   @override
   String get attentionScheduleRefreshFailed =>
-      'Accepted, but your schedule couldn’t refresh yet.';
+      'Geaccepteerd, maar je planning kon nog niet worden vernieuwd.';
 
   @override
-  String get clusterTitleFallback => 'Untitled share';
+  String get clusterTitleFallback => 'Gedeeld werk zonder titel';
 
   @override
-  String get clusterRoleMine => 'Created by you';
+  String get clusterRoleMine => 'Door jou gemaakt';
 
   @override
   String clusterRoleFrom(String name) {
-    return 'From $name';
+    return 'Van $name';
   }
 
   @override
-  String get clusterRoleShared => 'Shared with you';
+  String get clusterRoleShared => 'Met jou gedeeld';
 
   @override
   String clusterRsvpAccepted(int accepted, int total) {
-    return '$accepted of $total accepted';
+    return '$accepted van $total geaccepteerd';
   }
 
   @override
@@ -4501,10 +4508,10 @@ class AppLocalizationsNl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       total,
       locale: localeName,
-      other: '$total people',
-      one: '1 person',
+      other: '$total personen hebben geaccepteerd',
+      one: '1 persoon heeft geaccepteerd',
     );
-    return '$accepted of $_temp0 accepted';
+    return '$accepted van $_temp0';
   }
 
   @override
@@ -4512,432 +4519,444 @@ class AppLocalizationsNl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       total,
       locale: localeName,
-      other: '$total tilettes',
-      one: '1 tilette',
+      other: '$total tegeltjes geaccepteerd',
+      one: '1 tegeltje geaccepteerd',
     );
-    return '$accepted of $_temp0 accepted';
+    return '$accepted van $_temp0';
   }
 
   @override
-  String get clusterRsvpUnavailable => 'Responses unavailable';
+  String get clusterRsvpUnavailable => 'Reacties niet beschikbaar';
 
   @override
-  String get clusterMineAccepted => 'You accepted';
+  String get clusterMineAccepted => 'Je hebt geaccepteerd';
 
   @override
-  String get clusterMineDeclined => 'You declined';
+  String get clusterMineDeclined => 'Je hebt afgewezen';
 
   @override
-  String get clusterMinePending => 'Needs your answer';
+  String get clusterMinePending => 'Je antwoord is nodig';
 
   @override
-  String get clusterMineMixed => 'Partly answered';
+  String get clusterMineMixed => 'Gedeeltelijk beantwoord';
 
   @override
   String clusterProjectNeedsAnswer(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes need your response',
-      one: '1 tilette needs your response',
+      other: '$count tegeltjes hebben je antwoord nodig',
+      one: '1 tegeltje heeft je antwoord nodig',
     );
     return '$_temp0';
   }
 
   @override
-  String get clusterOverdue => 'Overdue';
+  String get clusterOverdue => 'Te laat';
 
   @override
-  String get clusterMenuTooltip => 'More actions';
+  String get clusterMenuTooltip => 'Meer acties';
 
   @override
-  String get clusterDelete => 'Delete';
+  String get clusterDelete => 'Verwijderen';
 
   @override
-  String get clusterDeleteTitle => 'Delete this share?';
+  String get clusterDeleteTitle => 'Dit gedeelde werk verwijderen?';
 
   @override
   String clusterDeleteBody(String name) {
-    return '“$name” will be deleted. This can’t be undone.';
+    return '‘$name’ wordt verwijderd. Dit kan niet ongedaan worden gemaakt.';
   }
 
   @override
   String clusterDeleteFailed(String name) {
-    return 'Couldn’t delete “$name”. It’s back in your list.';
+    return '‘$name’ kon niet worden verwijderd. Het staat weer in je lijst.';
   }
 
   @override
-  String get clusterFilterAll => 'All';
+  String get clusterFilterAll => 'Alles';
 
   @override
-  String get clusterFilterShared => 'Shared with me';
+  String get clusterFilterShared => 'Met mij gedeeld';
 
   @override
-  String get clusterFilterCreated => 'Created by me';
+  String get clusterFilterCreated => 'Door mij gemaakt';
 
   @override
-  String get clusterEmptyAllTitle => 'Nothing shared yet';
+  String get clusterEmptyAllTitle => 'Nog niets gedeeld';
 
   @override
   String get clusterEmptyAllBody =>
-      'Share a tile with someone and it will show up here.';
+      'Deel een tegel met iemand en deze verschijnt hier.';
 
   @override
-  String get clusterEmptySharedTitle => 'Nothing shared with you';
+  String get clusterEmptySharedTitle => 'Niets met je gedeeld';
 
   @override
   String get clusterEmptySharedBody =>
-      'When someone shares a tile with you it will appear here.';
+      'Wanneer iemand een tegel met je deelt, verschijnt deze hier.';
 
   @override
-  String get clusterEmptyCreatedTitle => 'You haven’t shared anything';
+  String get clusterEmptyCreatedTitle => 'Je hebt nog niets gedeeld';
 
   @override
   String get clusterEmptyCreatedBody =>
-      'Share a tile to see who has accepted it.';
+      'Deel een tegel om te zien wie deze heeft geaccepteerd.';
 
   @override
-  String get clusterEmptyAction => 'Share a tile';
+  String get clusterEmptyAction => 'Een tegel delen';
 
   @override
-  String get clusterLoadFailed => 'Some shares couldn’t load';
+  String get clusterLoadFailed =>
+      'Sommige gedeelde items konden niet worden geladen';
 
   @override
-  String get clusterLoadFailedAll => 'Shares couldn’t load';
+  String get clusterLoadFailedAll =>
+      'Gedeelde items konden niet worden geladen';
 
   @override
-  String get clusterLoadMore => 'Load more';
+  String get clusterLoadMore => 'Meer laden';
 
   @override
-  String get clusterLoadMoreFailed => 'Couldn’t load more';
+  String get clusterLoadMoreFailed => 'Meer kon niet worden geladen';
 
   @override
-  String get clustersTabTitle => 'Shares';
+  String get clustersTabTitle => 'Gedeeld werk';
 
   @override
-  String get previewTitleFallback => 'Review schedule';
+  String get previewTitleFallback => 'Planning bekijken';
 
   @override
-  String get previewRegenerate => 'Generate new preview';
+  String get previewRegenerate => 'Nieuw voorbeeld maken';
 
   @override
-  String get previewSuggested => 'Suggested schedule';
+  String get previewSuggested => 'Voorgestelde planning';
 
   @override
-  String get previewSelected => 'Selected schedule';
+  String get previewSelected => 'Geselecteerde planning';
 
   @override
   String previewMoves(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Moves $count flexible tiles',
-      one: 'Moves 1 flexible tile',
+      other: 'Verplaatst $count flexibele tegels',
+      one: 'Verplaatst 1 flexibele tegel',
     );
     return '$_temp0';
   }
 
   @override
-  String get previewAccept => 'Accept';
+  String get previewAccept => 'Accepteren';
 
   @override
-  String get previewAcceptAndLock => 'Accept & lock';
+  String get previewAcceptAndLock => 'Accepteren en vastzetten';
 
   @override
-  String get previewAcceptHint => 'Tiler may move flexible work later.';
+  String get previewAcceptHint => 'Tiler kan flexibel werk later verplaatsen.';
 
   @override
   String previewLockHint(String when) {
-    return 'Locks $when. Other sessions stay flexible.';
+    return 'Zet $when vast. Andere sessies blijven flexibel.';
   }
 
   @override
-  String get previewDecline => 'Decline';
+  String get previewDecline => 'Afwijzen';
 
   @override
-  String get previewCannotFit => 'It can’t be fitted before its deadline.';
+  String get previewCannotFit => 'Dit past niet meer vóór de deadline.';
 
   @override
   String previewOutsideWindow(String when) {
-    return 'Scheduled outside the days shown: $when';
+    return 'Gepland buiten de getoonde dagen: $when';
   }
 
   @override
-  String get previewNothingThisDay => 'Nothing scheduled this day';
+  String get previewNothingThisDay => 'Niets gepland op deze dag';
 
   @override
-  String get previewPrevDay => 'Previous day';
+  String get previewPrevDay => 'Vorige dag';
 
   @override
-  String get previewNextDay => 'Next day';
+  String get previewNextDay => 'Volgende dag';
 
   @override
-  String get previewStale => 'This preview is out of date.';
+  String get previewStale => 'Dit voorbeeld is verouderd.';
 
   @override
-  String get previewRefresh => 'Refresh preview';
+  String get previewRefresh => 'Voorbeeld vernieuwen';
 
   @override
   String get previewSessionInvalid =>
-      'That time can no longer be locked. You can still accept.';
+      'Deze tijd kan niet meer worden vastgezet. Je kunt nog steeds accepteren.';
 
   @override
-  String get previewLoading => 'Checking your schedule…';
+  String get previewLoading => 'Je planning wordt gecontroleerd…';
 
   @override
-  String get previewLoadFailed => 'Couldn’t build the preview.';
+  String get previewLoadFailed => 'Het voorbeeld kon niet worden gemaakt.';
 
   @override
-  String get previewGone => 'This invitation is no longer available.';
+  String get previewGone => 'Deze uitnodiging is niet meer beschikbaar.';
 
   @override
-  String get previewSwitchedOff => 'Previews aren’t available right now.';
+  String get previewSwitchedOff =>
+      'Voorbeelden zijn momenteel niet beschikbaar.';
 
   @override
-  String get previewSignIn => 'Sign in again to see the preview.';
+  String get previewSignIn => 'Log opnieuw in om het voorbeeld te zien.';
 
   @override
-  String get previewInvalid => 'That request wasn’t accepted. Try again.';
+  String get previewInvalid =>
+      'Dat verzoek is niet geaccepteerd. Probeer het opnieuw.';
 
   @override
-  String get previewUnsupportedAccepted => 'You’ve already accepted this.';
+  String get previewUnsupportedAccepted => 'Je hebt dit al geaccepteerd.';
 
   @override
-  String get previewUnsupportedDeadline => 'Its deadline has passed.';
+  String get previewUnsupportedDeadline => 'De deadline is verstreken.';
 
   @override
   String get previewUnsupportedConstraints =>
-      'This tilette repeats, has a place, or has limits a preview can’t show yet. You can still answer it from the list.';
+      'Dit tegeltje herhaalt zich, heeft een locatie of beperkingen die een voorbeeld nog niet kan tonen. Je kunt nog steeds antwoorden vanuit de lijst.';
 
   @override
-  String get previewUnsupportedOther => 'This tilette can’t be previewed.';
+  String get previewUnsupportedOther =>
+      'Van dit tegeltje kan geen voorbeeld worden getoond.';
 
   @override
-  String get previewAdding => 'Adding to your calendar…';
+  String get previewAdding => 'Wordt aan je agenda toegevoegd…';
 
   @override
-  String get previewAdded => 'Added to your calendar';
+  String get previewAdded => 'Aan je agenda toegevoegd';
 
   @override
-  String get previewNeedsReview => 'Added, but its time couldn’t be confirmed.';
+  String get previewNeedsReview =>
+      'Toegevoegd, maar de tijd kon niet worden bevestigd.';
 
   @override
-  String get previewNotAdded => 'Not added';
+  String get previewNotAdded => 'Niet toegevoegd';
 
   @override
   String get previewReasonScheduleChanged =>
-      'Your schedule changed since this preview.';
+      'Je planning is veranderd sinds dit voorbeeld.';
 
   @override
-  String get previewReasonAnswered => 'It was answered or changed elsewhere.';
+  String get previewReasonAnswered =>
+      'Er is elders al geantwoord of iets gewijzigd.';
 
   @override
-  String get previewReasonExpired => 'The preview expired.';
+  String get previewReasonExpired => 'Het voorbeeld is verlopen.';
 
   @override
-  String get previewReasonOther => 'It couldn’t be scheduled as previewed.';
+  String get previewReasonOther =>
+      'Kon niet worden gepland zoals in het voorbeeld.';
 
   @override
-  String get previewReviewAgain => 'Review again';
+  String get previewReviewAgain => 'Opnieuw bekijken';
 
   @override
-  String get previewUnconfirmed => 'We couldn’t confirm your answer.';
+  String get previewUnconfirmed => 'Je antwoord kon niet worden bevestigd.';
 
   @override
-  String get previewTryAgain => 'Try again';
+  String get previewTryAgain => 'Opnieuw proberen';
 
   @override
-  String get previewCheckStatus => 'Check status';
+  String get previewCheckStatus => 'Status controleren';
 
   @override
-  String get previewStillAdding => 'Still adding…';
+  String get previewStillAdding => 'Wordt nog toegevoegd…';
 
   @override
-  String get previewDeclined => 'Declined';
+  String get previewDeclined => 'Afgewezen';
 
   @override
-  String get previewDeclineFailed => 'Couldn’t decline. Try again.';
+  String get previewDeclineFailed =>
+      'Kon niet worden afgewezen. Probeer het opnieuw.';
 
   @override
-  String get previewDone => 'Done';
+  String get previewDone => 'Klaar';
 
   @override
-  String get previewCheckFit => 'Check fit';
+  String get previewCheckFit => 'Beschikbaarheid controleren';
 
   @override
   String get previewDetails => 'Details';
 
   @override
-  String get previewOtherTimes => 'Other times';
+  String get previewOtherTimes => 'Andere tijden';
 
   @override
-  String get previewOriginalSuggestion => 'Original suggestion';
+  String get previewOriginalSuggestion => 'Oorspronkelijk voorstel';
 
   @override
-  String get previewFindAnotherTime => 'Find another time';
+  String get previewFindAnotherTime => 'Een andere tijd zoeken';
 
   @override
-  String get previewFindingTimes => 'Looking for other times…';
+  String get previewFindingTimes => 'Andere tijden worden gezocht…';
 
   @override
-  String get previewNoDifferentTime => 'No different time found';
+  String get previewNoDifferentTime => 'Geen andere tijd gevonden';
 
   @override
-  String get previewOptionsFailed => 'Couldn’t load other times.';
+  String get previewOptionsFailed =>
+      'Andere tijden konden niet worden geladen.';
 
   @override
-  String get previewSelectFailed => 'Couldn’t switch to that time.';
+  String get previewSelectFailed => 'Kon niet naar die tijd worden verplaatst.';
 
   @override
-  String get previewNoMoves => 'Moves nothing else';
+  String get previewNoMoves => 'Verplaatst niets anders';
 
   @override
-  String get previewSessions => 'Sessions';
+  String get previewSessions => 'Sessies';
 
   @override
   String previewSessionN(int n) {
-    return 'Session $n';
+    return 'Sessie $n';
   }
 
   @override
-  String get previewSessionUnplaced => 'Couldn’t be placed';
+  String get previewSessionUnplaced => 'Kon niet worden ingepland';
 
   @override
-  String get previewSessionOutside => 'Outside the days shown';
+  String get previewSessionOutside => 'Buiten de getoonde dagen';
 
   @override
   String previewIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count scheduling issues',
-      one: '1 scheduling issue',
+      other: '$count planningsproblemen',
+      one: '1 planningsprobleem',
     );
     return '$_temp0';
   }
 
   @override
-  String get previewIssueUnscheduled => 'Couldn’t be scheduled';
+  String get previewIssueUnscheduled => 'Kon niet worden gepland';
 
   @override
-  String get previewIssueConflict => 'Overlaps other work';
+  String get previewIssueConflict => 'Overlapt met ander werk';
 
   @override
   String previewIssueWindow(String from, String to) {
-    return 'Can go $from – $to';
+    return 'Mogelijk van $from tot $to';
   }
 
   @override
-  String get previewViewInCalendar => 'View in calendar';
+  String get previewViewInCalendar => 'In agenda bekijken';
 
   @override
-  String get detailLoadFailed => 'Couldn’t load this share.';
+  String get detailLoadFailed => 'Dit gedeelde werk kon niet worden geladen.';
 
   @override
-  String get detailNotFound => 'This share is no longer available.';
+  String get detailNotFound => 'Dit gedeelde werk is niet meer beschikbaar.';
 
   @override
   String get detailRefreshFailed =>
-      'Couldn’t refresh. Showing what was loaded.';
+      'Kon niet worden vernieuwd. Eerder geladen gegevens worden getoond.';
 
   @override
-  String get detailTasksFailed => 'Couldn’t load its tilettes.';
+  String get detailTasksFailed => 'De tegeltjes konden niet worden geladen.';
 
   @override
-  String get detailTasks => 'Tilettes';
+  String get detailTasks => 'Tegeltjes';
 
   @override
-  String get forecastDeadlinePassed => 'Deadline passed';
+  String get forecastDeadlinePassed => 'Deadline verstreken';
 
   @override
-  String get broadcastParticipants => 'Participants';
+  String get broadcastParticipants => 'Deelnemers';
 
   @override
   String broadcastViewAll(int count) {
-    return 'View all ($count)';
+    return 'Alles bekijken ($count)';
   }
 
   @override
-  String get broadcastNoParticipants => 'No one yet. Add someone above.';
+  String get broadcastNoParticipants =>
+      'Nog niemand. Voeg hierboven iemand toe.';
 
   @override
   String get projectNoParticipants =>
-      'No one yet. Assign a tilette to someone on the Tilettes tab.';
+      'Nog niemand. Wijs op het tabblad Tegeltjes een tegeltje toe aan iemand.';
 
   @override
   String broadcastDeliveryIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count invitations may not have arrived',
-      one: '1 invitation may not have arrived',
+      other: '$count uitnodigingen zijn mogelijk niet aangekomen',
+      one: '1 uitnodiging is mogelijk niet aangekomen',
     );
     return '$_temp0';
   }
 
   @override
-  String get participantInvited => 'Invited';
+  String get participantInvited => 'Uitgenodigd';
 
   @override
-  String get participantAdding => 'Adding…';
+  String get participantAdding => 'Wordt toegevoegd…';
 
   @override
-  String get participantAddFailed => 'Couldn’t add.';
+  String get participantAddFailed => 'Kon niet worden toegevoegd.';
 
   @override
-  String get participantRemoveFailed => 'Couldn’t remove.';
+  String get participantRemoveFailed => 'Kon niet worden verwijderd.';
 
   @override
   String participantAlreadyInvited(String who) {
-    return '$who is already invited.';
+    return '$who is al uitgenodigd.';
   }
 
   @override
-  String get participantRemove => 'Remove';
+  String get participantRemove => 'Verwijderen';
 
   @override
   String participantRemoveTitle(String who) {
-    return 'Remove $who?';
+    return '$who verwijderen?';
   }
 
   @override
-  String get participantRemoveBody => 'They will no longer have this tilette.';
+  String get participantRemoveBody =>
+      'Deze persoon heeft dit tegeltje dan niet meer.';
 
   @override
   String deliverySent(String channel) {
-    return 'Sent by $channel';
+    return 'Verzonden via $channel';
   }
 
   @override
-  String get deliverySentPlain => 'Invitation sent';
+  String get deliverySentPlain => 'Uitnodiging verzonden';
 
   @override
   String deliveryFailed(String channel) {
-    return 'Couldn’t send by $channel';
+    return 'Kon niet worden verzonden via $channel';
   }
 
   @override
-  String get deliveryFailedPlain => 'Invitation couldn’t be sent';
+  String get deliveryFailedPlain => 'Uitnodiging kon niet worden verzonden';
 
   @override
-  String get deliveryUnknown => 'Delivery unknown';
+  String get deliveryUnknown => 'Bezorging onbekend';
 
   @override
-  String get channelEmail => 'email';
+  String get channelEmail => 'e-mail';
 
   @override
   String get channelSms => 'SMS';
 
   @override
-  String get channelPush => 'notification';
+  String get channelPush => 'melding';
 
   @override
   String classPeopleIncomplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count people are missing from some tilettes',
-      one: '1 person is missing from some tilettes',
+      other: '$count personen ontbreken bij sommige tegeltjes',
+      one: '1 persoon ontbreekt bij sommige tegeltjes',
     );
     return '$_temp0';
   }
@@ -4947,53 +4966,54 @@ class AppLocalizationsNl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Not on $count tilettes',
-      one: 'Not on 1 tilette',
+      other: 'Niet bij $count tegeltjes',
+      one: 'Niet bij 1 tegeltje',
     );
     return '$_temp0';
   }
 
   @override
-  String get classAddToAll => 'Add to all tilettes';
+  String get classAddToAll => 'Aan alle tegeltjes toevoegen';
 
   @override
-  String get classRemoveBody => 'They will be removed from every tilette.';
+  String get classRemoveBody =>
+      'Deze persoon wordt van alle tegeltjes verwijderd.';
 
   @override
-  String get classTaskNotAdded => 'Not added';
+  String get classTaskNotAdded => 'Niet toegevoegd';
 
   @override
-  String get classAddFailed => 'Couldn’t add to every tilette.';
+  String get classAddFailed => 'Kon niet aan alle tegeltjes worden toegevoegd.';
 
   @override
-  String get projectUnassigned => 'No one assigned';
+  String get projectUnassigned => 'Niemand toegewezen';
 
   @override
   String projectTasksUnassigned(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes have no one assigned',
-      one: '1 tilette has no one assigned',
+      other: '$count tegeltjes zijn aan niemand toegewezen',
+      one: '1 tegeltje is aan niemand toegewezen',
     );
     return '$_temp0';
   }
 
   @override
-  String get projectAssign => 'Assign';
+  String get projectAssign => 'Toewijzen';
 
   @override
-  String get projectReassign => 'Reassign';
+  String get projectReassign => 'Opnieuw toewijzen';
 
   @override
-  String get projectReassigning => 'Reassigning…';
+  String get projectReassigning => 'Wordt opnieuw toegewezen…';
 
   @override
-  String get projectReassignFailed => 'Couldn’t reassign.';
+  String get projectReassignFailed => 'Kon niet opnieuw worden toegewezen.';
 
   @override
   String projectAssignTitle(String task) {
-    return 'Assign $task';
+    return '$task toewijzen';
   }
 
   @override
@@ -5001,135 +5021,141 @@ class AppLocalizationsNl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Owns $count tilettes',
-      one: 'Owns 1 tilette',
+      other: 'Verantwoordelijk voor $count tegeltjes',
+      one: 'Verantwoordelijk voor 1 tegeltje',
     );
     return '$_temp0';
   }
 
   @override
-  String get projectAlreadyIn => 'Already in this project';
+  String get projectAlreadyIn => 'Al in dit project';
 
   @override
-  String get projectRemoveBody => 'Their tilettes will have no one assigned.';
+  String get projectRemoveBody =>
+      'De tegeltjes van deze persoon zijn dan aan niemand toegewezen.';
 
   @override
-  String get tileShareActivityCommentAdded => 'Comment added';
+  String get tileShareActivityCommentAdded => 'Reactie toegevoegd';
 
   @override
-  String get tileShareActivityCommentReplied => 'Comment reply added';
+  String get tileShareActivityCommentReplied =>
+      'Antwoord op reactie toegevoegd';
 
   @override
-  String get tileShareActivityCommentEdited => 'Comment edited';
+  String get tileShareActivityCommentEdited => 'Reactie bewerkt';
 
   @override
-  String get tileShareActivityCommentDeleted => 'Comment deleted';
+  String get tileShareActivityCommentDeleted => 'Reactie verwijderd';
 
   @override
-  String get commitmentYourTasks => 'Your tilettes';
+  String get commitmentYourTasks => 'Je tegeltjes';
 
   @override
-  String get commitmentYourTask => 'Your tilette';
+  String get commitmentYourTask => 'Je tegeltje';
 
   @override
   String commitmentPartialAnswered(int done, int total) {
-    return '$done of $total answered; the rest are still pending.';
+    return '$done van $total beantwoord; de rest wacht nog op antwoord.';
   }
 
   @override
-  String get commitmentOpenTile => 'Open tile';
+  String get commitmentOpenTile => 'Tegel openen';
 
   @override
-  String get detailEditShare => 'Edit share';
+  String get detailEditShare => 'Gedeeld werk bewerken';
 
   @override
-  String get detailEditTask => 'Edit tilette';
+  String get detailEditTask => 'Tegeltje bewerken';
 
   @override
-  String get detailAddTask => 'Add tilette';
+  String get detailAddTask => 'Tegeltje toevoegen';
 
   @override
-  String get detailDeleteTask => 'Delete tilette';
+  String get detailDeleteTask => 'Tegeltje verwijderen';
 
   @override
   String detailDeleteTaskTitle(String name) {
-    return 'Delete “$name”?';
+    return '‘$name’ verwijderen?';
   }
 
   @override
   String get detailDeleteTaskBody =>
-      'Everyone on it loses it from their schedule.';
+      'Het wordt uit de planning van alle deelnemers verwijderd.';
 
   @override
-  String get detailEditFailed => 'Couldn’t save your change. Try again.';
+  String get detailEditFailed =>
+      'Je wijziging kon niet worden opgeslagen. Probeer het opnieuw.';
 
   @override
   String get detailTaskLengthFixed =>
-      'A tilette’s length can’t change once it’s shared.';
+      'De duur van een tegeltje kan na het delen niet veranderen.';
 
   @override
-  String get taskSheetAssignee => 'ASSIGNEE';
+  String get taskSheetAssignee => 'TOEGEWEZEN AAN';
 
   @override
-  String get taskSheetEveryone => 'Everyone in this class has this tilette.';
+  String get taskSheetEveryone => 'Iedereen in deze klas heeft dit tegeltje.';
 
   @override
   String taskSheetAfterShareDeadline(String when) {
-    return 'This is after the share’s deadline ($when).';
+    return 'Dit is na de deadline van het gedeelde werk ($when).';
   }
 
   @override
-  String get taskSheetNameTooShort => 'Use at least 3 characters';
+  String get taskSheetNameTooShort => 'Gebruik minstens 3 tekens';
 
   @override
   String get taskSheetPeopleHintClass =>
-      'Anyone you add here gets every tilette in this class. People changes are sent when you save.';
+      'Iedereen die je hier toevoegt, krijgt elk tegeltje in deze klas. Wijzigingen in deelnemers worden bij het opslaan verzonden.';
 
   @override
   String get taskSheetPeopleHintProject =>
-      'A new assignee is sent when you save.';
+      'De nieuwe toewijzing wordt bij het opslaan verzonden.';
 
   @override
-  String get tiletteNameLabel => 'TILETTE NAME';
+  String get tiletteNameLabel => 'NAAM VAN HET TEGELTJE';
 
   @override
-  String get detailEditDetails => 'Edit details';
+  String get detailEditDetails => 'Details bewerken';
 
   @override
-  String get detailDeleteShare => 'Delete share';
+  String get detailDeleteShare => 'Gedeeld werk verwijderen';
 
   @override
   String get detailDeleteShareBody =>
-      'Everyone loses its tilettes from their schedule.';
+      'De tegeltjes worden uit ieders planning verwijderd.';
 
   @override
-  String get detailDeleteShareFailed => 'Couldn’t delete the share. Try again.';
+  String get detailDeleteShareFailed =>
+      'Het gedeelde werk kon niet worden verwijderd. Probeer het opnieuw.';
 
   @override
-  String get shareNameLabel => 'SHARE NAME';
+  String get shareNameLabel => 'NAAM VAN HET GEDEELDE WERK';
 
   @override
-  String get shareModeLabel => 'MODE';
+  String get shareModeLabel => 'MODUS';
 
   @override
-  String get shareEditModeFixed => 'The mode can’t change after sharing.';
+  String get shareEditModeFixed => 'De modus kan na het delen niet veranderen.';
 
   @override
-  String get shareEditEffort => 'TOTAL EFFORT';
+  String get shareEditEffort => 'TOTALE INSPANNING';
 
   @override
-  String get shareEditEffortHelper => 'The sum of its tilettes’ durations.';
+  String get shareEditEffortHelper => 'De som van de duur van alle tegeltjes.';
 
   @override
-  String get shareEditDiscardBody => 'Your edits to this share will be lost.';
+  String get shareEditDiscardBody =>
+      'Je wijzigingen in dit gedeelde werk gaan verloren.';
 
   @override
   String shareEditTilettesPulledIn(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count accepted tilettes will be moved to this deadline.',
-      one: '1 accepted tilette will be moved to this deadline.',
+      other:
+          '$count geaccepteerde tegeltjes worden naar deze deadline verplaatst.',
+      one: '1 geaccepteerd tegeltje wordt naar deze deadline verplaatst.',
     );
     return '$_temp0';
   }
@@ -5139,95 +5165,98 @@ class AppLocalizationsNl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes nobody has accepted keep their later deadlines.',
-      one: '1 tilette nobody has accepted keeps its later deadline.',
+      other:
+          '$count tegeltjes die niemand heeft geaccepteerd, behouden hun latere deadlines.',
+      one:
+          '1 tegeltje dat niemand heeft geaccepteerd, behoudt de latere deadline.',
     );
     return '$_temp0';
   }
 
   @override
   String taskSheetMoveShareDeadline(String when) {
-    return 'Also move the share’s deadline to $when';
+    return 'Verplaats ook de deadline van het gedeelde werk naar $when';
   }
 
   @override
-  String get createChooserTitle => 'Share work';
+  String get createChooserTitle => 'Werk delen';
 
   @override
-  String get createChooserSubtitle => 'How should people take part?';
+  String get createChooserSubtitle => 'Hoe moeten mensen deelnemen?';
 
   @override
   String get createModeBroadcastBody =>
-      'Everyone gets their own copy of one tilette';
+      'Iedereen krijgt een eigen kopie van één tegeltje';
 
   @override
   String get createModeClassBody =>
-      'Everyone gets their own copy of a set of tilettes';
+      'Iedereen krijgt een eigen kopie van een reeks tegeltjes';
 
   @override
   String get createModeProjectBody =>
-      'Everyone works on one shared set of tilettes';
+      'Iedereen werkt aan één gedeelde reeks tegeltjes';
 
   @override
-  String get createComingSoon => 'Coming soon';
+  String get createComingSoon => 'Binnenkort beschikbaar';
 
   @override
-  String get createBroadcastTitle => 'New broadcast';
+  String get createBroadcastTitle => 'Nieuwe uitzending';
 
   @override
   String get createBroadcastPeopleHint =>
-      'Each person gets their own copy and is asked to accept.';
+      'Iedereen krijgt een eigen kopie en wordt gevraagd deze te accepteren.';
 
   @override
-  String get createSend => 'Send';
+  String get createSend => 'Verzenden';
 
   @override
   String createSendTo(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Send to $count people',
-      one: 'Send to 1 person',
+      other: 'Naar $count personen verzenden',
+      one: 'Naar 1 persoon verzenden',
     );
     return '$_temp0';
   }
 
   @override
-  String get createSending => 'Sending…';
+  String get createSending => 'Wordt verzonden…';
 
   @override
-  String get createNeedsPerson => 'Add at least one person';
+  String get createNeedsPerson => 'Voeg minstens één persoon toe';
 
   @override
-  String get createFailed => 'Could not send right now. Your details are kept.';
+  String get createFailed =>
+      'Kan nu niet worden verzonden. Je gegevens blijven bewaard.';
 
   @override
-  String get createDiscardTitle => 'Discard this share?';
+  String get createDiscardTitle => 'Dit gedeelde werk verwerpen?';
 
   @override
-  String get createDiscardBody => 'What you’ve entered won’t be sent.';
+  String get createDiscardBody => 'Wat je hebt ingevuld, wordt niet verzonden.';
 
   @override
-  String get createClassTitle => 'New class';
+  String get createClassTitle => 'Nieuwe klas';
 
   @override
-  String get createNeedsTask => 'Add at least one tilette';
+  String get createNeedsTask => 'Voeg minstens één tegeltje toe';
 
   @override
   String get createClassPeopleHint =>
-      'Each person gets their own copy of every tilette and is asked to accept.';
+      'Iedereen krijgt een eigen kopie van elk tegeltje en wordt gevraagd deze te accepteren.';
 
   @override
-  String get createTilettesLabel => 'TILETTES';
+  String get createTilettesLabel => 'TEGELTJES';
 
   @override
   String createTiletteWithShare(String length) {
-    return '$length · due with the share';
+    return '$length · deadline van het gedeelde werk';
   }
 
   @override
   String createTiletteDue(String length, String when) {
-    return '$length · due $when';
+    return '$length · deadline: $when';
   }
 
   @override
@@ -5235,57 +5264,57 @@ class AppLocalizationsNl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes',
-      one: '1 tilette',
+      other: '$count tegeltjes',
+      one: '1 tegeltje',
     );
-    return '$_temp0 · $effort · due $when';
+    return '$_temp0 · $effort · deadline: $when';
   }
 
   @override
   String createStepOf(int step, int total) {
-    return 'Step $step of $total';
+    return 'Stap $step van $total';
   }
 
   @override
-  String get createNextPeople => 'Next: people';
+  String get createNextPeople => 'Volgende: personen';
 
   @override
-  String get createProjectTitle => 'New project';
+  String get createProjectTitle => 'Nieuw project';
 
   @override
-  String get createProjectSend => 'Create project';
+  String get createProjectSend => 'Project maken';
 
   @override
-  String get createCreating => 'Creating…';
+  String get createCreating => 'Wordt gemaakt…';
 
   @override
   String get createProjectHint =>
-      'Assign tilettes to people from the board once it’s created, or keep them for yourself.';
+      'Wijs na het maken via het bord tegeltjes toe aan anderen, of houd ze voor jezelf.';
 
   @override
-  String get detailLoading => 'Loading share…';
+  String get detailLoading => 'Gedeeld werk wordt geladen…';
 
   @override
-  String get taskSheetPeopleLabel => 'PEOPLE';
+  String get taskSheetPeopleLabel => 'PERSONEN';
 
   @override
-  String get taskSheetAddPerson => 'ADD PERSON';
+  String get taskSheetAddPerson => 'PERSOON TOEVOEGEN';
 
   @override
-  String get taskSheetWillBeAdded => 'Will be added';
+  String get taskSheetWillBeAdded => 'Wordt toegevoegd';
 
   @override
-  String get taskSheetWillBeRemoved => 'Will be removed';
+  String get taskSheetWillBeRemoved => 'Wordt verwijderd';
 
   @override
-  String get taskSheetWillBeAssigned => 'Will be assigned when you save';
+  String get taskSheetWillBeAssigned => 'Wordt bij het opslaan toegewezen';
 
   @override
   String get taskSheetPeopleFailed =>
-      'Some people changes couldn’t be saved. Retry them below.';
+      'Sommige wijzigingen in deelnemers konden niet worden opgeslagen. Probeer het hieronder opnieuw.';
 
   @override
-  String get tileShareSaveChanges => 'Save changes';
+  String get tileShareSaveChanges => 'Wijzigingen opslaan';
 
   @override
   String get scheduleChangeRefresh => 'Planning vernieuwen';
