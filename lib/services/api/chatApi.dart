@@ -1,3 +1,4 @@
+import 'package:tiler_app/data/VibeChat/ChatSessionExecutionMode.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/VibeChat/VibeAction.dart';
@@ -229,8 +230,9 @@ class ChatApi extends AppApi {
     }
   }
 
-  Future<VibeResponse?> sendChatMessage(
-      String message, String? sessionId) async {
+  Future<VibeResponse?> sendChatMessage(String message, String? sessionId,
+      {ChatSessionExecutionMode chatSessionExecutionMode =
+          ChatSessionExecutionMode.confirmFirst}) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
@@ -238,6 +240,7 @@ class ChatApi extends AppApi {
 
         Map<String, dynamic> requestBody = {
           'ChatMessage': message,
+          'ChatSessionExecutionMode': chatSessionExecutionMode.wireValue,
           'SessionId': sessionId ?? '',
         };
 
@@ -282,6 +285,50 @@ class ChatApi extends AppApi {
               ? e.Message
               : LocalizationService.instance.translations.errorOccurred);
     }
+  }
+
+  Future<Map<String, dynamic>> confirmTileShare(
+      String actionId, String token) async {
+    final auth = await authentication.isUserAuthenticated();
+    if (!auth.item1)
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.userIsNotAuthenticated);
+    await checkAndReplaceCredentialCache();
+    final headers = getHeaders();
+    if (headers == null)
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.authenticationIssues);
+    final body = await injectRequestParams(
+        {'ActionId': actionId, 'TileShareReviewToken': token});
+    final response = await http.post(
+        Uri.https(Constants.tilerDomain, 'api/Vibe/Request/Execute'),
+        headers: headers,
+        body: jsonEncode(body));
+    final json = jsonDecode(response.body) as Map;
+    final content = json['Content'];
+    final dynamic result = response.statusCode == 200 && isJsonResponseOk(json)
+        ? content?['vibeRequest']?['tileShareResult']
+        : response.statusCode == 409 && json['Error']?['Code'] == '409'
+            ? content
+            : null;
+    if (result is Map &&
+        result['ActionId'] == actionId &&
+        (result['State'] == 'Applied' ||
+            result['State'] == 'Rejected' ||
+            result['State'] == 'Pending' ||
+            result['State'] == 'Failed' ||
+            (result['State'] == 'NotAttempted' &&
+                result['ReviewToken'] is String &&
+                result['Review'] is Map &&
+                ['review_required', 'review_changed']
+                    .contains(result['ErrorCode'])))) {
+      return Map<String, dynamic>.from(result);
+    }
+    throw TilerError(
+        Message:
+            LocalizationService.instance.translations.responseHandlingError);
   }
 
   Future<VibeRequest?> executeVibeRequest({required String requestId}) async {

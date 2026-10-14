@@ -113,6 +113,201 @@ void main() {
     await t.pump();
   }
 
+  testWidgets('composite update has no schedule action or readiness banner',
+      (t) async {
+    expect(ActionType.fromString('tileshare_update_tilette'), isNotNull);
+    final bloc = _makeBloc();
+    await t.pumpWidget(_wrap(
+        bloc,
+        ActionsList(
+          actions: [
+            VibeAction.fromJson({
+              'id': 'search',
+              'type': 'tileshare_update_tilette',
+              'descriptions': 'Update shared work',
+              'status': 'parsed'
+            })
+          ],
+          requestId: 'req_1',
+          state: _stateWith(PreviewState.processing),
+        )));
+    expect(find.text('Update shared work'), findsNothing);
+    expect(
+        find.byKey(const ValueKey('tilecast_readiness_banner')), findsNothing);
+    await t.pumpWidget(const SizedBox.shrink());
+    await t.runAsync(() => bloc.close());
+  });
+
+  testWidgets('recipient read has no schedule action or readiness banner',
+      (t) async {
+    expect(ActionType.fromString('tileshare_list_recipients'), isNotNull);
+    final bloc = _makeBloc();
+    await t.pumpWidget(_wrap(
+        bloc,
+        ActionsList(
+          actions: [
+            VibeAction.fromJson({
+              'id': 'search',
+              'type': 'tileshare_list_recipients',
+              'descriptions': 'Recipient responses',
+              'status': 'parsed'
+            })
+          ],
+          requestId: 'req_1',
+          state: _stateWith(PreviewState.processing),
+        )));
+    expect(find.text('Recipient responses'), findsNothing);
+    expect(
+        find.byKey(const ValueKey('tilecast_readiness_banner')), findsNothing);
+    await t.pumpWidget(const SizedBox.shrink());
+    await t.runAsync(() => bloc.close());
+  });
+
+  testWidgets('tilette read has no schedule action or readiness banner',
+      (t) async {
+    expect(ActionType.fromString('tileshare_get_tilette'), isNotNull);
+    final bloc = _makeBloc();
+    await t.pumpWidget(_wrap(
+        bloc,
+        ActionsList(
+          actions: [
+            VibeAction.fromJson({
+              'id': 'search',
+              'type': 'tileshare_get_tilette',
+              'descriptions': 'Tilette details',
+              'status': 'parsed'
+            })
+          ],
+          requestId: 'req_1',
+          state: _stateWith(PreviewState.processing),
+        )));
+    expect(find.text('Tilette details'), findsNothing);
+    expect(
+        find.byKey(const ValueKey('tilecast_readiness_banner')), findsNothing);
+    await t.pumpWidget(const SizedBox.shrink());
+    await t.runAsync(() => bloc.close());
+  });
+
+  testWidgets('tilette rename has no schedule action or readiness banner',
+      (t) async {
+    final bloc = _makeBloc();
+    await t.pumpWidget(_wrap(
+        bloc,
+        ActionsList(
+          actions: [
+            VibeAction.fromJson({
+              'id': 'search',
+              'type': 'tileshare_rename_tilette',
+              'descriptions': 'Rename review',
+              'status': 'parsed'
+            })
+          ],
+          requestId: 'req_1',
+          state: _stateWith(PreviewState.processing),
+        )));
+    expect(find.text('Rename review'), findsNothing);
+    expect(
+        find.byKey(const ValueKey('tilecast_readiness_banner')), findsNothing);
+    await t.pumpWidget(const SizedBox.shrink());
+    await t.runAsync(() => bloc.close());
+  });
+
+  testWidgets('tilette notes have no schedule action or readiness banner',
+      (t) async {
+    final bloc = _makeBloc();
+    await t.pumpWidget(_wrap(
+        bloc,
+        ActionsList(
+          actions: [
+            VibeAction.fromJson({
+              'id': 'search',
+              'type': 'tileshare_set_tilette_notes',
+              'descriptions': 'Notes review',
+              'status': 'parsed'
+            })
+          ],
+          requestId: 'req_1',
+          state: _stateWith(PreviewState.processing),
+        )));
+    expect(find.text('Notes review'), findsNothing);
+    expect(
+        find.byKey(const ValueKey('tilecast_readiness_banner')), findsNothing);
+    await t.pumpWidget(const SizedBox.shrink());
+    await t.runAsync(() => bloc.close());
+  });
+
+  testWidgets('tilette deletion has no schedule action or readiness banner',
+      (t) async {
+    final bloc = _makeBloc();
+    await t.pumpWidget(_wrap(
+        bloc,
+        ActionsList(
+          actions: [
+            VibeAction.fromJson({
+              'id': 'search',
+              'type': 'tileshare_delete_tilette',
+              'descriptions': 'Deletion review',
+              'status': 'parsed'
+            })
+          ],
+          requestId: 'req_1',
+          state: _stateWith(PreviewState.processing),
+        )));
+    expect(find.text('Deletion review'), findsNothing);
+    expect(
+        find.byKey(const ValueKey('tilecast_readiness_banner')), findsNothing);
+    await t.pumpWidget(const SizedBox.shrink());
+    await t.runAsync(() => bloc.close());
+  });
+
+  testWidgets('project search has no schedule action or readiness banner',
+      (t) async {
+    final bloc = _makeBloc();
+    await t.pumpWidget(_wrap(
+        bloc,
+        ActionsList(
+          actions: [
+            VibeAction.fromJson({
+              'id': 'search',
+              'type': 'tileshare_search_projects',
+              'descriptions': 'Find Launch',
+              'status': 'executed'
+            })
+          ],
+          requestId: 'req_1',
+          state: _stateWith(PreviewState.processing),
+        )));
+    expect(find.text('Find Launch'), findsNothing);
+    expect(
+        find.byKey(const ValueKey('tilecast_readiness_banner')), findsNothing);
+    await t.pumpWidget(const SizedBox.shrink());
+    await t.runAsync(() => bloc.close());
+  });
+
+  testWidgets('project detail read has no schedule action or readiness banner',
+      (t) async {
+    final bloc = _makeBloc();
+    await t.pumpWidget(_wrap(
+        bloc,
+        ActionsList(
+          actions: [
+            VibeAction.fromJson({
+              'id': 'search',
+              'type': 'tileshare_get_project',
+              'descriptions': 'Find Launch',
+              'status': 'executed'
+            })
+          ],
+          requestId: 'req_1',
+          state: _stateWith(PreviewState.processing),
+        )));
+    expect(find.text('Find Launch'), findsNothing);
+    expect(
+        find.byKey(const ValueKey('tilecast_readiness_banner')), findsNothing);
+    await t.pumpWidget(const SizedBox.shrink());
+    await t.runAsync(() => bloc.close());
+  });
+
   group('ActionsList readiness banner', () {
     testWidgets('shows preparing banner + spinner while processing', (t) async {
       await pumpList(t, _stateWith(PreviewState.processing));
@@ -183,8 +378,8 @@ void main() {
           findsNothing);
     });
 
-    testWidgets(
-        'no banner when all actions are non-highlightable types', (t) async {
+    testWidgets('no banner when all actions are non-highlightable types',
+        (t) async {
       final bloc = _makeBloc();
       await t.pumpWidget(_wrap(
         bloc,
@@ -236,18 +431,17 @@ void main() {
 
     testWidgets('non-ready banner row is not tappable', (t) async {
       await pumpList(t, _stateWith(PreviewState.processing));
-      expect(
-          find.byKey(const ValueKey('tilecast_ready_banner_tap')), findsNothing);
+      expect(find.byKey(const ValueKey('tilecast_ready_banner_tap')),
+          findsNothing);
     });
   });
 
   group('ActionsList stale note', () {
-    testWidgets('shows stale note when the ready TileCast is stale',
-        (t) async {
-      await pumpList(
-          t, _stateWith(PreviewState.ready, isStale: true));
+    testWidgets('shows stale note when the ready TileCast is stale', (t) async {
+      await pumpList(t, _stateWith(PreviewState.ready, isStale: true));
       expect(find.byKey(const ValueKey('tilecast_stale_note')), findsOneWidget);
-      expect(find.text('Your schedule changed — this TileCast may be out of date'),
+      expect(
+          find.text('Your schedule changed — this TileCast may be out of date'),
           findsOneWidget);
       // Ready + stale must remain tappable (banner still says ready).
       expect(find.text('Tap to view TileCast'), findsOneWidget);
@@ -274,7 +468,8 @@ void main() {
 
   group('ActionsList tap gating', () {
     testWidgets('tapping while preparing does not open a preview', (t) async {
-      final bloc = _RecordingBloc()..chatApi = _FakeChatApi(PreviewState.processing);
+      final bloc = _RecordingBloc()
+        ..chatApi = _FakeChatApi(PreviewState.processing);
       bloc.tileCastReadinessDelayOverride = (_) async {};
       bloc.tileCastReadinessMaxAttempts = 1;
       await pumpList(t, _stateWith(PreviewState.processing), bloc: bloc);
@@ -294,8 +489,7 @@ void main() {
       await t.tap(find.text('Add gym task'));
       await t.pump();
 
-      final loadEvents =
-          bloc.recorded.whereType<LoadTileCastEvent>().toList();
+      final loadEvents = bloc.recorded.whereType<LoadTileCastEvent>().toList();
       expect(loadEvents, hasLength(1));
       expect(loadEvents.first.vibeRequestId, 'req_1');
       expect(loadEvents.first.actionId, 'action_1');

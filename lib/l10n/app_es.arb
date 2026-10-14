@@ -1921,5 +1921,16 @@
     "taskSheetWillBeRemoved": "Se eliminará",
     "taskSheetWillBeAssigned": "Se asignará al guardar",
     "taskSheetPeopleFailed": "Algunos cambios de personas no se guardaron. Reinténtalos abajo.",
-    "tileShareSaveChanges": "Guardar cambios"
+    "tileShareSaveChanges": "Guardar cambios",
+  "vibeScheduleUpdatePending": "Calculando los horarios del trabajo aceptado. Aún no se ha guardado ningún cambio.",
+  "vibeScheduleNoFit": "No se ha aplicado ningún cambio. El trabajo restante no cabe entre las sesiones protegidas. Ajusta la duración o la fecha límite y solicita una actualización revisada.",
+  "vibeScheduleUpdateFailed": "No se ha aplicado ningún cambio. El horario cambió o no se pudo completar el cálculo. Solicita una actualización revisada.",
+  "vibeUpdateProject": "Actualizar proyecto",
+  "vibeProjectUpdateReview": "Revisar cambios del proyecto",
+  "vibeProjectUpdated": "Proyecto actualizado.",
+  "vibeManageAccess": "Gestionar acceso al proyecto",
+  "vibeManageRecipients": "Gestionar destinatarios",
+  "vibeManagementUpdated": "Cambios de destinatarios o acceso guardados.",
+  "vibeManagementNote": "Revisa los efectos sobre destinatarios y acceso. La suspensión y restauración del calendario se procesan en segundo plano.",
+  "vibeAccessReconciliation": "Acceso guardado. La suspensión o restauración del calendario se procesa en segundo plano."
 }

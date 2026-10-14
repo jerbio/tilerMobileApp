@@ -16,6 +16,18 @@ enum ActionType {
   whatIfMarkedTaskAsDone,
   whatIfProcrastinateAll,
   conversationalAndNotSupported,
+  tileShareSearchProjects,
+  tileShareGetProject,
+  tileShareGetTilette,
+  tileShareListRecipients,
+  tileShareRenameProject,
+  tileShareRenameTilette,
+  tileShareSetTiletteNotes,
+  tileShareUpdateTilette,
+  tileShareUpdateProject,
+  tileShareUpdateRecipients,
+  tileShareUpdateAccess,
+  tileShareDeleteTilette,
   none;
 
   static ActionType? fromString(String type) {
@@ -52,6 +64,30 @@ enum ActionType {
         return ActionType.whatIfMarkedTaskAsDone;
       case 'whatif_procrastinateall':
         return ActionType.whatIfProcrastinateAll;
+      case 'tileshare_delete_tilette':
+        return ActionType.tileShareDeleteTilette;
+      case 'tileshare_update_recipients':
+        return ActionType.tileShareUpdateRecipients;
+      case 'tileshare_update_access':
+        return ActionType.tileShareUpdateAccess;
+      case 'tileshare_update_project':
+        return ActionType.tileShareUpdateProject;
+      case 'tileshare_update_tilette':
+        return ActionType.tileShareUpdateTilette;
+      case 'tileshare_set_tilette_notes':
+        return ActionType.tileShareSetTiletteNotes;
+      case 'tileshare_rename_tilette':
+        return ActionType.tileShareRenameTilette;
+      case 'tileshare_rename_project':
+        return ActionType.tileShareRenameProject;
+      case 'tileshare_list_recipients':
+        return ActionType.tileShareListRecipients;
+      case 'tileshare_get_tilette':
+        return ActionType.tileShareGetTilette;
+      case 'tileshare_get_project':
+        return ActionType.tileShareGetProject;
+      case 'tileshare_search_projects':
+        return ActionType.tileShareSearchProjects;
       case 'conversational_and_not_supported':
         return ActionType.conversationalAndNotSupported;
       case 'none':
@@ -101,6 +137,7 @@ enum ActionStatus {
 }
 
 class VibeAction {
+  final Map<String, dynamic>? tileShareResult;
   final String? id;
   final String? descriptions;
   final ActionType? type;
@@ -113,6 +150,7 @@ class VibeAction {
 
   VibeAction({
     this.id,
+    this.tileShareResult,
     this.descriptions,
     this.type,
     this.creationTimeInMs,
@@ -126,6 +164,9 @@ class VibeAction {
   factory VibeAction.fromJson(Map<String, dynamic> json) {
     return VibeAction(
       id: json['id'] as String?,
+      tileShareResult: json['tileShareResult'] == null
+          ? null
+          : Map<String, dynamic>.from(json['tileShareResult']),
       descriptions: json['descriptions'] as String?,
       type: json['type'] != null
           ? ActionType.fromString(json['type'] as String)
@@ -144,6 +185,7 @@ class VibeAction {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'tileShareResult': tileShareResult,
       'descriptions': descriptions,
       'type': type?.toJson(),
       'creationTimeInMs': creationTimeInMs,
@@ -157,6 +199,7 @@ class VibeAction {
 
   VibeAction copyWith({
     String? id,
+    Map<String, dynamic>? tileShareResult,
     String? descriptions,
     ActionType? type,
     int? creationTimeInMs,
@@ -168,6 +211,7 @@ class VibeAction {
   }) {
     return VibeAction(
       id: id ?? this.id,
+      tileShareResult: tileShareResult ?? this.tileShareResult,
       descriptions: descriptions ?? this.descriptions,
       type: type ?? this.type,
       creationTimeInMs: creationTimeInMs ?? this.creationTimeInMs,

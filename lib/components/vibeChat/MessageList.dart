@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/constants.dart' as Constants;
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/components/vibeChat/tileShareReviewCard.dart';
 import 'package:flutter/services.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
@@ -9,6 +12,17 @@ import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+Uri? resolveVibeChatLink(String url) {
+  final uri = Uri.tryParse(url);
+  if (uri != null &&
+      !uri.hasScheme &&
+      !uri.hasAuthority &&
+      uri.path.startsWith('/tileshare/')) {
+    return Uri.https(Constants.tilerDomain, '/').resolveUri(uri);
+  }
+  return uri;
+}
 
 class MessageList extends StatefulWidget {
   final VibeChatState state;
@@ -106,11 +120,50 @@ class _MessageListState extends State<MessageList> {
                       );
                     },
                     child: Column(children: [
-                      _buildMessage(context, message.content ?? '', isUser),
+                      if (isUser ||
+                          !(message.actions?.isNotEmpty == true &&
+                              message.actions!.every((action) =>
+                                  action.tileShareResult?['Review'] != null ||
+                                  action.tileShareResult?['State'] ==
+                                      'Applied')))
+                        _buildMessage(context, message.content ?? '', isUser),
+                      if (!isUser)
+                        for (final action in message.actions ?? [])
+                          if (action.tileShareResult != null)
+                            TileShareReviewCard(
+                              key: ValueKey(
+                                  '${message.sessionId}:${action.id}:${action.tileShareResult!['ReviewToken']}'),
+                              result: action.tileShareResult!,
+                              disabled:
+                                  widget.state.step == VibeChatStep.sending ||
+                                      message.requestId !=
+                                          widget.state.messages.last.requestId,
+                              onConfirm: (token) => context
+                                  .read<VibeChatBloc>()
+                                  .chatApi
+                                  .confirmTileShare(action.id!, token),
+                              onCheck: () async {
+                                final actions = await context
+                                    .read<VibeChatBloc>()
+                                    .chatApi
+                                    .getActions([action.id!]);
+                                return actions
+                                    .firstWhere((a) => a.id == action.id)
+                                    .tileShareResult!;
+                              },
+                              onChanged: (result) => context
+                                  .read<VibeChatBloc>()
+                                  .add(TileShareResultUpdatedEvent(
+                                      message.sessionId ?? '',
+                                      action.id!,
+                                      result)),
+                            ),
                       if (message.actions != null &&
                           message.actions!.isNotEmpty)
                         ActionsList(
-                          actions: message.actions!,
+                          actions: message.actions!
+                              .where((action) => action.tileShareResult == null)
+                              .toList(),
                           requestId: message.requestId,
                           state: widget.state,
                         ),
@@ -241,13 +294,13 @@ class _MessageListState extends State<MessageList> {
               ),
               linkBuilder: (context, text, url, style) => GestureDetector(
                 onTap: () async {
-                  final uri = Uri.tryParse(url);
+                  final uri = resolveVibeChatLink(url);
                   if (uri != null && await canLaunchUrl(uri)) {
                     await launchUrl(uri, mode: LaunchMode.externalApplication);
                   }
                 },
-                child: Text(
-                  url,
+                child: Text.rich(
+                  text,
                   style: const TextStyle(
                     color: TileColors.vibeChatLinkColor,
                     decoration: TextDecoration.underline,

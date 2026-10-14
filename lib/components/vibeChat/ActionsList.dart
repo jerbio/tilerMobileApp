@@ -66,6 +66,18 @@ class _ActionsListState extends State<ActionsList>
     ActionType.whatIfRemovedTask,
     ActionType.whatIfMarkedTaskAsDone,
     ActionType.conversationalAndNotSupported,
+    ActionType.tileShareSearchProjects,
+    ActionType.tileShareGetProject,
+    ActionType.tileShareGetTilette,
+    ActionType.tileShareListRecipients,
+    ActionType.tileShareRenameProject,
+    ActionType.tileShareRenameTilette,
+    ActionType.tileShareSetTiletteNotes,
+    ActionType.tileShareUpdateTilette,
+    ActionType.tileShareUpdateProject,
+    ActionType.tileShareUpdateRecipients,
+    ActionType.tileShareUpdateAccess,
+    ActionType.tileShareDeleteTilette,
     ActionType.none,
   };
   static const Set<ActionStatus> _nonClickableStatuses = {
@@ -105,7 +117,20 @@ class _ActionsListState extends State<ActionsList>
   Widget build(BuildContext context) {
     super.build(context);
     final validActions = widget.actions
-        .where((a) => a.type != ActionType.conversationalAndNotSupported)
+        .where((a) =>
+            a.type != ActionType.conversationalAndNotSupported &&
+            a.type != ActionType.tileShareSearchProjects &&
+            a.type != ActionType.tileShareGetProject &&
+            a.type != ActionType.tileShareGetTilette &&
+            a.type != ActionType.tileShareListRecipients &&
+            a.type != ActionType.tileShareRenameProject &&
+            a.type != ActionType.tileShareDeleteTilette &&
+            a.type != ActionType.tileShareUpdateProject &&
+            a.type != ActionType.tileShareUpdateRecipients &&
+            a.type != ActionType.tileShareUpdateAccess &&
+            a.type != ActionType.tileShareUpdateTilette &&
+            a.type != ActionType.tileShareSetTiletteNotes &&
+            a.type != ActionType.tileShareRenameTilette)
         .toList();
 
     if (validActions.isEmpty) return SizedBox.shrink();

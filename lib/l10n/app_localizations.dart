@@ -8582,6 +8582,120 @@ abstract class AppLocalizations {
   /// **'A tilette’s length can’t change once it’s shared.'**
   String get detailTaskLengthFixed;
 
+  /// No description provided for @vibeChatExecutionMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat execution'**
+  String get vibeChatExecutionMode;
+
+  /// No description provided for @vibeConfirmFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm first'**
+  String get vibeConfirmFirst;
+
+  /// No description provided for @vibeAutoAct.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto act'**
+  String get vibeAutoAct;
+
+  /// No description provided for @vibeAutoActNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Run supported chat actions automatically. Bulk and destructive changes still need review.'**
+  String get vibeAutoActNote;
+
+  /// No description provided for @vibeConfirmNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Review chat changes before they run.'**
+  String get vibeConfirmNote;
+
+  /// No description provided for @vibeConfirmCreation.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm creation'**
+  String get vibeConfirmCreation;
+
+  /// No description provided for @vibeCheckStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Check status'**
+  String get vibeCheckStatus;
+
+  /// No description provided for @vibeCreationUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Creation could not be confirmed. Check status before trying again.'**
+  String get vibeCreationUnknown;
+
+  /// No description provided for @vibeReviewAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the current proposal before confirming again.'**
+  String get vibeReviewAgain;
+
+  /// No description provided for @vibeTileShareCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'TileShare created.'**
+  String get vibeTileShareCreated;
+
+  /// No description provided for @vibeCreationReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review TileShare creation'**
+  String get vibeCreationReview;
+
+  /// No description provided for @vibeCreationNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is created until you confirm. Recipients still choose whether to accept; notifications are not sent by this action.'**
+  String get vibeCreationNote;
+
+  /// No description provided for @vibeCreateProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Create project'**
+  String get vibeCreateProject;
+
+  /// No description provided for @vibeAddTilette.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tilette'**
+  String get vibeAddTilette;
+
+  /// No description provided for @vibeReviewProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get vibeReviewProject;
+
+  /// No description provided for @vibeReviewStarts.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts'**
+  String get vibeReviewStarts;
+
+  /// No description provided for @vibeReviewDeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline'**
+  String get vibeReviewDeadline;
+
+  /// No description provided for @vibeReviewMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'minutes'**
+  String get vibeReviewMinutes;
+
+  /// No description provided for @vibeOpenTileShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Open TileShare'**
+  String get vibeOpenTileShare;
+
   /// No description provided for @taskSheetAssignee.
   ///
   /// In en, this message translates to:
@@ -8833,6 +8947,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save changes'**
   String get tileShareSaveChanges;
+
+  /// No description provided for @vibeProjectRenamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Project renamed.'**
+  String get vibeProjectRenamed;
+
+  /// No description provided for @vibeRenameReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review project rename'**
+  String get vibeRenameReview;
+
+  /// No description provided for @vibeRenameProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename project'**
+  String get vibeRenameProject;
+
+  /// No description provided for @vibePreviousName.
+  ///
+  /// In en, this message translates to:
+  /// **'Current name'**
+  String get vibePreviousName;
+
+  /// No description provided for @vibeRenameNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the project name changes after confirmation.'**
+  String get vibeRenameNote;
+
+  /// No description provided for @vibeConfirmRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm rename'**
+  String get vibeConfirmRename;
+
+  /// No description provided for @vibeRenameUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename could not be confirmed. Check status before trying again.'**
+  String get vibeRenameUnknown;
+
+  /// No description provided for @vibeTiletteRenamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilette renamed.'**
+  String get vibeTiletteRenamed;
+
+  /// No description provided for @vibeTiletteRenameReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review tilette rename'**
+  String get vibeTiletteRenameReview;
+
+  /// No description provided for @vibeRenameTilette.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename tilette'**
+  String get vibeRenameTilette;
+
+  /// No description provided for @vibeTiletteRenameNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the shared tilette name changes. Personal calendar titles stay as they are.'**
+  String get vibeTiletteRenameNote;
+
+  /// No description provided for @vibeNotesUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilette notes updated.'**
+  String get vibeNotesUpdated;
+
+  /// No description provided for @vibeNotesReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review tilette notes'**
+  String get vibeNotesReview;
+
+  /// No description provided for @vibeEditNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Update tilette notes'**
+  String get vibeEditNotes;
+
+  /// No description provided for @vibePreviousNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Current notes'**
+  String get vibePreviousNotes;
+
+  /// No description provided for @vibeProposedNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed notes'**
+  String get vibeProposedNotes;
+
+  /// No description provided for @vibeEmptyNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes'**
+  String get vibeEmptyNotes;
+
+  /// No description provided for @vibeClearNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear notes'**
+  String get vibeClearNotes;
+
+  /// No description provided for @vibeNotesNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The proposed text replaces the complete tilette notes after confirmation.'**
+  String get vibeNotesNote;
+
+  /// No description provided for @vibeConfirmNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm notes'**
+  String get vibeConfirmNotes;
+
+  /// No description provided for @vibeNotesUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes update could not be confirmed. Check status before trying again.'**
+  String get vibeNotesUnknown;
+
+  /// No description provided for @vibeTiletteDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilette deleted.'**
+  String get vibeTiletteDeleted;
+
+  /// No description provided for @vibeDeleteReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review tilette deletion'**
+  String get vibeDeleteReview;
+
+  /// No description provided for @vibeDeleteTilette.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tilette'**
+  String get vibeDeleteTilette;
+
+  /// No description provided for @vibeAssignmentCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignments'**
+  String get vibeAssignmentCount;
+
+  /// No description provided for @vibeLinkedCalendarCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked calendar items'**
+  String get vibeLinkedCalendarCount;
+
+  /// No description provided for @vibeDeleteNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This disables the tilette and linked calendar work. The project and other tilettes stay available. Assignment history is retained; undo is not provided here.'**
+  String get vibeDeleteNote;
+
+  /// No description provided for @vibeConfirmDeletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm deletion'**
+  String get vibeConfirmDeletion;
+
+  /// No description provided for @vibeDeleteUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Deletion could not be confirmed. Check status before trying again.'**
+  String get vibeDeleteUnknown;
+
+  /// No description provided for @vibeOpenProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Open project'**
+  String get vibeOpenProject;
+
+  /// No description provided for @vibeTiletteUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilette updated.'**
+  String get vibeTiletteUpdated;
+
+  /// No description provided for @vibeUpdateReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review tilette update'**
+  String get vibeUpdateReview;
+
+  /// No description provided for @vibeUpdateTilette.
+  ///
+  /// In en, this message translates to:
+  /// **'Update tilette'**
+  String get vibeUpdateTilette;
+
+  /// No description provided for @vibeUpdateNote.
+  ///
+  /// In en, this message translates to:
+  /// **'All displayed changes are saved together after confirmation. Supplied notes replace the complete note.'**
+  String get vibeUpdateNote;
+
+  /// No description provided for @vibeConfirmUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm update'**
+  String get vibeConfirmUpdate;
+
+  /// No description provided for @vibeUpdateRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'No changes were applied. Review the response and request a revised update.'**
+  String get vibeUpdateRejected;
+
+  /// No description provided for @vibeUpdateUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Update could not be confirmed. Check status before trying again.'**
+  String get vibeUpdateUnknown;
+
+  /// No description provided for @vibeScheduleUpdatePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculating accepted-work schedules. No changes have been saved yet.'**
+  String get vibeScheduleUpdatePending;
+
+  /// No description provided for @vibeScheduleNoFit.
+  ///
+  /// In en, this message translates to:
+  /// **'No changes were applied. The remaining work could not fit around protected sessions. Adjust the duration or deadline and request a revised update.'**
+  String get vibeScheduleNoFit;
+
+  /// No description provided for @vibeScheduleUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'No changes were applied. The schedule changed or calculation could not complete. Request a revised update.'**
+  String get vibeScheduleUpdateFailed;
+
+  /// No description provided for @vibeUpdateProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Update project'**
+  String get vibeUpdateProject;
+
+  /// No description provided for @vibeProjectUpdateReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review project update'**
+  String get vibeProjectUpdateReview;
+
+  /// No description provided for @vibeProjectUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Project updated.'**
+  String get vibeProjectUpdated;
+
+  /// No description provided for @vibeManageAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage project access'**
+  String get vibeManageAccess;
+
+  /// No description provided for @vibeManageRecipients.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage recipients'**
+  String get vibeManageRecipients;
+
+  /// No description provided for @vibeManagementUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient or access changes saved.'**
+  String get vibeManagementUpdated;
+
+  /// No description provided for @vibeManagementNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the recipient and access effects above. Calendar access cleanup and restoration run in the background.'**
+  String get vibeManagementNote;
+
+  /// No description provided for @vibeAccessReconciliation.
+  ///
+  /// In en, this message translates to:
+  /// **'Access is saved. Calendar cleanup or restoration runs in the background.'**
+  String get vibeAccessReconciliation;
 }
 
 class _AppLocalizationsDelegate

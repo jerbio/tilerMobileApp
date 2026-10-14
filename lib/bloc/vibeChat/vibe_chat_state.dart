@@ -16,6 +16,7 @@ enum VibeChatStep {
 }
 
 class VibeChatState extends Equatable {
+  final ChatSessionExecutionMode chatSessionExecutionMode;
   final VibeChatStep step;
   final VibeSession? currentSession;
   final List<VibeMessage> messages;
@@ -53,6 +54,7 @@ class VibeChatState extends Equatable {
 
   const VibeChatState({
     this.step = VibeChatStep.initial,
+    this.chatSessionExecutionMode = ChatSessionExecutionMode.confirmFirst,
     this.currentSession,
     this.messages = const [],
     this.hasMoreMessages = false,
@@ -108,6 +110,7 @@ class VibeChatState extends Equatable {
 
   VibeChatState copyWith({
     VibeChatStep? step,
+    ChatSessionExecutionMode? chatSessionExecutionMode,
     VibeSession? currentSession,
     List<VibeMessage>? messages,
     bool? hasMoreMessages,
@@ -129,6 +132,8 @@ class VibeChatState extends Equatable {
   }) {
     return VibeChatState(
       step: step ?? this.step,
+      chatSessionExecutionMode:
+          chatSessionExecutionMode ?? this.chatSessionExecutionMode,
       currentSession: currentSession ?? this.currentSession,
       messages: messages ?? this.messages,
       hasMoreMessages: hasMoreMessages ?? this.hasMoreMessages,
@@ -157,6 +162,7 @@ class VibeChatState extends Equatable {
   @override
   List<Object?> get props => [
         step,
+        chatSessionExecutionMode,
         currentSession,
         messages,
         hasMoreMessages,

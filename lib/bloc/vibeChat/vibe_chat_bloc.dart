@@ -1,3 +1,4 @@
+import 'package:tiler_app/data/VibeChat/ChatSessionExecutionMode.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
@@ -49,6 +50,32 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       required this.scheduleSummaryBloc,
       required Function getContextCallBack})
       : super(VibeChatState()) {
+    on<SetChatSessionExecutionModeEvent>((event, emit) {
+      if (state.step != VibeChatStep.sending)
+        emit(state.copyWith(chatSessionExecutionMode: event.mode));
+    });
+    on<TileShareResultUpdatedEvent>((event, emit) {
+      if (state.currentSession?.id != event.sessionId) return;
+      emit(state.copyWith(
+          messages: state.messages
+              .map((message) => message.copyWith(
+                    actions: message.actions
+                        ?.map((action) => action.id != event.actionId
+                            ? action
+                            : action.copyWith(
+                                tileShareResult: event.result,
+                                status: event.result['State'] == 'Applied'
+                                    ? ActionStatus.executed
+                                    : event.result['State'] == 'Pending'
+                                        ? ActionStatus.pending
+                                        : event.result['State'] == 'Failed'
+                                            ? ActionStatus.failed
+                                            : action.status,
+                              ))
+                        .toList(),
+                  ))
+              .toList()));
+    });
     on<OpenChatEvent>(_onOpenChat);
     on<CloseChatEvent>(_onCloseChat);
     on<LoadMoreMessagesEvent>(_onLoadMoreMessages);
@@ -222,7 +249,9 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
         return;
       }
       emit(state.copyWith(
-          step: VibeChatStep.loading, currentSession: event.session));
+          step: VibeChatStep.loading,
+          chatSessionExecutionMode: ChatSessionExecutionMode.confirmFirst,
+          currentSession: event.session));
       final messages = await _getMessagesWithActions(event.session.id!);
       bool shouldShowAccept = false;
       final lastRequestId =
@@ -413,6 +442,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       final response = await chatApi.sendChatMessage(
         event.message,
         sessionId.isEmpty ? null : sessionId,
+        chatSessionExecutionMode: state.chatSessionExecutionMode,
       );
 
       if (response == null ||

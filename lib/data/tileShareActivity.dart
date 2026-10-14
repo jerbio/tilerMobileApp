@@ -80,8 +80,14 @@ class TileShareActivity {
   };
 
   /// The tilette fields the server allows in `changedFields`.
-  static const editableFields = ['name', 'deadline', 'note'];
-  static const _maxChangedFields = 4;
+  static const editableFields = [
+    'name',
+    'deadline',
+    'note',
+    'start',
+    'duration'
+  ];
+  static const _maxChangedFields = 5;
   static const _maxCalendarEventIdLength = 128;
   static const _maxEpochMs = 253402300799999;
 
@@ -128,7 +134,9 @@ class TileShareActivity {
   static Map? _metadata(Map<String, dynamic> json, Set<String> types) {
     if (json['schemaVersion'] != 1) return null;
     final Object? type = json['eventType'];
-    if (type is! String || !knownTypes.contains(type) || !types.contains(type)) {
+    if (type is! String ||
+        !knownTypes.contains(type) ||
+        !types.contains(type)) {
       return null;
     }
     final Object? metadata = json['metadata'];
@@ -143,7 +151,8 @@ class TileShareActivity {
   }
 
   static List<String> _changedFields(Map<String, dynamic> json) {
-    final Object? raw = _metadata(json, const {'tilette_edited'})?['changedFields'];
+    final Object? raw =
+        _metadata(json, const {'tilette_edited'})?['changedFields'];
     if (raw is! List) return const <String>[];
     final List<String> fields = <String>[];
     for (final Object? field in raw) {
@@ -171,7 +180,9 @@ class TileShareActivityPage {
   final int historyAvailableFrom;
 
   const TileShareActivityPage(
-      {required this.items, this.nextCursor, required this.historyAvailableFrom});
+      {required this.items,
+      this.nextCursor,
+      required this.historyAvailableFrom});
 
   TileShareActivityPage.fromJson(Map<String, dynamic> json)
       : items = (json['items'] as List)

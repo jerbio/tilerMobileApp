@@ -18,9 +18,9 @@ import 'package:tiler_app/data/tileShareActivity.dart';
 
 const String _fixtures = 'test/fixtures/tileshare_activity';
 
-Map<String, dynamic> _fixture(String name) => jsonDecode(
-        File('$_fixtures/$name.json').readAsStringSync())
-    as Map<String, dynamic>;
+Map<String, dynamic> _fixture(String name) =>
+    jsonDecode(File('$_fixtures/$name.json').readAsStringSync())
+        as Map<String, dynamic>;
 
 Map<String, dynamic> _event(String type,
         {int version = 1,
@@ -48,6 +48,17 @@ TileShareActivity _parse(Map<String, dynamic> json) =>
     TileShareActivity.fromJson(json);
 
 void main() {
+  test(
+      'schedule edit metadata retains start and duration alongside other fields',
+      () {
+    final event =
+        TileShareActivity.fromJson(_event('tilette_edited', metadata: {
+      'changedFields': ['name', 'note', 'start', 'deadline', 'duration']
+    }));
+    expect(
+        event.changedFields, ['name', 'note', 'start', 'deadline', 'duration']);
+  });
+
   group('canonical server fixtures', () {
     test('every fixture parses without throwing', () {
       final files = Directory(_fixtures)
@@ -57,7 +68,8 @@ void main() {
           .toList();
       expect(files.length, greaterThanOrEqualTo(15));
       for (final file in files) {
-        final json = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+        final json =
+            jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
         expect(() => TileShareActivity.fromJson(json), returnsNormally,
             reason: file.path);
       }
@@ -169,28 +181,24 @@ void main() {
     test('ignored for other types, future schemas and bad values', () {
       expect(
           _parse(_event('assignment_accepted',
-                  metadata: {'calendarEventId': 'cal_1'}))
-              .calendarEventId,
+              metadata: {'calendarEventId': 'cal_1'})).calendarEventId,
           isNull);
       expect(
           _parse(_event('assignment_completed',
-                  version: 99, metadata: {'calendarEventId': 'cal_1'}))
-              .calendarEventId,
+              version: 99,
+              metadata: {'calendarEventId': 'cal_1'})).calendarEventId,
           isNull);
       expect(
           _parse(_event('assignment_completed',
-                  metadata: {'calendarEventId': 7}))
-              .calendarEventId,
+              metadata: {'calendarEventId': 7})).calendarEventId,
           isNull);
       expect(
           _parse(_event('assignment_completed',
-                  metadata: {'calendarEventId': ''}))
-              .calendarEventId,
+              metadata: {'calendarEventId': ''})).calendarEventId,
           isNull);
       expect(
           _parse(_event('assignment_completed',
-                  metadata: {'calendarEventId': 'x' * 129}))
-              .calendarEventId,
+              metadata: {'calendarEventId': 'x' * 129})).calendarEventId,
           isNull);
     });
   });
@@ -222,7 +230,7 @@ void main() {
         'deadlineBefore': 1,
         'deadlineAfter': 2,
       }));
-      expect(e.changedFields.length, lessThanOrEqualTo(4));
+      expect(e.changedFields.length, lessThanOrEqualTo(5));
     });
 
     test('deadline values are exposed only when `deadline` changed', () {
@@ -247,14 +255,17 @@ void main() {
     });
 
     test('nothing is read for a future schema, another type or bad shapes', () {
-      final future = _parse(_event('tilette_edited',
-          version: 99, metadata: {'changedFields': ['name']}));
+      final future = _parse(_event('tilette_edited', version: 99, metadata: {
+        'changedFields': ['name']
+      }));
       expect(future.changedFields, isEmpty);
-      final other = _parse(_event('tilette_added',
-          metadata: {'changedFields': ['name'], 'title': 'T'}));
+      final other = _parse(_event('tilette_added', metadata: {
+        'changedFields': ['name'],
+        'title': 'T'
+      }));
       expect(other.changedFields, isEmpty);
-      final notList = _parse(_event('tilette_edited',
-          metadata: {'changedFields': 'name'}));
+      final notList =
+          _parse(_event('tilette_edited', metadata: {'changedFields': 'name'}));
       expect(notList.changedFields, isEmpty);
       final none = _parse(_event('tilette_edited'));
       expect(none.changedFields, isEmpty);
@@ -263,8 +274,8 @@ void main() {
 
   group('existing behaviour is unchanged', () {
     test('invitation channel allow-list still holds', () {
-      final ok = _parse(
-          _event('invitation_sent', metadata: {'channel': 'sms'}));
+      final ok =
+          _parse(_event('invitation_sent', metadata: {'channel': 'sms'}));
       expect(ok.invitationChannel, 'sms');
       final bad = _parse(_event('invitation_sent',
           metadata: {'channel': 'private@example.test'}));
@@ -272,8 +283,7 @@ void main() {
     });
 
     test('title is read for the title-carrying types only', () {
-      expect(
-          _parse(_event('tilette_added', metadata: {'title': 'Plan'})).title,
+      expect(_parse(_event('tilette_added', metadata: {'title': 'Plan'})).title,
           'Plan');
       expect(
           _parse(_event('assignment_accepted', metadata: {'title': 'Plan'}))

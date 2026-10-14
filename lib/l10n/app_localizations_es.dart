@@ -5030,6 +5030,67 @@ class AppLocalizationsEs extends AppLocalizations {
       'La duración de una tilette no puede cambiar una vez compartida.';
 
   @override
+  String get vibeChatExecutionMode => 'Chat execution';
+
+  @override
+  String get vibeConfirmFirst => 'Confirm first';
+
+  @override
+  String get vibeAutoAct => 'Auto act';
+
+  @override
+  String get vibeAutoActNote =>
+      'Run supported chat actions automatically. Bulk and destructive changes still need review.';
+
+  @override
+  String get vibeConfirmNote => 'Review chat changes before they run.';
+
+  @override
+  String get vibeConfirmCreation => 'Confirm creation';
+
+  @override
+  String get vibeCheckStatus => 'Check status';
+
+  @override
+  String get vibeCreationUnknown =>
+      'Creation could not be confirmed. Check status before trying again.';
+
+  @override
+  String get vibeReviewAgain =>
+      'Review the current proposal before confirming again.';
+
+  @override
+  String get vibeTileShareCreated => 'TileShare created.';
+
+  @override
+  String get vibeCreationReview => 'Review TileShare creation';
+
+  @override
+  String get vibeCreationNote =>
+      'Nothing is created until you confirm. Recipients still choose whether to accept; notifications are not sent by this action.';
+
+  @override
+  String get vibeCreateProject => 'Create project';
+
+  @override
+  String get vibeAddTilette => 'Add tilette';
+
+  @override
+  String get vibeReviewProject => 'Project';
+
+  @override
+  String get vibeReviewStarts => 'Starts';
+
+  @override
+  String get vibeReviewDeadline => 'Deadline';
+
+  @override
+  String get vibeReviewMinutes => 'minutes';
+
+  @override
+  String get vibeOpenTileShare => 'Open TileShare';
+
+  @override
   String get taskSheetAssignee => 'ASIGNADA A';
 
   @override
@@ -5195,4 +5256,164 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tileShareSaveChanges => 'Guardar cambios';
+
+  @override
+  String get vibeProjectRenamed => 'Project renamed.';
+
+  @override
+  String get vibeRenameReview => 'Review project rename';
+
+  @override
+  String get vibeRenameProject => 'Rename project';
+
+  @override
+  String get vibePreviousName => 'Current name';
+
+  @override
+  String get vibeRenameNote =>
+      'Only the project name changes after confirmation.';
+
+  @override
+  String get vibeConfirmRename => 'Confirm rename';
+
+  @override
+  String get vibeRenameUnknown =>
+      'Rename could not be confirmed. Check status before trying again.';
+
+  @override
+  String get vibeTiletteRenamed => 'Tilette renamed.';
+
+  @override
+  String get vibeTiletteRenameReview => 'Review tilette rename';
+
+  @override
+  String get vibeRenameTilette => 'Rename tilette';
+
+  @override
+  String get vibeTiletteRenameNote =>
+      'Only the shared tilette name changes. Personal calendar titles stay as they are.';
+
+  @override
+  String get vibeNotesUpdated => 'Tilette notes updated.';
+
+  @override
+  String get vibeNotesReview => 'Review tilette notes';
+
+  @override
+  String get vibeEditNotes => 'Update tilette notes';
+
+  @override
+  String get vibePreviousNotes => 'Current notes';
+
+  @override
+  String get vibeProposedNotes => 'Proposed notes';
+
+  @override
+  String get vibeEmptyNotes => 'No notes';
+
+  @override
+  String get vibeClearNotes => 'Clear notes';
+
+  @override
+  String get vibeNotesNote =>
+      'The proposed text replaces the complete tilette notes after confirmation.';
+
+  @override
+  String get vibeConfirmNotes => 'Confirm notes';
+
+  @override
+  String get vibeNotesUnknown =>
+      'Notes update could not be confirmed. Check status before trying again.';
+
+  @override
+  String get vibeTiletteDeleted => 'Tilette deleted.';
+
+  @override
+  String get vibeDeleteReview => 'Review tilette deletion';
+
+  @override
+  String get vibeDeleteTilette => 'Delete tilette';
+
+  @override
+  String get vibeAssignmentCount => 'Assignments';
+
+  @override
+  String get vibeLinkedCalendarCount => 'Linked calendar items';
+
+  @override
+  String get vibeDeleteNote =>
+      'This disables the tilette and linked calendar work. The project and other tilettes stay available. Assignment history is retained; undo is not provided here.';
+
+  @override
+  String get vibeConfirmDeletion => 'Confirm deletion';
+
+  @override
+  String get vibeDeleteUnknown =>
+      'Deletion could not be confirmed. Check status before trying again.';
+
+  @override
+  String get vibeOpenProject => 'Open project';
+
+  @override
+  String get vibeTiletteUpdated => 'Tilette updated.';
+
+  @override
+  String get vibeUpdateReview => 'Review tilette update';
+
+  @override
+  String get vibeUpdateTilette => 'Update tilette';
+
+  @override
+  String get vibeUpdateNote =>
+      'All displayed changes are saved together after confirmation. Supplied notes replace the complete note.';
+
+  @override
+  String get vibeConfirmUpdate => 'Confirm update';
+
+  @override
+  String get vibeUpdateRejected =>
+      'No changes were applied. Review the response and request a revised update.';
+
+  @override
+  String get vibeUpdateUnknown =>
+      'Update could not be confirmed. Check status before trying again.';
+
+  @override
+  String get vibeScheduleUpdatePending =>
+      'Calculando los horarios del trabajo aceptado. Aún no se ha guardado ningún cambio.';
+
+  @override
+  String get vibeScheduleNoFit =>
+      'No se ha aplicado ningún cambio. El trabajo restante no cabe entre las sesiones protegidas. Ajusta la duración o la fecha límite y solicita una actualización revisada.';
+
+  @override
+  String get vibeScheduleUpdateFailed =>
+      'No se ha aplicado ningún cambio. El horario cambió o no se pudo completar el cálculo. Solicita una actualización revisada.';
+
+  @override
+  String get vibeUpdateProject => 'Actualizar proyecto';
+
+  @override
+  String get vibeProjectUpdateReview => 'Revisar cambios del proyecto';
+
+  @override
+  String get vibeProjectUpdated => 'Proyecto actualizado.';
+
+  @override
+  String get vibeManageAccess => 'Gestionar acceso al proyecto';
+
+  @override
+  String get vibeManageRecipients => 'Gestionar destinatarios';
+
+  @override
+  String get vibeManagementUpdated =>
+      'Cambios de destinatarios o acceso guardados.';
+
+  @override
+  String get vibeManagementNote =>
+      'Revisa los efectos sobre destinatarios y acceso. La suspensión y restauración del calendario se procesan en segundo plano.';
+
+  @override
+  String get vibeAccessReconciliation =>
+      'Acceso guardado. La suspensión o restauración del calendario se procesa en segundo plano.';
 }

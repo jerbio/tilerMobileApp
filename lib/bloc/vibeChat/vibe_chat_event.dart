@@ -2,6 +2,18 @@ part of 'vibe_chat_bloc.dart';
 
 abstract class VibeChatEvent {}
 
+class SetChatSessionExecutionModeEvent extends VibeChatEvent {
+  final ChatSessionExecutionMode mode;
+  SetChatSessionExecutionModeEvent(this.mode);
+}
+
+class TileShareResultUpdatedEvent extends VibeChatEvent {
+  final String sessionId;
+  final String actionId;
+  final Map<String, dynamic> result;
+  TileShareResultUpdatedEvent(this.sessionId, this.actionId, this.result);
+}
+
 class OpenChatEvent extends VibeChatEvent {}
 
 class CloseChatEvent extends VibeChatEvent {}
