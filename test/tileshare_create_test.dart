@@ -1,6 +1,6 @@
 // TileShare redesign Step 9.18 (T14, §5.7): create starts with the mode.
-// The chooser offers Broadcast, Class and Project in plain words (Class and
-// Project are marked "Coming soon" until 9.19 / 9.20); Broadcast is one
+// The chooser offers Broadcast, Class and Project in plain words (Project
+// is marked "Coming soon" until 9.20); Broadcast is one
 // screen - name, length, deadline (a week out by default) and people - and
 // Send creates the share by its mode (`Mode: broadcast`, its one tilette
 // sent explicitly; the legacy `IsMultiTilette` is for older apps) and hands
@@ -101,10 +101,9 @@ void main() {
       }
     });
 
-    testWidgets('Broadcast is chosen; Class and Project are coming soon',
-        (tester) async {
+    testWidgets('Broadcast is chosen; Project is coming soon', (tester) async {
       final chosen = await open(tester);
-      for (final mode in ['class', 'project']) {
+      for (final mode in ['project']) {
         expect(
             find.descendant(
                 of: _key('create_mode_$mode'),
@@ -122,6 +121,12 @@ void main() {
       await _tap(tester, 'create_mode_broadcast');
       expect(_key('create_mode_chooser'), findsNothing);
       expect(chosen, [TileShareMode.broadcast]);
+    });
+
+    testWidgets('Class is now available', (tester) async {
+      final chosen = await open(tester);
+      await _tap(tester, 'create_mode_class');
+      expect(chosen, [TileShareMode.class_]);
     });
 
     testWidgets('closing it chooses nothing', (tester) async {

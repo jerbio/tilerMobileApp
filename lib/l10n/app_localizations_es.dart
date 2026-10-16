@@ -5379,6 +5379,19 @@ class AppLocalizationsEs extends AppLocalizations {
       'Update could not be confirmed. Check status before trying again.';
 
   @override
+  String get createClassTitle => 'Nueva clase';
+
+  @override
+  String get createNeedsTask => 'Agrega al menos una tarea';
+
+  @override
+  String get createClassPeopleHint =>
+      'Cada persona recibe su propia copia de cada tarea y se le pide que acepte.';
+
+  @override
+  String get detailLoading => 'Cargando contenido compartido…';
+
+  @override
   String get vibeScheduleUpdatePending =>
       'Calculando los horarios del trabajo aceptado. Aún no se ha guardado ningún cambio.';
 

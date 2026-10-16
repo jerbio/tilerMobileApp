@@ -391,9 +391,15 @@ void main() {
     testWidgets('a choice made by hand is never overridden', (tester) async {
       final rig = _Rig(stored: HubSegment.attention);
       rig.attention.hold();
-      await _openHub(tester, rig);
+      await tester.pumpWidget(_app(rig));
+      await tester.tap(find.text('open hub'));
+      // The pending skeleton shimmers continuously; advance the transition
+      // without waiting for the held request's animation to settle.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
       await tester.tap(_segment('clusters'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
       expect(_clustersVisible(), isTrue);
 
       rig.attention.release();

@@ -9170,6 +9170,30 @@ abstract class AppLocalizations {
   /// **'Update could not be confirmed. Check status before trying again.'**
   String get vibeUpdateUnknown;
 
+  /// No description provided for @createClassTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New class'**
+  String get createClassTitle;
+
+  /// No description provided for @createNeedsTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one tilette'**
+  String get createNeedsTask;
+
+  /// No description provided for @createClassPeopleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Each person gets their own copy of every tilette and is asked to accept.'**
+  String get createClassPeopleHint;
+
+  /// No description provided for @detailLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading share…'**
+  String get detailLoading;
+
   /// No description provided for @vibeScheduleUpdatePending.
   ///
   /// In en, this message translates to:

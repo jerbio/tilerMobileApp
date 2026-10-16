@@ -5361,6 +5361,19 @@ class AppLocalizationsNl extends AppLocalizations {
       'Update could not be confirmed. Check status before trying again.';
 
   @override
+  String get createClassTitle => 'New class';
+
+  @override
+  String get createNeedsTask => 'Add at least one tilette';
+
+  @override
+  String get createClassPeopleHint =>
+      'Each person gets their own copy of every tilette and is asked to accept.';
+
+  @override
+  String get detailLoading => 'Loading share…';
+
+  @override
   String get vibeScheduleUpdatePending =>
       'Calculating accepted-work schedules. No changes have been saved yet.';
 
