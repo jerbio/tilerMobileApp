@@ -19,6 +19,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../constants.dart' as Constants;
@@ -75,7 +76,7 @@ class ScheduleApi extends AppApi {
                     'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
           },
         );
-        var jsonResult = jsonDecode(response.body);
+        var jsonResult = decodeServerJson(response, operation: 'schedule_read');
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult) &&
               jsonResult['Content'].containsKey('subCalendarEvents')) {
@@ -239,7 +240,7 @@ class ScheduleApi extends AppApi {
                   'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
         },
       );
-      var jsonResult = jsonDecode(response.body);
+      var jsonResult = decodeServerJson(response, operation: 'schedule_status');
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
           Map<String, dynamic> scheduleStatusJson = jsonResult['Content'];
@@ -371,7 +372,11 @@ class ScheduleApi extends AppApi {
     return retFuture;
   }
 
-  Future<Tuple2<SubCalendarEvent?, TilerError?>> addNewTile(
+  Future<Tuple2<SubCalendarEvent?, TilerError?>> addNewTile(NewTile tile) =>
+      runScheduleMutation(ScheduleChangeKind.add, () => _addNewTile(tile),
+          eventName: tile.Name);
+
+  Future<Tuple2<SubCalendarEvent?, TilerError?>> _addNewTile(
       NewTile tile) async {
     TilerError error = new TilerError();
     error.Message = "Did not send request";
@@ -440,7 +445,10 @@ class ScheduleApi extends AppApi {
     throw error;
   }
 
-  Future procrastinateAll(Duration duration) async {
+  Future procrastinateAll(Duration duration) => runScheduleMutation(
+      ScheduleChangeKind.defer, () => _procrastinateAll(duration));
+
+  Future _procrastinateAll(Duration duration) async {
     TilerError error = new TilerError();
     error.Message = "Did not send procrastinate all request";
     bool userIsAuthenticated = true;

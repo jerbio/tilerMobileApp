@@ -8,10 +8,12 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
+import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 
 import 'helpers/recording_http_client.dart';
 
@@ -68,6 +70,54 @@ void main() {
       await expectLater(
           api.createCluster(TileShareClusterData()..name = 'X'),
           throwsA(anything));
+    });
+
+    test('a refused create dumps the whole reply - status, headers, body',
+        () async {
+      final List<String> logs = <String>[];
+      final void Function(String) original = TileShareLog.sink;
+      TileShareLog.sink = logs.add;
+      addTearDown(() => TileShareLog.sink = original);
+      client.nextStatus = 500;
+      client.nextHeaders = {
+        'content-type': 'application/json',
+        'request-id': 'req-42',
+      };
+      client.nextBody = jsonEncode({
+        'Message': 'An error has occurred.',
+        'ExceptionMessage': 'Object reference not set to an instance',
+        'StackTrace': '   at BuildCluster(...)',
+      });
+      await expectLater(
+          api.createCluster(TileShareClusterData()..name = 'X'),
+          throwsA(anything));
+      final String dump = logs.singleWhere((l) => l.contains('create failed'));
+      expect(dump, contains('500'));
+      expect(dump, contains('request-id: req-42'));
+      expect(dump, contains('Object reference not set to an instance'));
+      expect(dump, contains('at BuildCluster(...)'));
+    });
+
+    test('a created share dumps nothing', () async {
+      final List<String> logs = <String>[];
+      final void Function(String) original = TileShareLog.sink;
+      TileShareLog.sink = logs.add;
+      addTearDown(() => TileShareLog.sink = original);
+      client.nextBody = jsonEncode({
+        'Error': {'Code': '0', 'Message': 'SUCCESS'},
+        'Content': {'id': 'TileShareCluster+u+new'},
+      });
+      await api.createCluster(TileShareClusterData()..name = 'X');
+      expect(logs.where((l) => l.contains('create failed')), isEmpty);
+    });
+
+    test("a plain bad request keeps the server's reason", () async {
+      client.nextStatus = 400;
+      client.nextBody = jsonEncode({'Message': 'A tilette is required.'});
+      await expectLater(
+          api.createCluster(TileShareClusterData()..name = 'X'),
+          throwsA(isA<TilerError>().having(
+              (e) => e.Message, 'Message', 'A tilette is required.')));
     });
   });
 

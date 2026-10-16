@@ -9,6 +9,8 @@ import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileCardStyle.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tiler_app/services/changeFlash.dart';
+import 'package:tiler_app/services/scheduleMotion.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Which side of the tile a travel band attaches to.
@@ -198,6 +200,10 @@ class TravelBandWidget extends StatelessWidget {
   /// "recalculating" treatment, without fabricating estimates).
   final bool dimmed;
 
+  /// Tints the band while its travel time is shown changing, ahead of the
+  /// tiles it pushes.
+  final bool flash;
+
   /// The band height (px) at which the band expands from the gutter
   /// icon + hairline tier to the full-column card.
   static const double expandedHeightThreshold = 56;
@@ -229,6 +235,7 @@ class TravelBandWidget extends StatelessWidget {
     this.fromTile,
     this.animate = true,
     this.dimmed = false,
+    this.flash = false,
   }) : super(key: key);
 
   // ---------------------------------------------------------------------------
@@ -396,8 +403,7 @@ class TravelBandWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
     final colorScheme = Theme.of(context).colorScheme;
-    final reduce = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final anim = animate && !reduce;
+    final anim = animate && ScheduleMotion.modeFor(context).animates;
 
     // Fit-the-gap: a card renders only when the REAL gap has room for it;
     // anything shorter becomes a rail marker centred on the gap. Nothing
@@ -562,6 +568,24 @@ class TravelBandWidget extends StatelessWidget {
                 height: effectiveHeight,
                 child: card,
               ),
+            // Travel-change tint, over the card and the marker alike.
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedContainer(
+                  duration: anim ? ChangeFlashStyle.fade : Duration.zero,
+                  decoration: BoxDecoration(
+                    color: flash
+                        ? ChangeFlash.travel
+                            .color(colorScheme)
+                            .withValues(alpha: 0.28)
+                        : ChangeFlash.travel
+                            .color(colorScheme)
+                            .withValues(alpha: 0),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
         ),

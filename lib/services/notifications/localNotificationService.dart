@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -78,19 +79,34 @@ class LocalNotificationService {
         await _storageManager.readNotificationData();
     final String notificationPlatform = "upcomingtiles";
     if (notificationData == null || !notificationData.isValid) {
+      // The permission prompt is not requested here: OneSignal is not
+      // started yet, so a request would be dropped. See
+      // subscribeToRemoteNotification.
       try {
-        await OneSignal.Notifications.requestPermission(true);
+        notificationData =
+            await userApi.getNotificationChannel(notificationPlatform);
+        await _storageManager.saveNotificationData(
+            notificationData ?? NotificationData.noCredentials());
       } catch (e) {
-        print('Error in requesting notification permissions.');
+        print('Error fetching the notification channel.');
       }
-
-      notificationData =
-          await userApi.getNotificationChannel(notificationPlatform);
-      await _storageManager.saveNotificationData(
-          notificationData ?? NotificationData.noCredentials());
     }
     if (notificationData != null) {
       _notificationData = notificationData;
+    }
+  }
+
+  /// Shows the push-permission prompt once OneSignal is started, for users
+  /// who are past the essentials onboarding (submitted or skipped) and have
+  /// not answered the prompt yet.
+  Future _requestPermissionIfNeeded() async {
+    try {
+      if (!await Utility.checkOnboardingStatus()) return;
+      if (OneSignal.Notifications.permission) return;
+      if (!await OneSignal.Notifications.canRequest()) return;
+      await OneSignal.Notifications.requestPermission(true);
+    } catch (e) {
+      print('Error in requesting notification permissions.');
     }
   }
 
@@ -106,15 +122,11 @@ class LocalNotificationService {
   }
 
   completeTile(BuildContext context, SubCalendarEvent subTile) async {
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.complete)) return;
     final colorScheme = Theme.of(context).colorScheme;
     showMessage(AppLocalizations.of(context)!.completing, colorScheme);
     final scheduleState = context.read<ScheduleBloc>().state;
-    if (scheduleState is ScheduleEvaluationState) {
-      DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-      if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-        return;
-      }
-    }
 
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
@@ -145,7 +157,11 @@ class LocalNotificationService {
     var subCalendarEventApi = SubCalendarEventApi(
         getContextCallBack: () => context.read<ScheduleBloc>());
 
-    var requestFuture = subCalendarEventApi.complete((subTile));
+    var requestFuture = context.read<ScheduleBloc>().runScheduleChange(
+        () => subCalendarEventApi.complete(subTile),
+        kind: ScheduleChangeKind.complete,
+        eventName: subTile.name,
+        affectedTileIds: [subTile.id ?? '']);
 
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: renderedSubEvents,
@@ -194,6 +210,7 @@ class LocalNotificationService {
             MaterialPageRoute(
                 builder: (context) => TileProcrastinateRoute(
                       tileId: subTile.id!,
+                      eventName: subTile.name,
                     )));
       }
     }
@@ -239,23 +256,25 @@ class LocalNotificationService {
   }
 
   Future subscribeToRemoteNotification(BuildContext context) async {
+    // OneSignal is started whether or not the channel lookup succeeded, so
+    // the permission prompt never depends on it.
+    if (!Constants.isProduction) {
+      OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+      OneSignal.Debug.setAlertLevel(OSLogLevel.none);
+    }
+
+    String appId = dotenv.env[Constants.oneSignalAppIdKey] ?? "";
+    await OneSignal.initialize(appId);
+    if (!Constants.isProduction) {
+      OneSignal.User.pushSubscription.addObserver((state) {
+        print(OneSignal.User.pushSubscription.optedIn);
+        print(OneSignal.User.pushSubscription.id);
+        print(OneSignal.User.pushSubscription.token);
+        print(state.current.jsonRepresentation());
+      });
+    }
+
     if (_notificationData.isValid) {
-      if (!Constants.isProduction) {
-        OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-        OneSignal.Debug.setAlertLevel(OSLogLevel.none);
-      }
-
-      String appId = dotenv.env[Constants.oneSignalAppIdKey] ?? "";
-      OneSignal.initialize(appId);
-      if (!Constants.isProduction) {
-        OneSignal.User.pushSubscription.addObserver((state) {
-          print(OneSignal.User.pushSubscription.optedIn);
-          print(OneSignal.User.pushSubscription.id);
-          print(OneSignal.User.pushSubscription.token);
-          print(state.current.jsonRepresentation());
-        });
-      }
-
       if (_notificationData.tilerNotificationId != null) {
         await OneSignal.login(_notificationData.tilerNotificationId!)
             .then((value) {
@@ -271,6 +290,8 @@ class LocalNotificationService {
         });
       }
     }
+
+    await _requestPermissionIfNeeded();
   }
 
   intializeChannelDetails(BuildContext context) {

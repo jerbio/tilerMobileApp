@@ -1,5 +1,8 @@
 import 'package:tiler_app/data/VibeChat/ChatSessionExecutionMode.dart';
 import 'dart:async';
+import 'package:flutter/widgets.dart';
+import 'package:tiler_app/components/operationFeedback.dart';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -101,6 +104,10 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
 
   Stream<double> get amplitudeStream =>
       _audioService?.amplitudeStream ?? Stream.empty();
+
+  String _failureMessage(Object error, String fallback) =>
+      operationFailureMessage(LocalizationService.instance.translations,
+          fallback: fallback, error: error);
   Stream<String> get signalRStatusStream =>
       _signalRService?.statusStream ?? Stream.empty();
 
@@ -120,18 +127,16 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
         onError: (e) {
           emit(state.copyWith(
             step: VibeChatStep.error,
-            error: e is TilerError
-                ? e.Message
-                : LocalizationService.instance.translations.errorOccurred,
+            error: _failureMessage(e,
+                LocalizationService.instance.translations.chatConnectionFailed),
           ));
         },
       );
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.errorOccurred,
+        error: _failureMessage(
+            e, LocalizationService.instance.translations.chatConnectionFailed),
       ));
     }
   }
@@ -167,9 +172,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.errorOccurred,
+        error: _failureMessage(
+            e, LocalizationService.instance.translations.chatHistoryFailed),
       ));
     }
   }
@@ -208,9 +212,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.errorOccurred,
+        error: _failureMessage(
+            e, LocalizationService.instance.translations.chatHistoryFailed),
       ));
     }
   }
@@ -269,9 +272,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.errorOccurred,
+        error: _failureMessage(
+            e, LocalizationService.instance.translations.chatHistoryFailed),
       ));
     }
   }
@@ -424,9 +426,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.errorOccurred,
+        error: _failureMessage(
+            e, LocalizationService.instance.translations.chatHistoryFailed),
       ));
     }
   }
@@ -495,9 +496,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.errorOccurred,
+        error: _failureMessage(
+            e, LocalizationService.instance.translations.chatSendFailed),
       ));
     }
   }
@@ -519,9 +519,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       _audioService = null;
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.errorOccurred,
+        error: _failureMessage(
+            e, LocalizationService.instance.translations.chatRecordingFailed),
       ));
     }
   }
@@ -550,9 +549,10 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       _audioService = null;
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.transcriptionFailed,
+        error: _failureMessage(
+            e,
+            LocalizationService.instance.translations.operationFailed(
+                LocalizationService.instance.translations.transcribing)),
       ));
     }
   }
@@ -584,9 +584,10 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.errorOccurred,
+        error: _failureMessage(
+            e,
+            LocalizationService
+                .instance.translations.chatCancelRecordingFailed),
       ));
       return false;
     }
@@ -636,6 +637,11 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
 
   Future<void> _onAcceptChanges(
       AcceptChangesEvent event, Emitter<VibeChatState> emit) async {
+    final source = chatApi.getContextCallBack?.call();
+    if (source is BuildContext &&
+        source.mounted &&
+        !scheduleChangesAllowed(source,
+            requestedKind: ScheduleChangeKind.accept)) return;
     try {
       //In Web version on pressing accept button we were re loading all message
       // but on our mobile app we followed different way
@@ -653,8 +659,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
                 LocalizationService.instance.translations.noRequestToExecute);
       }
 
-      //Updating Messages
       await chatApi.executeVibeRequest(requestId: lastRequestId);
+      //Updating Messages
       List<VibeMessage> updatedMsgs = state.messages;
 
       List<VibeMessage> newMessages = [];
@@ -725,9 +731,16 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.transcriptionFailed,
+        error: source is BuildContext && source.mounted
+            ? _failureMessage(
+                e,
+                scheduleChangeFailureMessage(source,
+                    kind: ScheduleChangeKind.accept))
+            : _failureMessage(
+                e,
+                LocalizationService.instance.translations.operationFailed(
+                    LocalizationService
+                        .instance.translations.scheduleChangeAccepting)),
       ));
     }
   }
@@ -791,9 +804,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.errorOccurred,
+        error: _failureMessage(e,
+            LocalizationService.instance.translations.previewGenerationFailed),
       ));
     }
   }
@@ -867,9 +879,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError
-            ? e.Message
-            : LocalizationService.instance.translations.errorOccurred,
+        error: _failureMessage(e,
+            LocalizationService.instance.translations.previewGenerationFailed),
       ));
     }
   }

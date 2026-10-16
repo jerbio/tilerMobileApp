@@ -17,6 +17,7 @@ import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/scheduleNotices/scheduleNoticeBus.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tutorial/tourHost.dart';
 import 'package:tiler_app/components/tutorial/tours/settingsTour.dart';
@@ -51,6 +52,7 @@ import 'components/notification_overlay.dart';
 import 'routes/authenticatedUser/settings/settingsWidget.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'bloc/dailyViewLayout/daily_view_layout_cubit.dart';
+import 'bloc/scheduleMotion/schedule_motion_cubit.dart';
 import 'bloc/dayContentFilter/day_content_filter_cubit.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -75,6 +77,7 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   if (!Constants.isProduction) {
     HttpOverrides.global = MyHttpOverrides();
   }
@@ -84,10 +87,12 @@ Future main() async {
   //     options: DefaultFirebaseOptions.currentPlatform,
   //   );
   // }
-  runApp(TilerApp());
+  runApp(TilerApp(evaluationStore: await ScheduleEvaluationStore.load()));
 }
 
 class TilerApp extends StatefulWidget {
+  const TilerApp({super.key, this.evaluationStore});
+  final ScheduleEvaluationStore? evaluationStore;
   @override
   _TilerAppState createState() => new _TilerAppState();
 }
@@ -132,6 +137,10 @@ class _TilerAppState extends State<TilerApp> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
         providers: [
+          // Schedule notices: publishers anywhere, shown on the surface the
+          // user is looking at.
+          RepositoryProvider<ScheduleNoticeBus>(
+              create: (context) => ScheduleNoticeBus()),
           BlocProvider(
               create: (context) => SubCalendarTileBloc(getContextCallBack: () {
                     return _navigatorKey.currentState?.overlay?.context ??
@@ -169,14 +178,20 @@ class _TilerAppState extends State<TilerApp> {
                         this.context;
                   })),
           BlocProvider(
-              create: (context) => ScheduleBloc(getContextCallBack: () {
+              create: (context) => ScheduleBloc(
+                  evaluationStore: widget.evaluationStore,
+                  getContextCallBack: () {
                     return _navigatorKey.currentState?.overlay?.context ??
                         this.context;
-                  })),
+                  })
+                    ..startRecoveryMonitoring()),
           BlocProvider(create: (context) => WeeklyUiDateManagerBloc()),
           BlocProvider(create: (context) => MonthlyUiDateManagerBloc()),
           // Daily-view list/grid layout (restored + persisted).
           BlocProvider(create: (context) => DailyViewLayoutCubit()),
+          // "Schedule updates" motion setting (Off / Minimal / Detailed),
+          // read through ScheduleMotion.modeFor.
+          BlocProvider(create: (context) => ScheduleMotionCubit()),
           BlocProvider(create: (context) => DayContentFilterCubit()),
           BlocProvider(
               create: (context) => PreviewSummaryBloc(getContextCallBack: () {

@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/operationFeedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -10,7 +11,6 @@ import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
-import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/userProfile.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
@@ -292,13 +292,12 @@ class AccountInfo extends StatelessWidget {
           }
         }
         if (state is DeviceSettingError) {
-          final errorMessage = state.error is TilerError
-              ? (state.error as TilerError).Message
-              : state.error.toString();
-
           notificationOverlayMessage.showToast(
             context,
-            errorMessage ?? 'Unknown Error',
+            operationFailureMessage(AppLocalizations.of(context)!,
+                fallback: AppLocalizations.of(context)!
+                    .operationFailed(AppLocalizations.of(context)!.accountInfo),
+                error: state.error),
             NotificationOverlayMessageType.error,
           );
         }

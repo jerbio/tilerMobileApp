@@ -25,7 +25,9 @@ import 'package:tiler_app/theme/today_status_tokens.dart';
 
 /// Who a task goes to, by the share's mode: everyone in a Class, the
 /// assignee picked for a Project task (or no one yet).
-enum TaskSheetPeople { everyone, assignee }
+/// Who a task goes to: [everyone] in a Class, one [assignee] in a Project,
+/// or [none] yet - a new Project's tilette, assigned later on the board.
+enum TaskSheetPeople { everyone, assignee, none }
 
 /// A task as the sheet holds it.
 class TaskSheetValue extends Equatable {

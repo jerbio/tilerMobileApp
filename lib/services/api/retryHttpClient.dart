@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_diagnostics.dart';
 
 /// A custom HTTP client that automatically retries GET requests on transient
 /// network failures (SocketException, ClientException).
@@ -14,21 +16,36 @@ class RetryHttpClient extends http.BaseClient {
   http.Client _innerClient;
   final int maxRetries;
   final Duration retryDelay;
+  final ScheduleBloc? Function()? scheduleLifecycle;
+  final Duration mutationTimeout;
+  final http.Client Function() _clientFactory;
+  final Map<http.Client, int> _leases = {};
+  final Set<http.Client> _retired = {};
 
   RetryHttpClient({
     this.maxRetries = defaultMaxRetries,
     this.retryDelay = defaultRetryDelay,
-  }) : _innerClient = http.Client();
+    this.scheduleLifecycle,
+    this.mutationTimeout = const Duration(seconds: 180),
+    http.Client? innerClient,
+    http.Client Function()? clientFactory,
+  })  : _innerClient = innerClient ?? http.Client(),
+        _clientFactory = clientFactory ?? http.Client.new;
 
   /// Refreshes the underlying HTTP client.
   /// Call this when you suspect stale connections (e.g., after app resumes).
   void refreshClient() {
-    try {
-      _innerClient.close();
-    } catch (e) {
-      // Ignore errors when closing
+    final previous = _innerClient;
+    scheduleFlowLog('transport_client_refresh', fields: {
+      'activeLeases': _leases[previous] ?? 0,
+      'preservingActiveClient': (_leases[previous] ?? 0) > 0,
+    });
+    _innerClient = _clientFactory();
+    if ((_leases[previous] ?? 0) == 0) {
+      previous.close();
+    } else {
+      _retired.add(previous);
     }
-    _innerClient = http.Client();
   }
 
   @override
@@ -37,6 +54,24 @@ class RetryHttpClient extends http.BaseClient {
     if (_isIdempotent(request.method)) {
       return _sendWithRetry(request);
     } else {
+      final lifecycle = scheduleLifecycle?.call();
+      final kind = scheduleMutationKind(request.method, request.url.path);
+      if (kind != null) {
+        scheduleFlowLog('transport_mutation_observed', fields: {
+          'method': request.method,
+          'path': request.url.path,
+          'kind': kind.name,
+          'lifecycleAttached': lifecycle != null,
+          'requestId': lifecycle?.activeEvaluation?.id,
+          'phase': lifecycle?.activeEvaluation?.phase.name,
+        });
+      }
+      if (lifecycle != null && kind != null) {
+        return lifecycle.observeScheduleResponse(
+            () => _sendNonIdempotent(request),
+            kind: kind,
+            timeout: mutationTimeout);
+      }
       // For non-idempotent requests, attempt once but refresh client on failure
       return _sendNonIdempotent(request);
     }
@@ -57,7 +92,7 @@ class RetryHttpClient extends http.BaseClient {
       try {
         // We need to copy the request for retries since StreamedRequest can only be sent once
         final requestCopy = _copyRequest(request);
-        return await _innerClient.send(requestCopy);
+        return await _sendOnce(requestCopy);
       } on SocketException catch (e) {
         if (attempts >= maxRetries) {
           print(
@@ -85,7 +120,7 @@ class RetryHttpClient extends http.BaseClient {
   Future<http.StreamedResponse> _sendNonIdempotent(
       http.BaseRequest request) async {
     try {
-      return await _innerClient.send(request);
+      return await _sendOnce(request);
     } on SocketException catch (e) {
       print(
           'RetryHttpClient: Non-idempotent request failed (SocketException): ${e.message}');
@@ -97,6 +132,42 @@ class RetryHttpClient extends http.BaseClient {
           'RetryHttpClient: Non-idempotent request failed (ClientException): ${e.message}');
       // Refresh client for next request, but don't retry this one
       refreshClient();
+      rethrow;
+    }
+  }
+
+  Future<http.StreamedResponse> _sendOnce(http.BaseRequest request) async {
+    final client = _innerClient;
+    _leases[client] = (_leases[client] ?? 0) + 1;
+    void release() {
+      final count = (_leases[client] ?? 1) - 1;
+      if (count == 0) {
+        _leases.remove(client);
+        if (_retired.remove(client)) client.close();
+      } else {
+        _leases[client] = count;
+      }
+    }
+
+    try {
+      final response = await client.send(request);
+      Stream<List<int>> body() async* {
+        try {
+          yield* response.stream;
+        } finally {
+          release();
+        }
+      }
+
+      return http.StreamedResponse(body(), response.statusCode,
+          headers: response.headers,
+          contentLength: response.contentLength,
+          request: response.request,
+          isRedirect: response.isRedirect,
+          persistentConnection: response.persistentConnection,
+          reasonPhrase: response.reasonPhrase);
+    } catch (_) {
+      release();
       rethrow;
     }
   }
@@ -153,5 +224,9 @@ class RetryHttpClient extends http.BaseClient {
   @override
   void close() {
     _innerClient.close();
+    for (final client in _retired) {
+      client.close();
+    }
+    _retired.clear();
   }
 }

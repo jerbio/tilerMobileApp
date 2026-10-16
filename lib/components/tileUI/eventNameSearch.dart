@@ -1,3 +1,4 @@
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:tiler_app/components/tileUI/searchResultDestination.dart';
 import 'package:tiler_app/components/tileUI/searchResultsPane.dart';
 import 'package:flutter/material.dart';
@@ -114,11 +115,14 @@ class EventNameSearchState extends SearchWidgetState {
     // The base SearchWidget registers this listener inside its build; since we
     // lay out the text field ourselves we register it here instead.
     textController.addListener(onInputChangeDefault);
-    calendarEventApi = new CalendarEventApi(getContextCallBack: () => context);
-    subCalendarEventApi =
-        new SubCalendarEventApi(getContextCallBack: () => context);
-    tileNameApi = new TileNameApi(getContextCallBack: () => context);
-    integrationApi = new IntegrationApi(getContextCallBack: () => context);
+    calendarEventApi = new CalendarEventApi(
+        getContextCallBack: () => mounted ? context : null);
+    subCalendarEventApi = new SubCalendarEventApi(
+        getContextCallBack: () => mounted ? context : null);
+    tileNameApi =
+        new TileNameApi(getContextCallBack: () => mounted ? context : null);
+    integrationApi =
+        new IntegrationApi(getContextCallBack: () => mounted ? context : null);
     _loadConnectedProviders();
   }
 
@@ -160,175 +164,60 @@ class EventNameSearchState extends SearchWidgetState {
     return Tuple4(renderedSubEvents, timeLines, lookupTimeline, scheduleStatus);
   }
 
-  Function? createSetAsNowCallBack(String tileId) {
-    Function retValue = () async {
-      final scheduleState = this.context.read<ScheduleBloc>().state;
-      if (scheduleState is ScheduleEvaluationState) {
-        DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-        if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-          return;
-        }
-      }
-
-      String message = AppLocalizations.of(context)!.movingUp;
-      Function generateCallBack = () {
-        AnalysticsSignal.send('NAME_SEARCH_SETASNOW_REQUEST');
-        return this.calendarEventApi.setAsNow(tileId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
-          refreshScheduleSummary();
-        }).onError((error, stackTrace) {
-          print("Error in eventname search on setAsNow callback");
-          if (scheduleState is ScheduleEvaluationState) {
-            this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
-                subEvents: scheduleState.subEvents,
-                timelines: scheduleState.timelines,
-                scheduleStatus: scheduleState.scheduleStatus,
-                previousLookupTimeline: scheduleState.previousLookupTimeline,
-                lookupTimeline: scheduleState.lookupTimeline));
-          }
-        });
-      };
-
-      var priorState = getPriorStateVariables();
-      List<SubCalendarEvent> renderedSubEvents = priorState.item1;
-      List<Timeline> timeLines = priorState.item2;
-      Timeline lookupTimeline = priorState.item3;
-      ScheduleStatus scheduleStatus = priorState.item4;
-
-      this.context.read<ScheduleBloc>().add(EvaluateSchedule(
-          renderedSubEvents: renderedSubEvents,
-          renderedTimelines: timeLines,
-          renderedScheduleTimeline: lookupTimeline,
-          isAlreadyLoaded: true,
-          message: message,
-          scheduleStatus: scheduleStatus,
-          callBack: generateCallBack()));
-      Navigator.pop(context);
-    };
-    return retValue;
-  }
-
-  Function? createDeletionCallBack(CalendarSearchItem item) {
-    Function retValue = () async {
-      // Show deletion confirmation UI instead of immediate deletion
-      setState(() {
-        _tileIdPendingDeletion = item.id;
-      });
-      _refreshResultView();
-    };
-    return retValue;
-  }
-
-  void _performDeletion(CalendarSearchItem item) async {
-    final scheduleState = this.context.read<ScheduleBloc>().state;
-    if (scheduleState is ScheduleEvaluationState) {
-      DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-      if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-        return;
-      }
-    }
-
-    String message = AppLocalizations.of(context)!.deleting;
-    Function generateCallBack = () {
-      AnalysticsSignal.send('NAME_SEARCH_DELETION_REQUEST');
-      // Third-party events are deleted through `DELETE api/Schedule/Event`
-      // (provider id + account + type), the same call the timeline tile and
-      // the web client make; native Tiler events use the CalendarEvent route.
-      final Future<dynamic> deletion = item.isFromProvider
-          ? this.subCalendarEventApi.delete(item.id, item.thirdPartyEventId,
-              item.thirdPartyUserId, _wireSource(_tileSourceOf(item)))
-          : this.calendarEventApi.delete(item.id, item.thirdPartyEventId ?? "");
-      return deletion.then((value) {
-        this.context.read<ScheduleBloc>().add(GetScheduleEvent());
-        refreshScheduleSummary();
-      }).onError((error, stackTrace) {
-        print("Error in eventname search on delete callback");
-        if (scheduleState is ScheduleEvaluationState) {
-          this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
-              subEvents: scheduleState.subEvents,
-              timelines: scheduleState.timelines,
-              scheduleStatus: scheduleState.scheduleStatus,
-              previousLookupTimeline: scheduleState.previousLookupTimeline,
-              lookupTimeline: scheduleState.lookupTimeline));
-        }
-      });
-    };
-    var priorState = getPriorStateVariables();
-    List<SubCalendarEvent> renderedSubEvents = priorState.item1;
-    List<Timeline> timeLines = priorState.item2;
-    Timeline lookupTimeline = priorState.item3;
-    var scheduleStatus = priorState.item4;
-
-    this.context.read<ScheduleBloc>().add(EvaluateSchedule(
-        renderedSubEvents: renderedSubEvents,
-        renderedTimelines: timeLines,
-        renderedScheduleTimeline: lookupTimeline,
+  void _submitSearchChange(ScheduleChangeKind kind, String tileId,
+      Future<dynamic> Function() request,
+      {String? eventName}) {
+    if (!scheduleChangesAllowed(context)) return;
+    final schedule = context.read<ScheduleBloc>();
+    final summary = context.read<ScheduleSummaryBloc>();
+    final prior = ScheduleState.generatePriorScheduleState(schedule.state);
+    // Reserve before closing search, and retain providers beyond this widget.
+    final pending = schedule.runScheduleChange(() async {
+      final result = await request();
+      if (!summary.isClosed) summary.add(GetScheduleDaySummaryEvent());
+      return result;
+    }, kind: kind, eventName: eventName, affectedTileIds: [tileId]);
+    schedule.add(EvaluateSchedule(
+        renderedSubEvents: prior.subEvents,
+        renderedTimelines: prior.timelines,
+        renderedScheduleTimeline: prior.previousLookupTimeline,
+        scheduleStatus: prior.scheduleStatus,
         isAlreadyLoaded: true,
-        message: message,
-        scheduleStatus: scheduleStatus,
-        callBack: generateCallBack()));
+        callBack: pending));
     Navigator.pop(context);
   }
 
-  Function? createCompletionCallBack(String tileId) {
-    Function retValue = () async {
-      final scheduleState = this.context.read<ScheduleBloc>().state;
-      if (scheduleState is ScheduleEvaluationState) {
-        DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-        if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-          return;
-        }
-      }
-
-      String message = AppLocalizations.of(context)!.completing;
-      Function generateCallBack = () {
-        AnalysticsSignal.send('NAME_SEARCH_COMPLETE_REQUEST');
-        return this.calendarEventApi.complete(tileId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
-          refreshScheduleSummary();
-        }).onError((error, stackTrace) {
-          print("Error in eventname search on complete callback");
-          if (scheduleState is ScheduleEvaluationState) {
-            this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
-                subEvents: scheduleState.subEvents,
-                timelines: scheduleState.timelines,
-                scheduleStatus: scheduleState.scheduleStatus,
-                previousLookupTimeline: scheduleState.previousLookupTimeline,
-                lookupTimeline: scheduleState.lookupTimeline));
-          }
-        });
+  Function? createSetAsNowCallBack(String tileId, {String? eventName}) => () {
+        _submitSearchChange(ScheduleChangeKind.startNow, tileId, () {
+          AnalysticsSignal.send('NAME_SEARCH_SETASNOW_REQUEST');
+          return calendarEventApi.setAsNow(tileId);
+        }, eventName: eventName);
       };
-      var priorState = getPriorStateVariables();
-      List<SubCalendarEvent> renderedSubEvents = priorState.item1;
-      List<Timeline> timeLines = priorState.item2;
-      Timeline lookupTimeline = priorState.item3;
-      var scheduleStatus = priorState.item4;
-      this.context.read<ScheduleBloc>().add(EvaluateSchedule(
-          renderedSubEvents: renderedSubEvents,
-          renderedTimelines: timeLines,
-          renderedScheduleTimeline: lookupTimeline,
-          isAlreadyLoaded: true,
-          scheduleStatus: scheduleStatus,
-          message: message,
-          callBack: generateCallBack()));
-      refreshScheduleSummary();
-      Navigator.pop(context);
-    };
-    return retValue;
+
+  Function? createDeletionCallBack(CalendarSearchItem item) => () {
+        setState(() {
+          _tileIdPendingDeletion = item.id;
+        });
+        _refreshResultView();
+      };
+
+  void _performDeletion(CalendarSearchItem item) {
+    final source = _wireSource(_tileSourceOf(item));
+    _submitSearchChange(ScheduleChangeKind.delete, item.id, () {
+      AnalysticsSignal.send('NAME_SEARCH_DELETION_REQUEST');
+      return item.isFromProvider
+          ? subCalendarEventApi.delete(
+              item.id, item.thirdPartyEventId, item.thirdPartyUserId, source)
+          : calendarEventApi.delete(item.id, item.thirdPartyEventId ?? '');
+    }, eventName: item.name);
   }
 
-  void refreshScheduleSummary({Timeline? lookupTimeline}) {
-    final currentScheduleSummaryState =
-        this.context.read<ScheduleSummaryBloc>().state;
-
-    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
-        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
-        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
-      this.context.read<ScheduleSummaryBloc>().add(
-            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
-          );
-    }
-  }
+  Function? createCompletionCallBack(String tileId, {String? eventName}) => () {
+        _submitSearchChange(ScheduleChangeKind.complete, tileId, () {
+          AnalysticsSignal.send('NAME_SEARCH_COMPLETE_REQUEST');
+          return calendarEventApi.complete(tileId);
+        }, eventName: eventName);
+      };
 
   // ---------------------------------------------------------------------------
   // Provider filter
@@ -809,7 +698,7 @@ class EventNameSearchState extends SearchWidgetState {
           child: Icon(Icons.check, size: 16, color: TileColors.completedGreen),
         ),
         label: localization.complete,
-        onTap: () => createCompletionCallBack(item.id)!(),
+        onTap: () => createCompletionCallBack(item.id, eventName: item.name)!(),
       ));
     }
     if (!item.isReadOnly && caps.canSetAsNow) {
@@ -818,7 +707,7 @@ class EventNameSearchState extends SearchWidgetState {
         icon: Icon(Icons.play_arrow_outlined,
             size: 24, color: colorScheme.onSurface),
         label: localization.startNow,
-        onTap: () => createSetAsNowCallBack(item.id)!(),
+        onTap: () => createSetAsNowCallBack(item.id, eventName: item.name)!(),
       ));
     }
     // Third-party rows can't be completed / started, so surface Edit and

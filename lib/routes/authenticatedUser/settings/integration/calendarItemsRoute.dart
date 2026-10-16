@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/integrations_bloc.dart';
@@ -189,7 +191,8 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
         if (state is IntegrationsError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage),
+              content: Text(AppLocalizations.of(context)!.operationFailed(
+                  AppLocalizations.of(context)!.calendarItems)),
               backgroundColor: colorScheme.onError,
             ),
           );
@@ -245,6 +248,8 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
 
   void _toggleSelection() async {
     if (isLoading) return;
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.settings)) return;
 
     setState(() {
       isLoading = true;
@@ -295,7 +300,9 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
           });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage),
+              content: Text(scheduleChangeFailureMessage(context,
+                  kind: ScheduleChangeKind.settings,
+                  eventName: widget.calendarItem.name)),
               backgroundColor: colorScheme.onError,
             ),
           );

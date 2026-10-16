@@ -1,6 +1,7 @@
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/operationFeedback.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:tiler_app/data/RecurringTask.dart';
@@ -9,7 +10,6 @@ import 'package:tiler_app/data/onBoarding.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
-import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tileSuggestion.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -117,7 +117,12 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
             personalProfile: profiles['personal']));
       }
     } catch (e) {
-      emit(state.copyWith(step: OnboardingStep.error, error: e.toString()));
+      final l10n = LocalizationService.instance.translations;
+      emit(state.copyWith(
+          step: OnboardingStep.error,
+          error: operationFailureMessage(l10n,
+              fallback: l10n.operationFailed(l10n.schedulePreferences),
+              error: e)));
     }
   }
 
@@ -300,7 +305,12 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         timeZone: timeZone,
       ));
     } catch (e) {
-      emit(state.copyWith(step: OnboardingStep.error, error: e.toString()));
+      final l10n = LocalizationService.instance.translations;
+      emit(state.copyWith(
+          step: OnboardingStep.error,
+          error: operationFailureMessage(l10n,
+              fallback: l10n.operationFailed(l10n.useDeviceLocation),
+              error: e)));
     }
   }
 
@@ -457,8 +467,11 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       // the existing toast and Skip remains available. Restriction
       // profile persistence is no longer part of the onboarding submit
       // (Settings owns it; design section 3.2).
-      final String message =
-          e is TilerError ? (e.Message ?? e.toString()) : e.toString();
+      final String message = operationFailureMessage(
+          LocalizationService.instance.translations,
+          fallback:
+              LocalizationService.instance.translations.onboardingSubmitFailed,
+          error: e);
       emit(state.copyWith(
         step: OnboardingStep.error,
         error: message,

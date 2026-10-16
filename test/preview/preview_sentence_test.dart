@@ -43,6 +43,7 @@ DayPreviewMetrics _metrics({
     locationsCount: 0,
     sleepDuration: null,
     completionPct: null,
+    freeDuration: Duration.zero,
   );
 }
 

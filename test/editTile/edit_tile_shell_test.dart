@@ -565,7 +565,7 @@ void main() {
 
       expect(screen, findsOneWidget);
       expect(draftOf(tester).name, 'Changed');
-      expect(find.text(testL10n.editTileSaveFailed), findsOneWidget);
+      expect(find.textContaining(testL10n.editTileSaveFailed), findsOneWidget);
       final AbsorbPointer absorb = tester.widget<AbsorbPointer>(find
           .descendant(of: screen, matching: find.byType(AbsorbPointer))
           .first);

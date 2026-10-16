@@ -157,7 +157,8 @@ void main() {
       await tester.pumpAndSettle();
       final ThirdPartyDecisionBar bar = tester
           .widget<ThirdPartyDecisionBar>(find.byType(ThirdPartyDecisionBar));
-      expect(bar.errorText, testL10n.editTileRsvpFailed);
+      expect(bar.errorText, contains(testL10n.editTileRsvpFailed));
+      expect(bar.errorText, contains('Team sync'));
       expect(bar.isProcessing, isFalse);
     });
   });

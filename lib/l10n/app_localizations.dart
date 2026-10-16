@@ -112,6 +112,60 @@ abstract class AppLocalizations {
     Locale('pt')
   ];
 
+  /// No description provided for @notesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load your notes. Reopen the notes editor to try again.'**
+  String get notesLoadFailed;
+
+  /// No description provided for @onboardingSubmitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t save your setup. Your choices are kept. Try again or skip for now.'**
+  String get onboardingSubmitFailed;
+
+  /// An unsuccessful operation, naming the command and its target rather than a generic error.
+  ///
+  /// In en, this message translates to:
+  /// **'{operation} failed. Please try again.'**
+  String operationFailed(String operation);
+
+  /// No description provided for @scheduleLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load your schedule. Refresh to try again.'**
+  String get scheduleLoadFailed;
+
+  /// No description provided for @chatConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t connect to chat. Reopen chat to try again.'**
+  String get chatConnectionFailed;
+
+  /// No description provided for @chatHistoryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t load your chat history. Reopen the conversation to try again.'**
+  String get chatHistoryFailed;
+
+  /// No description provided for @chatSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message couldn’t be sent. Check your connection and try again.'**
+  String get chatSendFailed;
+
+  /// No description provided for @chatRecordingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t start voice recording. Check microphone access and try again.'**
+  String get chatRecordingFailed;
+
+  /// No description provided for @chatCancelRecordingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t cancel voice recording. Try stopping the recording again.'**
+  String get chatCancelRecordingFailed;
+
   /// No description provided for @whiteSpace.
   ///
   /// In en, this message translates to:
@@ -3474,6 +3528,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{hours}h {minutes}m'**
   String durationHoursMinutesShort(int hours, int minutes);
+
+  /// Duration of days and hours in short format
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d {hours}h'**
+  String durationDaysHoursShort(int days, int hours);
+
+  /// Duration in days short format
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d'**
+  String durationDaysShort(int days);
 
   /// Duration in hours short format
   ///
@@ -8288,6 +8354,12 @@ abstract class AppLocalizations {
   /// **'No one yet. Add someone above.'**
   String get broadcastNoParticipants;
 
+  /// No description provided for @projectNoParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'No one yet. Assign a tilette to someone on the Tilettes tab.'**
+  String get projectNoParticipants;
+
   /// No description provided for @broadcastDeliveryIssues.
   ///
   /// In en, this message translates to:
@@ -8582,120 +8654,6 @@ abstract class AppLocalizations {
   /// **'A tilette’s length can’t change once it’s shared.'**
   String get detailTaskLengthFixed;
 
-  /// No description provided for @vibeChatExecutionMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Chat execution'**
-  String get vibeChatExecutionMode;
-
-  /// No description provided for @vibeConfirmFirst.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm first'**
-  String get vibeConfirmFirst;
-
-  /// No description provided for @vibeAutoAct.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto act'**
-  String get vibeAutoAct;
-
-  /// No description provided for @vibeAutoActNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Run supported chat actions automatically. Bulk and destructive changes still need review.'**
-  String get vibeAutoActNote;
-
-  /// No description provided for @vibeConfirmNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Review chat changes before they run.'**
-  String get vibeConfirmNote;
-
-  /// No description provided for @vibeConfirmCreation.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm creation'**
-  String get vibeConfirmCreation;
-
-  /// No description provided for @vibeCheckStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Check status'**
-  String get vibeCheckStatus;
-
-  /// No description provided for @vibeCreationUnknown.
-  ///
-  /// In en, this message translates to:
-  /// **'Creation could not be confirmed. Check status before trying again.'**
-  String get vibeCreationUnknown;
-
-  /// No description provided for @vibeReviewAgain.
-  ///
-  /// In en, this message translates to:
-  /// **'Review the current proposal before confirming again.'**
-  String get vibeReviewAgain;
-
-  /// No description provided for @vibeTileShareCreated.
-  ///
-  /// In en, this message translates to:
-  /// **'TileShare created.'**
-  String get vibeTileShareCreated;
-
-  /// No description provided for @vibeCreationReview.
-  ///
-  /// In en, this message translates to:
-  /// **'Review TileShare creation'**
-  String get vibeCreationReview;
-
-  /// No description provided for @vibeCreationNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing is created until you confirm. Recipients still choose whether to accept; notifications are not sent by this action.'**
-  String get vibeCreationNote;
-
-  /// No description provided for @vibeCreateProject.
-  ///
-  /// In en, this message translates to:
-  /// **'Create project'**
-  String get vibeCreateProject;
-
-  /// No description provided for @vibeAddTilette.
-  ///
-  /// In en, this message translates to:
-  /// **'Add tilette'**
-  String get vibeAddTilette;
-
-  /// No description provided for @vibeReviewProject.
-  ///
-  /// In en, this message translates to:
-  /// **'Project'**
-  String get vibeReviewProject;
-
-  /// No description provided for @vibeReviewStarts.
-  ///
-  /// In en, this message translates to:
-  /// **'Starts'**
-  String get vibeReviewStarts;
-
-  /// No description provided for @vibeReviewDeadline.
-  ///
-  /// In en, this message translates to:
-  /// **'Deadline'**
-  String get vibeReviewDeadline;
-
-  /// No description provided for @vibeReviewMinutes.
-  ///
-  /// In en, this message translates to:
-  /// **'minutes'**
-  String get vibeReviewMinutes;
-
-  /// No description provided for @vibeOpenTileShare.
-  ///
-  /// In en, this message translates to:
-  /// **'Open TileShare'**
-  String get vibeOpenTileShare;
-
   /// No description provided for @taskSheetAssignee.
   ///
   /// In en, this message translates to:
@@ -8906,6 +8864,90 @@ abstract class AppLocalizations {
   /// **'What you’ve entered won’t be sent.'**
   String get createDiscardBody;
 
+  /// No description provided for @createClassTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New class'**
+  String get createClassTitle;
+
+  /// No description provided for @createNeedsTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one tilette'**
+  String get createNeedsTask;
+
+  /// No description provided for @createClassPeopleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Each person gets their own copy of every tilette and is asked to accept.'**
+  String get createClassPeopleHint;
+
+  /// No description provided for @createTilettesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TILETTES'**
+  String get createTilettesLabel;
+
+  /// No description provided for @createTiletteWithShare.
+  ///
+  /// In en, this message translates to:
+  /// **'{length} · due with the share'**
+  String createTiletteWithShare(String length);
+
+  /// No description provided for @createTiletteDue.
+  ///
+  /// In en, this message translates to:
+  /// **'{length} · due {when}'**
+  String createTiletteDue(String length, String when);
+
+  /// No description provided for @createClassSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tilette} other{{count} tilettes}} · {effort} · due {when}'**
+  String createClassSummary(int count, String effort, String when);
+
+  /// No description provided for @createStepOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total}'**
+  String createStepOf(int step, int total);
+
+  /// No description provided for @createNextPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: people'**
+  String get createNextPeople;
+
+  /// No description provided for @createProjectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New project'**
+  String get createProjectTitle;
+
+  /// No description provided for @createProjectSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Create project'**
+  String get createProjectSend;
+
+  /// No description provided for @createCreating.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating…'**
+  String get createCreating;
+
+  /// No description provided for @createProjectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign tilettes to people from the board once it’s created, or keep them for yourself.'**
+  String get createProjectHint;
+
+  /// No description provided for @detailLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading share…'**
+  String get detailLoading;
+
   /// No description provided for @taskSheetPeopleLabel.
   ///
   /// In en, this message translates to:
@@ -8947,6 +8989,462 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save changes'**
   String get tileShareSaveChanges;
+
+  /// No description provided for @scheduleChangeRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh schedule'**
+  String get scheduleChangeRefresh;
+
+  /// No description provided for @scheduleChangeUncertainBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your change may have reached the server. Refresh to check for an updated schedule. This hold will end automatically.'**
+  String get scheduleChangeUncertainBody;
+
+  /// Shown after the server confirmed a schedule change, until the refreshed timeline is on screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating your timeline…'**
+  String get scheduleChangeRefreshing;
+
+  /// No description provided for @scheduleChangeUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation unavailable'**
+  String get scheduleChangeUncertain;
+
+  /// An unconfirmed schedule change was followed by a changed schedule; it may have applied. {change} is e.g. 'Complete · Gym'.
+  ///
+  /// In en, this message translates to:
+  /// **'{change}: Your timeline has been updated. Review the changes.'**
+  String scheduleChangeAcknowledged(String change);
+
+  /// A late confirmation arrived for a schedule change whose outcome was unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} went through.'**
+  String scheduleChangeWentThrough(String change);
+
+  /// A late refusal arrived for a schedule change whose outcome was unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} failed.'**
+  String scheduleChangeFailedLate(String change);
+
+  /// The time to confirm a schedule change ran out with no answer either way.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t confirm {change}. Check your schedule.'**
+  String scheduleChangeUnconfirmed(String change);
+
+  /// A schedule change could not start because the schedule could not be read first; nothing was sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach Tiler, so {change} wasn\'t sent. Try again.'**
+  String scheduleChangeNotSent(String change);
+
+  /// As scheduleChangeUnconfirmed, when the change can't be named.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t confirm your last schedule change. Check your schedule.'**
+  String get scheduleChangeUnconfirmedGeneric;
+
+  /// Title of the question asked before repeating a schedule change that may already have applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Send again?'**
+  String get scheduleChangeReattemptTitle;
+
+  /// Asked before repeating a schedule change whose outcome is still unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} may already have gone through. Send it again?'**
+  String scheduleChangeReattemptBody(String change);
+
+  /// Button that repeats the schedule change.
+  ///
+  /// In en, this message translates to:
+  /// **'Send again'**
+  String get scheduleChangeReattemptConfirm;
+
+  /// Shown after the user chose not to repeat a schedule change.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} wasn\'t sent again.'**
+  String scheduleChangeReattemptDeclined(String change);
+
+  /// No description provided for @scheduleChangeAdding.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding event'**
+  String get scheduleChangeAdding;
+
+  /// No description provided for @scheduleChangeSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating schedule settings'**
+  String get scheduleChangeSettings;
+
+  /// No description provided for @scheduleChangeAccepting.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepting changes'**
+  String get scheduleChangeAccepting;
+
+  /// No description provided for @scheduleChangeTargetSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Your schedule'**
+  String get scheduleChangeTargetSchedule;
+
+  /// No description provided for @scheduleChangeTargetEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Event'**
+  String get scheduleChangeTargetEvent;
+
+  /// No description provided for @scheduleChangeAllEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'All events'**
+  String get scheduleChangeAllEvents;
+
+  /// Number of events affected by the current schedule command.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 event} other{{count} events}}'**
+  String scheduleChangeEventCount(int count);
+
+  /// No description provided for @scheduleChangesBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the current schedule change before starting another.'**
+  String get scheduleChangesBlocked;
+
+  /// Shown when the user starts a schedule change while another is still in progress. {change} names it, e.g. 'Completing · Gym'.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the current schedule change ({change}) before starting another.'**
+  String scheduleChangesBlockedBy(String change);
+
+  /// No description provided for @scheduleChangeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule change failed'**
+  String get scheduleChangeFailed;
+
+  /// Settings row and sheet title for how much motion schedule changes get (Off / Minimal / Detailed).
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule updates'**
+  String get scheduleUpdates;
+
+  /// No description provided for @scheduleUpdatesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'How your day moves when your schedule changes.'**
+  String get scheduleUpdatesDescription;
+
+  /// No description provided for @scheduleUpdatesDetailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed'**
+  String get scheduleUpdatesDetailed;
+
+  /// No description provided for @scheduleUpdatesDetailedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Show each change step by step.'**
+  String get scheduleUpdatesDetailedDescription;
+
+  /// No description provided for @scheduleUpdatesMinimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal'**
+  String get scheduleUpdatesMinimal;
+
+  /// No description provided for @scheduleUpdatesMinimalDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide Tiles to their new times.'**
+  String get scheduleUpdatesMinimalDescription;
+
+  /// No description provided for @scheduleUpdatesOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get scheduleUpdatesOff;
+
+  /// No description provided for @scheduleUpdatesOffDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Update instantly, no animation.'**
+  String get scheduleUpdatesOffDescription;
+
+  /// Title of the chip shown after Tiler changes the day.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan updated'**
+  String get scheduleChangePlanUpdated;
+
+  /// No description provided for @scheduleChangeDayCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Day cleared'**
+  String get scheduleChangeDayCleared;
+
+  /// No description provided for @scheduleChangeTilesMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved} other{{count} Tiles moved}}'**
+  String scheduleChangeTilesMoved(int count);
+
+  /// No description provided for @scheduleChangeTilesMovedToOtherDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved to another day} other{{count} Tiles moved to other days}}'**
+  String scheduleChangeTilesMovedToOtherDays(int count);
+
+  /// No description provided for @scheduleChangeTilesAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile added} other{{count} Tiles added}}'**
+  String scheduleChangeTilesAdded(int count);
+
+  /// No description provided for @scheduleChangeTilesRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile removed} other{{count} Tiles removed}}'**
+  String scheduleChangeTilesRemoved(int count);
+
+  /// No description provided for @scheduleChangeTravelUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 travel time updated} other{{count} travel times updated}}'**
+  String scheduleChangeTravelUpdated(int count);
+
+  /// Free time a schedule change gained, e.g. "+1h 15m free".
+  ///
+  /// In en, this message translates to:
+  /// **'+{duration} free'**
+  String scheduleChangeFreeGained(String duration);
+
+  /// No description provided for @scheduleChangeSeeChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'See changes'**
+  String get scheduleChangeSeeChanges;
+
+  /// No description provided for @scheduleChangeWhatChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'What changed'**
+  String get scheduleChangeWhatChanged;
+
+  /// No description provided for @scheduleChangeAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added · {time}'**
+  String scheduleChangeAdded(String time);
+
+  /// No description provided for @scheduleChangeRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed'**
+  String get scheduleChangeRemoved;
+
+  /// No description provided for @scheduleChangeTravelTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel to {name}'**
+  String scheduleChangeTravelTo(String name);
+
+  /// No description provided for @scheduleChangeFreeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Free time'**
+  String get scheduleChangeFreeTime;
+
+  /// Caption on a Tile in the daily list that moved into view from a time that was off screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved from {time}'**
+  String scheduleChangeMovedFrom(String time);
+
+  /// Caption on the faint outline left where a Tile was, while it slides to its new time.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved to {time}'**
+  String scheduleChangeMovedTo(String time);
+
+  /// Edge chip for a Tile that moved out of view or to another day. {when} is a time or a date.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} moved to {when}'**
+  String scheduleChangeTileMovedTo(String name, String when);
+
+  /// No description provided for @scheduleChangeTilesMovedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved to {when}} other{{count} Tiles moved to {when}}}'**
+  String scheduleChangeTilesMovedTo(int count, String when);
+
+  /// No description provided for @scheduleChangeTilesMovedLater.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved later} other{{count} Tiles moved later}}'**
+  String scheduleChangeTilesMovedLater(int count);
+
+  /// No description provided for @scheduleChangeTilesMovedEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moved earlier} other{{count} Tiles moved earlier}}'**
+  String scheduleChangeTilesMovedEarlier(int count);
+
+  /// Banner while a schedule change plays step by step.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Tile moving} other{{count} Tiles moving}}'**
+  String scheduleChangeTilesMoving(int count);
+
+  /// No description provided for @scheduleChangeTabChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes'**
+  String get scheduleChangeTabChanges;
+
+  /// Tab in the What changed sheet showing the day before and after side by side.
+  ///
+  /// In en, this message translates to:
+  /// **'Before & after'**
+  String get scheduleChangeTabBeforeAfter;
+
+  /// No description provided for @scheduleChangeBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Before'**
+  String get scheduleChangeBefore;
+
+  /// No description provided for @scheduleChangeAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'After'**
+  String get scheduleChangeAfter;
+
+  /// No description provided for @vibeChatExecutionMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat execution'**
+  String get vibeChatExecutionMode;
+
+  /// No description provided for @vibeConfirmFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm first'**
+  String get vibeConfirmFirst;
+
+  /// No description provided for @vibeAutoAct.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto act'**
+  String get vibeAutoAct;
+
+  /// No description provided for @vibeAutoActNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Run supported chat actions automatically. Bulk and destructive changes still need review.'**
+  String get vibeAutoActNote;
+
+  /// No description provided for @vibeConfirmNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Review chat changes before they run.'**
+  String get vibeConfirmNote;
+
+  /// No description provided for @vibeConfirmCreation.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm creation'**
+  String get vibeConfirmCreation;
+
+  /// No description provided for @vibeCheckStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Check status'**
+  String get vibeCheckStatus;
+
+  /// No description provided for @vibeCreationUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Creation could not be confirmed. Check status before trying again.'**
+  String get vibeCreationUnknown;
+
+  /// No description provided for @vibeReviewAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the current proposal before confirming again.'**
+  String get vibeReviewAgain;
+
+  /// No description provided for @vibeTileShareCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'TileShare created.'**
+  String get vibeTileShareCreated;
+
+  /// No description provided for @vibeCreationReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review TileShare creation'**
+  String get vibeCreationReview;
+
+  /// No description provided for @vibeCreationNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is created until you confirm. Recipients still choose whether to accept; notifications are not sent by this action.'**
+  String get vibeCreationNote;
+
+  /// No description provided for @vibeCreateProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Create project'**
+  String get vibeCreateProject;
+
+  /// No description provided for @vibeAddTilette.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tilette'**
+  String get vibeAddTilette;
+
+  /// No description provided for @vibeReviewProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get vibeReviewProject;
+
+  /// No description provided for @vibeReviewStarts.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts'**
+  String get vibeReviewStarts;
+
+  /// No description provided for @vibeReviewDeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline'**
+  String get vibeReviewDeadline;
+
+  /// No description provided for @vibeReviewMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'minutes'**
+  String get vibeReviewMinutes;
+
+  /// No description provided for @vibeOpenTileShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Open TileShare'**
+  String get vibeOpenTileShare;
 
   /// No description provided for @vibeProjectRenamed.
   ///
@@ -9169,30 +9667,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update could not be confirmed. Check status before trying again.'**
   String get vibeUpdateUnknown;
-
-  /// No description provided for @createClassTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'New class'**
-  String get createClassTitle;
-
-  /// No description provided for @createNeedsTask.
-  ///
-  /// In en, this message translates to:
-  /// **'Add at least one tilette'**
-  String get createNeedsTask;
-
-  /// No description provided for @createClassPeopleHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Each person gets their own copy of every tilette and is asked to accept.'**
-  String get createClassPeopleHint;
-
-  /// No description provided for @detailLoading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading share…'**
-  String get detailLoading;
 
   /// No description provided for @vibeScheduleUpdatePending.
   ///

@@ -13,6 +13,7 @@
 //     failure — a fix over the legacy, which left it evaluating;
 //   * delete is the `CalendarTileBloc` request: id and provider id.
 import 'package:tiler_app/data/calendarEvent.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/subEventPaging.dart'
@@ -239,5 +240,10 @@ class ApiTileDetailSubmission implements TileDetailSubmission {
   Future<TileDetailSaveResult> deleteSeries(TileDetailDraft draft) => _mutate(
       'tile_detail_delete',
       <String, Object?>{'calendarEventId': draft.id},
-      () => calendarEventApi.delete(draft.id ?? '', draft.thirdPartyId ?? ''));
+      () => calendarEventApi.runScheduleMutation(
+          ScheduleChangeKind.delete,
+          () =>
+              calendarEventApi.delete(draft.id ?? '', draft.thirdPartyId ?? ''),
+          eventName: draft.name,
+          affectedTileIds: [draft.id ?? '']));
 }

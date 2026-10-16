@@ -310,7 +310,10 @@ void main() {
       await tester.tap(key('editActionConfirm'));
       await tester.pumpAndSettle();
       expect(shell.screen, findsOneWidget);
-      expect(find.text(testL10n.editTileActionFailed), findsOneWidget);
+      expect(
+          find.text(testL10n.operationFailed(
+              '${testL10n.complete} · ${shell.draftOf(tester).original.name}')),
+          findsOneWidget);
     });
 
     testWidgets('each action tile is an activatable button (D62)',

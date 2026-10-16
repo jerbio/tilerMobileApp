@@ -8,6 +8,7 @@ import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
@@ -164,6 +165,22 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   void _onShareTap() {
     AnalysticsSignal.send('TILE_SHARE_BUTTON');
     Navigator.pushNamed(context, '/TileShare');
+  }
+
+  void _onGetScheduleRequestTap() {
+    // Navigator.pushNamed(context, '/TileShare');
+    this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+          previousSubEvents: [],
+          previousTimeline: Utility.initialScheduleTimeline,
+          // isAlreadyLoaded: !forceRenderingPage,
+          scheduleTimeline:  Utility.initialScheduleTimeline,
+        ));
+  }
+
+    void _onReviseScheduleTap() {
+    // Navigator.pushNamed(context, '/TileShare');
+    this.context.read<ScheduleBloc>().add(ReviseScheduleEvent(
+        ));
   }
 
   void _onSearchTap() {
@@ -516,10 +533,12 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       child: TourHost(
         tourId: TourPreferencesHelper.homeTourId,
         stepCount: kTutorialStepCount,
-        child:
-            BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
-          return renderAuthorizedUserPageView();
-        }),
+        child: ScheduleChangeOutcomeNotices(
+          child: BlocBuilder<ScheduleBloc, ScheduleState>(
+              builder: (context, state) {
+            return renderAuthorizedUserPageView();
+          }),
+        ),
       ),
     );
   }

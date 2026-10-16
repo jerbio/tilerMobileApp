@@ -42,7 +42,9 @@ class BlocEditTileScheduleRefresher implements EditTileScheduleRefresher {
   void refreshAfterChange() => _reload(forceRefresh: true);
 
   @override
-  void abandonEvaluation() => _reload(forceRefresh: false);
+  void abandonEvaluation() {
+    _reload(forceRefresh: false);
+  }
 
   void _reload({required bool forceRefresh}) {
     // `subEventUpdate()`'s `.then`: preserve whatever the bloc holds and ask

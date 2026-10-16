@@ -1,6 +1,7 @@
 import 'package:tiler_app/data/VibeChat/ChatSessionExecutionMode.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/VibeChat/VibeAutoSuggestions.dart';
 import 'package:tiler_app/data/VibeChat/VibeMessage.dart';
@@ -331,7 +332,11 @@ class ChatApi extends AppApi {
             LocalizationService.instance.translations.responseHandlingError);
   }
 
-  Future<VibeRequest?> executeVibeRequest({required String requestId}) async {
+  Future<VibeRequest?> executeVibeRequest({required String requestId}) =>
+      runScheduleMutation(
+          ScheduleChangeKind.edit, () => _executeVibeRequest(requestId));
+
+  Future<VibeRequest?> _executeVibeRequest(String requestId) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
@@ -353,7 +358,7 @@ class ChatApi extends AppApi {
                   .instance.translations.authenticationIssues);
         }
 
-        http.Response response = await http.post(
+        http.Response response = await httpClient.post(
           uri,
           headers: headers,
           body: jsonEncode(queryParameters),

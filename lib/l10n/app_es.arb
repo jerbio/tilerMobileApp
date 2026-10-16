@@ -1,952 +1,918 @@
 {
-  "helloWorld": "¡Hola Mundo!",
-  "useDeviceLocation": "Usar la ubicación de mi dispositivo",
-  "todayStatusPlacedTitle": "Programadas correctamente",
-  "searchSourceBadgeTiler": "Tiler",
-  "searchSourceBadgeGoogle": "Google",
-  "searchSourceBadgeMicrosoft": "Microsoft",
-  "searchConnectedAccount": "vía {account}",
-  "@searchConnectedAccount": {
-    "placeholders": {
-      "account": {
-        "type": "String"
+  "notesLoadFailed": "No se pudieron cargar tus notas. Vuelve a abrir el editor para intentarlo de nuevo.",
+  "onboardingSubmitFailed": "No se pudo guardar tu configuración. Tus opciones se conservan. Inténtalo de nuevo u omite este paso por ahora.",
+  "operationFailed": "{operation} falló. Inténtalo de nuevo.",
+  "scheduleLoadFailed": "No se pudo cargar tu horario. Actualiza para intentarlo de nuevo.",
+  "chatConnectionFailed": "No se pudo conectar al chat. Vuelve a abrirlo para intentarlo de nuevo.",
+  "chatHistoryFailed": "No se pudo cargar tu historial de chat. Vuelve a abrir la conversación.",
+  "chatSendFailed": "No se pudo enviar tu mensaje. Revisa tu conexión e inténtalo de nuevo.",
+  "chatRecordingFailed": "No se pudo iniciar la grabación. Revisa el acceso al micrófono e inténtalo de nuevo.",
+  "chatCancelRecordingFailed": "No se pudo cancelar la grabación. Intenta detenerla de nuevo.",
+    "helloWorld": "¡Hola Mundo!",
+    "useDeviceLocation": "Usar la ubicación de mi dispositivo",
+    "todayStatusPlacedTitle": "Programadas correctamente",
+    "searchSourceBadgeTiler": "Tiler",
+    "searchSourceBadgeGoogle": "Google",
+    "searchSourceBadgeMicrosoft": "Microsoft",
+    "searchConnectedAccount": "vía {account}",
+    "@searchConnectedAccount": {
+        "placeholders": {
+            "account": {
+                "type": "String"
+            }
+        }
+    },
+    "searchPartialFailureWarning": "No se pudieron buscar algunos calendarios.",
+    "searchUnavailableMessage": "La búsqueda no está disponible temporalmente. Inténtalo de nuevo.",
+    "searchRetry": "Reintentar",
+    "todayStatusAttentionTitle": "Necesitan atención",
+    "todayStatusLateTitle": "Con retraso",
+    "todayStatusAttentionHelper": "Estas no cupieron en el tiempo disponible de hoy.",
+    "todayStatusLateHelper": "El tiempo de viaje entre estas y tus tiles cercanas hace que no puedas llegar a tiempo.",
+    "todayStatusTileCount": "{count, plural, =1{1 tile} other{{count} tiles}}",
+    "@todayStatusTileCount": {
+      "description": "Low-emphasis count beside a Today Status section heading",
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "4"
+        }
       }
-    }
-  },
-  "searchPartialFailureWarning": "No se pudieron buscar algunos calendarios.",
-  "searchUnavailableMessage": "La búsqueda no está disponible temporalmente. Inténtalo de nuevo.",
-  "searchRetry": "Reintentar",
-  "todayStatusAttentionTitle": "Necesitan atención",
-  "todayStatusLateTitle": "Con retraso",
-  "todayStatusAttentionHelper": "Estas no cupieron en el tiempo disponible de hoy.",
-  "todayStatusLateHelper": "El tiempo de viaje entre estas y tus tiles cercanas hace que no puedas llegar a tiempo.",
-  "todayStatusTileCount": "{count, plural, =1{1 tile} other{{count} tiles}}",
-  "@todayStatusTileCount": {
-    "description": "Low-emphasis count beside a Today Status section heading",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "4"
+    },
+    "todayStatusTilesPlaced": "{count, plural, =1{Tile completada} other{Tiles completadas}}",
+    "@todayStatusTilesPlaced": {
+      "description": "Summary strip label under the completed count",
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "4"
+        }
       }
-    }
-  },
-  "todayStatusTilesPlaced": "{count, plural, =1{Tile completada} other{Tiles completadas}}",
-  "@todayStatusTilesPlaced": {
-    "description": "Summary strip label under the completed count",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "4"
+    },
+    "todayStatusTilesNeedAttention": "Necesitan atención",
+    "todayStatusTilesRunningLate": "Con retraso",
+    "todayStatusEverythingOnTrack": "Todo va según lo previsto",
+    "todayStatusEverythingElseOnTrack": "Todo lo demás va según lo previsto",
+    "todayStatusOnTrackSubcopy": "Ninguna tile programada va con retraso.",
+    "todayStatusClearDay": "Tu día está despejado.",
+    "todayStatusPreviewCta": "Ver un plan mejor",
+    "todayStatusPreviewLoading": "Preparando la vista previa…",
+    "todayStatusPreviewUnavailable": "No se pudo generar la vista previa. Tu plan no ha cambiado.",
+    "todayStatusUntitledTile": "Tile sin título",
+    "todayStatusShowAll": "Ver todo",
+    "todayStatusExpandSection": "Expandir {section}",
+    "@todayStatusExpandSection": {
+      "description": "Screen reader label for the collapsed section chevron",
+      "placeholders": {
+        "section": {
+          "type": "String",
+          "example": "Programadas correctamente"
+        }
       }
-    }
-  },
-  "todayStatusTilesNeedAttention": "Necesitan atención",
-  "todayStatusTilesRunningLate": "Con retraso",
-  "todayStatusEverythingOnTrack": "Todo va según lo previsto",
-  "todayStatusEverythingElseOnTrack": "Todo lo demás va según lo previsto",
-  "todayStatusOnTrackSubcopy": "Ninguna tile programada va con retraso.",
-  "todayStatusClearDay": "Tu día está despejado.",
-  "todayStatusPreviewCta": "Ver un plan mejor",
-  "todayStatusPreviewLoading": "Preparando la vista previa…",
-  "todayStatusPreviewUnavailable": "No se pudo generar la vista previa. Tu plan no ha cambiado.",
-  "todayStatusUntitledTile": "Tile sin título",
-  "todayStatusShowAll": "Ver todo",
-  "todayStatusExpandSection": "Expandir {section}",
-  "@todayStatusExpandSection": {
-    "description": "Screen reader label for the collapsed section chevron",
-    "placeholders": {
-      "section": {
-        "type": "String",
-        "example": "Programadas correctamente"
+    },
+    "todayStatusCollapseSection": "Contraer {section}",
+    "@todayStatusCollapseSection": {
+      "description": "Screen reader label for the expanded section chevron",
+      "placeholders": {
+        "section": {
+          "type": "String",
+          "example": "Programadas correctamente"
+        }
       }
-    }
-  },
-  "todayStatusCollapseSection": "Contraer {section}",
-  "@todayStatusCollapseSection": {
-    "description": "Screen reader label for the expanded section chevron",
-    "placeholders": {
-      "section": {
-        "type": "String",
-        "example": "Programadas correctamente"
+    },
+    "todayStatusReasonDueToday": "Vence hoy",
+    "todayStatusReasonNoOpenSlot": "Sin hueco disponible",
+    "todayStatusReasonTravelInfeasible": "El viaje lo hace inviable",
+    "todayStatusReasonOutsideHours": "Fuera del horario disponible",
+    "todayStatusReasonDependencyBlocked": "Esperando otra tile",
+    "todayStatusReasonNeedsTime": "Necesita {duration}",
+    "@todayStatusReasonNeedsTime": {
+      "description": "Attention reason chip where the tile needs a longer gap than exists",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "45 min"
+        }
       }
-    }
-  },
-  "todayStatusReasonDueToday": "Vence hoy",
-  "todayStatusReasonNoOpenSlot": "Sin hueco disponible",
-  "todayStatusReasonTravelInfeasible": "El viaje lo hace inviable",
-  "todayStatusReasonOutsideHours": "Fuera del horario disponible",
-  "todayStatusReasonDependencyBlocked": "Esperando otra tile",
-  "todayStatusReasonNeedsTime": "Necesita {duration}",
-  "@todayStatusReasonNeedsTime": {
-    "description": "Attention reason chip where the tile needs a longer gap than exists",
-    "placeholders": {
-      "duration": {
-        "type": "String",
-        "example": "45 min"
+    },
+    "todayStatusReasonManualHold": "Necesita tu decisión",
+    "todayStatusReasonUnknown": "No cupo",
+    "todayStatusSessionCount": "{count, plural, =1{1 sesión} other{{count} sesiones}}",
+    "@todayStatusSessionCount": {
+      "description": "How many sub-events a grouped tile holds on the Today Status screen",
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "3"
+        }
       }
-    }
-  },
-  "todayStatusReasonManualHold": "Necesita tu decisión",
-  "todayStatusReasonUnknown": "No cupo",
-  "todayStatusSessionCount": "{count, plural, =1{1 sesión} other{{count} sesiones}}",
-  "@todayStatusSessionCount": {
-    "description": "How many sub-events a grouped tile holds on the Today Status screen",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "3"
+    },
+    "todayStatusSelectTiles": "Seleccionar tiles",
+    "todayStatusExpandGroup": "Expandir sesiones de {title}",
+    "@todayStatusExpandGroup": {
+      "description": "Screen reader label for expanding a grouped tile",
+      "placeholders": {
+        "title": {
+          "type": "String",
+          "example": "Gym session"
+        }
       }
-    }
-  },
-  "todayStatusSelectTiles": "Seleccionar tiles",
-  "todayStatusExpandGroup": "Expandir sesiones de {title}",
-  "@todayStatusExpandGroup": {
-    "description": "Screen reader label for expanding a grouped tile",
-    "placeholders": {
-      "title": {
-        "type": "String",
-        "example": "Gym session"
+    },
+    "todayStatusCollapseGroup": "Contraer sesiones de {title}",
+    "@todayStatusCollapseGroup": {
+      "description": "Screen reader label for collapsing a grouped tile",
+      "placeholders": {
+        "title": {
+          "type": "String",
+          "example": "Gym session"
+        }
       }
-    }
-  },
-  "todayStatusCollapseGroup": "Contraer sesiones de {title}",
-  "@todayStatusCollapseGroup": {
-    "description": "Screen reader label for collapsing a grouped tile",
-    "placeholders": {
-      "title": {
-        "type": "String",
-        "example": "Gym session"
+    },
+    "travelDurationMinutes": "{minutes} min",
+    "@travelDurationMinutes": {
+      "description": "Travel duration in minutes",
+      "placeholders": {
+        "minutes": {
+          "type": "int",
+          "example": "15"
+        }
       }
-    }
-  },
-  "travelDurationMinutes": "{minutes} min",
-  "@travelDurationMinutes": {
-    "description": "Travel duration in minutes",
-    "placeholders": {
-      "minutes": {
-        "type": "int",
-        "example": "15"
+    },
+    "travelDurationHours": "{hours} hr",
+    "@travelDurationHours": {
+      "description": "Travel duration in hours",
+      "placeholders": {
+        "hours": {
+          "type": "int",
+          "example": "1"
+        }
       }
-    }
-  },
-  "travelDurationHours": "{hours} hr",
-  "@travelDurationHours": {
-    "description": "Travel duration in hours",
-    "placeholders": {
-      "hours": {
-        "type": "int",
-        "example": "1"
+    },
+    "travelDurationHoursMinutes": "{hours} hr {minutes} min",
+    "@travelDurationHoursMinutes": {
+      "description": "Travel duration in hours and minutes",
+      "placeholders": {
+        "hours": {
+          "type": "int",
+          "example": "1"
+        },
+        "minutes": {
+          "type": "int",
+          "example": "30"
+        }
       }
-    }
-  },
-  "travelDurationHoursMinutes": "{hours} hr {minutes} min",
-  "@travelDurationHoursMinutes": {
-    "description": "Travel duration in hours and minutes",
-    "placeholders": {
-      "hours": {
-        "type": "int",
-        "example": "1"
-      },
-      "minutes": {
-        "type": "int",
-        "example": "30"
+    },
+    "travelViaRoute": "por {route}",
+    "@travelViaRoute": {
+      "description": "Via route name",
+      "placeholders": {
+        "route": {
+          "type": "String",
+          "example": "I-280"
+        }
       }
-    }
-  },
-  "travelViaRoute": "por {route}",
-  "@travelViaRoute": {
-    "description": "Via route name",
-    "placeholders": {
-      "route": {
-        "type": "String",
-        "example": "I-280"
+    },
+    "travelModeToDestination": " {travelMode} a ",
+    "@travelModeToDestination": {
+      "description": "Travel mode to destination",
+      "placeholders": {
+        "travelMode": {
+          "type": "String",
+          "example": "conducir"
+        }
       }
-    }
-  },
-  "travelModeToDestination": " {travelMode} a ",
-  "@travelModeToDestination": {
-    "description": "Travel mode to destination",
-    "placeholders": {
-      "travelMode": {
-        "type": "String",
-        "example": "conducir"
+    },
+    "travelModeDriving": "conducir",
+    "travelModeWalking": "caminar",
+    "signInWithEmailCode": "Iniciar con codigo por correo",
+    "usernameOrEmail": "Usuario o correo",
+    "loadingPrediction": "Cargando prediccion",
+    "sendAccessCode": "Enviar codigo de acceso",
+    "continueBtn": "Continuar",
+    "usePasswordInstead": "Usar contrasena",
+    "useAccessCodeInstead": "Usar codigo de acceso",
+    "sendVerificationCode": "Enviar codigo de verificacion",
+    "verificationCodeSent": "Se envio un codigo de verificacion a tu correo.",
+    "verificationCode": "Codigo de verificacion",
+    "verifyCode": "Verificar codigo",
+    "resendCode": "Reenviar codigo",
+    "verifyingCode": "Verificando codigo",
+    "invalidVerificationCode": "El codigo de verificacion no es valido o vencio.",
+    "accessCodeRequiresEmail": "El acceso con codigo requiere una direccion de correo.",
+    "emailCodeInstructions": "Ingresa tu correo y te enviaremos un codigo de verificacion.",
+    "verificationCodeInstructions": "Ingresa el codigo enviado a {email}.",
+    "@verificationCodeInstructions": {
+      "description": "Instructions shown when the user is entering an emailed verification code.",
+      "placeholders": {
+        "email": {
+          "type": "String",
+          "example": "you@example.com"
+        }
       }
-    }
-  },
-  "travelModeDriving": "conducir",
-  "travelModeWalking": "caminar",
-  "signInWithEmailCode": "Iniciar con codigo por correo",
-  "usernameOrEmail": "Usuario o correo",
-  "loadingPrediction": "Cargando prediccion",
-  "sendAccessCode": "Enviar codigo de acceso",
-  "continueBtn": "Continuar",
-  "usePasswordInstead": "Usar contrasena",
-  "useAccessCodeInstead": "Usar codigo de acceso",
-  "sendVerificationCode": "Enviar codigo de verificacion",
-  "verificationCodeSent": "Se envio un codigo de verificacion a tu correo.",
-  "verificationCode": "Codigo de verificacion",
-  "verifyCode": "Verificar codigo",
-  "resendCode": "Reenviar codigo",
-  "verifyingCode": "Verificando codigo",
-  "invalidVerificationCode": "El codigo de verificacion no es valido o vencio.",
-  "accessCodeRequiresEmail": "El acceso con codigo requiere una direccion de correo.",
-  "emailCodeInstructions": "Ingresa tu correo y te enviaremos un codigo de verificacion.",
-  "verificationCodeInstructions": "Ingresa el codigo enviado a {email}.",
-  "@verificationCodeInstructions": {
-    "description": "Instructions shown when the user is entering an emailed verification code.",
-    "placeholders": {
-      "email": {
-        "type": "String",
-        "example": "you@example.com"
+    },
+    "travelModeBicycling": "bicicleta",
+    "travelModeTransitLower": "transporte",
+    "leaveByTime": "Salir a las {time}",
+    "@leaveByTime": {
+      "description": "Time to leave by",
+      "placeholders": {
+        "time": {
+          "type": "String",
+          "example": "12:23 PM"
+        }
       }
-    }
-  },
-  "travelModeBicycling": "bicicleta",
-  "travelModeTransitLower": "transporte",
-  "leaveByTime": "Salir a las {time}",
-  "@leaveByTime": {
-    "description": "Time to leave by",
-    "placeholders": {
-      "time": {
-        "type": "String",
-        "example": "12:23 PM"
+    },
+    "travelDurationCompact": "{minutes}m",
+    "@travelDurationCompact": {
+      "description": "Compact travel duration in minutes",
+      "placeholders": {
+        "minutes": {
+          "type": "int",
+          "example": "15"
+        }
       }
-    }
-  },
-  "travelDurationCompact": "{minutes}m",
-  "@travelDurationCompact": {
-    "description": "Compact travel duration in minutes",
-    "placeholders": {
-      "minutes": {
-        "type": "int",
-        "example": "15"
+    },
+    "yourDayIsOptimized": "Tu día está optimizado.",
+    "yourDayAtAGlance": "Tu día de un vistazo",
+    "totalTravelTimeToday": "{duration} de tiempo de viaje hoy.",
+    "@totalTravelTimeToday": {
+      "description": "Total travel time for the day",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "45m"
+        }
       }
-    }
-  },
-  "yourDayIsOptimized": "Tu día está optimizado.",
-  "yourDayAtAGlance": "Tu día de un vistazo",
-  "totalTravelTimeToday": "{duration} de tiempo de viaje hoy.",
-  "@totalTravelTimeToday": {
-    "description": "Total travel time for the day",
-    "placeholders": {
-      "duration": {
-        "type": "String",
-        "example": "45m"
+    },
+    "tilesScheduledForToday": "{count} tiles programados para hoy.",
+    "@tilesScheduledForToday": {
+      "description": "Number of items scheduled",
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "5"
+        }
       }
-    }
-  },
-  "tilesScheduledForToday": "{count} tiles programados para hoy.",
-  "@tilesScheduledForToday": {
-    "description": "Number of items scheduled",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "5"
+    },
+    "viewRoute": "Ver ruta",
+    "focusModeChip": "Modo Enfoque",
+    "showRouteChip": "Mostrar Ruta",
+    "reOptimizeChip": "Re-optimizar",
+    "dayFilterAll": "Todo",
+    "dayFilterBlocks": "Bloques",
+    "dayFilterTiles": "Tiles",
+    "dayFilterTooltip": "Mostrar todo, solo bloques o solo tiles",
+    "dayFilterShowingBlocks": "Mostrando solo bloques · {shown} de {total}",
+    "dayFilterShowingTiles": "Mostrando solo tiles · {shown} de {total}",
+    "dayFilterEmptyBlocks": "Sin bloques el {day}",
+    "dayFilterEmptyTiles": "Sin tiles el {day}",
+    "dayFilterShowAll": "Mostrar todo",
+    "dayFilterAutoCleared": "Mostrando todo — filtro borrado",
+    "todayColon": "Hoy:",
+    "tilesBlocksCount": "{tileCount} tiles, {blockCount} bloques",
+    "@tilesBlocksCount": {
+      "description": "Count of tiles and blocks",
+      "placeholders": {
+        "tileCount": {
+          "type": "int",
+          "example": "3"
+        },
+        "blockCount": {
+          "type": "int",
+          "example": "2"
+        }
       }
-    }
-  },
-  "viewRoute": "Ver ruta",
-  "focusModeChip": "Modo Enfoque",
-  "showRouteChip": "Mostrar Ruta",
-  "reOptimizeChip": "Re-optimizar",
-  "dayFilterAll": "Todo",
-  "dayFilterBlocks": "Bloques",
-  "dayFilterTiles": "Tiles",
-  "dayFilterTooltip": "Mostrar todo, solo bloques o solo tiles",
-  "dayFilterShowingBlocks": "Mostrando solo bloques · {shown} de {total}",
-  "dayFilterShowingTiles": "Mostrando solo tiles · {shown} de {total}",
-  "dayFilterEmptyBlocks": "Sin bloques el {day}",
-  "dayFilterEmptyTiles": "Sin tiles el {day}",
-  "dayFilterShowAll": "Mostrar todo",
-  "dayFilterAutoCleared": "Mostrando todo — filtro borrado",
-  "todayColon": "Hoy:",
-  "tilesBlocksCount": "{tileCount} tiles, {blockCount} bloques",
-  "@tilesBlocksCount": {
-    "description": "Count of tiles and blocks",
-    "placeholders": {
-      "tileCount": {
-        "type": "int",
-        "example": "3"
-      },
-      "blockCount": {
-        "type": "int",
-        "example": "2"
+    },
+    "timeSavedColon": "Tiempo ahorrado:",
+    "travelTimeColon": "Tiempo de viaje:",
+    "travelTime": "Tiempo de viaje: {duration}",
+    "@travelTime": {
+      "description": "Travel time with duration",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "45m"
+        }
       }
-    }
-  },
-  "timeSavedColon": "Tiempo ahorrado:",
-  "travelTimeColon": "Tiempo de viaje:",
-  "travelTime": "Tiempo de viaje: {duration}",
-  "@travelTime": {
-    "description": "Travel time with duration",
-    "placeholders": {
-      "duration": {
-        "type": "String",
-        "example": "45m"
+    },
+    "durationHoursMinutesShort": "{hours}h {minutes}m",
+    "@durationHoursMinutesShort": {
+      "description": "Duration in short format",
+      "placeholders": {
+        "hours": {
+          "type": "int",
+          "example": "1"
+        },
+        "minutes": {
+          "type": "int",
+          "example": "30"
+        }
       }
-    }
-  },
-  "durationHoursMinutesShort": "{hours}h {minutes}m",
-  "@durationHoursMinutesShort": {
-    "description": "Duration in short format",
-    "placeholders": {
-      "hours": {
-        "type": "int",
-        "example": "1"
-      },
-      "minutes": {
-        "type": "int",
-        "example": "30"
+    },
+    "durationDaysHoursShort": "{days}d {hours}h",
+    "durationDaysShort": "{days}d",
+    "durationHoursShort": "{hours}h",
+    "@durationHoursShort": {
+      "description": "Duration in hours short format",
+      "placeholders": {
+        "hours": {
+          "type": "int",
+          "example": "1"
+        }
       }
-    }
-  },
-  "durationHoursShort": "{hours}h",
-  "@durationHoursShort": {
-    "description": "Duration in hours short format",
-    "placeholders": {
-      "hours": {
-        "type": "int",
-        "example": "1"
+    },
+    "durationMinutesShort": "{minutes}m",
+    "@durationMinutesShort": {
+      "description": "Duration in minutes short format",
+      "placeholders": {
+        "minutes": {
+          "type": "int",
+          "example": "30"
+        }
       }
-    }
-  },
-  "durationMinutesShort": "{minutes}m",
-  "@durationMinutesShort": {
-    "description": "Duration in minutes short format",
-    "placeholders": {
-      "minutes": {
-        "type": "int",
-        "example": "30"
+    },
+    "hourAm": "{hour} AM",
+    "@hourAm": {
+      "description": "Hour in AM format",
+      "placeholders": {
+        "hour": {
+          "type": "int",
+          "example": "9"
+        }
       }
-    }
-  },
-  "hourAm": "{hour} AM",
-  "@hourAm": {
-    "description": "Hour in AM format",
-    "placeholders": {
-      "hour": {
-        "type": "int",
-        "example": "9"
+    },
+    "hourPm": "{hour} PM",
+    "@hourPm": {
+      "description": "Hour in PM format",
+      "placeholders": {
+        "hour": {
+          "type": "int",
+          "example": "3"
+        }
       }
-    }
-  },
-  "hourPm": "{hour} PM",
-  "@hourPm": {
-    "description": "Hour in PM format",
-    "placeholders": {
-      "hour": {
-        "type": "int",
-        "example": "3"
+    },
+    "scheduleConflict": "Conflicto de horario",
+    "conflictSameTime": "\"{tile1}\" y \"{tile2}\" están programados a la misma hora",
+    "@conflictSameTime": {
+      "placeholders": {
+        "tile1": {"type": "String"},
+        "tile2": {"type": "String"}
       }
-    }
-  },
-  "scheduleConflict": "Conflicto de horario",
-  "conflictSameTime": "\"{tile1}\" y \"{tile2}\" están programados a la misma hora",
-  "@conflictSameTime": {
-    "placeholders": {
-      "tile1": {
-        "type": "String"
-      },
-      "tile2": {
-        "type": "String"
+    },
+    "conflictDuring": "\"{tile1}\" es durante \"{tile2}\" ({overlap} de superposición)",
+    "@conflictDuring": {
+      "placeholders": {
+        "tile1": {"type": "String"},
+        "tile2": {"type": "String"},
+        "overlap": {"type": "String"}
       }
-    }
-  },
-  "conflictDuring": "\"{tile1}\" es durante \"{tile2}\" ({overlap} de superposición)",
-  "@conflictDuring": {
-    "placeholders": {
-      "tile1": {
-        "type": "String"
-      },
-      "tile2": {
-        "type": "String"
-      },
-      "overlap": {
-        "type": "String"
+    },
+    "conflictOverlaps": "\"{tile1}\" se superpone con \"{tile2}\" por {overlap}",
+    "@conflictOverlaps": {
+      "placeholders": {
+        "tile1": {"type": "String"},
+        "tile2": {"type": "String"},
+        "overlap": {"type": "String"}
       }
-    }
-  },
-  "conflictOverlaps": "\"{tile1}\" se superpone con \"{tile2}\" por {overlap}",
-  "@conflictOverlaps": {
-    "placeholders": {
-      "tile1": {
-        "type": "String"
-      },
-      "tile2": {
-        "type": "String"
-      },
-      "overlap": {
-        "type": "String"
+    },
+    "fix": "Arreglar",
+    "conflictOverlapMinutes": "Conflicto: {minutes}m de superposición",
+    "@conflictOverlapMinutes": {
+      "placeholders": {
+        "minutes": {"type": "int"}
       }
-    }
-  },
-  "fix": "Arreglar",
-  "conflictOverlapMinutes": "Conflicto: {minutes}m de superposición",
-  "@conflictOverlapMinutes": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
+    },
+    "oneScheduleConflict": "1 Conflicto de horario",
+    "countScheduleConflicts": "{count} Conflictos de horario",
+    "@countScheduleConflicts": {
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "oneScheduleConflict": "1 Conflicto de horario",
-  "countScheduleConflicts": "{count} Conflictos de horario",
-  "@countScheduleConflicts": {
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "tapToReviewAndResolve": "Toca para revisar y resolver",
+    "countConflicts": "{count} conflictos",
+    "@countConflicts": {
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "tapToReviewAndResolve": "Toca para revisar y resolver",
-  "countConflicts": "{count} conflictos",
-  "@countConflicts": {
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "tapToExpand": "Toca para expandir",
+    "conflictingTiles": "{count} Tiles en conflicto",
+    "@conflictingTiles": {
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "tapToExpand": "Toca para expandir",
-  "conflictingTiles": "{count} Tiles en conflicto",
-  "@conflictingTiles": {
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "totalOverlap": "Superposición total: {duration}",
+    "@totalOverlap": {
+      "placeholders": {
+        "duration": {"type": "String"}
       }
-    }
-  },
-  "totalOverlap": "Superposición total: {duration}",
-  "@totalOverlap": {
-    "placeholders": {
-      "duration": {
-        "type": "String"
+    },
+    "autoResolve": "Auto-resolver",
+    "untitledTile": "Tile sin título",
+    "untitledEvent": "Sin título",
+    "extendedEventSingular": "1 Evento Extendido",
+    "extendedEventsPlural": "{count} Eventos Extendidos",
+    "@extendedEventsPlural": {
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "autoResolve": "Auto-resolver",
-  "untitledTile": "Tile sin título",
-  "untitledEvent": "Sin título",
-  "extendedEventSingular": "1 Evento Extendido",
-  "extendedEventsPlural": "{count} Eventos Extendidos",
-  "@extendedEventsPlural": {
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "extendedEventsTapToView": "Toca para ver eventos de todo el día y eventos largos",
+    "extendedEventsTitle": "Eventos Extendidos",
+    "dayGridAllDay": "Todo el día",
+    "dayGridHeaderAllClear": "Todo en orden",
+    "dayGridHeaderConflictCount": "{count, plural, =1{1 conflicto} other{{count} conflictos}}",
+    "dayGridHeaderNeedAttention": "{count, plural, =1{{summary} necesita atención} other{{summary} necesitan atención}}",
+    "dayGridHeaderReview": "Revisar",
+    "dayGridDaySummary": "Resumen del día",
+    "bottomNavToday": "Hoy",
+    "bottomNavTiler": "Tiler",
+    "dayGridHeaderRespond": "Responder",
+    "extendedEventsSubtitle": "{count, plural, =1{1 evento de más de 16 horas} other{{count} eventos de más de 16 horas}}",
+    "@extendedEventsSubtitle": {
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "extendedEventsTapToView": "Toca para ver eventos de todo el día y eventos largos",
-  "extendedEventsTitle": "Eventos Extendidos",
-  "dayGridAllDay": "Todo el día",
-  "dayGridHeaderAllClear": "Todo en orden",
-  "dayGridHeaderConflictCount": "{count, plural, =1{1 conflicto} other{{count} conflictos}}",
-  "dayGridHeaderNeedAttention": "{count, plural, =1{{summary} necesita atención} other{{summary} necesitan atención}}",
-  "dayGridHeaderReview": "Revisar",
-  "dayGridDaySummary": "Resumen del día",
-  "bottomNavToday": "Hoy",
-  "bottomNavTiler": "Tiler",
-  "dayGridHeaderRespond": "Responder",
-  "extendedEventsSubtitle": "{count, plural, =1{1 evento de más de 16 horas} other{{count} eventos de más de 16 horas}}",
-  "@extendedEventsSubtitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "tile": "Tile",
+    "todaysRoute": "Ruta de hoy",
+    "noLocationsToday": "Sin ubicaciones hoy",
+    "addLocationsToSeeTodaysRoute": "Agrega ubicaciones a tus tiles para ver tu ruta diaria",
+    "countStops": "{count} paradas",
+    "@countStops": {
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "tile": "Tile",
-  "todaysRoute": "Ruta de hoy",
-  "noLocationsToday": "Sin ubicaciones hoy",
-  "addLocationsToSeeTodaysRoute": "Agrega ubicaciones a tus tiles para ver tu ruta diaria",
-  "countStops": "{count} paradas",
-  "@countStops": {
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "routeOptimized": "Ruta optimizada",
+    "savedTravelTime": "Ahorraste {duration} de tiempo de viaje",
+    "@savedTravelTime": {
+      "placeholders": {
+        "duration": {"type": "String"}
       }
-    }
-  },
-  "routeOptimized": "Ruta optimizada",
-  "savedTravelTime": "Ahorraste {duration} de tiempo de viaje",
-  "@savedTravelTime": {
-    "placeholders": {
-      "duration": {
-        "type": "String"
+    },
+    "firstStop": "Primera parada",
+    "stop": "Parada",
+    "arriveBy": "Llegar a las {time}",
+    "@arriveBy": {
+      "placeholders": {
+        "time": {"type": "String"}
       }
-    }
-  },
-  "firstStop": "Primera parada",
-  "stop": "Parada",
-  "arriveBy": "Llegar a las {time}",
-  "@arriveBy": {
-    "placeholders": {
-      "time": {
-        "type": "String"
+    },
+    "fromPreviousStop": "desde la parada anterior",
+    "viewTile": "Ver Tile",
+    "editTile": "Editar Tile",
+    "startNavigation": "Iniciar navegación",
+    "noLocationAvailable": "Sin ubicación",
+    "seeTodaysRoute": "Ver ruta de hoy",
+    "joinMeeting": "Unirse a la reunión",
+    "openLink": "Abrir enlace",
+    "procrastinateBlockOut": "Descanso",
+    "lunchBreak": "Hora del Almuerzo",
+    "coffeeBreak": "Pausa para Café",
+    "morningBreak": "Pausa Matutina",
+    "afternoonBreak": "Pausa Vespertina",
+    "freeTime": "Tiempo Libre",
+    "freeSlotHeader": "Tiempo libre",
+    "freeSlotNow": "Libre ahora",
+    "quickBreak": "Pausa Rápida",
+    "shortBreak": "Pausa Corta",
+    "blockedTime": "Tiempo Bloqueado",
+    "pendingRsvpSingular": "1 Evento Necesita Respuesta",
+    "pendingRsvpPlural": "{count} Eventos Necesitan Respuesta",
+    "@pendingRsvpPlural": {
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "fromPreviousStop": "desde la parada anterior",
-  "viewTile": "Ver Tile",
-  "editTile": "Editar Tile",
-  "startNavigation": "Iniciar navegación",
-  "noLocationAvailable": "Sin ubicación",
-  "seeTodaysRoute": "Ver ruta de hoy",
-  "joinMeeting": "Unirse a la reunión",
-  "openLink": "Abrir enlace",
-  "procrastinateBlockOut": "Descanso",
-  "lunchBreak": "Hora del Almuerzo",
-  "coffeeBreak": "Pausa para Café",
-  "morningBreak": "Pausa Matutina",
-  "afternoonBreak": "Pausa Vespertina",
-  "freeTime": "Tiempo Libre",
-  "freeSlotHeader": "Tiempo libre",
-  "freeSlotNow": "Libre ahora",
-  "quickBreak": "Pausa Rápida",
-  "shortBreak": "Pausa Corta",
-  "blockedTime": "Tiempo Bloqueado",
-  "pendingRsvpSingular": "1 Evento Necesita Respuesta",
-  "pendingRsvpPlural": "{count} Eventos Necesitan Respuesta",
-  "@pendingRsvpPlural": {
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "pendingRsvpHappeningNow": "Ocurriendo ahora - responde para unirte",
+    "pendingRsvpStartingSoon": "Comienza pronto - responde ahora",
+    "pendingRsvpWithinHour": "Comienza en una hora",
+    "pendingRsvpUpcoming": "Próximo - toca para responder",
+    "pendingRsvpTapToReview": "Toca para revisar y responder",
+    "pendingRsvpTitle": "Respuestas Pendientes",
+    "pendingRsvpSubtitle": "{count, plural, =1{1 evento esperando tu respuesta} other{{count} eventos esperando tu respuesta}}",
+    "@pendingRsvpSubtitle": {
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "pendingRsvpHappeningNow": "Ocurriendo ahora - responde para unirte",
-  "pendingRsvpStartingSoon": "Comienza pronto - responde ahora",
-  "pendingRsvpWithinHour": "Comienza en una hora",
-  "pendingRsvpUpcoming": "Próximo - toca para responder",
-  "pendingRsvpTapToReview": "Toca para revisar y responder",
-  "pendingRsvpTitle": "Respuestas Pendientes",
-  "pendingRsvpSubtitle": "{count, plural, =1{1 evento esperando tu respuesta} other{{count} eventos esperando tu respuesta}}",
-  "@pendingRsvpSubtitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "pendingRsvpUrgent": "Comienza Pronto",
+    "pendingRsvpLater": "Más Tarde Hoy y Próximos",
+    "rsvpNeedsAction": "Necesita Respuesta",
+    "rsvpTentative": "Tentativo",
+    "rsvpAccepted": "Aceptado",
+    "rsvpDeclined": "Rechazado",
+    "unableToOpenLinkError": "No se pudo abrir el enlace: {link}",
+    "@unableToOpenLinkError": {
+      "placeholders": {
+        "link": {"type": "String"}
       }
-    }
-  },
-  "pendingRsvpUrgent": "Comienza Pronto",
-  "pendingRsvpLater": "Más Tarde Hoy y Próximos",
-  "rsvpNeedsAction": "Necesita Respuesta",
-  "rsvpTentative": "Tentativo",
-  "rsvpAccepted": "Aceptado",
-  "rsvpDeclined": "Rechazado",
-  "unableToOpenLinkError": "No se pudo abrir el enlace: {link}",
-  "@unableToOpenLinkError": {
-    "placeholders": {
-      "link": {
-        "type": "String"
+    },
+    "leaveNow": "¡Sal ahora!",
+    "leaveInMinutes": "Sal en {minutes} min",
+    "@leaveInMinutes": {
+      "description": "Short label for departure alert",
+      "placeholders": {
+        "minutes": {"type": "int"}
       }
-    }
-  },
-  "leaveNow": "¡Sal ahora!",
-  "leaveInMinutes": "Sal en {minutes} min",
-  "@leaveInMinutes": {
-    "description": "Short label for departure alert",
-    "placeholders": {
-      "minutes": {
-        "type": "int"
+    },
+    "multipleAlertsTitle": "{count} alertas",
+    "@multipleAlertsTitle": {
+      "description": "Title when multiple alerts are active",
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "multipleAlertsTitle": "{count} alertas",
-  "@multipleAlertsTitle": {
-    "description": "Title when multiple alerts are active",
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "alertChipLeaveNow": "Sal Ahora",
+    "alertChipLeaveIn": "Sal {minutes}m",
+    "@alertChipLeaveIn": {
+      "description": "Chip label for travel alert with minutes",
+      "placeholders": {
+        "minutes": {"type": "int"}
       }
-    }
-  },
-  "alertChipLeaveNow": "Sal Ahora",
-  "alertChipLeaveIn": "Sal {minutes}m",
-  "@alertChipLeaveIn": {
-    "description": "Chip label for travel alert with minutes",
-    "placeholders": {
-      "minutes": {
-        "type": "int"
+    },
+    "alertChipConflicts": "{count, plural, =1{1 Conflicto} other{{count} Conflictos}}",
+    "@alertChipConflicts": {
+      "description": "Chip label for schedule conflicts",
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "alertChipConflicts": "{count, plural, =1{1 Conflicto} other{{count} Conflictos}}",
-  "@alertChipConflicts": {
-    "description": "Chip label for schedule conflicts",
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "alertChipAllDay": "{count, plural, =1{1 Todo el día} other{{count} Todo el día}}",
+    "@alertChipAllDay": {
+      "description": "Chip label for extended/all-day events",
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "alertChipAllDay": "{count, plural, =1{1 Todo el día} other{{count} Todo el día}}",
-  "@alertChipAllDay": {
-    "description": "Chip label for extended/all-day events",
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "alertChipRsvp": "{count, plural, =1{1 RSVP} other{{count} RSVPs}}",
+    "@alertChipRsvp": {
+      "description": "Chip label for pending RSVP responses",
+      "placeholders": {
+        "count": {"type": "int"}
       }
-    }
-  },
-  "alertChipRsvp": "{count, plural, =1{1 RSVP} other{{count} RSVPs}}",
-  "@alertChipRsvp": {
-    "description": "Chip label for pending RSVP responses",
-    "placeholders": {
-      "count": {
-        "type": "int"
+    },
+    "accept": "Aceptar",
+    "@accept": {
+      "description": "Accept button label for RSVP"
+    },
+    "accepted": "Aceptado",
+    "@accepted": {
+      "description": "Status when event is accepted"
+    },
+    "decline": "Rechazar",
+    "@decline": {
+      "description": "Decline button label for RSVP"
+    },
+    "declined": "Rechazado",
+    "@declined": {
+      "description": "Status when event is declined"
+    },
+    "respondToCalendar": "Responder a {calendarSource}",
+    "@respondToCalendar": {
+      "description": "Prompt to respond to calendar event",
+      "placeholders": {
+        "calendarSource": {"type": "String"}
       }
-    }
-  },
-  "accept": "Aceptar",
-  "@accept": {
-    "description": "Accept button label for RSVP"
-  },
-  "accepted": "Aceptado",
-  "@accepted": {
-    "description": "Status when event is accepted"
-  },
-  "decline": "Rechazar",
-  "@decline": {
-    "description": "Decline button label for RSVP"
-  },
-  "declined": "Rechazado",
-  "@declined": {
-    "description": "Status when event is declined"
-  },
-  "respondToCalendar": "Responder a {calendarSource}",
-  "@respondToCalendar": {
-    "description": "Prompt to respond to calendar event",
-    "placeholders": {
-      "calendarSource": {
-        "type": "String"
+    },
+    "unknown": "Invitación de calendario",
+    "@unknown": {
+      "description": "Default label for unknown calendar source"
+    },
+    "emptyDayHeaderLine1": "Aún no hay planes.",
+    "emptyDayFooterLine1": "Comienza en segundos—",
+    "emptyDayFooterLine2": "importa calendarios o crea tiles.",
+    "emptyDayOr": "o",
+    "emptyDayImportGoogleCalendarButton": "Importar Google Calendar",
+    "loadingPreviousDays": "Cargando días anteriores...",
+    "@loadingPreviousDays": {
+      "description": "Message shown when loading schedule for previous days"
+    },
+    "loadingUpcomingDays": "Cargando próximos días...",
+    "@loadingUpcomingDays": {
+      "description": "Message shown when loading schedule for upcoming days"
+    },
+    "requestTimeout": "Tiempo de solicitud agotado - por favor verifique su conexión",
+    "@requestTimeout": {
+      "description": "Error message shown when an HTTP request times out"
+    },
+    "failedToPauseTile": "Error al pausar el tile",
+    "@failedToPauseTile": {
+      "description": "Error when pausing a tile fails"
+    },
+    "failedToResumeTile": "Error al reanudar el tile",
+    "@failedToResumeTile": {
+      "description": "Error when resuming a tile fails"
+    },
+    "failedToMoveUpTask": "Error al mover la tarea",
+    "@failedToMoveUpTask": {
+      "description": "Error when moving a task to now fails"
+    },
+    "failedToUpdateTile": "Error al actualizar el tile",
+    "@failedToUpdateTile": {
+      "description": "Error when updating a tile fails"
+    },
+    "failedToBuzzSchedule": "Error al notificar la programación",
+    "@failedToBuzzSchedule": {
+      "description": "Error when buzzing the schedule fails"
+    },
+    "failedToShuffleSchedule": "Error al mezclar la programación",
+    "@failedToShuffleSchedule": {
+      "description": "Error when shuffling the schedule fails"
+    },
+    "failedToProcrastinateTile": "Error al posponer el tile",
+    "@failedToProcrastinateTile": {
+      "description": "Error when procrastinating a tile fails"
+    },
+
+    "tutorialStepYourScheduleTitle": "Tu Horario",
+    "tutorialStepYourScheduleBody": "Tu día está organizado en Tiles — bloques de tiempo inteligentes que Tiler organiza por ti. Desplázate hacia arriba y abajo para ver tu día completo.",
+
+    "tutorialStepCreateOptimizeTitle": "Crear y Optimizar",
+    "tutorialStepCreateOptimizeBody": "Toca aquí para crear una nueva tarea. Dile a Tiler qué necesitas hacer y cuánto tiempo tomará — Tiler decide el cuándo.",
+    "tutorialCalloutReOptimize": "Re-optimizar",
+    "tutorialCalloutReOptimizeDesc": "¿Se descarriló tu día? Recalcula desde ahora manteniendo tu plan aproximadamente estable",
+    "tutorialCalloutTravelTime": "Tiempo de Viaje",
+    "tutorialCalloutTravelTimeDesc": "Tiler tiene en cuenta el tiempo de traslado entre ubicaciones",
+
+    "tutorialStepQuickCreateTitle": "Creación Rápida",
+    "tutorialStepQuickCreateBody": "Esta es la hoja de creación rápida. Nombra tu tile y establece una duración para agregarlo rápidamente.",
+    "tutorialStepQuickCreateSheetBody": "¡Esta es la hoja de creación rápida detrás de mí! Nombra tu tile, establece una duración y toca Agregar — Tiler se encarga del resto.",
+    "tutorialCalloutNameYourTile": "Nombra Tu Tile",
+    "tutorialCalloutNameYourTileDesc": "Describe la tarea que quieres realizar",
+    "tutorialCalloutSetDuration": "Establecer Duración",
+    "tutorialCalloutSetDurationDesc": "¿Cuánto tiempo tomará esta tarea?",
+    "tutorialCalloutMoreOptions": "Más Opciones",
+    "tutorialCalloutMoreOptionsDesc": "Agrega ubicación, fecha límite o repetición a través del editor completo",
+    "tutorialCalloutMoreOptionsSheetDesc": "Agrega ubicación, fecha límite o repetición",
+
+    "tutorialStepTilerWorksTitle": "Tiler Trabaja por Ti",
+    "tutorialStepTilerWorksBody": "Tiler organiza automáticamente tus tiles según tus niveles de energía, tiempo de viaje y fechas límite. Solo agrega lo que necesitas hacer — Tiler se encarga del cuándo.",
+    "tutorialCalloutForecast": "Pronóstico",
+    "tutorialCalloutForecastDesc": "Ve cuándo se insertará un tile antes de seleccionarlo",
+    "tutorialCalloutShuffle": "Mezclar",
+    "tutorialCalloutShuffleDesc": "Mezcla las cosas y sugiere qué deberías hacer a continuación",
+    "tutorialCalloutDeferAll": "Posponer Todo",
+    "tutorialCalloutDeferAllDesc": "¿Día difícil? Empuja todo hacia adelante",
+
+    "tutorialStepControlTilesTitle": "Controla Tus Tiles",
+    "tutorialStepControlTilesBody": "Cada tile tiene controles para gestionar tus tareas en tiempo real:",
+    "tutorialCalloutPlay": "Reproducir",
+    "tutorialCalloutPlayDesc": "Comienza a trabajar en este tile",
+    "tutorialCalloutPause": "Pausar",
+    "tutorialCalloutPauseDesc": "Toma un descanso — Tiler reprogramará el resto",
+    "tutorialCalloutComplete": "Completar",
+    "tutorialCalloutCompleteDesc": "¡Listo! Márcalo como terminado",
+    "tutorialCalloutProcrastinate": "Procrastinar",
+    "tutorialCalloutProcrastinateDesc": "Ahora no — empújalo para después",
+
+    "tutorialStepBigPictureTitle": "Ve el Panorama General",
+    "tutorialStepBigPictureBody": "Toca el ícono del calendario para alternar entre tres vistas:",
+    "tutorialCalloutDaily": "Diario",
+    "tutorialCalloutDailyDesc": "Hora por hora — tu agenda detallada",
+    "tutorialCalloutWeekly": "Semanal",
+    "tutorialCalloutWeeklyDesc": "Ve toda la semana de un vistazo",
+    "tutorialCalloutMonthly": "Mensual",
+    "tutorialCalloutMonthlyDesc": "Planifica con una vista mensual",
+
+    "tutorialStepToolkitTitle": "Tu Kit de Herramientas",
+    "tutorialStepToolkitBody": "Estas herramientas prácticas están siempre a tu alcance:",
+    "tutorialCalloutShare": "Compartir",
+    "tutorialCalloutShareDesc": "Colabora — comparte tiles con otros",
+    "tutorialCalloutSearch": "Buscar",
+    "tutorialCalloutSearchDesc": "Encuentra cualquier tile por nombre",
+    "tutorialCalloutSettings": "Configuración",
+    "tutorialCalloutSettingsDesc": "Personaliza tu experiencia, conecta calendarios, establece preferencias",
+    "tutorialCalloutChat": "Chat",
+    "tutorialCalloutChatDesc": "Toca el botón de chat para agregar o ajustar tiles solo hablando con Tiler",
+
+    "tutorialStepChatTitle": "Chatea con Tiler",
+    "tutorialStepChatBody": "Toca el botón de chat en cualquier momento para agregar o ajustar tiles solo hablando con Tiler — sin formularios.",
+
+    "tutorialNavNext": "Siguiente",
+    "tutorialNavNextArrow": "Siguiente →",
+    "tutorialNavBack": "Atrás",
+    "tutorialNavBackArrow": "← Atrás",
+    "tutorialNavSkip": "Omitir",
+    "tutorialNavLetsGo": "¡Vamos!",
+    "welcomeExplainerHeadline": "Tiles y Bloques",
+    "welcomeExplainerSubtitle": "Un vistazo rápido a cómo Tiler planifica tu día.",
+    "welcomeExplainerBlocksCaption": "Los bloques son fijos. Ocurren a una hora determinada.",
+    "welcomeExplainerTilesCaption": "Los tiles son flexibles. Tiler los acomoda alrededor de tus bloques.",
+    "welcomeExplainerReplanCaption": "El dentista pasa a las {time}: Tiler replanifica tus tiles a su alrededor.",
+    "@welcomeExplainerReplanCaption": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "welcomeExplainerMovedBadge": "Cambió",
+    "welcomeExplainerReplannedBadge": "Replanificado",
+    "welcomeExplainerBlockStandup": "Reunión de equipo",
+    "welcomeExplainerBlockDentist": "Dentista",
+    "welcomeExplainerTileWorkout": "Ejercicio",
+    "welcomeExplainerTileReport": "Escribir informe",
+    "welcomeExplainerTileGroceries": "Compras",
+    "welcomeExplainerLegendBlock": "Bloque",
+    "welcomeExplainerLegendTile": "Tile",
+    "tutorialStepCounter": "{current}/{total}",
+    "@tutorialStepCounter": {
+      "description": "Step counter like 3/7",
+      "placeholders": {
+        "current": {
+          "type": "int",
+          "example": "3"
+        },
+        "total": {
+          "type": "int",
+          "example": "7"
+        }
       }
-    }
-  },
-  "unknown": "Invitación de calendario",
-  "@unknown": {
-    "description": "Default label for unknown calendar source"
-  },
-  "emptyDayHeaderLine1": "Aún no hay planes.",
-  "emptyDayFooterLine1": "Comienza en segundos—",
-  "emptyDayFooterLine2": "importa calendarios o crea tiles.",
-  "emptyDayOr": "o",
-  "emptyDayImportGoogleCalendarButton": "Importar Google Calendar",
-  "loadingPreviousDays": "Cargando días anteriores...",
-  "@loadingPreviousDays": {
-    "description": "Message shown when loading schedule for previous days"
-  },
-  "loadingUpcomingDays": "Cargando próximos días...",
-  "@loadingUpcomingDays": {
-    "description": "Message shown when loading schedule for upcoming days"
-  },
-  "requestTimeout": "Tiempo de solicitud agotado - por favor verifique su conexión",
-  "@requestTimeout": {
-    "description": "Error message shown when an HTTP request times out"
-  },
-  "failedToPauseTile": "Error al pausar el tile",
-  "@failedToPauseTile": {
-    "description": "Error when pausing a tile fails"
-  },
-  "failedToResumeTile": "Error al reanudar el tile",
-  "@failedToResumeTile": {
-    "description": "Error when resuming a tile fails"
-  },
-  "failedToMoveUpTask": "Error al mover la tarea",
-  "@failedToMoveUpTask": {
-    "description": "Error when moving a task to now fails"
-  },
-  "failedToUpdateTile": "Error al actualizar el tile",
-  "@failedToUpdateTile": {
-    "description": "Error when updating a tile fails"
-  },
-  "failedToBuzzSchedule": "Error al notificar la programación",
-  "@failedToBuzzSchedule": {
-    "description": "Error when buzzing the schedule fails"
-  },
-  "failedToShuffleSchedule": "Error al mezclar la programación",
-  "@failedToShuffleSchedule": {
-    "description": "Error when shuffling the schedule fails"
-  },
-  "failedToProcrastinateTile": "Error al posponer el tile",
-  "@failedToProcrastinateTile": {
-    "description": "Error when procrastinating a tile fails"
-  },
-  "tutorialStepYourScheduleTitle": "Tu Horario",
-  "tutorialStepYourScheduleBody": "Tu día está organizado en Tiles — bloques de tiempo inteligentes que Tiler organiza por ti. Desplázate hacia arriba y abajo para ver tu día completo.",
-  "tutorialStepCreateOptimizeTitle": "Crear y Optimizar",
-  "tutorialStepCreateOptimizeBody": "Toca aquí para crear una nueva tarea. Dile a Tiler qué necesitas hacer y cuánto tiempo tomará — Tiler decide el cuándo.",
-  "tutorialCalloutReOptimize": "Re-optimizar",
-  "tutorialCalloutReOptimizeDesc": "¿Se descarriló tu día? Recalcula desde ahora manteniendo tu plan aproximadamente estable",
-  "tutorialCalloutTravelTime": "Tiempo de Viaje",
-  "tutorialCalloutTravelTimeDesc": "Tiler tiene en cuenta el tiempo de traslado entre ubicaciones",
-  "tutorialStepQuickCreateTitle": "Creación Rápida",
-  "tutorialStepQuickCreateBody": "Esta es la hoja de creación rápida. Nombra tu tile y establece una duración para agregarlo rápidamente.",
-  "tutorialStepQuickCreateSheetBody": "¡Esta es la hoja de creación rápida detrás de mí! Nombra tu tile, establece una duración y toca Agregar — Tiler se encarga del resto.",
-  "tutorialCalloutNameYourTile": "Nombra Tu Tile",
-  "tutorialCalloutNameYourTileDesc": "Describe la tarea que quieres realizar",
-  "tutorialCalloutSetDuration": "Establecer Duración",
-  "tutorialCalloutSetDurationDesc": "¿Cuánto tiempo tomará esta tarea?",
-  "tutorialCalloutMoreOptions": "Más Opciones",
-  "tutorialCalloutMoreOptionsDesc": "Agrega ubicación, fecha límite o repetición a través del editor completo",
-  "tutorialCalloutMoreOptionsSheetDesc": "Agrega ubicación, fecha límite o repetición",
-  "tutorialStepTilerWorksTitle": "Tiler Trabaja por Ti",
-  "tutorialStepTilerWorksBody": "Tiler organiza automáticamente tus tiles según tus niveles de energía, tiempo de viaje y fechas límite. Solo agrega lo que necesitas hacer — Tiler se encarga del cuándo.",
-  "tutorialCalloutForecast": "Pronóstico",
-  "tutorialCalloutForecastDesc": "Ve cuándo se insertará un tile antes de seleccionarlo",
-  "tutorialCalloutShuffle": "Mezclar",
-  "tutorialCalloutShuffleDesc": "Mezcla las cosas y sugiere qué deberías hacer a continuación",
-  "tutorialCalloutDeferAll": "Posponer Todo",
-  "tutorialCalloutDeferAllDesc": "¿Día difícil? Empuja todo hacia adelante",
-  "tutorialStepControlTilesTitle": "Controla Tus Tiles",
-  "tutorialStepControlTilesBody": "Cada tile tiene controles para gestionar tus tareas en tiempo real:",
-  "tutorialCalloutPlay": "Reproducir",
-  "tutorialCalloutPlayDesc": "Comienza a trabajar en este tile",
-  "tutorialCalloutPause": "Pausar",
-  "tutorialCalloutPauseDesc": "Toma un descanso — Tiler reprogramará el resto",
-  "tutorialCalloutComplete": "Completar",
-  "tutorialCalloutCompleteDesc": "¡Listo! Márcalo como terminado",
-  "tutorialCalloutProcrastinate": "Procrastinar",
-  "tutorialCalloutProcrastinateDesc": "Ahora no — empújalo para después",
-  "tutorialStepBigPictureTitle": "Ve el Panorama General",
-  "tutorialStepBigPictureBody": "Toca el ícono del calendario para alternar entre tres vistas:",
-  "tutorialCalloutDaily": "Diario",
-  "tutorialCalloutDailyDesc": "Hora por hora — tu agenda detallada",
-  "tutorialCalloutWeekly": "Semanal",
-  "tutorialCalloutWeeklyDesc": "Ve toda la semana de un vistazo",
-  "tutorialCalloutMonthly": "Mensual",
-  "tutorialCalloutMonthlyDesc": "Planifica con una vista mensual",
-  "tutorialStepToolkitTitle": "Tu Kit de Herramientas",
-  "tutorialStepToolkitBody": "Estas herramientas prácticas están siempre a tu alcance:",
-  "tutorialCalloutShare": "Compartir",
-  "tutorialCalloutShareDesc": "Colabora — comparte tiles con otros",
-  "tutorialCalloutSearch": "Buscar",
-  "tutorialCalloutSearchDesc": "Encuentra cualquier tile por nombre",
-  "tutorialCalloutSettings": "Configuración",
-  "tutorialCalloutSettingsDesc": "Personaliza tu experiencia, conecta calendarios, establece preferencias",
-  "tutorialCalloutChat": "Chat",
-  "tutorialCalloutChatDesc": "Toca el botón de chat para agregar o ajustar tiles solo hablando con Tiler",
-  "tutorialStepChatTitle": "Chatea con Tiler",
-  "tutorialStepChatBody": "Toca el botón de chat en cualquier momento para agregar o ajustar tiles solo hablando con Tiler — sin formularios.",
-  "tutorialNavNext": "Siguiente",
-  "tutorialNavNextArrow": "Siguiente →",
-  "tutorialNavBack": "Atrás",
-  "tutorialNavBackArrow": "← Atrás",
-  "tutorialNavSkip": "Omitir",
-  "tutorialNavLetsGo": "¡Vamos!",
-  "welcomeExplainerHeadline": "Tiles y Bloques",
-  "welcomeExplainerSubtitle": "Un vistazo rápido a cómo Tiler planifica tu día.",
-  "welcomeExplainerBlocksCaption": "Los bloques son fijos. Ocurren a una hora determinada.",
-  "welcomeExplainerTilesCaption": "Los tiles son flexibles. Tiler los acomoda alrededor de tus bloques.",
-  "welcomeExplainerReplanCaption": "El dentista pasa a las {time}: Tiler replanifica tus tiles a su alrededor.",
-  "@welcomeExplainerReplanCaption": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "welcomeExplainerMovedBadge": "Cambió",
-  "welcomeExplainerReplannedBadge": "Replanificado",
-  "welcomeExplainerBlockStandup": "Reunión de equipo",
-  "welcomeExplainerBlockDentist": "Dentista",
-  "welcomeExplainerTileWorkout": "Ejercicio",
-  "welcomeExplainerTileReport": "Escribir informe",
-  "welcomeExplainerTileGroceries": "Compras",
-  "welcomeExplainerLegendBlock": "Bloque",
-  "welcomeExplainerLegendTile": "Tile",
-  "tutorialStepCounter": "{current}/{total}",
-  "@tutorialStepCounter": {
-    "description": "Step counter like 3/7",
-    "placeholders": {
-      "current": {
-        "type": "int",
-        "example": "3"
-      },
-      "total": {
-        "type": "int",
-        "example": "7"
-      }
-    }
-  },
-  "tutorialStepSettingsTilesTitle": "Preferencias de Tiles",
-  "tutorialStepSettingsTilesBody": "Tus preferencias de IA viven aquí: cómo te desplazas, tus horas de trabajo y personales, y el tiempo bloqueado.",
-  "tutorialStepTilePrefsTransportTitle": "Cómo te desplazas",
-  "tutorialStepTilePrefsTransportBody": "Tiler calcula el tiempo de viaje entre tiles según tu forma habitual de desplazarte.",
-  "tutorialStepTilePrefsHoursTitle": "Horas de trabajo y personales",
-  "tutorialStepTilePrefsHoursBody": "Cuándo Tiler puede programar tiles de trabajo o personales. Toca cualquiera para definir un perfil.",
-  "tutorialStepTilePrefsBlockOutTitle": "Horas bloqueadas",
-  "tutorialStepTilePrefsBlockOutBody": "Hora de dormir y duración del sueño: horas en las que Tiler nunca programa nada.",
-  "howToUseTiler": "Cómo usar Tiler",
-  "ok": "OK",
-  "notesLoading": "Cargando notas…",
-  "notesSaving": "Guardando…",
-  "notesSaved": "Guardado",
-  "notesUnsaved": "Editando…",
-  "notesSaveError": "No se pudo guardar",
-  "notesSaveNow": "Guardar ahora",
-  "notesShowPreview": "Vista previa",
-  "notesShowEditor": "Editar",
-  "notesPreviewEmpty": "Nada para previsualizar todavía.",
-  "notesLinkPromptTitle": "Insertar enlace",
-  "notesConflictTitle": "Alguien más actualizó esta nota.",
-  "notesConflictDiscardMine": "Descartar la mía",
-  "notesConflictKeepEditing": "Seguir editando",
-  "notesToolBold": "Negrita",
-  "notesToolItalic": "Cursiva",
-  "notesToolStrikethrough": "Tachado",
-  "notesToolInlineCode": "Código en línea",
-  "notesToolHeading1": "Título 1",
-  "notesToolHeading2": "Título 2",
-  "notesToolBulletList": "Lista con viñetas",
-  "notesToolNumberedList": "Lista numerada",
-  "notesToolTaskList": "Lista de tareas",
-  "notesToolQuote": "Cita",
-  "notesToolLink": "Enlace",
-  "notesTitle": "Notas",
-  "notesViewerTitle": "Nota",
-  "notesTapToAdd": "Toca para añadir una nota",
-  "notesTapToEdit": "Toca para editar · mantén presionado para leer",
-  "notesDone": "Listo",
-  "invalidContactFormat": "No es un correo electrónico o número de teléfono válido",
-  "endOfDay": "Fin del día",
-  "scheduleFullness": "Ocupación del horario",
-  "scheduleFullnessDescription": "¿Qué tan ocupado debería estar tu horario?",
-  "scheduleFullnessValue": "{percentage} por ciento de ocupación objetivo",
-  "scheduleFullnessLimits": "Los objetivos oscilan entre el {minimum}% y el {maximum}%. Esto mantiene una línea base útil mientras deja espacio para cambios y viajes.",
-  "schedulePreferences": "Preferencias de horario",
-  "lighter": "Más ligero",
-  "balanced": "Equilibrado",
-  "fuller": "Más completo",
-  "search": "Buscar",
-  "share": "Compartir",
-  "openChat": "Abrir chat",
-  "goToToday": "Ir a hoy",
-  "switchCalendarView": "Cambiar vista de calendario",
-  "switchDayGridLayout": "Cambiar diseño del día",
-  "openDayRibbon": "Ver días",
-  "previewSundialGreeting": "Hola.",
-  "previewSundialCountsPrefix": "Hoy tienes",
-  "previewSundialCountsSuffix": "por delante.",
-  "previewSundialTilesClause": "{count} tiles",
-  "previewSundialBlocksClause": "{count} bloques",
-  "previewSundialTileSharesClause": "{count} tileshares",
-  "previewSundialWorkClause": "{hours} horas de trabajo",
-  "previewSundialTransitClause": "{mins} min en tránsito",
-  "previewSundialClearsByClause": "tu día termina a las {time}",
-  "previewSundialAndSeparator": "y",
-  "previewSundialDistance": "{distance} {unit}",
-  "previewSundialLocations": "{count} lugares",
-  "previewSundialSleepHours": "{hours} h de sueño",
-  "previewSundialFreeHours": "{hours} h libres",
-  "previewSundialFullyBooked": "Todo reservado",
-  "previewSundialTier0": "Día libre",
-  "previewSundialTier1": "Empezando",
-  "previewSundialTier2": "En curso",
-  "previewSundialTier3": "Buen avance",
-  "previewSundialTier4": "Casi listo",
-  "previewSundialTodayLabel": "Hoy",
-  "previewSundialCompositionA11y": "{tiles} tiles, {blocks} bloques, {nonViable} sin programar",
-  "timelineClearHeading": "Tu agenda está despejada hoy",
-  "timelineClearAddTask": "Añadir tile",
-  "aiConsentTitle": "Descubre Tiler AI",
-  "aiConsentSubtitle": "Tu asistente de planificación con IA",
-  "aiConsentIntro": "Para convertir tus palabras en un horario, Tiler AI comparte lo que envías con proveedores de IA de confianza.",
-  "aiConsentDataTitle": "Qué enviamos",
-  "aiConsentDataBody": "Los mensajes y grabaciones de voz que envías, además de detalles relevantes de tu agenda.",
-  "aiConsentProvidersTitle": "Quién lo recibe",
-  "aiConsentProvidersBody": "Google Gemini y OpenAI, nuestros proveedores de IA externos.",
-  "aiConsentPrivacyLink": "Lee nuestra Política de Privacidad",
-  "aiConsentContinue": "Continuar a Tiler AI",
-  "aiConsentAgreementNotice": "Al continuar, aceptas compartir estos datos con Google Gemini y OpenAI como se describe arriba.",
-  "aiConsentClose": "Cerrar",
-  "legalFooterPrefix": "Al continuar, aceptas los",
-  "legalFooterTerms": "Términos",
-  "legalFooterAnd": "y la",
-  "legalFooterPrivacy": "Privacidad",
-  "aiConsentLinkError": "No se pudo abrir el enlace.",
-  "addCalendar": "Añadir calendario",
-  "calendarConnected": "Calendario conectado",
-  "calendarConnectionDeclined": "La conexión del calendario se canceló",
-  "calendarConnectionError": "No se pudo conectar tu calendario",
-  "home": "Casa",
-  "addTileScreenTitleFlexible": "Agregar Tile",
-  "addTileScreenTitleFixed": "Agregar bloque",
-  "addTileTypeFlexible": "Tile flexible",
-  "addTileTypeFixed": "Bloque fijo",
-  "addTileTypeSelectorLabel": "Tipo de Tile",
-  "addTileExplanationFlexible": "Tiler encontrará el {emphasis} para esto.",
-  "addTileExplanationFixed": "Los bloques ocurren a {emphasis}.",
-  "addTileFindTime": "Buscar horario",
-  "addTileSubmitting": "Enviando",
-  "addTileNameRequired": "El nombre es obligatorio",
-  "addTileTitleRequired": "El título es obligatorio",
-  "addTileFieldTaskName": "NOMBRE DE LA TAREA",
-  "addTileFieldTitle": "TÍTULO",
-  "addTileFieldDuration": "DURACIÓN",
-  "addTileFieldCompleteBy": "COMPLETAR ANTES DE",
-  "addTileFieldPreferredTime": "HORARIO PREFERIDO",
-  "addTileFieldDate": "FECHA",
-  "addTileFieldStarts": "COMIENZA",
-  "addTileFieldEnds": "TERMINA",
-  "addTileFieldLocation": "UBICACIÓN",
-  "addTileTaskNameHint": "¿Qué quieres hacer?",
-  "addTileBlockTitleHint": "¿Qué es este bloque?",
-  "addTileValueNotSet": "Sin definir",
-  "addTileAutoCalculated": "Calculado automáticamente",
-  "addTileEndsSemantics": "Termina a las {time}, calculado a partir del inicio y la duración",
-  "addTileTodayDate": "Hoy, {date}",
-  "addTileMoreOptions": "Más opciones",
-  "addTilePriority": "Prioridad",
-  "addTilePriorityLow": "Baja",
-  "addTilePriorityMedium": "Media",
-  "addTilePriorityHigh": "Alta",
-  "addTilePriorityLowMeaning": "Estaría bien",
-  "addTilePriorityMediumMeaning": "Importante",
-  "addTilePriorityHighMeaning": "Debe completarse",
-  "addTilePriorityHelper": "La prioridad ayuda a Tiler a decidir qué proteger primero.",
-  "addTileColorAutomatic": "Automático",
-  "addTileColorCustom": "Personalizado",
-  "addTileSplitIntoSessions": "Dividir en sesiones",
-  "addTileSplitHelper": "Divide esto en sesiones de trabajo separadas.",
-  "addTileSessionCount": "{count, plural, =1{1 sesión} other{{count} sesiones}}",
-  "addTileFewerSessions": "Menos sesiones",
-  "addTileMoreSessions": "Más sesiones",
-  "addTileFlexibleCompletion": "Fecha de finalización flexible",
-  "addTileFlexibleCompletionHelper": "Tiler puede mover esta fecha ligeramente si es necesario.",
-  "addTilePreferredTimeCustom": "Personalizado",
-  "addTileDurationMinutes": "{minutes} min",
-  "addTileDurationHours": "{hours} h",
-  "addTileDurationHoursMinutes": "{hours} h {minutes} min",
-  "addTileRepeat": "Repetir",
-  "addTileRepeatNever": "No se repite",
-  "addTileRepeatDays": "DÍAS",
-  "addTileRepeatsUntil": "SE REPITE HASTA",
-  "addTileRepeatHelper": "Repetir ayuda a Tiler a programar tareas recurrentes.",
-  "addTileLocationSearchHint": "Buscar ubicaciones",
-  "addTileLocationYourPlaces": "TUS LUGARES",
-  "addTileLocationSuggestions": "SUGERENCIAS",
-  "addTileLocationHelper": "La ubicación ayuda a Tiler a optimizar el trayecto y los horarios.",
-  "addTileLocationNoneSaved": "Aún no tienes lugares guardados",
-  "addTileLocationNoneSavedHelper": "Busca un lugar o escribe un nombre como \"taller de bicis\" para guardarlo.",
-  "addTileLocationNoResults": "No se encontraron lugares",
-  "addTileLocationNoResultsHelper": "Aun así puedes guardar lo que escribiste como nombre del lugar.",
-  "addTileLocationSearchFailed": "No se pudo buscar en este momento",
-  "addTileLocationSearchFailedHelper": "Revisa tu conexión e inténtalo de nuevo, o guarda lo que escribiste como nombre del lugar.",
-  "addTileLocationUseTyped": "Usar \"{query}\"",
-  "addTileLocationUseTypedHelper": "Dale un nombre y una dirección",
-  "addTileLocationFallbackName": "Ubicación",
-  "addTilePlaceAdd": "Agregar lugar",
-  "addTilePlaceEdit": "Editar lugar",
-  "addTilePlaceName": "NOMBRE",
-  "addTilePlaceAddress": "DIRECCIÓN",
-  "addTilePlaceNameHint": "p. ej. Walmart cerca del trabajo",
-  "addTilePlaceAddressHint": "Calle, ciudad, estado",
-  "addTilePlaceSave": "Guardar lugar",
-  "addTilePlaceNameThis": "Nombrar este lugar",
-  "addTilePlaceNameHelper": "El nombre es la forma de volver a encontrar este lugar. Si nombras dos lugares igual, solo se conserva la dirección más reciente.",
-  "addTilePlaceNameTaken": "Ya tienes un lugar llamado \"{name}\" en {address}. Al guardar, ese nombre pasará a esta dirección.",
-  "addTilePlaceNameTakenNoAddress": "Ya tienes un lugar llamado \"{name}\". Al guardar, ese nombre pasará a esta dirección.",
+    },
+    "tutorialStepSettingsTilesTitle": "Preferencias de Tiles",
+    "tutorialStepSettingsTilesBody": "Tus preferencias de IA viven aquí: cómo te desplazas, tus horas de trabajo y personales, y el tiempo bloqueado.",
+    "tutorialStepTilePrefsTransportTitle": "Cómo te desplazas",
+    "tutorialStepTilePrefsTransportBody": "Tiler calcula el tiempo de viaje entre tiles según tu forma habitual de desplazarte.",
+    "tutorialStepTilePrefsHoursTitle": "Horas de trabajo y personales",
+    "tutorialStepTilePrefsHoursBody": "Cuándo Tiler puede programar tiles de trabajo o personales. Toca cualquiera para definir un perfil.",
+    "tutorialStepTilePrefsBlockOutTitle": "Horas bloqueadas",
+    "tutorialStepTilePrefsBlockOutBody": "Hora de dormir y duración del sueño: horas en las que Tiler nunca programa nada.",
+    "howToUseTiler": "Cómo usar Tiler",
+    "ok": "OK",
+    "notesLoading": "Cargando notas…",
+    "notesSaving": "Guardando…",
+    "notesSaved": "Guardado",
+    "notesUnsaved": "Editando…",
+    "notesSaveError": "No se pudo guardar",
+    "notesSaveNow": "Guardar ahora",
+    "notesShowPreview": "Vista previa",
+    "notesShowEditor": "Editar",
+    "notesPreviewEmpty": "Nada para previsualizar todavía.",
+    "notesLinkPromptTitle": "Insertar enlace",
+    "notesConflictTitle": "Alguien más actualizó esta nota.",
+    "notesConflictDiscardMine": "Descartar la mía",
+    "notesConflictKeepEditing": "Seguir editando",
+    "notesToolBold": "Negrita",
+    "notesToolItalic": "Cursiva",
+    "notesToolStrikethrough": "Tachado",
+    "notesToolInlineCode": "Código en línea",
+    "notesToolHeading1": "Título 1",
+    "notesToolHeading2": "Título 2",
+    "notesToolBulletList": "Lista con viñetas",
+    "notesToolNumberedList": "Lista numerada",
+    "notesToolTaskList": "Lista de tareas",
+    "notesToolQuote": "Cita",
+    "notesToolLink": "Enlace",
+    "notesTitle": "Notas",
+    "notesViewerTitle": "Nota",
+    "notesTapToAdd": "Toca para añadir una nota",
+    "notesTapToEdit": "Toca para editar · mantén presionado para leer",
+    "notesDone": "Listo",
+    "invalidContactFormat": "No es un correo electrónico o número de teléfono válido",
+    "endOfDay": "Fin del día",
+    "scheduleFullness": "Ocupación del horario",
+    "scheduleFullnessDescription": "¿Qué tan ocupado debería estar tu horario?",
+    "scheduleFullnessValue": "{percentage} por ciento de ocupación objetivo",
+    "scheduleFullnessLimits": "Los objetivos oscilan entre el {minimum}% y el {maximum}%. Esto mantiene una línea base útil mientras deja espacio para cambios y viajes.",
+    "schedulePreferences": "Preferencias de horario",
+    "lighter": "Más ligero",
+    "balanced": "Equilibrado",
+    "fuller": "Más completo",
+    "search": "Buscar",
+    "share": "Compartir",
+    "openChat": "Abrir chat",
+    "goToToday": "Ir a hoy",
+    "switchCalendarView": "Cambiar vista de calendario",
+    "switchDayGridLayout": "Cambiar diseño del día",
+    "openDayRibbon": "Ver días",
+
+    "previewSundialGreeting": "Hola.",
+    "previewSundialCountsPrefix": "Hoy tienes",
+    "previewSundialCountsSuffix": "por delante.",
+    "previewSundialTilesClause": "{count} tiles",
+    "previewSundialBlocksClause": "{count} bloques",
+    "previewSundialTileSharesClause": "{count} tileshares",
+    "previewSundialWorkClause": "{hours} horas de trabajo",
+    "previewSundialTransitClause": "{mins} min en tránsito",
+    "previewSundialClearsByClause": "tu día termina a las {time}",
+    "previewSundialAndSeparator": "y",
+    "previewSundialDistance": "{distance} {unit}",
+    "previewSundialLocations": "{count} lugares",
+    "previewSundialSleepHours": "{hours} h de sueño",
+    "previewSundialFreeHours": "{hours} h libres",
+    "previewSundialFullyBooked": "Todo reservado",
+    "previewSundialTier0": "Día libre",
+    "previewSundialTier1": "Empezando",
+    "previewSundialTier2": "En curso",
+    "previewSundialTier3": "Buen avance",
+    "previewSundialTier4": "Casi listo",
+    "previewSundialTodayLabel": "Hoy",
+    "previewSundialCompositionA11y": "{tiles} tiles, {blocks} bloques, {nonViable} sin programar",
+    "timelineClearHeading": "Tu agenda está despejada hoy",
+    "timelineClearAddTask": "Añadir tile",
+    "aiConsentTitle": "Descubre Tiler AI",
+    "aiConsentSubtitle": "Tu asistente de planificación con IA",
+    "aiConsentIntro": "Para convertir tus palabras en un horario, Tiler AI comparte lo que envías con proveedores de IA de confianza.",
+    "aiConsentDataTitle": "Qué enviamos",
+    "aiConsentDataBody": "Los mensajes y grabaciones de voz que envías, además de detalles relevantes de tu agenda.",
+    "aiConsentProvidersTitle": "Quién lo recibe",
+    "aiConsentProvidersBody": "Google Gemini y OpenAI, nuestros proveedores de IA externos.",
+    "aiConsentPrivacyLink": "Lee nuestra Política de Privacidad",
+    "aiConsentContinue": "Continuar a Tiler AI",
+    "aiConsentAgreementNotice": "Al continuar, aceptas compartir estos datos con Google Gemini y OpenAI como se describe arriba.",
+    "aiConsentClose": "Cerrar",
+    "legalFooterPrefix": "Al continuar, aceptas los",
+    "legalFooterTerms": "Términos",
+    "legalFooterAnd": "y la",
+    "legalFooterPrivacy": "Privacidad",
+    "aiConsentLinkError": "No se pudo abrir el enlace.",
+    "addCalendar": "Añadir calendario",
+    "calendarConnected": "Calendario conectado",
+    "calendarConnectionDeclined": "La conexión del calendario se canceló",
+    "calendarConnectionError": "No se pudo conectar tu calendario",
+    "home": "Casa",
+    "addTileScreenTitleFlexible": "Agregar Tile",
+    "addTileScreenTitleFixed": "Agregar bloque",
+    "addTileTypeFlexible": "Tile flexible",
+    "addTileTypeFixed": "Bloque fijo",
+    "addTileTypeSelectorLabel": "Tipo de Tile",
+    "addTileExplanationFlexible": "Tiler encontrará el {emphasis} para esto.",
+    "addTileExplanationFixed": "Los bloques ocurren a {emphasis}.",
+    "addTileFindTime": "Buscar horario",
+    "addTileSubmitting": "Enviando",
+    "addTileNameRequired": "El nombre es obligatorio",
+    "addTileTitleRequired": "El título es obligatorio",
+    "addTileFieldTaskName": "NOMBRE DE LA TAREA",
+    "addTileFieldTitle": "TÍTULO",
+    "addTileFieldDuration": "DURACIÓN",
+    "addTileFieldCompleteBy": "COMPLETAR ANTES DE",
+    "addTileFieldPreferredTime": "HORARIO PREFERIDO",
+    "addTileFieldDate": "FECHA",
+    "addTileFieldStarts": "COMIENZA",
+    "addTileFieldEnds": "TERMINA",
+    "addTileFieldLocation": "UBICACIÓN",
+    "addTileTaskNameHint": "¿Qué quieres hacer?",
+    "addTileBlockTitleHint": "¿Qué es este bloque?",
+    "addTileValueNotSet": "Sin definir",
+    "addTileAutoCalculated": "Calculado automáticamente",
+    "addTileEndsSemantics": "Termina a las {time}, calculado a partir del inicio y la duración",
+    "addTileTodayDate": "Hoy, {date}",
+    "addTileMoreOptions": "Más opciones",
+    "addTilePriority": "Prioridad",
+    "addTilePriorityLow": "Baja",
+    "addTilePriorityMedium": "Media",
+    "addTilePriorityHigh": "Alta",
+    "addTilePriorityLowMeaning": "Estaría bien",
+    "addTilePriorityMediumMeaning": "Importante",
+    "addTilePriorityHighMeaning": "Debe completarse",
+    "addTilePriorityHelper": "La prioridad ayuda a Tiler a decidir qué proteger primero.",
+    "addTileColorAutomatic": "Automático",
+    "addTileColorCustom": "Personalizado",
+    "addTileSplitIntoSessions": "Dividir en sesiones",
+    "addTileSplitHelper": "Divide esto en sesiones de trabajo separadas.",
+    "addTileSessionCount": "{count, plural, =1{1 sesión} other{{count} sesiones}}",
+    "addTileFewerSessions": "Menos sesiones",
+    "addTileMoreSessions": "Más sesiones",
+    "addTileFlexibleCompletion": "Fecha de finalización flexible",
+    "addTileFlexibleCompletionHelper": "Tiler puede mover esta fecha ligeramente si es necesario.",
+    "addTilePreferredTimeCustom": "Personalizado",
+    "addTileDurationMinutes": "{minutes} min",
+    "addTileDurationHours": "{hours} h",
+    "addTileDurationHoursMinutes": "{hours} h {minutes} min",
+    "addTileRepeat": "Repetir",
+    "addTileRepeatNever": "No se repite",
+    "addTileRepeatDays": "DÍAS",
+    "addTileRepeatsUntil": "SE REPITE HASTA",
+    "addTileRepeatHelper": "Repetir ayuda a Tiler a programar tareas recurrentes.",
+    "addTileLocationSearchHint": "Buscar ubicaciones",
+    "addTileLocationYourPlaces": "TUS LUGARES",
+    "addTileLocationSuggestions": "SUGERENCIAS",
+    "addTileLocationHelper": "La ubicación ayuda a Tiler a optimizar el trayecto y los horarios.",
+    "addTileLocationNoneSaved": "Aún no tienes lugares guardados",
+    "addTileLocationNoneSavedHelper": "Busca un lugar o escribe un nombre como \"taller de bicis\" para guardarlo.",
+    "addTileLocationNoResults": "No se encontraron lugares",
+    "addTileLocationNoResultsHelper": "Aun así puedes guardar lo que escribiste como nombre del lugar.",
+    "addTileLocationSearchFailed": "No se pudo buscar en este momento",
+    "addTileLocationSearchFailedHelper": "Revisa tu conexión e inténtalo de nuevo, o guarda lo que escribiste como nombre del lugar.",
+    "addTileLocationUseTyped": "Usar \"{query}\"",
+    "addTileLocationUseTypedHelper": "Dale un nombre y una dirección",
+    "addTileLocationFallbackName": "Ubicación",
+    "addTilePlaceAdd": "Agregar lugar",
+    "addTilePlaceEdit": "Editar lugar",
+    "addTilePlaceName": "NOMBRE",
+    "addTilePlaceAddress": "DIRECCIÓN",
+    "addTilePlaceNameHint": "p. ej. Walmart cerca del trabajo",
+    "addTilePlaceAddressHint": "Calle, ciudad, estado",
+    "addTilePlaceSave": "Guardar lugar",
+    "addTilePlaceNameThis": "Nombrar este lugar",
+    "addTilePlaceNameHelper": "El nombre es la forma de volver a encontrar este lugar. Si nombras dos lugares igual, solo se conserva la dirección más reciente.",
+    "addTilePlaceNameTaken": "Ya tienes un lugar llamado \"{name}\" en {address}. Al guardar, ese nombre pasará a esta dirección.",
+    "addTilePlaceNameTakenNoAddress": "Ya tienes un lugar llamado \"{name}\". Al guardar, ese nombre pasará a esta dirección.",
+
   "addTileFieldPriority": "PRIORIDAD",
   "addTileFieldColor": "COLOR",
   "addTileColorPresets": "PREDEFINIDOS",
@@ -955,16 +921,22 @@
   "addTileColorHelper": "El color solo cambia cómo se ve esto en tu agenda.",
   "addTileColorShuffle": "Probar otro color",
   "addTileColorSwatch": "Color {index}",
+
   "addTileExplanationFlexibleEmphasis": "mejor momento",
   "addTileExplanationFixedEmphasis": "una hora fija",
+
   "addTileFieldRepeat": "REPETIR",
+
   "addTileDurationQuick": "RÁPIDO",
   "addTileDurationCustom": "PERSONALIZADO",
+
   "addTileDurationHourLabel": "Hora",
   "addTileDurationMinuteLabel": "Min",
+
   "addTileDurationEndsFromStart": "DESDE {start}",
   "addTileDurationEndsNextDay": "{time}, día siguiente",
   "addTileDurationEndsSemantics": "Termina a las {end}, desde un inicio a las {start}. Cambiar la hora de fin",
+
   "editTileTitleTile": "Editar tile",
   "editTileTitleBlock": "Editar bloque",
   "editTileSave": "Guardar cambios",
@@ -1057,6 +1029,7 @@
   "tileDetailOccurrenceSemantics": "{day}, {span}{done}",
   "editTileTimeChipSemantics": "Hora de {field}, {value}",
   "editTileDateChipSemantics": "Fecha de {field}, {value}",
+
   "addTileSubmitFailed": "No se pudo agregar en este momento. Tus datos se guardaron.",
   "addTileRetry": "Reintentar",
   "addTileTimeRestrictionTitle": "Restricciones de tiempo",
@@ -1629,12 +1602,8 @@
   "searchResultsForQuery": "{count} resultados para \"{query}\"",
   "@searchResultsForQuery": {
     "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "query": {
-        "type": "String"
-      }
+      "count": { "type": "int" },
+      "query": { "type": "String" }
     }
   },
   "searchFilterAll": "Todos",
@@ -1645,98 +1614,67 @@
   "dueOnDate": "Vence {date}",
   "@dueOnDate": {
     "placeholders": {
-      "date": {
-        "type": "String"
-      }
+      "date": { "type": "String" }
     }
   },
   "noResultsForProvider": "No hay resultados de este calendario",
   "readOnly": "Solo lectura",
-  "productTourStarting": "Tu recorrido por la app está a punto de comenzar.",
-  "commentsCount": "{count} comentarios",
-  "@commentsCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "commentsEmpty": "Aún no hay comentarios",
-  "commentsTitle": "Comentarios",
-  "@commentsTitle": {
-    "description": "Title of the comments panel for a shared tilette."
-  },
-  "commentsLoading": "Cargando…",
-  "commentsLoadEarlier": "Cargar comentarios anteriores",
-  "commentsLoadEarlierReplies": "Cargar respuestas anteriores",
-  "commentsRetry": "Reintentar",
-  "commentsLoadError": "No se pudieron cargar los comentarios. Inténtalo de nuevo.",
-  "commentsCreateError": "No se pudo publicar tu comentario.",
-  "commentsEditError": "No se pudo guardar tu edición.",
-  "commentsDeleteError": "No se pudo eliminar el comentario.",
-  "commentsCreateReplyError": "No se pudo publicar tu respuesta.",
-  "commentsPlaceholder": "Escribe un comentario…",
-  "commentsReplyPlaceholder": "Escribe una respuesta…",
-  "commentsSend": "Enviar",
-  "commentsSending": "Enviando…",
-  "commentsEdit": "Editar",
-  "commentsSave": "Guardar",
-  "commentsCancel": "Cancelar",
-  "commentsDelete": "Eliminar",
-  "commentsEdited": "editado",
-  "commentsDeletedPlaceholder": "Este comentario fue eliminado.",
-  "commentsDeletedAuthor": "Usuario eliminado",
-  "commentsReply": "Responder",
-  "commentsReplies": "{count} respuestas",
-  "@commentsReplies": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "commentsShowReplies": "Mostrar respuestas",
-  "commentsHideReplies": "Ocultar respuestas",
-  "commentsYou": "(tú)",
-  "commentsMentionSuggestions": "Personas que puedes mencionar",
-  "commentsAttach": "Adjuntar archivo",
-  "commentsAttachmentProcessing": "Comprobando archivo…",
-  "commentsAttachmentUploaded": "Subido",
-  "commentsAttachmentQueued": "En la cola",
-  "commentsAttachmentUploadingSummary": "Subiendo archivos ({count} restantes). Mantén esta página abierta.",
-  "@commentsAttachmentUploadingSummary": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "commentsAttachmentUploadFailed": "Error al subir",
-  "commentsAttachmentRemove": "Quitar {name}",
-  "@commentsAttachmentRemove": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "commentsAttachmentDownload": "Descargar",
-  "commentsAttachmentDownloadError": "No se pudo descargar el archivo.",
-  "commentsAttachmentDownloading": "Descargando…",
-  "commentsAttachmentSaved": "Guardado: {name}",
-  "commentsAttachmentOpen": "Abrir",
-  "commentsAttachmentOpenFailed": "No se pudo abrir el archivo.",
-  "commentsAttachmentInvalidType": "Solo se pueden adjuntar archivos PDF, DOCX, PNG y JPEG.",
-  "commentsAttachmentTooLarge": "Los archivos deben ser de 10 MB o menos.",
-  "commentsAttachmentEmpty": "Ese archivo está vacío.",
-  "commentsAttachmentLimit": "Puedes adjuntar hasta {count} archivos.",
-  "@commentsAttachmentLimit": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+"productTourStarting": "Tu recorrido por la app está a punto de comenzar.",
+"commentsCount": "{count} comentarios",
+"@commentsCount": {"placeholders": {"count": {"type": "int"}}},
+"commentsEmpty": "Aún no hay comentarios",
+
+"commentsTitle": "Comentarios",
+"@commentsTitle": {
+  "description": "Title of the comments panel for a shared tilette."
+},
+"commentsLoading": "Cargando…",
+"commentsLoadEarlier": "Cargar comentarios anteriores",
+"commentsLoadEarlierReplies": "Cargar respuestas anteriores",
+"commentsRetry": "Reintentar",
+"commentsLoadError": "No se pudieron cargar los comentarios. Inténtalo de nuevo.",
+"commentsCreateError": "No se pudo publicar tu comentario.",
+"commentsEditError": "No se pudo guardar tu edición.",
+"commentsDeleteError": "No se pudo eliminar el comentario.",
+"commentsCreateReplyError": "No se pudo publicar tu respuesta.",
+"commentsPlaceholder": "Escribe un comentario…",
+"commentsReplyPlaceholder": "Escribe una respuesta…",
+"commentsSend": "Enviar",
+"commentsSending": "Enviando…",
+"commentsEdit": "Editar",
+"commentsSave": "Guardar",
+"commentsCancel": "Cancelar",
+"commentsDelete": "Eliminar",
+"commentsEdited": "editado",
+"commentsDeletedPlaceholder": "Este comentario fue eliminado.",
+"commentsDeletedAuthor": "Usuario eliminado",
+"commentsReply": "Responder",
+"commentsReplies": "{count} respuestas",
+"@commentsReplies": {"placeholders": {"count": {"type": "int"}}},
+"commentsShowReplies": "Mostrar respuestas",
+"commentsHideReplies": "Ocultar respuestas",
+"commentsYou": "(tú)",
+"commentsMentionSuggestions": "Personas que puedes mencionar",
+"commentsAttach": "Adjuntar archivo",
+"commentsAttachmentProcessing": "Comprobando archivo…",
+"commentsAttachmentUploaded": "Subido",
+"commentsAttachmentQueued": "En la cola",
+"commentsAttachmentUploadingSummary": "Subiendo archivos ({count} restantes). Mantén esta página abierta.",
+"@commentsAttachmentUploadingSummary": {"placeholders": {"count": {"type": "int"}}},
+"commentsAttachmentUploadFailed": "Error al subir",
+"commentsAttachmentRemove": "Quitar {name}",
+"@commentsAttachmentRemove": {"placeholders": {"name": {"type": "String"}}},
+"commentsAttachmentDownload": "Descargar",
+"commentsAttachmentDownloadError": "No se pudo descargar el archivo.",
+"commentsAttachmentDownloading": "Descargando…",
+"commentsAttachmentSaved": "Guardado: {name}",
+"commentsAttachmentOpen": "Abrir",
+"commentsAttachmentOpenFailed": "No se pudo abrir el archivo.",
+"commentsAttachmentInvalidType": "Solo se pueden adjuntar archivos PDF, DOCX, PNG y JPEG.",
+"commentsAttachmentTooLarge": "Los archivos deben ser de 10 MB o menos.",
+"commentsAttachmentEmpty": "Ese archivo está vacío.",
+"commentsAttachmentLimit": "Puedes adjuntar hasta {count} archivos.",
+"@commentsAttachmentLimit": {"placeholders": {"count": {"type": "int"}}},
   "attentionTabTitle": "Atención",
   "attentionFilterAll": "Todo",
   "attentionFilterInvitations": "Invitaciones",
@@ -1907,6 +1845,7 @@
   "broadcastParticipants": "Participantes",
   "broadcastViewAll": "Ver todos ({count})",
   "broadcastNoParticipants": "Nadie todavía. Añade a alguien arriba.",
+  "projectNoParticipants": "Nadie aún. Asigna una tilette a alguien en la pestaña Tilettes.",
   "broadcastDeliveryIssues": "{count, plural, =1{1 invitación puede no haber llegado} other{{count} invitaciones pueden no haber llegado}}",
   "participantInvited": "Invitado",
   "participantAdding": "Añadiendo…",
@@ -1987,6 +1926,20 @@
   "createFailed": "No se pudo enviar en este momento. Tus datos se conservan.",
   "createDiscardTitle": "¿Descartar este compartido?",
   "createDiscardBody": "Lo que ingresaste no se enviará.",
+  "createClassTitle": "Nueva clase",
+  "createNeedsTask": "Agrega al menos una tilette",
+  "createClassPeopleHint": "Cada persona recibe su propia copia de cada tilette y se le pide que la acepte.",
+  "createTilettesLabel": "TILETTES",
+  "createTiletteWithShare": "{length} · vence con el compartido",
+  "createTiletteDue": "{length} · vence {when}",
+  "createClassSummary": "{count, plural, =1{1 tilette} other{{count} tilettes}} · {effort} · vence {when}",
+  "createStepOf": "Paso {step} de {total}",
+  "createNextPeople": "Siguiente: personas",
+  "createProjectTitle": "Nuevo proyecto",
+  "createProjectSend": "Crear proyecto",
+  "createCreating": "Creando…",
+  "createProjectHint": "Asigna tilettes a personas desde el tablero una vez creado, o guárdalas para ti.",
+  "detailLoading": "Cargando contenido compartido…",
   "taskSheetPeopleLabel": "PERSONAS",
   "taskSheetAddPerson": "AGREGAR PERSONA",
   "taskSheetWillBeAdded": "Se agregará",
@@ -1994,24 +1947,112 @@
   "taskSheetWillBeAssigned": "Se asignará al guardar",
   "taskSheetPeopleFailed": "Algunos cambios de personas no se guardaron. Reinténtalos abajo.",
   "tileShareSaveChanges": "Guardar cambios",
-  "createClassTitle": "Nueva clase",
-  "createNeedsTask": "Agrega al menos una tarea",
-  "createClassPeopleHint": "Cada persona recibe su propia copia de cada tarea y se le pide que acepte.",
-  "detailLoading": "Cargando contenido compartido…",
-  "vibeScheduleUpdatePending": "Calculando los horarios del trabajo aceptado. Aún no se ha guardado ningún cambio.",
-  "vibeScheduleNoFit": "No se ha aplicado ningún cambio. El trabajo restante no cabe entre las sesiones protegidas. Ajusta la duración o la fecha límite y solicita una actualización revisada.",
-  "vibeScheduleUpdateFailed": "No se ha aplicado ningún cambio. El horario cambió o no se pudo completar el cálculo. Solicita una actualización revisada.",
-  "vibeUpdateProject": "Actualizar proyecto",
-  "vibeProjectUpdateReview": "Revisar cambios del proyecto",
-  "vibeProjectUpdated": "Proyecto actualizado.",
-  "vibeManageAccess": "Gestionar acceso al proyecto",
-  "vibeManageRecipients": "Gestionar destinatarios",
-  "vibeManagementUpdated": "Cambios de destinatarios o acceso guardados.",
-  "vibeManagementNote": "Revisa los efectos sobre destinatarios y acceso. La suspensión y restauración del calendario se procesan en segundo plano.",
-  "vibeAccessReconciliation": "Acceso guardado. La suspensión o restauración del calendario se procesa en segundo plano.",
-  "vibePlanTargetPending": "Esperando el cálculo conjunto",
-  "vibePlanTargetNotApplied": "Sin aplicar",
-  "vibePlanReview": "Revisar plan de trabajo compartido",
-  "vibePlanUpdated": "Los cambios revisados se guardaron juntos.",
-  "vibePlanNote": "Todos los elementos mostrados se guardan juntos después de confirmar. Si algún elemento cambia o pierdes el acceso, revisa una nueva propuesta."
+  "todayStatusClearDayHeadline": "Día tranquilo, nada urgente.",
+  "todayStatusClearDaySubtext": "Haz que Tiler trabaje para ti.",
+  "tileShareActivityInvitationUnknown": "Resultado del envío de la invitación desconocido",
+  "tileShareActivityExplicitResend": "Es posible que la invitación se haya enviado. Si es necesario, reenvíala explícitamente.",
+  "tileShareActivityEmail": "Correo electrónico",
+  "tileShareActivitySms": "SMS",
+  "tileShareActivityPush": "Notificación push",
+  "tileShareActivityTitle": "Actividades",
+  "tileShareActivityRefresh": "Actualizar",
+  "tileShareActivityRetry": "Reintentar",
+  "tileShareActivityEmpty": "Aún no hay actividad.",
+  "tileShareActivityFailed": "No se pudo cargar la actividad. Comprueba tu conexión e inténtalo de nuevo.",
+  "tileShareActivityAccess": "Esta actividad ya no está disponible para ti.",
+  "tileShareActivityUnknown": "Actividad actualizada",
+  "tileShareActivityUnavailable": "Elemento ya no disponible",
+  "tileShareActivityMore": "Cargar más",
+  "tileShareActivityClusterCreated": "TileShare creado",
+  "tileShareActivityClusterDeleted": "TileShare eliminado",
+  "tileShareActivityTiletteAdded": "Tilette añadida",
+  "tileShareActivityTiletteEdited": "Tilette actualizada",
+  "tileShareActivityTiletteDeleted": "Tilette eliminada",
+  "tileShareActivityTiletteRestored": "Tilette restaurada",
+  "tileShareActivityRecipientAdded": "Participante añadido",
+  "tileShareActivityRecipientRemoved": "Participante eliminado",
+  "tileShareActivityRecipientRestored": "Participante restaurado",
+  "tileShareActivityAccepted": "Asignación aceptada",
+  "tileShareActivityDeclined": "Asignación rechazada",
+  "tileShareActivityInvitationSent": "Invitación enviada",
+  "tileShareActivityInvitationFailed": "No se pudo enviar la invitación",
+  "commentsAttachmentPickFailed": "No se pudo adjuntar ese archivo. Inténtalo de nuevo.",
+  "scheduleChangeRefresh": "Actualizar horario",
+  "scheduleChangeUncertainBody": "Tu cambio puede haber llegado al servidor. Actualiza para comprobar si el horario cambió. Esta pausa terminará automáticamente.",
+  "scheduleChangeRefreshing": "Actualizando tu línea de tiempo…",
+  "scheduleChangeUncertain": "Confirmación no disponible",
+  "scheduleChangeAcknowledged": "{change}: Tu línea de tiempo se ha actualizado. Revisa los cambios.",
+  "scheduleChangeWentThrough": "{change} se completó.",
+  "scheduleChangeFailedLate": "{change} falló.",
+  "scheduleChangeUnconfirmed": "No se pudo confirmar {change}. Revisa tu horario.",
+  "scheduleChangeNotSent": "No se pudo conectar con Tiler, así que {change} no se envió. Inténtalo de nuevo.",
+  "scheduleChangeUnconfirmedGeneric": "No se pudo confirmar tu último cambio de horario. Revisa tu horario.",
+  "scheduleChangeReattemptTitle": "¿Enviar de nuevo?",
+  "scheduleChangeReattemptBody": "Es posible que {change} ya se haya aplicado. ¿Enviarlo de nuevo?",
+  "scheduleChangeReattemptConfirm": "Enviar de nuevo",
+  "scheduleChangeReattemptDeclined": "{change} no se volvió a enviar.",
+  "scheduleChangeAdding": "Añadiendo evento",
+  "scheduleChangeSettings": "Actualizando ajustes del horario",
+  "scheduleChangeAccepting": "Aceptando cambios",
+  "scheduleChangeTargetSchedule": "Tu horario",
+  "scheduleChangeTargetEvent": "Evento",
+  "scheduleChangeAllEvents": "Todos los eventos",
+  "scheduleChangeEventCount": "{count, plural, =1{1 evento} other{{count} eventos}}",
+  "@scheduleChangeEventCount": {"placeholders": {"count": {"type": "int"}}},
+  "scheduleChangesBlocked": "Termina el cambio de horario actual antes de iniciar otro.",
+  "scheduleChangesBlockedBy": "Termina el cambio de horario actual ({change}) antes de iniciar otro.",
+  "scheduleChangeFailed": "No se pudo cambiar el horario",
+  "scheduleUpdates": "Actualizaciones del horario",
+  "scheduleUpdatesDescription": "Cómo se mueve tu día cuando cambia tu horario.",
+  "scheduleUpdatesDetailed": "Detallado",
+  "scheduleUpdatesDetailedDescription": "Muestra cada cambio paso a paso.",
+  "scheduleUpdatesMinimal": "Mínimo",
+  "scheduleUpdatesMinimalDescription": "Desliza los bloques a sus nuevas horas.",
+  "scheduleUpdatesOff": "Desactivado",
+  "scheduleUpdatesOffDescription": "Actualiza al instante, sin animación.",
+  "scheduleChangePlanUpdated": "Plan actualizado",
+  "scheduleChangeDayCleared": "Día despejado",
+  "scheduleChangeTilesMoved": "{count, plural, =1{1 bloque movido} other{{count} bloques movidos}}",
+  "scheduleChangeTilesMovedToOtherDays": "{count, plural, =1{1 bloque movido a otro día} other{{count} bloques movidos a otros días}}",
+  "scheduleChangeTilesAdded": "{count, plural, =1{1 bloque añadido} other{{count} bloques añadidos}}",
+  "scheduleChangeTilesRemoved": "{count, plural, =1{1 bloque eliminado} other{{count} bloques eliminados}}",
+  "scheduleChangeTravelUpdated": "{count, plural, =1{1 tiempo de viaje actualizado} other{{count} tiempos de viaje actualizados}}",
+  "scheduleChangeFreeGained": "+{duration} libres",
+  "scheduleChangeSeeChanges": "Ver cambios",
+  "scheduleChangeWhatChanged": "Qué cambió",
+  "scheduleChangeAdded": "Añadido · {time}",
+  "scheduleChangeRemoved": "Eliminado",
+  "scheduleChangeTravelTo": "Viaje a {name}",
+  "scheduleChangeFreeTime": "Tiempo libre",
+  "scheduleChangeMovedFrom": "Movido desde las {time}",
+  "scheduleChangeMovedTo": "Movido a las {time}",
+  "scheduleChangeTileMovedTo": "{name} movido a {when}",
+  "scheduleChangeTilesMovedTo": "{count, plural, =1{1 bloque movido a {when}} other{{count} bloques movidos a {when}}}",
+  "scheduleChangeTilesMovedLater": "{count, plural, =1{1 bloque movido más tarde} other{{count} bloques movidos más tarde}}",
+  "scheduleChangeTilesMovedEarlier": "{count, plural, =1{1 bloque movido antes} other{{count} bloques movidos antes}}",
+  "scheduleChangeTilesMoving": "{count, plural, =1{1 bloque se mueve} other{{count} bloques se mueven}}",
+  "scheduleChangeTabChanges": "Cambios",
+  "scheduleChangeTabBeforeAfter": "Antes y después",
+  "scheduleChangeBefore": "Antes",
+  "scheduleChangeAfter": "Después",
+  "tileShareActivityCommentAdded": "Comentario añadido",
+  "tileShareActivityCommentReplied": "Respuesta a comentario añadida",
+  "tileShareActivityCommentEdited": "Comentario editado",
+  "tileShareActivityCommentDeleted": "Comentario eliminado",
+    "vibeScheduleUpdatePending": "Calculando los horarios del trabajo aceptado. Aún no se ha guardado ningún cambio.",
+    "vibeScheduleNoFit": "No se ha aplicado ningún cambio. El trabajo restante no cabe entre las sesiones protegidas. Ajusta la duración o la fecha límite y solicita una actualización revisada.",
+    "vibeScheduleUpdateFailed": "No se ha aplicado ningún cambio. El horario cambió o no se pudo completar el cálculo. Solicita una actualización revisada.",
+    "vibeUpdateProject": "Actualizar proyecto",
+    "vibeProjectUpdateReview": "Revisar cambios del proyecto",
+    "vibeProjectUpdated": "Proyecto actualizado.",
+    "vibeManageAccess": "Gestionar acceso al proyecto",
+    "vibeManageRecipients": "Gestionar destinatarios",
+    "vibeManagementUpdated": "Cambios de destinatarios o acceso guardados.",
+    "vibeManagementNote": "Revisa los efectos sobre destinatarios y acceso. La suspensión y restauración del calendario se procesan en segundo plano.",
+    "vibeAccessReconciliation": "Acceso guardado. La suspensión o restauración del calendario se procesa en segundo plano.",
+    "vibePlanTargetPending": "Esperando el cálculo conjunto",
+    "vibePlanTargetNotApplied": "Sin aplicar",
+    "vibePlanReview": "Revisar plan de trabajo compartido",
+    "vibePlanUpdated": "Los cambios revisados se guardaron juntos.",
+    "vibePlanNote": "Todos los elementos mostrados se guardan juntos después de confirmar. Si algún elemento cambia o pierdes el acceso, revisa una nueva propuesta."
 }

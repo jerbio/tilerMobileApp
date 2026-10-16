@@ -9,6 +9,38 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get notesLoadFailed => 'メモを読み込めませんでした。メモエディターを開き直してください。';
+
+  @override
+  String get onboardingSubmitFailed =>
+      '初期設定を保存できませんでした。選択内容は保持されています。もう一度試すか、今はスキップしてください。';
+
+  @override
+  String operationFailed(String operation) {
+    return '$operationに失敗しました。もう一度お試しください。';
+  }
+
+  @override
+  String get scheduleLoadFailed => 'スケジュールを読み込めませんでした。更新してもう一度お試しください。';
+
+  @override
+  String get chatConnectionFailed => 'チャットに接続できませんでした。チャットを開き直してください。';
+
+  @override
+  String get chatHistoryFailed => 'チャット履歴を読み込めませんでした。会話を開き直してください。';
+
+  @override
+  String get chatSendFailed => 'メッセージを送信できませんでした。接続を確認してもう一度お試しください。';
+
+  @override
+  String get chatRecordingFailed =>
+      '音声録音を開始できませんでした。マイクへのアクセスを確認してもう一度お試しください。';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      '音声録音をキャンセルできませんでした。もう一度録音の停止をお試しください。';
+
+  @override
   String get whiteSpace => ' ';
 
   @override
@@ -707,10 +739,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get todayStatusClearDay => '今日は空いています。';
 
   @override
-  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+  String get todayStatusClearDayHeadline => '軽めの一日、至急の予定はありません。';
 
   @override
-  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+  String get todayStatusClearDaySubtext => 'Tilerにあなたの代わりに働かせてください。';
 
   @override
   String get todayStatusPreviewCta => 'より良いプランをプレビュー';
@@ -1023,90 +1055,86 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tileShare => 'タイル共有';
 
   @override
-  String get tileShareActivityInvitationUnknown =>
-      'Invitation send outcome unknown';
+  String get tileShareActivityInvitationUnknown => '招待の送信結果は不明です';
 
   @override
   String get tileShareActivityExplicitResend =>
-      'The invitation may have been sent. Resend explicitly if needed.';
+      '招待は送信されている可能性があります。必要に応じて明示的に再送信してください。';
 
   @override
-  String get tileShareActivityEmail => 'Email';
+  String get tileShareActivityEmail => 'メール';
 
   @override
   String get tileShareActivitySms => 'SMS';
 
   @override
-  String get tileShareActivityPush => 'Push notification';
+  String get tileShareActivityPush => 'プッシュ通知';
 
   @override
-  String get tileShareActivityTitle => 'Activities';
+  String get tileShareActivityTitle => 'アクティビティ';
 
   @override
-  String get tileShareActivityRefresh => 'Refresh';
+  String get tileShareActivityRefresh => '更新';
 
   @override
-  String get tileShareActivityRetry => 'Retry';
+  String get tileShareActivityRetry => '再試行';
 
   @override
-  String get tileShareActivityEmpty => 'No activity yet.';
+  String get tileShareActivityEmpty => 'まだアクティビティはありません。';
 
   @override
-  String get tileShareActivityFailed =>
-      'Activity could not be loaded. Check your connection and try again.';
+  String get tileShareActivityFailed => 'アクティビティを読み込めませんでした。接続を確認して再試行してください。';
 
   @override
-  String get tileShareActivityAccess =>
-      'This activity is no longer available to you.';
+  String get tileShareActivityAccess => 'このアクティビティはもう利用できません。';
 
   @override
-  String get tileShareActivityUnknown => 'Activity updated';
+  String get tileShareActivityUnknown => 'アクティビティが更新されました';
 
   @override
-  String get tileShareActivityUnavailable => 'Item no longer available';
+  String get tileShareActivityUnavailable => 'この項目はもう利用できません';
 
   @override
-  String get tileShareActivityMore => 'Load more';
+  String get tileShareActivityMore => 'さらに読み込む';
 
   @override
-  String get tileShareActivityClusterCreated => 'TileShare created';
+  String get tileShareActivityClusterCreated => 'TileShareを作成しました';
 
   @override
-  String get tileShareActivityClusterDeleted => 'TileShare deleted';
+  String get tileShareActivityClusterDeleted => 'TileShareを削除しました';
 
   @override
-  String get tileShareActivityTiletteAdded => 'Tilette added';
+  String get tileShareActivityTiletteAdded => 'Tiletteを追加しました';
 
   @override
-  String get tileShareActivityTiletteEdited => 'Tilette updated';
+  String get tileShareActivityTiletteEdited => 'Tiletteを更新しました';
 
   @override
-  String get tileShareActivityTiletteDeleted => 'Tilette deleted';
+  String get tileShareActivityTiletteDeleted => 'Tiletteを削除しました';
 
   @override
-  String get tileShareActivityTiletteRestored => 'Tilette restored';
+  String get tileShareActivityTiletteRestored => 'Tiletteを復元しました';
 
   @override
-  String get tileShareActivityRecipientAdded => 'Participant added';
+  String get tileShareActivityRecipientAdded => '参加者を追加しました';
 
   @override
-  String get tileShareActivityRecipientRemoved => 'Participant removed';
+  String get tileShareActivityRecipientRemoved => '参加者を削除しました';
 
   @override
-  String get tileShareActivityRecipientRestored => 'Participant restored';
+  String get tileShareActivityRecipientRestored => '参加者を復元しました';
 
   @override
-  String get tileShareActivityAccepted => 'Assignment accepted';
+  String get tileShareActivityAccepted => '割り当てを承諾しました';
 
   @override
-  String get tileShareActivityDeclined => 'Assignment declined';
+  String get tileShareActivityDeclined => '割り当てを辞退しました';
 
   @override
-  String get tileShareActivityInvitationSent => 'Invitation sent';
+  String get tileShareActivityInvitationSent => '招待を送信しました';
 
   @override
-  String get tileShareActivityInvitationFailed =>
-      'Invitation could not be sent';
+  String get tileShareActivityInvitationFailed => '招待を送信できませんでした';
 
   @override
   String get update => '更新';
@@ -1878,12 +1906,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String durationHoursMinutesShort(int hours, int minutes) {
-    return '${hours}h$minutes分';
+    return '$hours時間$minutes分';
+  }
+
+  @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '$days日$hours時間';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '$days日';
   }
 
   @override
   String durationHoursShort(int hours) {
-    return '${hours}h';
+    return '$hours時間';
   }
 
   @override
@@ -3663,22 +3701,22 @@ class AppLocalizationsJa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count more days affected',
-      one: '1 more day affected',
+      other: '追加で$count日影響',
+      one: '追加で1日影響',
     );
     return '$_temp0';
   }
 
   @override
-  String get editTileWhatIfUnplaced => 'Unplaced';
+  String get editTileWhatIfUnplaced => '未配置';
 
   @override
   String editTileWhatIfAffectedCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count affected tiles',
-      one: '1 affected tile',
+      other: '影響を受けたタイル$count件',
+      one: '影響を受けたタイル1件',
     );
     return '$_temp0';
   }
@@ -3833,13 +3871,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String addTileHoursEndsNextDay(String day, String time) {
-    return 'Ends $day at $time';
+    return '$day $timeに終了';
   }
 
   @override
   String addTileRestrictionWindowNextDay(
       String days, String start, String end) {
-    return '$days · $start – $end (next day)';
+    return '$days · $start – $end（翌日）';
   }
 
   @override
@@ -4032,8 +4070,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get commentsAttachmentUploadFailed => 'アップロードに失敗しました';
 
   @override
-  String get commentsAttachmentPickFailed =>
-      'Couldn\'t attach that file. Please try again.';
+  String get commentsAttachmentPickFailed => 'そのファイルを添付できませんでした。もう一度お試しください。';
 
   @override
   String commentsAttachmentRemove(String name) {
@@ -4079,133 +4116,131 @@ class AppLocalizationsJa extends AppLocalizations {
   String get productTourStarting => 'アプリのツアーがまもなく始まります。';
 
   @override
-  String get attentionTabTitle => 'Attention';
+  String get attentionTabTitle => '要確認';
 
   @override
-  String get attentionFilterAll => 'All';
+  String get attentionFilterAll => 'すべて';
 
   @override
-  String get attentionFilterInvitations => 'Invitations';
+  String get attentionFilterInvitations => '招待';
 
   @override
-  String get attentionFilterChanges => 'Changes';
+  String get attentionFilterChanges => '変更';
 
   @override
-  String get attentionFilterAtRisk => 'At risk';
+  String get attentionFilterAtRisk => '予定に入らない';
 
   @override
-  String get attentionFilterResponses => 'Responses';
+  String get attentionFilterResponses => '回答';
 
   @override
-  String get attentionPillInvitation => 'Invitation';
+  String get attentionPillInvitation => '招待';
 
   @override
-  String get attentionPillChanged => 'Changed';
+  String get attentionPillChanged => '変更あり';
 
   @override
-  String get attentionPillAtRisk => 'At risk';
+  String get attentionPillAtRisk => '予定に入らない';
 
   @override
-  String get attentionPillDeclined => 'Declined';
+  String get attentionPillDeclined => '辞退済み';
 
   @override
-  String get attentionPillCompleted => 'Completed';
+  String get attentionPillCompleted => '完了';
 
   @override
-  String get attentionPillNotSent => 'Not sent';
+  String get attentionPillNotSent => '未送信';
 
   @override
-  String get attentionSomeone => 'Someone';
+  String get attentionSomeone => '誰か';
 
   @override
   String attentionReasonInvited(String inviter) {
-    return '$inviter invited you';
+    return '$inviterさんから招待されました';
   }
 
   @override
   String attentionReasonInvitedMany(String inviter, int count) {
-    return '$inviter invited you to $count tilettes';
+    return '$inviterさんから$count件のTiletteに招待されました';
   }
 
   @override
   String attentionReasonAtRiskOne(String task) {
-    return '“$task” no longer fits your schedule';
+    return '「$task」が予定に収まらなくなりました';
   }
 
   @override
-  String get attentionReasonAtRiskUntitled =>
-      'A tilette no longer fits your schedule';
+  String get attentionReasonAtRiskUntitled => 'Tiletteが1件、予定に収まらなくなりました';
 
   @override
   String attentionReasonAtRiskMany(int count) {
-    return '$count tilettes no longer fit your schedule';
+    return '$count件のTiletteが予定に収まらなくなりました';
   }
 
   @override
   String attentionReasonDeadlineMoved(String actor, String from, String to) {
-    return '$actor moved the deadline from $from to $to';
+    return '$actorさんが期限を$fromから$toに変更しました';
   }
 
   @override
   String attentionReasonDeadlineChanged(String actor) {
-    return '$actor changed the deadline';
+    return '$actorさんが期限を変更しました';
   }
 
   @override
   String attentionReasonRenamed(String actor) {
-    return '$actor renamed a tilette';
+    return '$actorさんがTiletteの名前を変更しました';
   }
 
   @override
   String attentionReasonNotesUpdated(String actor) {
-    return '$actor updated the notes';
+    return '$actorさんがメモを更新しました';
   }
 
   @override
   String attentionReasonUpdated(String actor) {
-    return '$actor updated a tilette';
+    return '$actorさんがTiletteを更新しました';
   }
 
   @override
   String attentionReasonManyChanges(String actor, int count) {
-    return '$actor made $count changes';
+    return '$actorさんが$count件の変更を行いました';
   }
 
   @override
   String attentionReasonDeclined(String actor) {
-    return '$actor declined';
+    return '$actorさんが辞退しました';
   }
 
   @override
   String attentionReasonDeclinedMany(int count) {
-    return '$count people declined';
+    return '$count人が辞退しました';
   }
 
   @override
-  String get attentionReasonNotSent => 'Couldn’t send an invitation';
+  String get attentionReasonNotSent => '招待を送信できませんでした';
 
   @override
   String attentionReasonNotSentMany(int count) {
-    return 'Couldn’t send $count invitations';
+    return '$count件の招待を送信できませんでした';
   }
 
   @override
-  String get attentionReasonSendUnknown =>
-      'An invitation may not have been sent — resend if needed';
+  String get attentionReasonSendUnknown => '招待が送信されていない可能性があります。必要に応じて再送してください';
 
   @override
   String attentionReasonCompleted(String actor, String task) {
-    return '$actor completed $task';
+    return '$actorさんが$taskを完了しました';
   }
 
   @override
   String attentionReasonCompletedUntitled(String actor) {
-    return '$actor completed a tilette';
+    return '$actorさんがTiletteを完了しました';
   }
 
   @override
   String attentionReasonCompletedMany(int count) {
-    return '$count tilettes completed';
+    return '$count件のTiletteが完了しました';
   }
 
   @override
@@ -4213,129 +4248,127 @@ class AppLocalizationsJa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes',
-      one: '1 tilette',
+      other: '$count件のTilette',
     );
     return '$_temp0';
   }
 
   @override
   String attentionMetaDue(String date) {
-    return 'Due $date';
+    return '期限：$date';
   }
 
   @override
-  String get attentionCtaReview => 'Review';
+  String get attentionCtaReview => '確認';
 
   @override
-  String get attentionCtaReviewChanges => 'Review changes';
+  String get attentionCtaReviewChanges => '変更を確認';
 
   @override
-  String get attentionCtaReviewPlan => 'Review plan';
+  String get attentionCtaReviewPlan => 'プランを確認';
 
   @override
-  String get attentionCtaView => 'View';
+  String get attentionCtaView => '表示';
 
   @override
-  String get attentionMenuTooltip => 'More';
+  String get attentionMenuTooltip => 'その他';
 
   @override
-  String get attentionDismiss => 'Dismiss';
+  String get attentionDismiss => '非表示';
 
   @override
-  String get attentionDismissed => 'Dismissed';
+  String get attentionDismissed => '非表示にしました';
 
   @override
-  String get attentionUndo => 'Undo';
+  String get attentionUndo => '元に戻す';
 
   @override
-  String get attentionDismissFailed => 'Couldn’t dismiss it. Try again.';
+  String get attentionDismissFailed => '非表示にできませんでした。もう一度お試しください。';
 
   @override
-  String get attentionUndoFailed => 'Couldn’t restore it. Try again.';
+  String get attentionUndoFailed => '復元できませんでした。もう一度お試しください。';
 
   @override
-  String get attentionEmptyTitle => 'You’re all caught up';
+  String get attentionEmptyTitle => 'すべて確認済みです';
 
   @override
-  String get attentionEmptyBody => 'Nothing needs your attention right now.';
+  String get attentionEmptyBody => '現在、確認が必要な項目はありません。';
 
   @override
-  String get attentionEmptyFiltered => 'Nothing to show here';
+  String get attentionEmptyFiltered => '表示する項目はありません';
 
   @override
-  String get attentionLoadFailed => 'Some updates couldn’t load';
+  String get attentionLoadFailed => '一部の更新を読み込めませんでした';
 
   @override
-  String get attentionLoadFailedAll => 'Attention couldn’t load';
+  String get attentionLoadFailedAll => '要確認の項目を読み込めませんでした';
 
   @override
-  String get attentionRetry => 'Retry';
+  String get attentionRetry => '再試行';
 
   @override
-  String get tileShareModeBroadcast => 'Broadcast';
+  String get tileShareModeBroadcast => '一斉配信';
 
   @override
-  String get tileShareModeProject => 'Project';
+  String get tileShareModeProject => 'プロジェクト';
 
   @override
-  String get tileShareModeClass => 'Class';
+  String get tileShareModeClass => 'クラス';
 
   @override
-  String get attentionAccept => 'Accept';
+  String get attentionAccept => '承諾';
 
   @override
-  String get attentionDecline => 'Decline';
+  String get attentionDecline => '辞退';
 
   @override
-  String get attentionAcceptAll => 'Accept all';
+  String get attentionAcceptAll => 'すべて承諾';
 
   @override
-  String get attentionDeclineAll => 'Decline all';
+  String get attentionDeclineAll => 'すべて辞退';
 
   @override
-  String get attentionAcceptDone => 'Accepted';
+  String get attentionAcceptDone => '承諾済み';
 
   @override
   String attentionAcceptDoneMany(int count) {
-    return 'Accepted $count tilettes';
+    return '$count件のTiletteを承諾しました';
   }
 
   @override
-  String get attentionDeclineDone => 'Declined';
+  String get attentionDeclineDone => '辞退済み';
 
   @override
   String attentionDeclineDoneMany(int count) {
-    return 'Declined $count tilettes';
+    return '$count件のTiletteを辞退しました';
   }
 
   @override
-  String get attentionAcceptFailed => 'Couldn’t accept it. Try again.';
+  String get attentionAcceptFailed => '承諾できませんでした。もう一度お試しください。';
 
   @override
-  String get attentionDeclineFailed => 'Couldn’t decline it. Try again.';
+  String get attentionDeclineFailed => '辞退できませんでした。もう一度お試しください。';
 
   @override
-  String get attentionScheduleRefreshFailed =>
-      'Accepted, but your schedule couldn’t refresh yet.';
+  String get attentionScheduleRefreshFailed => '承諾しましたが、予定はまだ更新できていません。';
 
   @override
-  String get clusterTitleFallback => 'Untitled share';
+  String get clusterTitleFallback => '名前のない共有';
 
   @override
-  String get clusterRoleMine => 'Created by you';
+  String get clusterRoleMine => 'あなたが作成';
 
   @override
   String clusterRoleFrom(String name) {
-    return 'From $name';
+    return '$nameさんから';
   }
 
   @override
-  String get clusterRoleShared => 'Shared with you';
+  String get clusterRoleShared => 'あなたへの共有';
 
   @override
   String clusterRsvpAccepted(int accepted, int total) {
-    return '$accepted of $total accepted';
+    return '$total件中$accepted件が承諾済み';
   }
 
   @override
@@ -4343,10 +4376,9 @@ class AppLocalizationsJa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       total,
       locale: localeName,
-      other: '$total people',
-      one: '1 person',
+      other: '$total人',
     );
-    return '$accepted of $_temp0 accepted';
+    return '$_temp0中$accepted人が承諾済み';
   }
 
   @override
@@ -4354,428 +4386,420 @@ class AppLocalizationsJa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       total,
       locale: localeName,
-      other: '$total tilettes',
-      one: '1 tilette',
+      other: '$total件のTilette',
     );
-    return '$accepted of $_temp0 accepted';
+    return '$_temp0中$accepted件が承諾済み';
   }
 
   @override
-  String get clusterRsvpUnavailable => 'Responses unavailable';
+  String get clusterRsvpUnavailable => '回答を取得できません';
 
   @override
-  String get clusterMineAccepted => 'You accepted';
+  String get clusterMineAccepted => '承諾しました';
 
   @override
-  String get clusterMineDeclined => 'You declined';
+  String get clusterMineDeclined => '辞退しました';
 
   @override
-  String get clusterMinePending => 'Needs your answer';
+  String get clusterMinePending => '回答が必要です';
 
   @override
-  String get clusterMineMixed => 'Partly answered';
+  String get clusterMineMixed => '一部回答済み';
 
   @override
   String clusterProjectNeedsAnswer(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes need your response',
-      one: '1 tilette needs your response',
+      other: '$count件のTiletteに回答が必要です',
     );
     return '$_temp0';
   }
 
   @override
-  String get clusterOverdue => 'Overdue';
+  String get clusterOverdue => '期限切れ';
 
   @override
-  String get clusterMenuTooltip => 'More actions';
+  String get clusterMenuTooltip => 'その他の操作';
 
   @override
-  String get clusterDelete => 'Delete';
+  String get clusterDelete => '削除';
 
   @override
-  String get clusterDeleteTitle => 'Delete this share?';
+  String get clusterDeleteTitle => 'この共有を削除しますか？';
 
   @override
   String clusterDeleteBody(String name) {
-    return '“$name” will be deleted. This can’t be undone.';
+    return '「$name」を削除します。この操作は元に戻せません。';
   }
 
   @override
   String clusterDeleteFailed(String name) {
-    return 'Couldn’t delete “$name”. It’s back in your list.';
+    return '「$name」を削除できませんでした。一覧に戻しました。';
   }
 
   @override
-  String get clusterFilterAll => 'All';
+  String get clusterFilterAll => 'すべて';
 
   @override
-  String get clusterFilterShared => 'Shared with me';
+  String get clusterFilterShared => '自分への共有';
 
   @override
-  String get clusterFilterCreated => 'Created by me';
+  String get clusterFilterCreated => '自分が作成';
 
   @override
-  String get clusterEmptyAllTitle => 'Nothing shared yet';
+  String get clusterEmptyAllTitle => 'まだ共有はありません';
 
   @override
-  String get clusterEmptyAllBody =>
-      'Share a tile with someone and it will show up here.';
+  String get clusterEmptyAllBody => 'タイルを誰かと共有すると、ここに表示されます。';
 
   @override
-  String get clusterEmptySharedTitle => 'Nothing shared with you';
+  String get clusterEmptySharedTitle => 'あなたへの共有はありません';
 
   @override
-  String get clusterEmptySharedBody =>
-      'When someone shares a tile with you it will appear here.';
+  String get clusterEmptySharedBody => '誰かがあなたにタイルを共有すると、ここに表示されます。';
 
   @override
-  String get clusterEmptyCreatedTitle => 'You haven’t shared anything';
+  String get clusterEmptyCreatedTitle => 'まだ何も共有していません';
 
   @override
-  String get clusterEmptyCreatedBody =>
-      'Share a tile to see who has accepted it.';
+  String get clusterEmptyCreatedBody => 'タイルを共有すると、誰が承諾したか確認できます。';
 
   @override
-  String get clusterEmptyAction => 'Share a tile';
+  String get clusterEmptyAction => 'タイルを共有';
 
   @override
-  String get clusterLoadFailed => 'Some shares couldn’t load';
+  String get clusterLoadFailed => '一部の共有を読み込めませんでした';
 
   @override
-  String get clusterLoadFailedAll => 'Shares couldn’t load';
+  String get clusterLoadFailedAll => '共有を読み込めませんでした';
 
   @override
-  String get clusterLoadMore => 'Load more';
+  String get clusterLoadMore => 'さらに読み込む';
 
   @override
-  String get clusterLoadMoreFailed => 'Couldn’t load more';
+  String get clusterLoadMoreFailed => '追加で読み込めませんでした';
 
   @override
-  String get clustersTabTitle => 'Shares';
+  String get clustersTabTitle => '共有';
 
   @override
-  String get previewTitleFallback => 'Review schedule';
+  String get previewTitleFallback => '予定を確認';
 
   @override
-  String get previewRegenerate => 'Generate new preview';
+  String get previewRegenerate => '新しいプレビューを作成';
 
   @override
-  String get previewSuggested => 'Suggested schedule';
+  String get previewSuggested => '提案された予定';
 
   @override
-  String get previewSelected => 'Selected schedule';
+  String get previewSelected => '選択した予定';
 
   @override
   String previewMoves(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Moves $count flexible tiles',
-      one: 'Moves 1 flexible tile',
+      other: '時間を調整できるタイルを$count件移動します',
     );
     return '$_temp0';
   }
 
   @override
-  String get previewAccept => 'Accept';
+  String get previewAccept => '承諾';
 
   @override
-  String get previewAcceptAndLock => 'Accept & lock';
+  String get previewAcceptAndLock => '承諾して固定';
 
   @override
-  String get previewAcceptHint => 'Tiler may move flexible work later.';
+  String get previewAcceptHint => 'Tilerは後で時間を調整できる作業を移動することがあります。';
 
   @override
   String previewLockHint(String when) {
-    return 'Locks $when. Other sessions stay flexible.';
+    return '$whenに固定します。他のセッションは調整可能なままです。';
   }
 
   @override
-  String get previewDecline => 'Decline';
+  String get previewDecline => '辞退';
 
   @override
-  String get previewCannotFit => 'It can’t be fitted before its deadline.';
+  String get previewCannotFit => '期限までに予定に入れられません。';
 
   @override
   String previewOutsideWindow(String when) {
-    return 'Scheduled outside the days shown: $when';
+    return '表示されている日以外に予定されています：$when';
   }
 
   @override
-  String get previewNothingThisDay => 'Nothing scheduled this day';
+  String get previewNothingThisDay => 'この日に予定はありません';
 
   @override
-  String get previewPrevDay => 'Previous day';
+  String get previewPrevDay => '前の日';
 
   @override
-  String get previewNextDay => 'Next day';
+  String get previewNextDay => '次の日';
 
   @override
-  String get previewStale => 'This preview is out of date.';
+  String get previewStale => 'このプレビューは古くなっています。';
 
   @override
-  String get previewRefresh => 'Refresh preview';
+  String get previewRefresh => 'プレビューを更新';
 
   @override
-  String get previewSessionInvalid =>
-      'That time can no longer be locked. You can still accept.';
+  String get previewSessionInvalid => 'この時間は固定できなくなりました。承諾は引き続き可能です。';
 
   @override
-  String get previewLoading => 'Checking your schedule…';
+  String get previewLoading => '予定を確認しています…';
 
   @override
-  String get previewLoadFailed => 'Couldn’t build the preview.';
+  String get previewLoadFailed => 'プレビューを作成できませんでした。';
 
   @override
-  String get previewGone => 'This invitation is no longer available.';
+  String get previewGone => 'この招待は利用できなくなりました。';
 
   @override
-  String get previewSwitchedOff => 'Previews aren’t available right now.';
+  String get previewSwitchedOff => '現在プレビューは利用できません。';
 
   @override
-  String get previewSignIn => 'Sign in again to see the preview.';
+  String get previewSignIn => 'プレビューを見るには再度ログインしてください。';
 
   @override
-  String get previewInvalid => 'That request wasn’t accepted. Try again.';
+  String get previewInvalid => 'このリクエストは受け付けられませんでした。もう一度お試しください。';
 
   @override
-  String get previewUnsupportedAccepted => 'You’ve already accepted this.';
+  String get previewUnsupportedAccepted => 'すでに承諾しています。';
 
   @override
-  String get previewUnsupportedDeadline => 'Its deadline has passed.';
+  String get previewUnsupportedDeadline => '期限が過ぎています。';
 
   @override
   String get previewUnsupportedConstraints =>
-      'This tilette repeats, has a place, or has limits a preview can’t show yet. You can still answer it from the list.';
+      'このTiletteには繰り返し、場所、またはプレビューではまだ表示できない制約があります。一覧から回答することはできます。';
 
   @override
-  String get previewUnsupportedOther => 'This tilette can’t be previewed.';
+  String get previewUnsupportedOther => 'このTiletteのプレビューは表示できません。';
 
   @override
-  String get previewAdding => 'Adding to your calendar…';
+  String get previewAdding => 'カレンダーに追加しています…';
 
   @override
-  String get previewAdded => 'Added to your calendar';
+  String get previewAdded => 'カレンダーに追加しました';
 
   @override
-  String get previewNeedsReview => 'Added, but its time couldn’t be confirmed.';
+  String get previewNeedsReview => '追加しましたが、時間を確認できませんでした。';
 
   @override
-  String get previewNotAdded => 'Not added';
+  String get previewNotAdded => '追加されませんでした';
 
   @override
-  String get previewReasonScheduleChanged =>
-      'Your schedule changed since this preview.';
+  String get previewReasonScheduleChanged => 'このプレビューの作成後に予定が変更されました。';
 
   @override
-  String get previewReasonAnswered => 'It was answered or changed elsewhere.';
+  String get previewReasonAnswered => '別の場所で回答または変更されました。';
 
   @override
-  String get previewReasonExpired => 'The preview expired.';
+  String get previewReasonExpired => 'プレビューの有効期限が切れました。';
 
   @override
-  String get previewReasonOther => 'It couldn’t be scheduled as previewed.';
+  String get previewReasonOther => 'プレビューどおりに予定に入れられませんでした。';
 
   @override
-  String get previewReviewAgain => 'Review again';
+  String get previewReviewAgain => '再確認';
 
   @override
-  String get previewUnconfirmed => 'We couldn’t confirm your answer.';
+  String get previewUnconfirmed => '回答を確認できませんでした。';
 
   @override
-  String get previewTryAgain => 'Try again';
+  String get previewTryAgain => '再試行';
 
   @override
-  String get previewCheckStatus => 'Check status';
+  String get previewCheckStatus => '状態を確認';
 
   @override
-  String get previewStillAdding => 'Still adding…';
+  String get previewStillAdding => '追加を続けています…';
 
   @override
-  String get previewDeclined => 'Declined';
+  String get previewDeclined => '辞退済み';
 
   @override
-  String get previewDeclineFailed => 'Couldn’t decline. Try again.';
+  String get previewDeclineFailed => '辞退できませんでした。もう一度お試しください。';
 
   @override
-  String get previewDone => 'Done';
+  String get previewDone => '完了';
 
   @override
-  String get previewCheckFit => 'Check fit';
+  String get previewCheckFit => '予定に収まるか確認';
 
   @override
-  String get previewDetails => 'Details';
+  String get previewDetails => '詳細';
 
   @override
-  String get previewOtherTimes => 'Other times';
+  String get previewOtherTimes => '他の時間';
 
   @override
-  String get previewOriginalSuggestion => 'Original suggestion';
+  String get previewOriginalSuggestion => '最初の提案';
 
   @override
-  String get previewFindAnotherTime => 'Find another time';
+  String get previewFindAnotherTime => '別の時間を探す';
 
   @override
-  String get previewFindingTimes => 'Looking for other times…';
+  String get previewFindingTimes => '他の時間を探しています…';
 
   @override
-  String get previewNoDifferentTime => 'No different time found';
+  String get previewNoDifferentTime => '別の時間は見つかりませんでした';
 
   @override
-  String get previewOptionsFailed => 'Couldn’t load other times.';
+  String get previewOptionsFailed => '他の時間を読み込めませんでした。';
 
   @override
-  String get previewSelectFailed => 'Couldn’t switch to that time.';
+  String get previewSelectFailed => 'その時間に変更できませんでした。';
 
   @override
-  String get previewNoMoves => 'Moves nothing else';
+  String get previewNoMoves => '他の予定は移動しません';
 
   @override
-  String get previewSessions => 'Sessions';
+  String get previewSessions => 'セッション';
 
   @override
   String previewSessionN(int n) {
-    return 'Session $n';
+    return 'セッション$n';
   }
 
   @override
-  String get previewSessionUnplaced => 'Couldn’t be placed';
+  String get previewSessionUnplaced => '予定に入れられませんでした';
 
   @override
-  String get previewSessionOutside => 'Outside the days shown';
+  String get previewSessionOutside => '表示されている日以外';
 
   @override
   String previewIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count scheduling issues',
-      one: '1 scheduling issue',
+      other: '予定の問題が$count件あります',
     );
     return '$_temp0';
   }
 
   @override
-  String get previewIssueUnscheduled => 'Couldn’t be scheduled';
+  String get previewIssueUnscheduled => '予定に入れられませんでした';
 
   @override
-  String get previewIssueConflict => 'Overlaps other work';
+  String get previewIssueConflict => '他の作業と重なっています';
 
   @override
   String previewIssueWindow(String from, String to) {
-    return 'Can go $from – $to';
+    return '$from〜$toに予定できます';
   }
 
   @override
-  String get previewViewInCalendar => 'View in calendar';
+  String get previewViewInCalendar => 'カレンダーで表示';
 
   @override
-  String get detailLoadFailed => 'Couldn’t load this share.';
+  String get detailLoadFailed => 'この共有を読み込めませんでした。';
 
   @override
-  String get detailNotFound => 'This share is no longer available.';
+  String get detailNotFound => 'この共有は利用できなくなりました。';
 
   @override
-  String get detailRefreshFailed =>
-      'Couldn’t refresh. Showing what was loaded.';
+  String get detailRefreshFailed => '更新できませんでした。読み込み済みの内容を表示しています。';
 
   @override
-  String get detailTasksFailed => 'Couldn’t load its tilettes.';
+  String get detailTasksFailed => '共有のTiletteを読み込めませんでした。';
 
   @override
-  String get detailTasks => 'Tilettes';
+  String get detailTasks => 'Tilette';
 
   @override
-  String get forecastDeadlinePassed => 'Deadline passed';
+  String get forecastDeadlinePassed => '期限が過ぎています';
 
   @override
-  String get broadcastParticipants => 'Participants';
+  String get broadcastParticipants => '参加者';
 
   @override
   String broadcastViewAll(int count) {
-    return 'View all ($count)';
+    return 'すべて表示（$count）';
   }
 
   @override
-  String get broadcastNoParticipants => 'No one yet. Add someone above.';
+  String get broadcastNoParticipants => 'まだ参加者はいません。上から追加してください。';
+
+  @override
+  String get projectNoParticipants =>
+      'まだ参加者はいません。Tiletteタブで誰かにTiletteを割り当ててください。';
 
   @override
   String broadcastDeliveryIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count invitations may not have arrived',
-      one: '1 invitation may not have arrived',
+      other: '$count件の招待が届いていない可能性があります',
     );
     return '$_temp0';
   }
 
   @override
-  String get participantInvited => 'Invited';
+  String get participantInvited => '招待済み';
 
   @override
-  String get participantAdding => 'Adding…';
+  String get participantAdding => '追加しています…';
 
   @override
-  String get participantAddFailed => 'Couldn’t add.';
+  String get participantAddFailed => '追加できませんでした。';
 
   @override
-  String get participantRemoveFailed => 'Couldn’t remove.';
+  String get participantRemoveFailed => '削除できませんでした。';
 
   @override
   String participantAlreadyInvited(String who) {
-    return '$who is already invited.';
+    return '$whoさんはすでに招待されています。';
   }
 
   @override
-  String get participantRemove => 'Remove';
+  String get participantRemove => '削除';
 
   @override
   String participantRemoveTitle(String who) {
-    return 'Remove $who?';
+    return '$whoさんを削除しますか？';
   }
 
   @override
-  String get participantRemoveBody => 'They will no longer have this tilette.';
+  String get participantRemoveBody => 'この参加者はこのTiletteを持たなくなります。';
 
   @override
   String deliverySent(String channel) {
-    return 'Sent by $channel';
+    return '$channelで送信済み';
   }
 
   @override
-  String get deliverySentPlain => 'Invitation sent';
+  String get deliverySentPlain => '招待を送信しました';
 
   @override
   String deliveryFailed(String channel) {
-    return 'Couldn’t send by $channel';
+    return '$channelで送信できませんでした';
   }
 
   @override
-  String get deliveryFailedPlain => 'Invitation couldn’t be sent';
+  String get deliveryFailedPlain => '招待を送信できませんでした';
 
   @override
-  String get deliveryUnknown => 'Delivery unknown';
+  String get deliveryUnknown => '配信状況は不明です';
 
   @override
-  String get channelEmail => 'email';
+  String get channelEmail => 'メール';
 
   @override
   String get channelSms => 'SMS';
 
   @override
-  String get channelPush => 'notification';
+  String get channelPush => '通知';
 
   @override
   String classPeopleIncomplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count people are missing from some tilettes',
-      one: '1 person is missing from some tilettes',
+      other: '$count人が一部のTiletteに参加していません',
     );
     return '$_temp0';
   }
@@ -4785,53 +4809,51 @@ class AppLocalizationsJa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Not on $count tilettes',
-      one: 'Not on 1 tilette',
+      other: '$count件のTiletteに未参加',
     );
     return '$_temp0';
   }
 
   @override
-  String get classAddToAll => 'Add to all tilettes';
+  String get classAddToAll => 'すべてのTiletteに追加';
 
   @override
-  String get classRemoveBody => 'They will be removed from every tilette.';
+  String get classRemoveBody => 'この参加者はすべてのTiletteから削除されます。';
 
   @override
-  String get classTaskNotAdded => 'Not added';
+  String get classTaskNotAdded => '未追加';
 
   @override
-  String get classAddFailed => 'Couldn’t add to every tilette.';
+  String get classAddFailed => 'すべてのTiletteに追加できませんでした。';
 
   @override
-  String get projectUnassigned => 'No one assigned';
+  String get projectUnassigned => '担当者なし';
 
   @override
   String projectTasksUnassigned(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes have no one assigned',
-      one: '1 tilette has no one assigned',
+      other: '$count件のTiletteに担当者がいません',
     );
     return '$_temp0';
   }
 
   @override
-  String get projectAssign => 'Assign';
+  String get projectAssign => '割り当て';
 
   @override
-  String get projectReassign => 'Reassign';
+  String get projectReassign => '再割り当て';
 
   @override
-  String get projectReassigning => 'Reassigning…';
+  String get projectReassigning => '再割り当てしています…';
 
   @override
-  String get projectReassignFailed => 'Couldn’t reassign.';
+  String get projectReassignFailed => '再割り当てできませんでした。';
 
   @override
   String projectAssignTitle(String task) {
-    return 'Assign $task';
+    return '$taskを割り当て';
   }
 
   @override
@@ -4839,71 +4861,577 @@ class AppLocalizationsJa extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Owns $count tilettes',
-      one: 'Owns 1 tilette',
+      other: '$count件のTiletteを担当',
     );
     return '$_temp0';
   }
 
   @override
-  String get projectAlreadyIn => 'Already in this project';
+  String get projectAlreadyIn => 'すでにこのプロジェクトに参加しています';
 
   @override
-  String get projectRemoveBody => 'Their tilettes will have no one assigned.';
+  String get projectRemoveBody => 'この参加者のTiletteは担当者なしになります。';
 
   @override
-  String get tileShareActivityCommentAdded => 'Comment added';
+  String get tileShareActivityCommentAdded => 'コメントを追加しました';
 
   @override
-  String get tileShareActivityCommentReplied => 'Comment reply added';
+  String get tileShareActivityCommentReplied => 'コメントへの返信を追加しました';
 
   @override
-  String get tileShareActivityCommentEdited => 'Comment edited';
+  String get tileShareActivityCommentEdited => 'コメントを編集しました';
 
   @override
-  String get tileShareActivityCommentDeleted => 'Comment deleted';
+  String get tileShareActivityCommentDeleted => 'コメントを削除しました';
 
   @override
-  String get commitmentYourTasks => 'Your tilettes';
+  String get commitmentYourTasks => 'あなたのTilette';
 
   @override
-  String get commitmentYourTask => 'Your tilette';
+  String get commitmentYourTask => 'あなたのTilette';
 
   @override
   String commitmentPartialAnswered(int done, int total) {
-    return '$done of $total answered; the rest are still pending.';
+    return '$total件中$done件に回答済みです。残りは回答待ちです。';
   }
 
   @override
-  String get commitmentOpenTile => 'Open tile';
+  String get commitmentOpenTile => 'タイルを開く';
 
   @override
-  String get detailEditShare => 'Edit share';
+  String get detailEditShare => '共有を編集';
 
   @override
-  String get detailEditTask => 'Edit tilette';
+  String get detailEditTask => 'Tiletteを編集';
 
   @override
-  String get detailAddTask => 'Add tilette';
+  String get detailAddTask => 'Tiletteを追加';
 
   @override
-  String get detailDeleteTask => 'Delete tilette';
+  String get detailDeleteTask => 'Tiletteを削除';
 
   @override
   String detailDeleteTaskTitle(String name) {
-    return 'Delete “$name”?';
+    return '「$name」を削除しますか？';
   }
 
   @override
-  String get detailDeleteTaskBody =>
-      'Everyone on it loses it from their schedule.';
+  String get detailDeleteTaskBody => '参加者全員の予定から削除されます。';
 
   @override
-  String get detailEditFailed => 'Couldn’t save your change. Try again.';
+  String get detailEditFailed => '変更を保存できませんでした。もう一度お試しください。';
 
   @override
-  String get detailTaskLengthFixed =>
-      'A tilette’s length can’t change once it’s shared.';
+  String get detailTaskLengthFixed => '共有後はTiletteの所要時間を変更できません。';
+
+  @override
+  String get taskSheetAssignee => '担当者';
+
+  @override
+  String get taskSheetEveryone => 'このクラスの全員がこのTiletteを持っています。';
+
+  @override
+  String taskSheetAfterShareDeadline(String when) {
+    return '共有の期限（$when）より後です。';
+  }
+
+  @override
+  String get taskSheetNameTooShort => '3文字以上で入力してください';
+
+  @override
+  String get taskSheetPeopleHintClass =>
+      'ここで追加した人は、このクラスのすべてのTiletteを受け取ります。参加者の変更は保存時に送信されます。';
+
+  @override
+  String get taskSheetPeopleHintProject => '新しい割り当ては保存時に送信されます。';
+
+  @override
+  String get tiletteNameLabel => 'Tilette名';
+
+  @override
+  String get detailEditDetails => '詳細を編集';
+
+  @override
+  String get detailDeleteShare => '共有を削除';
+
+  @override
+  String get detailDeleteShareBody => '全員の予定から共有のTiletteが削除されます。';
+
+  @override
+  String get detailDeleteShareFailed => '共有を削除できませんでした。もう一度お試しください。';
+
+  @override
+  String get shareNameLabel => '共有名';
+
+  @override
+  String get shareModeLabel => 'モード';
+
+  @override
+  String get shareEditModeFixed => '共有後はモードを変更できません。';
+
+  @override
+  String get shareEditEffort => '合計作業時間';
+
+  @override
+  String get shareEditEffortHelper => '共有のTiletteの所要時間の合計です。';
+
+  @override
+  String get shareEditDiscardBody => 'この共有への変更は失われます。';
+
+  @override
+  String shareEditTilettesPulledIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '承諾済みのTilette$count件の期限をこの期限に変更します。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shareEditTilettesKeep(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '誰も承諾していないTilette$count件は、後の期限を維持します。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String taskSheetMoveShareDeadline(String when) {
+    return '共有の期限も$whenに変更';
+  }
+
+  @override
+  String get createChooserTitle => '作業を共有';
+
+  @override
+  String get createChooserSubtitle => 'どのように参加してもらいますか？';
+
+  @override
+  String get createModeBroadcastBody => '全員が1件のTiletteのコピーをそれぞれ受け取ります';
+
+  @override
+  String get createModeClassBody => '全員が一組のTiletteのコピーをそれぞれ受け取ります';
+
+  @override
+  String get createModeProjectBody => '全員で一組のTiletteを共有して作業します';
+
+  @override
+  String get createComingSoon => '近日公開';
+
+  @override
+  String get createBroadcastTitle => '新しい一斉配信';
+
+  @override
+  String get createBroadcastPeopleHint => '各自がコピーを受け取り、承諾を求められます。';
+
+  @override
+  String get createSend => '送信';
+
+  @override
+  String createSendTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count人に送信',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get createSending => '送信しています…';
+
+  @override
+  String get createNeedsPerson => '少なくとも1人追加してください';
+
+  @override
+  String get createFailed => '現在送信できません。入力内容は保持されています。';
+
+  @override
+  String get createDiscardTitle => 'この共有を破棄しますか？';
+
+  @override
+  String get createDiscardBody => '入力した内容は送信されません。';
+
+  @override
+  String get createClassTitle => '新しいクラス';
+
+  @override
+  String get createNeedsTask => '少なくとも1件のTiletteを追加してください';
+
+  @override
+  String get createClassPeopleHint => '各自がすべてのTiletteのコピーを受け取り、承諾を求められます。';
+
+  @override
+  String get createTilettesLabel => 'Tilette';
+
+  @override
+  String createTiletteWithShare(String length) {
+    return '$length · 共有と同じ期限';
+  }
+
+  @override
+  String createTiletteDue(String length, String when) {
+    return '$length · 期限：$when';
+  }
+
+  @override
+  String createClassSummary(int count, String effort, String when) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件のTilette',
+    );
+    return '$_temp0 · $effort · 期限：$when';
+  }
+
+  @override
+  String createStepOf(int step, int total) {
+    return 'ステップ$step/$total';
+  }
+
+  @override
+  String get createNextPeople => '次へ：参加者';
+
+  @override
+  String get createProjectTitle => '新しいプロジェクト';
+
+  @override
+  String get createProjectSend => 'プロジェクトを作成';
+
+  @override
+  String get createCreating => '作成しています…';
+
+  @override
+  String get createProjectHint => '作成後にボードから参加者にTiletteを割り当てるか、自分で担当してください。';
+
+  @override
+  String get detailLoading => '共有を読み込んでいます…';
+
+  @override
+  String get taskSheetPeopleLabel => '参加者';
+
+  @override
+  String get taskSheetAddPerson => '参加者を追加';
+
+  @override
+  String get taskSheetWillBeAdded => '追加されます';
+
+  @override
+  String get taskSheetWillBeRemoved => '削除されます';
+
+  @override
+  String get taskSheetWillBeAssigned => '保存時に割り当てられます';
+
+  @override
+  String get taskSheetPeopleFailed => '参加者の変更の一部を保存できませんでした。以下で再試行してください。';
+
+  @override
+  String get tileShareSaveChanges => '変更を保存';
+
+  @override
+  String get scheduleChangeRefresh => 'スケジュールを更新';
+
+  @override
+  String get scheduleChangeUncertainBody =>
+      '変更がサーバーに届いている可能性があります。更新して、スケジュールに変更があるか確認してください。この制限は自動的に解除されます。';
+
+  @override
+  String get scheduleChangeRefreshing => 'タイムラインを更新しています…';
+
+  @override
+  String get scheduleChangeUncertain => '確認できません';
+
+  @override
+  String scheduleChangeAcknowledged(String change) {
+    return '$change：タイムラインが更新されました。変更を確認してください。';
+  }
+
+  @override
+  String scheduleChangeWentThrough(String change) {
+    return '$changeが完了しました。';
+  }
+
+  @override
+  String scheduleChangeFailedLate(String change) {
+    return '$changeに失敗しました。';
+  }
+
+  @override
+  String scheduleChangeUnconfirmed(String change) {
+    return '$changeを確認できませんでした。スケジュールを確認してください。';
+  }
+
+  @override
+  String scheduleChangeNotSent(String change) {
+    return 'Tilerに接続できなかったため、$changeは送信されませんでした。もう一度お試しください。';
+  }
+
+  @override
+  String get scheduleChangeUnconfirmedGeneric =>
+      '直前のスケジュール変更を確認できませんでした。スケジュールを確認してください。';
+
+  @override
+  String get scheduleChangeReattemptTitle => 'もう一度送信しますか？';
+
+  @override
+  String scheduleChangeReattemptBody(String change) {
+    return '$changeはすでに反映されている可能性があります。もう一度送信しますか？';
+  }
+
+  @override
+  String get scheduleChangeReattemptConfirm => 'もう一度送信';
+
+  @override
+  String scheduleChangeReattemptDeclined(String change) {
+    return '$changeは再送信されませんでした。';
+  }
+
+  @override
+  String get scheduleChangeAdding => '予定を追加中';
+
+  @override
+  String get scheduleChangeSettings => 'スケジュール設定を更新中';
+
+  @override
+  String get scheduleChangeAccepting => '変更を承認中';
+
+  @override
+  String get scheduleChangeTargetSchedule => 'あなたのスケジュール';
+
+  @override
+  String get scheduleChangeTargetEvent => '予定';
+
+  @override
+  String get scheduleChangeAllEvents => 'すべての予定';
+
+  @override
+  String scheduleChangeEventCount(int count) {
+    return '$count件の予定';
+  }
+
+  @override
+  String get scheduleChangesBlocked => '現在のスケジュール変更が完了してから、次の変更を開始してください。';
+
+  @override
+  String scheduleChangesBlockedBy(String change) {
+    return '現在のスケジュール変更（$change）が完了してから、次の変更を開始してください。';
+  }
+
+  @override
+  String get scheduleChangeFailed => 'スケジュール変更に失敗しました';
+
+  @override
+  String get scheduleUpdates => 'スケジュールの更新';
+
+  @override
+  String get scheduleUpdatesDescription => 'スケジュールが変わったときの一日の動き方。';
+
+  @override
+  String get scheduleUpdatesDetailed => '詳細';
+
+  @override
+  String get scheduleUpdatesDetailedDescription => '変更を一つずつ順に表示します。';
+
+  @override
+  String get scheduleUpdatesMinimal => 'シンプル';
+
+  @override
+  String get scheduleUpdatesMinimalDescription => 'タイルを新しい時間へスライドします。';
+
+  @override
+  String get scheduleUpdatesOff => 'オフ';
+
+  @override
+  String get scheduleUpdatesOffDescription => 'アニメーションなしですぐに更新します。';
+
+  @override
+  String get scheduleChangePlanUpdated => 'プランを更新しました';
+
+  @override
+  String get scheduleChangeDayCleared => 'この日は空になりました';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを別の日に移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを追加',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを削除',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件の移動時間を更新',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(String duration) {
+    return '空き時間 +$duration';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => '変更を見る';
+
+  @override
+  String get scheduleChangeWhatChanged => '変更内容';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return '追加 · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => '削除';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return '$nameへの移動';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => '空き時間';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return '$timeから移動';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return '$timeに移動';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$nameを$whenに移動';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを$whenに移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを後ろに移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを前に移動',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString件のタイルを移動中',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangeTabChanges => '変更';
+
+  @override
+  String get scheduleChangeTabBeforeAfter => '変更前と変更後';
+
+  @override
+  String get scheduleChangeBefore => '変更前';
+
+  @override
+  String get scheduleChangeAfter => '変更後';
 
   @override
   String get vibeChatExecutionMode => 'Chat execution';
@@ -4965,168 +5493,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get vibeOpenTileShare => 'Open TileShare';
-
-  @override
-  String get taskSheetAssignee => 'ASSIGNEE';
-
-  @override
-  String get taskSheetEveryone => 'Everyone in this class has this tilette.';
-
-  @override
-  String taskSheetAfterShareDeadline(String when) {
-    return 'This is after the share’s deadline ($when).';
-  }
-
-  @override
-  String get taskSheetNameTooShort => 'Use at least 3 characters';
-
-  @override
-  String get taskSheetPeopleHintClass =>
-      'Anyone you add here gets every tilette in this class. People changes are sent when you save.';
-
-  @override
-  String get taskSheetPeopleHintProject =>
-      'A new assignee is sent when you save.';
-
-  @override
-  String get tiletteNameLabel => 'TILETTE NAME';
-
-  @override
-  String get detailEditDetails => 'Edit details';
-
-  @override
-  String get detailDeleteShare => 'Delete share';
-
-  @override
-  String get detailDeleteShareBody =>
-      'Everyone loses its tilettes from their schedule.';
-
-  @override
-  String get detailDeleteShareFailed => 'Couldn’t delete the share. Try again.';
-
-  @override
-  String get shareNameLabel => 'SHARE NAME';
-
-  @override
-  String get shareModeLabel => 'MODE';
-
-  @override
-  String get shareEditModeFixed => 'The mode can’t change after sharing.';
-
-  @override
-  String get shareEditEffort => 'TOTAL EFFORT';
-
-  @override
-  String get shareEditEffortHelper => 'The sum of its tilettes’ durations.';
-
-  @override
-  String get shareEditDiscardBody => 'Your edits to this share will be lost.';
-
-  @override
-  String shareEditTilettesPulledIn(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count accepted tilettes will be moved to this deadline.',
-      one: '1 accepted tilette will be moved to this deadline.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String shareEditTilettesKeep(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count tilettes nobody has accepted keep their later deadlines.',
-      one: '1 tilette nobody has accepted keeps its later deadline.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String taskSheetMoveShareDeadline(String when) {
-    return 'Also move the share’s deadline to $when';
-  }
-
-  @override
-  String get createChooserTitle => 'Share work';
-
-  @override
-  String get createChooserSubtitle => 'How should people take part?';
-
-  @override
-  String get createModeBroadcastBody =>
-      'Everyone gets their own copy of one tilette';
-
-  @override
-  String get createModeClassBody =>
-      'Everyone gets their own copy of a set of tilettes';
-
-  @override
-  String get createModeProjectBody =>
-      'Everyone works on one shared set of tilettes';
-
-  @override
-  String get createComingSoon => 'Coming soon';
-
-  @override
-  String get createBroadcastTitle => 'New broadcast';
-
-  @override
-  String get createBroadcastPeopleHint =>
-      'Each person gets their own copy and is asked to accept.';
-
-  @override
-  String get createSend => 'Send';
-
-  @override
-  String createSendTo(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Send to $count people',
-      one: 'Send to 1 person',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get createSending => 'Sending…';
-
-  @override
-  String get createNeedsPerson => 'Add at least one person';
-
-  @override
-  String get createFailed => 'Could not send right now. Your details are kept.';
-
-  @override
-  String get createDiscardTitle => 'Discard this share?';
-
-  @override
-  String get createDiscardBody => 'What you’ve entered won’t be sent.';
-
-  @override
-  String get taskSheetPeopleLabel => 'PEOPLE';
-
-  @override
-  String get taskSheetAddPerson => 'ADD PERSON';
-
-  @override
-  String get taskSheetWillBeAdded => 'Will be added';
-
-  @override
-  String get taskSheetWillBeRemoved => 'Will be removed';
-
-  @override
-  String get taskSheetWillBeAssigned => 'Will be assigned when you save';
-
-  @override
-  String get taskSheetPeopleFailed =>
-      'Some people changes couldn’t be saved. Retry them below.';
-
-  @override
-  String get tileShareSaveChanges => 'Save changes';
 
   @override
   String get vibeProjectRenamed => 'Project renamed.';
@@ -5248,19 +5614,6 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get vibeUpdateUnknown =>
       'Update could not be confirmed. Check status before trying again.';
-
-  @override
-  String get createClassTitle => 'New class';
-
-  @override
-  String get createNeedsTask => 'Add at least one tilette';
-
-  @override
-  String get createClassPeopleHint =>
-      'Each person gets their own copy of every tilette and is asked to accept.';
-
-  @override
-  String get detailLoading => 'Loading share…';
 
   @override
   String get vibeScheduleUpdatePending =>

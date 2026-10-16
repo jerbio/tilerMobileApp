@@ -21,8 +21,7 @@ final List<CreateModeOption> createModeOptions = <CreateModeOption>[
   CreateModeOption(
       TileShareMode.broadcast, (l10n) => l10n.createModeBroadcastBody),
   CreateModeOption(TileShareMode.class_, (l10n) => l10n.createModeClassBody),
-  CreateModeOption(TileShareMode.project, (l10n) => l10n.createModeProjectBody,
-      available: false),
+  CreateModeOption(TileShareMode.project, (l10n) => l10n.createModeProjectBody),
 ];
 
 /// Create starts with the mode (T14, §5.7): a sheet of the ways to share,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:maps_launcher/maps_launcher.dart';
+import 'package:tiler_app/components/scheduleNotices/scheduleNoticeSurface.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -23,8 +24,10 @@ Future<void> showTileDetailBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (sheetContext) =>
-        TileDetailBottomSheet(subEvent: subEvent, preview: preview),
+    // Messages about its actions (e.g. a change still in progress) show on
+    // the sheet, not behind it.
+    builder: (sheetContext) => ScheduleNoticeSurface(
+        child: TileDetailBottomSheet(subEvent: subEvent, preview: preview)),
   );
 }
 

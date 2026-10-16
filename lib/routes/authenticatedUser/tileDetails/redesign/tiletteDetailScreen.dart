@@ -22,6 +22,7 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/comments/comments_state.dart';
 import 'package:tiler_app/components/comments/comments_section.dart';
 import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/components/notes/markdownNoteEditor.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/comments_api.dart';
@@ -45,6 +46,22 @@ class TiletteDetailScreen extends StatefulWidget {
       ),
     );
   }
+
+  /// The tilette as this screen reads it, from the owner's side: the
+  /// owner has the tilette itself, not a copy designated to them. Its id is
+  /// the thread's (the one thread every recipient shares).
+  static DesignatedTile tileFor(TileShareTemplate tilette) =>
+      DesignatedTile.fromJson(const <String, dynamic>{})
+        ..name = tilette.name
+        ..endInMs = tilette.end
+        ..tileTemplate = tilette;
+
+  /// Pushes this screen for [tilette] - the owner's comments button.
+  static Future<void> byTemplate({
+    required BuildContext context,
+    required TileShareTemplate tilette,
+  }) =>
+      byTilette(context: context, designatedTile: tileFor(tilette));
 
   @override
   State<TiletteDetailScreen> createState() => _TiletteDetailScreenState();

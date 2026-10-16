@@ -5,6 +5,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/create/createClass.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 import 'helpers/tileshare_fakes.dart';
+import 'helpers/tileshare_no_snap.dart';
 
 Finder k(String key) => find.byKey(Key(key));
 Future<void> tap(WidgetTester t, String key) async {
@@ -17,6 +18,9 @@ void main() {
   late FakeTileShareCreateSource source;
   late List<String> created;
   Duration length = const Duration(minutes: 30);
+  DateTime? pickedDate;
+  TimeOfDay? pickedTime;
+  String? editedNotes;
   Future<void> open(WidgetTester t, {bool dark = false,
       Size size = const Size(390, 844), double textScale = 1,
       Locale locale = const Locale('en')}) async {
@@ -43,6 +47,9 @@ void main() {
           source: source,
           now: () => DateTime(2026, 10, 12),
           pickDuration: (_, __) async => length,
+          pickDate: (_, __) async => pickedDate,
+          pickTime: (_, __) async => pickedTime,
+          editNotes: (_, __) async => editedNotes,
           onCreated: (context, id) {
             created.add(id);
             Navigator.of(context).pushReplacement(MaterialPageRoute<void>(
@@ -227,5 +234,112 @@ void main() {
     expect(source.calls, hasLength(2));
     expect(created, ['new-share']);
     expect(t.takeException(), isNull);
+  });
+
+  testWidgets(
+      'the steps say where you are; the people step sums the share up',
+      (t) async {
+    await open(t);
+    expect(k('create_class'), findsOneWidget);
+    expect(find.text('New class'), findsOneWidget);
+    expect(find.text('Step 1 of 2'), findsOneWidget);
+    expect(k('create_class_close'), findsOneWidget);
+    await t.enterText(k('create_class_name'), 'Interview prep');
+    length = const Duration(minutes: 30);
+    await task(t, 'Reading');
+    length = const Duration(minutes: 45);
+    await task(t, 'Practice');
+    expect(
+        find.descendant(
+            of: k('create_class_next'), matching: find.text('Next: people')),
+        findsOneWidget);
+    await tap(t, 'create_class_next');
+    expect(find.text('Step 2 of 2'), findsOneWidget);
+    expect(k('create_class_close'), findsNothing,
+        reason: 'the second step goes back, it does not close');
+    expect(k('create_class_back'), findsOneWidget);
+    expect(
+        find.descendant(
+            of: k('create_class_summary'), matching: find.text('Interview prep')),
+        findsOneWidget);
+    expect(
+        find.descendant(
+            of: k('create_class_summary'),
+            matching:
+                find.textContaining('2 tilettes · 1 hr 15 min · due Mon, Oct 19')),
+        findsOneWidget);
+    expect(
+        find.text(
+            'Each person gets their own copy of every tilette and is asked to accept.'),
+        findsOneWidget);
+  });
+
+  testWidgets(
+      "a tilette without its own deadline follows the share's; one picked "
+      'keeps it', (t) async {
+    await open(t);
+    await t.enterText(k('create_class_name'), 'Interview prep');
+    length = const Duration(minutes: 30);
+    await task(t, 'Reading');
+    expect(
+        find.descendant(
+            of: k('create_class_task_0'),
+            matching: find.text('30 min · due with the share')),
+        findsOneWidget);
+    // Practice gets its own, earlier deadline.
+    await tap(t, 'create_class_add_task');
+    await t.enterText(k('task_sheet_name'), 'Practice');
+    pickedDate = DateTime(2026, 10, 16);
+    pickedTime = const TimeOfDay(hour: 9, minute: 0);
+    await tap(t, 'task_sheet_deadline');
+    await tap(t, 'task_sheet_save');
+    expect(
+        find.descendant(
+            of: k('create_class_task_1'),
+            matching: find.textContaining('· due Fri, Oct 16')),
+        findsOneWidget);
+    // Then the share's deadline moves out.
+    pickedDate = DateTime(2026, 10, 24);
+    pickedTime = const TimeOfDay(hour: 17, minute: 0);
+    await tap(t, 'create_class_deadline');
+    await tap(t, 'create_class_next');
+    await person(t, 'ann@example.com');
+    await tap(t, 'create_class_send');
+    final request = source.requests.single;
+    final shareEnd = DateTime(2026, 10, 24, 17).millisecondsSinceEpoch;
+    expect(request['EndTime'], shareEnd);
+    final tasks = request['ClusterTemplateTileModels'] as List;
+    expect(tasks[0]['EndTime'], shareEnd, reason: 'Reading follows the share');
+    expect(tasks[1]['EndTime'], DateTime(2026, 10, 16, 9).millisecondsSinceEpoch,
+        reason: 'Practice keeps the deadline picked for it');
+  });
+
+  testWidgets("a tilette's notes go with it", (t) async {
+    await open(t);
+    await t.enterText(k('create_class_name'), 'Interview prep');
+    await tap(t, 'create_class_add_task');
+    await t.enterText(k('task_sheet_name'), 'Reading');
+    editedNotes = 'Bring **tape**';
+    await tap(t, 'task_sheet_notes');
+    await tap(t, 'task_sheet_save');
+    await tap(t, 'create_class_next');
+    await person(t, 'ann@example.com');
+    await tap(t, 'create_class_send');
+    final tasks = source.requests.single['ClusterTemplateTileModels'] as List;
+    expect(tasks.single['NoteMiscData'], 'Bring **tape**');
+  });
+
+  testWidgets(
+      'the missing-tilette message grows in; the effort below slides (T11)',
+      (t) async {
+    await open(t);
+    await t.enterText(k('create_class_name'), 'Interview prep');
+    await t.pump();
+    final before = keyedRects(t, 'create_class_effort');
+    await t.tap(k('create_class_next'));
+    await t.pump();
+    expectNoJump(before, keyedRects(t, 'create_class_effort'), mayAnimate: true);
+    await expectGlides(t, () => keyedRects(t, 'create_class_effort'));
+    expect(find.text('Add at least one tilette'), findsOneWidget);
   });
 }

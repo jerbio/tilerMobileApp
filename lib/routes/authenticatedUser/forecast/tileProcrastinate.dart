@@ -1,3 +1,4 @@
+import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -21,6 +22,7 @@ import 'package:tiler_app/util.dart';
 class TileProcrastinateRoute extends StatefulWidget {
   final Duration? duration;
   final String tileId;
+  final String? eventName;
   final Function? callBack;
 
   /// Optional API seam (tests). Production creates its own.
@@ -30,6 +32,7 @@ class TileProcrastinateRoute extends StatefulWidget {
     Key? key,
     this.duration,
     required this.tileId,
+    this.eventName,
     this.callBack,
     this.subCalendarEventApi,
   }) : super(key: key);
@@ -65,18 +68,14 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
 
   /// Sends the defer and wires the schedule's evaluating state to it.
   /// Returns the request so the caller's callback (and the pop) can wait
-  /// on it. A schedule already evaluating within the last minute is left
-  /// alone.
+  /// on it. A conflicting evaluation rejects before sending another request.
   Future _procrastinate(Duration duration) {
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.defer))
+      return Future.error(ScheduleChangeBlocked());
     String tileId = this.widget.tileId;
     showMessage(AppLocalizations.of(context)!.procrastinating);
     final scheduleState = this.context.read<ScheduleBloc>().state;
-    if (scheduleState is ScheduleEvaluationState) {
-      DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-      if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-        return Future(() => null);
-      }
-    }
 
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
@@ -100,7 +99,11 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
       lookupTimeline = scheduleState.previousLookupTimeline;
     }
 
-    var requestFuture = _subCalendarEventApi.procrastinate(duration, tileId);
+    var requestFuture = context.read<ScheduleBloc>().runScheduleChange(
+        () => _subCalendarEventApi.procrastinate(duration, tileId),
+        kind: ScheduleChangeKind.defer,
+        eventName: widget.eventName,
+        affectedTileIds: [tileId]);
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.Procrastinate, requestFuture);
     }
@@ -117,14 +120,20 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
 
   Future<void> _onSelected(Duration duration) async {
     if (_submitting || duration.inMilliseconds <= 0) return;
+    if (!scheduleChangesAllowed(context,
+        requestedKind: ScheduleChangeKind.defer)) return;
     // Busy from the first frame: the picker dims and shows a spinner so the
     // tap is visibly acknowledged while the request is in flight.
     setState(() => _submitting = true);
     try {
       await _procrastinate(duration);
     } catch (_) {
-      // The schedule's evaluation state surfaces the failure; leaving the
-      // picker up would only strand the user on it.
+      if (mounted) {
+        setState(() => _submitting = false);
+        showMessage(scheduleChangeFailureMessage(context,
+            kind: ScheduleChangeKind.defer, eventName: widget.eventName));
+      }
+      return;
     }
     if (mounted) Navigator.of(context).pop();
   }

@@ -2,6 +2,7 @@ import 'package:tiler_app/bloc/tutorial/tutorial_bloc.dart';
 import 'package:tiler_app/bloc/tutorial/tutorial_event.dart';
 import 'package:tiler_app/components/tutorial/tourCoordinator.dart';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/operationFeedback.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
@@ -11,7 +12,6 @@ import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tutorial/tours/settingsTour.dart';
-import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -21,6 +21,7 @@ import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/scheduleUpdatesSetting.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/themerHelper.dart';
 import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
@@ -69,12 +70,12 @@ class Settings extends StatelessWidget {
               context, '/LoggedOut', (route) => false);
         }
         if (state is DeviceSettingError) {
-          final errorMessage = state.error is TilerError
-              ? (state.error as TilerError).Message
-              : state.error.toString();
           notificationOverlayMessage.showToast(
             context,
-            errorMessage!,
+            operationFailureMessage(AppLocalizations.of(context)!,
+                fallback: AppLocalizations.of(context)!
+                    .operationFailed(AppLocalizations.of(context)!.settings),
+                error: state.error),
             NotificationOverlayMessageType.error,
           );
         }
@@ -109,6 +110,7 @@ class Settings extends StatelessWidget {
               onTap: () =>
                   Navigator.pushNamed(context, '/notificationsPreferences'),
             ),
+            ScheduleUpdatesSettingTile(color: textColor),
             _buildDivider(tileThemeExtension),
             // _buildListTile(
             //   icon: 'assets/icons/settings/Security.svg',

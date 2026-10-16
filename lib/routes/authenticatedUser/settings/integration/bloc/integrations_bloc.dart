@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/services/api/integrationsApi.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -202,6 +203,9 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
       final authorizationUrl =
           await _startCalendarConnect(integrationType.providerName);
       await _launchAuthorizationUrl(Uri.parse(authorizationUrl));
+    } on ScheduleChangeBlocked {
+      // The schedule guard already explains the refusal on the visible route.
+      emit(IntegrationsLoaded(integrations: currentIntegrations));
     } catch (e) {
       BuildContext? context = null;
       if (this._integrationApi.getContextCallBack != null) {

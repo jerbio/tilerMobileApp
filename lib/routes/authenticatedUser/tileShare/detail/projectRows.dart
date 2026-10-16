@@ -33,6 +33,9 @@ class ProjectTaskRow extends StatelessWidget {
   /// The owner's Edit / Delete for the task; none without it.
   final Widget? menu;
 
+  /// Opens the task's comments; no button without it.
+  final VoidCallback? onComments;
+
   const ProjectTaskRow({
     super.key,
     required this.tilette,
@@ -41,6 +44,7 @@ class ProjectTaskRow extends StatelessWidget {
     this.onAssign,
     this.onRetry,
     this.menu,
+    this.onComments,
   });
 
   @override
@@ -70,6 +74,13 @@ class ProjectTaskRow extends StatelessWidget {
                     Duration(milliseconds: tilette.durationInMs!)
                         .toHumanLocalized(context),
                     style: quiet),
+              if (onComments != null)
+                IconButton(
+                  key: Key('project_task_comments_${tilette.id}'),
+                  tooltip: l10n.commentsTitle,
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  onPressed: onComments,
+                ),
               if (menu != null) menu!,
             ],
           ),

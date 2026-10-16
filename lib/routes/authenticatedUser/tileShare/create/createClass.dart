@@ -12,5 +12,6 @@ class CreateClassScreen extends CreateShareForm {
     super.pickDuration,
     super.pickDate,
     super.pickTime,
+    super.editNotes,
   }) : super(mode: TileShareMode.class_);
 }

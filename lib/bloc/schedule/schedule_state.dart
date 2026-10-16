@@ -134,12 +134,30 @@ class ScheduleLoadedState extends ScheduleState {
   @override
   List<Object> get props => [
         currentView,
+        subEvents,
         ...this.timelines,
         lookupTimeline.toString(),
         scheduleStatus.analysisId ?? "",
         scheduleStatus.evaluationId ?? "",
         eventId ?? ""
       ];
+}
+
+/// One transition for an unconfirmed release, retaining a usable calendar.
+class ScheduleEvaluationReleasedState extends ScheduleLoadedState {
+  ScheduleEvaluationReleasedState(
+      {required this.requestId,
+      required this.reason,
+      required super.subEvents,
+      required super.timelines,
+      required super.lookupTimeline,
+      required super.previousLookupTimeline,
+      required super.scheduleStatus,
+      required super.currentView});
+  final String requestId;
+  final String reason;
+  @override
+  List<Object> get props => [...super.props, requestId, reason];
 }
 
 class DelayedScheduleLoadedState extends ScheduleLoadedState {
@@ -219,6 +237,8 @@ class LocalScheduleLoadedState extends ScheduleLoadedState {
 }
 
 class ScheduleEvaluationState extends ScheduleState {
+  final ScheduleEvaluation? evaluation;
+  final bool isFetching;
   DateTime evaluationTime;
   String? message;
   final List<SubCalendarEvent> subEvents;
@@ -236,7 +256,9 @@ class ScheduleEvaluationState extends ScheduleState {
       required this.currentView,
       this.message,
       required this.scheduleStatus,
-      this.previousLookupTimeline});
+      this.previousLookupTimeline,
+      this.evaluation,
+      this.isFetching = false});
 
   @override
   List<Object> get props => [
@@ -244,6 +266,10 @@ class ScheduleEvaluationState extends ScheduleState {
         subEvents,
         currentView,
         timelines,
-        lookupTimeline.toString()
+        lookupTimeline.toString(),
+        evaluation ?? evaluationTime,
+        isFetching,
+        scheduleStatus.analysisId ?? '',
+        scheduleStatus.evaluationId ?? '',
       ];
 }

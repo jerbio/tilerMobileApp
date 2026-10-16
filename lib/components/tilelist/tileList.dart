@@ -106,6 +106,28 @@ abstract class TileListState<T extends TileList> extends State<T>
     }
   }
 
+  /// A newly mounted view requests its own range without resetting evaluation.
+  void loadViewTimeline({DateTime? visibleDate}) {
+    final schedule = context.read<ScheduleBloc>().state;
+    if (schedule is ScheduleInitialState)
+      return; // The initial builder loads it.
+    final previous = ScheduleState.generatePriorScheduleState(schedule);
+    final window = previous.previousLookupTimeline;
+    final covered = visibleDate != null
+        ? window.isDateTimeWithin(visibleDate)
+        : !timeLine.startTime.isBefore(window.startTime) &&
+            !timeLine.endTime.isAfter(window.endTime);
+    if (covered) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<ScheduleBloc>().add(GetScheduleEvent(
+          scheduleTimeline: timeLine,
+          forceRefresh: true,
+          emitOnlyLoadedStated: true));
+      refreshScheduleSummary(lookupTimeline: timeLine);
+    });
+  }
+
   void initializingSwipingAnimation(
       {Duration duration = const Duration(milliseconds: 300)}) {
     swipingAnimationController = AnimationController(

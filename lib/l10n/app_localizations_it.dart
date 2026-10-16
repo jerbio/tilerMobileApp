@@ -9,6 +9,43 @@ class AppLocalizationsIt extends AppLocalizations {
   AppLocalizationsIt([String locale = 'it']) : super(locale);
 
   @override
+  String get notesLoadFailed =>
+      'Impossibile caricare le tue note. Riapri l’editor delle note per riprovare.';
+
+  @override
+  String get onboardingSubmitFailed =>
+      'Impossibile salvare la configurazione. Le tue scelte sono mantenute. Riprova o salta questo passaggio per ora.';
+
+  @override
+  String operationFailed(String operation) {
+    return '$operation non è riuscito. Riprova.';
+  }
+
+  @override
+  String get scheduleLoadFailed =>
+      'Impossibile caricare il tuo programma. Aggiorna per riprovare.';
+
+  @override
+  String get chatConnectionFailed =>
+      'Impossibile connettersi alla chat. Riapri la chat per riprovare.';
+
+  @override
+  String get chatHistoryFailed =>
+      'Impossibile caricare la cronologia della chat. Riapri la conversazione.';
+
+  @override
+  String get chatSendFailed =>
+      'Impossibile inviare il tuo messaggio. Controlla la connessione e riprova.';
+
+  @override
+  String get chatRecordingFailed =>
+      'Impossibile avviare la registrazione vocale. Controlla l’accesso al microfono e riprova.';
+
+  @override
+  String get chatCancelRecordingFailed =>
+      'Impossibile annullare la registrazione vocale. Prova a interromperla di nuovo.';
+
+  @override
   String get whiteSpace => ' ';
 
   @override
@@ -730,10 +767,11 @@ class AppLocalizationsIt extends AppLocalizations {
   String get todayStatusClearDay => 'La tua giornata è libera.';
 
   @override
-  String get todayStatusClearDayHeadline => 'Light day, nothing urgent.';
+  String get todayStatusClearDayHeadline =>
+      'Giornata leggera, niente di urgente.';
 
   @override
-  String get todayStatusClearDaySubtext => 'Make Tiler work for you.';
+  String get todayStatusClearDaySubtext => 'Fai lavorare Tiler per te.';
 
   @override
   String get todayStatusPreviewCta => 'Visualizza un piano migliore';
@@ -1053,89 +1091,89 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get tileShareActivityInvitationUnknown =>
-      'Invitation send outcome unknown';
+      'Esito dell\'invito sconosciuto';
 
   @override
   String get tileShareActivityExplicitResend =>
-      'The invitation may have been sent. Resend explicitly if needed.';
+      'L\'invito potrebbe essere stato inviato. Invialo di nuovo in modo esplicito se necessario.';
 
   @override
-  String get tileShareActivityEmail => 'Email';
+  String get tileShareActivityEmail => 'E-mail';
 
   @override
   String get tileShareActivitySms => 'SMS';
 
   @override
-  String get tileShareActivityPush => 'Push notification';
+  String get tileShareActivityPush => 'Notifica push';
 
   @override
-  String get tileShareActivityTitle => 'Activities';
+  String get tileShareActivityTitle => 'Attività';
 
   @override
-  String get tileShareActivityRefresh => 'Refresh';
+  String get tileShareActivityRefresh => 'Aggiorna';
 
   @override
-  String get tileShareActivityRetry => 'Retry';
+  String get tileShareActivityRetry => 'Riprova';
 
   @override
-  String get tileShareActivityEmpty => 'No activity yet.';
+  String get tileShareActivityEmpty => 'Nessuna attività per ora.';
 
   @override
   String get tileShareActivityFailed =>
-      'Activity could not be loaded. Check your connection and try again.';
+      'Non è stato possibile caricare l\'attività. Controlla la connessione e riprova.';
 
   @override
   String get tileShareActivityAccess =>
-      'This activity is no longer available to you.';
+      'Questa attività non è più disponibile per te.';
 
   @override
-  String get tileShareActivityUnknown => 'Activity updated';
+  String get tileShareActivityUnknown => 'Attività aggiornata';
 
   @override
-  String get tileShareActivityUnavailable => 'Item no longer available';
+  String get tileShareActivityUnavailable => 'Elemento non più disponibile';
 
   @override
-  String get tileShareActivityMore => 'Load more';
+  String get tileShareActivityMore => 'Carica ancora';
 
   @override
-  String get tileShareActivityClusterCreated => 'TileShare created';
+  String get tileShareActivityClusterCreated => 'TileShare creato';
 
   @override
-  String get tileShareActivityClusterDeleted => 'TileShare deleted';
+  String get tileShareActivityClusterDeleted => 'TileShare eliminato';
 
   @override
-  String get tileShareActivityTiletteAdded => 'Tilette added';
+  String get tileShareActivityTiletteAdded => 'Tilette aggiunta';
 
   @override
-  String get tileShareActivityTiletteEdited => 'Tilette updated';
+  String get tileShareActivityTiletteEdited => 'Tilette aggiornata';
 
   @override
-  String get tileShareActivityTiletteDeleted => 'Tilette deleted';
+  String get tileShareActivityTiletteDeleted => 'Tilette eliminata';
 
   @override
-  String get tileShareActivityTiletteRestored => 'Tilette restored';
+  String get tileShareActivityTiletteRestored => 'Tilette ripristinata';
 
   @override
-  String get tileShareActivityRecipientAdded => 'Participant added';
+  String get tileShareActivityRecipientAdded => 'Partecipante aggiunto';
 
   @override
-  String get tileShareActivityRecipientRemoved => 'Participant removed';
+  String get tileShareActivityRecipientRemoved => 'Partecipante rimosso';
 
   @override
-  String get tileShareActivityRecipientRestored => 'Participant restored';
+  String get tileShareActivityRecipientRestored => 'Partecipante ripristinato';
 
   @override
-  String get tileShareActivityAccepted => 'Assignment accepted';
+  String get tileShareActivityAccepted => 'Assegnazione accettata';
 
   @override
-  String get tileShareActivityDeclined => 'Assignment declined';
+  String get tileShareActivityDeclined => 'Assegnazione rifiutata';
 
   @override
-  String get tileShareActivityInvitationSent => 'Invitation sent';
+  String get tileShareActivityInvitationSent => 'Invito inviato';
 
   @override
   String get tileShareActivityInvitationFailed =>
-      'Invitation could not be sent';
+      'Non è stato possibile inviare l\'invito';
 
   @override
   String get update => 'Aggiorna';
@@ -1926,6 +1964,16 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String durationHoursMinutesShort(int hours, int minutes) {
     return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String durationDaysHoursShort(int days, int hours) {
+    return '${days}g ${hours}h';
+  }
+
+  @override
+  String durationDaysShort(int days) {
+    return '${days}g';
   }
 
   @override
@@ -3767,22 +3815,22 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count more days affected',
-      one: '1 more day affected',
+      other: '$count giorni in più interessati',
+      one: '1 giorno in più interessato',
     );
     return '$_temp0';
   }
 
   @override
-  String get editTileWhatIfUnplaced => 'Unplaced';
+  String get editTileWhatIfUnplaced => 'Non posizionato';
 
   @override
   String editTileWhatIfAffectedCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count affected tiles',
-      one: '1 affected tile',
+      other: '$count blocchi interessati',
+      one: '1 blocco interessato',
     );
     return '$_temp0';
   }
@@ -3953,13 +4001,13 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String addTileHoursEndsNextDay(String day, String time) {
-    return 'Ends $day at $time';
+    return 'Si conclude $day alle $time';
   }
 
   @override
   String addTileRestrictionWindowNextDay(
       String days, String start, String end) {
-    return '$days · $start – $end (next day)';
+    return '$days · $start – $end (giorno successivo)';
   }
 
   @override
@@ -4154,7 +4202,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get commentsAttachmentPickFailed =>
-      'Couldn\'t attach that file. Please try again.';
+      'Non è stato possibile allegare quel file. Riprova.';
 
   @override
   String commentsAttachmentRemove(String name) {
@@ -4202,133 +4250,133 @@ class AppLocalizationsIt extends AppLocalizations {
   String get productTourStarting => 'Il tour dell\'app sta per iniziare.';
 
   @override
-  String get attentionTabTitle => 'Attention';
+  String get attentionTabTitle => 'Attenzione';
 
   @override
-  String get attentionFilterAll => 'All';
+  String get attentionFilterAll => 'Tutti';
 
   @override
-  String get attentionFilterInvitations => 'Invitations';
+  String get attentionFilterInvitations => 'Inviti';
 
   @override
-  String get attentionFilterChanges => 'Changes';
+  String get attentionFilterChanges => 'Modifiche';
 
   @override
-  String get attentionFilterAtRisk => 'At risk';
+  String get attentionFilterAtRisk => 'A rischio';
 
   @override
-  String get attentionFilterResponses => 'Responses';
+  String get attentionFilterResponses => 'Risposte';
 
   @override
-  String get attentionPillInvitation => 'Invitation';
+  String get attentionPillInvitation => 'Invito';
 
   @override
-  String get attentionPillChanged => 'Changed';
+  String get attentionPillChanged => 'Modificato';
 
   @override
-  String get attentionPillAtRisk => 'At risk';
+  String get attentionPillAtRisk => 'A rischio';
 
   @override
-  String get attentionPillDeclined => 'Declined';
+  String get attentionPillDeclined => 'Rifiutato';
 
   @override
-  String get attentionPillCompleted => 'Completed';
+  String get attentionPillCompleted => 'Completato';
 
   @override
-  String get attentionPillNotSent => 'Not sent';
+  String get attentionPillNotSent => 'Non inviato';
 
   @override
-  String get attentionSomeone => 'Someone';
+  String get attentionSomeone => 'Qualcuno';
 
   @override
   String attentionReasonInvited(String inviter) {
-    return '$inviter invited you';
+    return '$inviter ti ha invitato';
   }
 
   @override
   String attentionReasonInvitedMany(String inviter, int count) {
-    return '$inviter invited you to $count tilettes';
+    return '$inviter ti ha invitato a $count tilette';
   }
 
   @override
   String attentionReasonAtRiskOne(String task) {
-    return '“$task” no longer fits your schedule';
+    return '“$task” non rientra più nel tuo programma';
   }
 
   @override
   String get attentionReasonAtRiskUntitled =>
-      'A tilette no longer fits your schedule';
+      'Una tilette non rientra più nel tuo programma';
 
   @override
   String attentionReasonAtRiskMany(int count) {
-    return '$count tilettes no longer fit your schedule';
+    return '$count tilette non rientrano più nel tuo programma';
   }
 
   @override
   String attentionReasonDeadlineMoved(String actor, String from, String to) {
-    return '$actor moved the deadline from $from to $to';
+    return '$actor ha spostato la scadenza da $from a $to';
   }
 
   @override
   String attentionReasonDeadlineChanged(String actor) {
-    return '$actor changed the deadline';
+    return '$actor ha modificato la scadenza';
   }
 
   @override
   String attentionReasonRenamed(String actor) {
-    return '$actor renamed a tilette';
+    return '$actor ha rinominato una tilette';
   }
 
   @override
   String attentionReasonNotesUpdated(String actor) {
-    return '$actor updated the notes';
+    return '$actor ha aggiornato le note';
   }
 
   @override
   String attentionReasonUpdated(String actor) {
-    return '$actor updated a tilette';
+    return '$actor ha aggiornato una tilette';
   }
 
   @override
   String attentionReasonManyChanges(String actor, int count) {
-    return '$actor made $count changes';
+    return '$actor ha apportato $count modifiche';
   }
 
   @override
   String attentionReasonDeclined(String actor) {
-    return '$actor declined';
+    return '$actor ha rifiutato';
   }
 
   @override
   String attentionReasonDeclinedMany(int count) {
-    return '$count people declined';
+    return '$count persone hanno rifiutato';
   }
 
   @override
-  String get attentionReasonNotSent => 'Couldn’t send an invitation';
+  String get attentionReasonNotSent => 'Impossibile inviare un invito';
 
   @override
   String attentionReasonNotSentMany(int count) {
-    return 'Couldn’t send $count invitations';
+    return 'Impossibile inviare $count inviti';
   }
 
   @override
   String get attentionReasonSendUnknown =>
-      'An invitation may not have been sent — resend if needed';
+      'Un invito potrebbe non essere stato inviato — invialo di nuovo se necessario';
 
   @override
   String attentionReasonCompleted(String actor, String task) {
-    return '$actor completed $task';
+    return '$actor ha completato $task';
   }
 
   @override
   String attentionReasonCompletedUntitled(String actor) {
-    return '$actor completed a tilette';
+    return '$actor ha completato una tilette';
   }
 
   @override
   String attentionReasonCompletedMany(int count) {
-    return '$count tilettes completed';
+    return '$count tilette completate';
   }
 
   @override
@@ -4336,7 +4384,7 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes',
+      other: '$count tilette',
       one: '1 tilette',
     );
     return '$_temp0';
@@ -4344,121 +4392,122 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String attentionMetaDue(String date) {
-    return 'Due $date';
+    return 'Scadenza: $date';
   }
 
   @override
-  String get attentionCtaReview => 'Review';
+  String get attentionCtaReview => 'Esamina';
 
   @override
-  String get attentionCtaReviewChanges => 'Review changes';
+  String get attentionCtaReviewChanges => 'Esamina le modifiche';
 
   @override
-  String get attentionCtaReviewPlan => 'Review plan';
+  String get attentionCtaReviewPlan => 'Esamina il piano';
 
   @override
-  String get attentionCtaView => 'View';
+  String get attentionCtaView => 'Visualizza';
 
   @override
-  String get attentionMenuTooltip => 'More';
+  String get attentionMenuTooltip => 'Altro';
 
   @override
-  String get attentionDismiss => 'Dismiss';
+  String get attentionDismiss => 'Nascondi';
 
   @override
-  String get attentionDismissed => 'Dismissed';
+  String get attentionDismissed => 'Nascosto';
 
   @override
-  String get attentionUndo => 'Undo';
+  String get attentionUndo => 'Annulla';
 
   @override
-  String get attentionDismissFailed => 'Couldn’t dismiss it. Try again.';
+  String get attentionDismissFailed => 'Impossibile nasconderlo. Riprova.';
 
   @override
-  String get attentionUndoFailed => 'Couldn’t restore it. Try again.';
+  String get attentionUndoFailed => 'Impossibile ripristinarlo. Riprova.';
 
   @override
-  String get attentionEmptyTitle => 'You’re all caught up';
+  String get attentionEmptyTitle => 'Sei in pari';
 
   @override
-  String get attentionEmptyBody => 'Nothing needs your attention right now.';
+  String get attentionEmptyBody =>
+      'Al momento nulla richiede la tua attenzione.';
 
   @override
-  String get attentionEmptyFiltered => 'Nothing to show here';
+  String get attentionEmptyFiltered => 'Nulla da mostrare qui';
 
   @override
-  String get attentionLoadFailed => 'Some updates couldn’t load';
+  String get attentionLoadFailed => 'Impossibile caricare alcuni aggiornamenti';
 
   @override
-  String get attentionLoadFailedAll => 'Attention couldn’t load';
+  String get attentionLoadFailedAll => 'Impossibile caricare Attenzione';
 
   @override
-  String get attentionRetry => 'Retry';
+  String get attentionRetry => 'Riprova';
 
   @override
-  String get tileShareModeBroadcast => 'Broadcast';
+  String get tileShareModeBroadcast => 'Trasmissione';
 
   @override
-  String get tileShareModeProject => 'Project';
+  String get tileShareModeProject => 'Progetto';
 
   @override
-  String get tileShareModeClass => 'Class';
+  String get tileShareModeClass => 'Corso';
 
   @override
-  String get attentionAccept => 'Accept';
+  String get attentionAccept => 'Accetta';
 
   @override
-  String get attentionDecline => 'Decline';
+  String get attentionDecline => 'Rifiuta';
 
   @override
-  String get attentionAcceptAll => 'Accept all';
+  String get attentionAcceptAll => 'Accetta tutto';
 
   @override
-  String get attentionDeclineAll => 'Decline all';
+  String get attentionDeclineAll => 'Rifiuta tutto';
 
   @override
-  String get attentionAcceptDone => 'Accepted';
+  String get attentionAcceptDone => 'Accettato';
 
   @override
   String attentionAcceptDoneMany(int count) {
-    return 'Accepted $count tilettes';
+    return '$count tilette accettate';
   }
 
   @override
-  String get attentionDeclineDone => 'Declined';
+  String get attentionDeclineDone => 'Rifiutato';
 
   @override
   String attentionDeclineDoneMany(int count) {
-    return 'Declined $count tilettes';
+    return '$count tilette rifiutate';
   }
 
   @override
-  String get attentionAcceptFailed => 'Couldn’t accept it. Try again.';
+  String get attentionAcceptFailed => 'Impossibile accettare. Riprova.';
 
   @override
-  String get attentionDeclineFailed => 'Couldn’t decline it. Try again.';
+  String get attentionDeclineFailed => 'Impossibile rifiutare. Riprova.';
 
   @override
   String get attentionScheduleRefreshFailed =>
-      'Accepted, but your schedule couldn’t refresh yet.';
+      'Accettato, ma non è stato ancora possibile aggiornare il tuo programma.';
 
   @override
-  String get clusterTitleFallback => 'Untitled share';
+  String get clusterTitleFallback => 'Condivisione senza titolo';
 
   @override
-  String get clusterRoleMine => 'Created by you';
+  String get clusterRoleMine => 'Creato da te';
 
   @override
   String clusterRoleFrom(String name) {
-    return 'From $name';
+    return 'Da $name';
   }
 
   @override
-  String get clusterRoleShared => 'Shared with you';
+  String get clusterRoleShared => 'Condiviso con te';
 
   @override
   String clusterRsvpAccepted(int accepted, int total) {
-    return '$accepted of $total accepted';
+    return '$accepted su $total accettati';
   }
 
   @override
@@ -4466,10 +4515,10 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       total,
       locale: localeName,
-      other: '$total people',
-      one: '1 person',
+      other: '$total persone hanno accettato',
+      one: '1 persona ha accettato',
     );
-    return '$accepted of $_temp0 accepted';
+    return '$accepted su $_temp0';
   }
 
   @override
@@ -4477,411 +4526,424 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       total,
       locale: localeName,
-      other: '$total tilettes',
-      one: '1 tilette',
+      other: '$total tilette accettate',
+      one: '1 tilette accettata',
     );
-    return '$accepted of $_temp0 accepted';
+    return '$accepted su $_temp0';
   }
 
   @override
-  String get clusterRsvpUnavailable => 'Responses unavailable';
+  String get clusterRsvpUnavailable => 'Risposte non disponibili';
 
   @override
-  String get clusterMineAccepted => 'You accepted';
+  String get clusterMineAccepted => 'Hai accettato';
 
   @override
-  String get clusterMineDeclined => 'You declined';
+  String get clusterMineDeclined => 'Hai rifiutato';
 
   @override
-  String get clusterMinePending => 'Needs your answer';
+  String get clusterMinePending => 'Serve la tua risposta';
 
   @override
-  String get clusterMineMixed => 'Partly answered';
+  String get clusterMineMixed => 'Risposto in parte';
 
   @override
   String clusterProjectNeedsAnswer(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes need your response',
-      one: '1 tilette needs your response',
+      other: '$count tilette richiedono la tua risposta',
+      one: '1 tilette richiede la tua risposta',
     );
     return '$_temp0';
   }
 
   @override
-  String get clusterOverdue => 'Overdue';
+  String get clusterOverdue => 'Scaduto';
 
   @override
-  String get clusterMenuTooltip => 'More actions';
+  String get clusterMenuTooltip => 'Altre azioni';
 
   @override
-  String get clusterDelete => 'Delete';
+  String get clusterDelete => 'Elimina';
 
   @override
-  String get clusterDeleteTitle => 'Delete this share?';
+  String get clusterDeleteTitle => 'Eliminare questa condivisione?';
 
   @override
   String clusterDeleteBody(String name) {
-    return '“$name” will be deleted. This can’t be undone.';
+    return '“$name” verrà eliminato. Questa azione è irreversibile.';
   }
 
   @override
   String clusterDeleteFailed(String name) {
-    return 'Couldn’t delete “$name”. It’s back in your list.';
+    return 'Impossibile eliminare “$name”. La condivisione è di nuovo nel tuo elenco.';
   }
 
   @override
-  String get clusterFilterAll => 'All';
+  String get clusterFilterAll => 'Tutti';
 
   @override
-  String get clusterFilterShared => 'Shared with me';
+  String get clusterFilterShared => 'Condiviso con me';
 
   @override
-  String get clusterFilterCreated => 'Created by me';
+  String get clusterFilterCreated => 'Creato da me';
 
   @override
-  String get clusterEmptyAllTitle => 'Nothing shared yet';
+  String get clusterEmptyAllTitle => 'Ancora nessuna condivisione';
 
   @override
   String get clusterEmptyAllBody =>
-      'Share a tile with someone and it will show up here.';
+      'Condividi un blocco con qualcuno e apparirà qui.';
 
   @override
-  String get clusterEmptySharedTitle => 'Nothing shared with you';
+  String get clusterEmptySharedTitle => 'Nessuna condivisione ricevuta';
 
   @override
   String get clusterEmptySharedBody =>
-      'When someone shares a tile with you it will appear here.';
+      'Quando qualcuno condivide un blocco con te, apparirà qui.';
 
   @override
-  String get clusterEmptyCreatedTitle => 'You haven’t shared anything';
+  String get clusterEmptyCreatedTitle => 'Non hai ancora condiviso nulla';
 
   @override
   String get clusterEmptyCreatedBody =>
-      'Share a tile to see who has accepted it.';
+      'Condividi un blocco per vedere chi l’ha accettato.';
 
   @override
-  String get clusterEmptyAction => 'Share a tile';
+  String get clusterEmptyAction => 'Condividi un blocco';
 
   @override
-  String get clusterLoadFailed => 'Some shares couldn’t load';
+  String get clusterLoadFailed => 'Impossibile caricare alcune condivisioni';
 
   @override
-  String get clusterLoadFailedAll => 'Shares couldn’t load';
+  String get clusterLoadFailedAll => 'Impossibile caricare le condivisioni';
 
   @override
-  String get clusterLoadMore => 'Load more';
+  String get clusterLoadMore => 'Carica altro';
 
   @override
-  String get clusterLoadMoreFailed => 'Couldn’t load more';
+  String get clusterLoadMoreFailed => 'Impossibile caricare altro';
 
   @override
-  String get clustersTabTitle => 'Shares';
+  String get clustersTabTitle => 'Condivisioni';
 
   @override
-  String get previewTitleFallback => 'Review schedule';
+  String get previewTitleFallback => 'Esamina il programma';
 
   @override
-  String get previewRegenerate => 'Generate new preview';
+  String get previewRegenerate => 'Genera una nuova anteprima';
 
   @override
-  String get previewSuggested => 'Suggested schedule';
+  String get previewSuggested => 'Programma suggerito';
 
   @override
-  String get previewSelected => 'Selected schedule';
+  String get previewSelected => 'Programma selezionato';
 
   @override
   String previewMoves(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Moves $count flexible tiles',
-      one: 'Moves 1 flexible tile',
+      other: 'Sposta $count blocchi flessibili',
+      one: 'Sposta 1 blocco flessibile',
     );
     return '$_temp0';
   }
 
   @override
-  String get previewAccept => 'Accept';
+  String get previewAccept => 'Accetta';
 
   @override
-  String get previewAcceptAndLock => 'Accept & lock';
+  String get previewAcceptAndLock => 'Accetta e blocca';
 
   @override
-  String get previewAcceptHint => 'Tiler may move flexible work later.';
+  String get previewAcceptHint =>
+      'Tiler potrebbe spostare le attività flessibili in seguito.';
 
   @override
   String previewLockHint(String when) {
-    return 'Locks $when. Other sessions stay flexible.';
+    return 'Blocca $when. Le altre sessioni restano flessibili.';
   }
 
   @override
-  String get previewDecline => 'Decline';
+  String get previewDecline => 'Rifiuta';
 
   @override
-  String get previewCannotFit => 'It can’t be fitted before its deadline.';
+  String get previewCannotFit =>
+      'Non è possibile inserirla prima della scadenza.';
 
   @override
   String previewOutsideWindow(String when) {
-    return 'Scheduled outside the days shown: $when';
+    return 'Programmata fuori dai giorni mostrati: $when';
   }
 
   @override
-  String get previewNothingThisDay => 'Nothing scheduled this day';
+  String get previewNothingThisDay => 'Nulla in programma per questo giorno';
 
   @override
-  String get previewPrevDay => 'Previous day';
+  String get previewPrevDay => 'Giorno precedente';
 
   @override
-  String get previewNextDay => 'Next day';
+  String get previewNextDay => 'Giorno successivo';
 
   @override
-  String get previewStale => 'This preview is out of date.';
+  String get previewStale => 'Questa anteprima non è aggiornata.';
 
   @override
-  String get previewRefresh => 'Refresh preview';
+  String get previewRefresh => 'Aggiorna l’anteprima';
 
   @override
   String get previewSessionInvalid =>
-      'That time can no longer be locked. You can still accept.';
+      'Non è più possibile bloccare questo orario. Puoi comunque accettare.';
 
   @override
-  String get previewLoading => 'Checking your schedule…';
+  String get previewLoading => 'Controllo del tuo programma…';
 
   @override
-  String get previewLoadFailed => 'Couldn’t build the preview.';
+  String get previewLoadFailed => 'Impossibile generare l’anteprima.';
 
   @override
-  String get previewGone => 'This invitation is no longer available.';
+  String get previewGone => 'Questo invito non è più disponibile.';
 
   @override
-  String get previewSwitchedOff => 'Previews aren’t available right now.';
+  String get previewSwitchedOff =>
+      'Le anteprime non sono disponibili al momento.';
 
   @override
-  String get previewSignIn => 'Sign in again to see the preview.';
+  String get previewSignIn => 'Accedi di nuovo per vedere l’anteprima.';
 
   @override
-  String get previewInvalid => 'That request wasn’t accepted. Try again.';
+  String get previewInvalid => 'La richiesta non è stata accettata. Riprova.';
 
   @override
-  String get previewUnsupportedAccepted => 'You’ve already accepted this.';
+  String get previewUnsupportedAccepted => 'Hai già accettato.';
 
   @override
-  String get previewUnsupportedDeadline => 'Its deadline has passed.';
+  String get previewUnsupportedDeadline => 'La scadenza è passata.';
 
   @override
   String get previewUnsupportedConstraints =>
-      'This tilette repeats, has a place, or has limits a preview can’t show yet. You can still answer it from the list.';
+      'Questa tilette si ripete, ha un luogo o vincoli che l’anteprima non può ancora mostrare. Puoi comunque rispondere dall’elenco.';
 
   @override
-  String get previewUnsupportedOther => 'This tilette can’t be previewed.';
+  String get previewUnsupportedOther =>
+      'Non è possibile visualizzare l’anteprima di questa tilette.';
 
   @override
-  String get previewAdding => 'Adding to your calendar…';
+  String get previewAdding => 'Aggiunta al tuo calendario…';
 
   @override
-  String get previewAdded => 'Added to your calendar';
+  String get previewAdded => 'Aggiunto al tuo calendario';
 
   @override
-  String get previewNeedsReview => 'Added, but its time couldn’t be confirmed.';
+  String get previewNeedsReview =>
+      'Aggiunto, ma non è stato possibile confermare l’orario.';
 
   @override
-  String get previewNotAdded => 'Not added';
+  String get previewNotAdded => 'Non aggiunto';
 
   @override
   String get previewReasonScheduleChanged =>
-      'Your schedule changed since this preview.';
+      'Il tuo programma è cambiato dopo questa anteprima.';
 
   @override
-  String get previewReasonAnswered => 'It was answered or changed elsewhere.';
+  String get previewReasonAnswered =>
+      'È stata data una risposta o apportata una modifica altrove.';
 
   @override
-  String get previewReasonExpired => 'The preview expired.';
+  String get previewReasonExpired => 'L’anteprima è scaduta.';
 
   @override
-  String get previewReasonOther => 'It couldn’t be scheduled as previewed.';
+  String get previewReasonOther =>
+      'Impossibile programmare come nell’anteprima.';
 
   @override
-  String get previewReviewAgain => 'Review again';
+  String get previewReviewAgain => 'Esamina di nuovo';
 
   @override
-  String get previewUnconfirmed => 'We couldn’t confirm your answer.';
+  String get previewUnconfirmed => 'Impossibile confermare la tua risposta.';
 
   @override
-  String get previewTryAgain => 'Try again';
+  String get previewTryAgain => 'Riprova';
 
   @override
-  String get previewCheckStatus => 'Check status';
+  String get previewCheckStatus => 'Controlla lo stato';
 
   @override
-  String get previewStillAdding => 'Still adding…';
+  String get previewStillAdding => 'Aggiunta ancora in corso…';
 
   @override
-  String get previewDeclined => 'Declined';
+  String get previewDeclined => 'Rifiutato';
 
   @override
-  String get previewDeclineFailed => 'Couldn’t decline. Try again.';
+  String get previewDeclineFailed => 'Impossibile rifiutare. Riprova.';
 
   @override
-  String get previewDone => 'Done';
+  String get previewDone => 'Fatto';
 
   @override
-  String get previewCheckFit => 'Check fit';
+  String get previewCheckFit => 'Verifica la disponibilità';
 
   @override
-  String get previewDetails => 'Details';
+  String get previewDetails => 'Dettagli';
 
   @override
-  String get previewOtherTimes => 'Other times';
+  String get previewOtherTimes => 'Altri orari';
 
   @override
-  String get previewOriginalSuggestion => 'Original suggestion';
+  String get previewOriginalSuggestion => 'Suggerimento originale';
 
   @override
-  String get previewFindAnotherTime => 'Find another time';
+  String get previewFindAnotherTime => 'Trova un altro orario';
 
   @override
-  String get previewFindingTimes => 'Looking for other times…';
+  String get previewFindingTimes => 'Ricerca di altri orari…';
 
   @override
-  String get previewNoDifferentTime => 'No different time found';
+  String get previewNoDifferentTime => 'Nessun altro orario trovato';
 
   @override
-  String get previewOptionsFailed => 'Couldn’t load other times.';
+  String get previewOptionsFailed => 'Impossibile caricare altri orari.';
 
   @override
-  String get previewSelectFailed => 'Couldn’t switch to that time.';
+  String get previewSelectFailed => 'Impossibile passare a questo orario.';
 
   @override
-  String get previewNoMoves => 'Moves nothing else';
+  String get previewNoMoves => 'Non sposta altro';
 
   @override
-  String get previewSessions => 'Sessions';
+  String get previewSessions => 'Sessioni';
 
   @override
   String previewSessionN(int n) {
-    return 'Session $n';
+    return 'Sessione $n';
   }
 
   @override
-  String get previewSessionUnplaced => 'Couldn’t be placed';
+  String get previewSessionUnplaced => 'Impossibile inserire';
 
   @override
-  String get previewSessionOutside => 'Outside the days shown';
+  String get previewSessionOutside => 'Fuori dai giorni mostrati';
 
   @override
   String previewIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count scheduling issues',
-      one: '1 scheduling issue',
+      other: '$count problemi di pianificazione',
+      one: '1 problema di pianificazione',
     );
     return '$_temp0';
   }
 
   @override
-  String get previewIssueUnscheduled => 'Couldn’t be scheduled';
+  String get previewIssueUnscheduled => 'Impossibile programmare';
 
   @override
-  String get previewIssueConflict => 'Overlaps other work';
+  String get previewIssueConflict => 'Si sovrappone ad altre attività';
 
   @override
   String previewIssueWindow(String from, String to) {
-    return 'Can go $from – $to';
+    return 'Disponibile da $from a $to';
   }
 
   @override
-  String get previewViewInCalendar => 'View in calendar';
+  String get previewViewInCalendar => 'Visualizza nel calendario';
 
   @override
-  String get detailLoadFailed => 'Couldn’t load this share.';
+  String get detailLoadFailed => 'Impossibile caricare questa condivisione.';
 
   @override
-  String get detailNotFound => 'This share is no longer available.';
+  String get detailNotFound => 'Questa condivisione non è più disponibile.';
 
   @override
   String get detailRefreshFailed =>
-      'Couldn’t refresh. Showing what was loaded.';
+      'Impossibile aggiornare. Vengono mostrati i dati già caricati.';
 
   @override
-  String get detailTasksFailed => 'Couldn’t load its tilettes.';
+  String get detailTasksFailed => 'Impossibile caricare le sue tilette.';
 
   @override
-  String get detailTasks => 'Tilettes';
+  String get detailTasks => 'Tilette';
 
   @override
-  String get forecastDeadlinePassed => 'Deadline passed';
+  String get forecastDeadlinePassed => 'Scadenza passata';
 
   @override
-  String get broadcastParticipants => 'Participants';
+  String get broadcastParticipants => 'Partecipanti';
 
   @override
   String broadcastViewAll(int count) {
-    return 'View all ($count)';
+    return 'Visualizza tutti ($count)';
   }
 
   @override
-  String get broadcastNoParticipants => 'No one yet. Add someone above.';
+  String get broadcastNoParticipants =>
+      'Ancora nessuno. Aggiungi qualcuno sopra.';
+
+  @override
+  String get projectNoParticipants =>
+      'Ancora nessuno. Assegna una tilette a qualcuno nella scheda Tilette.';
 
   @override
   String broadcastDeliveryIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count invitations may not have arrived',
-      one: '1 invitation may not have arrived',
+      other: '$count inviti potrebbero non essere arrivati',
+      one: '1 invito potrebbe non essere arrivato',
     );
     return '$_temp0';
   }
 
   @override
-  String get participantInvited => 'Invited';
+  String get participantInvited => 'Invitato';
 
   @override
-  String get participantAdding => 'Adding…';
+  String get participantAdding => 'Aggiunta in corso…';
 
   @override
-  String get participantAddFailed => 'Couldn’t add.';
+  String get participantAddFailed => 'Impossibile aggiungere.';
 
   @override
-  String get participantRemoveFailed => 'Couldn’t remove.';
+  String get participantRemoveFailed => 'Impossibile rimuovere.';
 
   @override
   String participantAlreadyInvited(String who) {
-    return '$who is already invited.';
+    return '$who è già stato invitato.';
   }
 
   @override
-  String get participantRemove => 'Remove';
+  String get participantRemove => 'Rimuovi';
 
   @override
   String participantRemoveTitle(String who) {
-    return 'Remove $who?';
+    return 'Rimuovere $who?';
   }
 
   @override
-  String get participantRemoveBody => 'They will no longer have this tilette.';
+  String get participantRemoveBody =>
+      'Questa persona non avrà più questa tilette.';
 
   @override
   String deliverySent(String channel) {
-    return 'Sent by $channel';
+    return 'Inviato tramite $channel';
   }
 
   @override
-  String get deliverySentPlain => 'Invitation sent';
+  String get deliverySentPlain => 'Invito inviato';
 
   @override
   String deliveryFailed(String channel) {
-    return 'Couldn’t send by $channel';
+    return 'Impossibile inviare tramite $channel';
   }
 
   @override
-  String get deliveryFailedPlain => 'Invitation couldn’t be sent';
+  String get deliveryFailedPlain => 'Impossibile inviare l’invito';
 
   @override
-  String get deliveryUnknown => 'Delivery unknown';
+  String get deliveryUnknown => 'Consegna sconosciuta';
 
   @override
   String get channelEmail => 'email';
@@ -4890,15 +4952,15 @@ class AppLocalizationsIt extends AppLocalizations {
   String get channelSms => 'SMS';
 
   @override
-  String get channelPush => 'notification';
+  String get channelPush => 'notifica';
 
   @override
   String classPeopleIncomplete(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count people are missing from some tilettes',
-      one: '1 person is missing from some tilettes',
+      other: '$count persone mancano in alcune tilette',
+      one: '1 persona manca in alcune tilette',
     );
     return '$_temp0';
   }
@@ -4908,53 +4970,54 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Not on $count tilettes',
-      one: 'Not on 1 tilette',
+      other: 'Assente da $count tilette',
+      one: 'Assente da 1 tilette',
     );
     return '$_temp0';
   }
 
   @override
-  String get classAddToAll => 'Add to all tilettes';
+  String get classAddToAll => 'Aggiungi a tutte le tilette';
 
   @override
-  String get classRemoveBody => 'They will be removed from every tilette.';
+  String get classRemoveBody =>
+      'Questa persona verrà rimossa da tutte le tilette.';
 
   @override
-  String get classTaskNotAdded => 'Not added';
+  String get classTaskNotAdded => 'Non aggiunto';
 
   @override
-  String get classAddFailed => 'Couldn’t add to every tilette.';
+  String get classAddFailed => 'Impossibile aggiungere a tutte le tilette.';
 
   @override
-  String get projectUnassigned => 'No one assigned';
+  String get projectUnassigned => 'Nessun assegnatario';
 
   @override
   String projectTasksUnassigned(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count tilettes have no one assigned',
-      one: '1 tilette has no one assigned',
+      other: '$count tilette non sono assegnate a nessuno',
+      one: '1 tilette non è assegnata a nessuno',
     );
     return '$_temp0';
   }
 
   @override
-  String get projectAssign => 'Assign';
+  String get projectAssign => 'Assegna';
 
   @override
-  String get projectReassign => 'Reassign';
+  String get projectReassign => 'Riassegna';
 
   @override
-  String get projectReassigning => 'Reassigning…';
+  String get projectReassigning => 'Riassegnazione in corso…';
 
   @override
-  String get projectReassignFailed => 'Couldn’t reassign.';
+  String get projectReassignFailed => 'Impossibile riassegnare.';
 
   @override
   String projectAssignTitle(String task) {
-    return 'Assign $task';
+    return 'Assegna $task';
   }
 
   @override
@@ -4962,71 +5025,622 @@ class AppLocalizationsIt extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Owns $count tilettes',
-      one: 'Owns 1 tilette',
+      other: 'Responsabile di $count tilette',
+      one: 'Responsabile di 1 tilette',
     );
     return '$_temp0';
   }
 
   @override
-  String get projectAlreadyIn => 'Already in this project';
+  String get projectAlreadyIn => 'Già in questo progetto';
 
   @override
-  String get projectRemoveBody => 'Their tilettes will have no one assigned.';
+  String get projectRemoveBody =>
+      'Le tilette di questa persona non saranno assegnate a nessuno.';
 
   @override
-  String get tileShareActivityCommentAdded => 'Comment added';
+  String get tileShareActivityCommentAdded => 'Commento aggiunto';
 
   @override
-  String get tileShareActivityCommentReplied => 'Comment reply added';
+  String get tileShareActivityCommentReplied => 'Risposta al commento aggiunta';
 
   @override
-  String get tileShareActivityCommentEdited => 'Comment edited';
+  String get tileShareActivityCommentEdited => 'Commento modificato';
 
   @override
-  String get tileShareActivityCommentDeleted => 'Comment deleted';
+  String get tileShareActivityCommentDeleted => 'Commento eliminato';
 
   @override
-  String get commitmentYourTasks => 'Your tilettes';
+  String get commitmentYourTasks => 'Le tue tilette';
 
   @override
-  String get commitmentYourTask => 'Your tilette';
+  String get commitmentYourTask => 'La tua tilette';
 
   @override
   String commitmentPartialAnswered(int done, int total) {
-    return '$done of $total answered; the rest are still pending.';
+    return '$done risposte su $total; le altre sono ancora in attesa.';
   }
 
   @override
-  String get commitmentOpenTile => 'Open tile';
+  String get commitmentOpenTile => 'Apri blocco';
 
   @override
-  String get detailEditShare => 'Edit share';
+  String get detailEditShare => 'Modifica condivisione';
 
   @override
-  String get detailEditTask => 'Edit tilette';
+  String get detailEditTask => 'Modifica tilette';
 
   @override
-  String get detailAddTask => 'Add tilette';
+  String get detailAddTask => 'Aggiungi tilette';
 
   @override
-  String get detailDeleteTask => 'Delete tilette';
+  String get detailDeleteTask => 'Elimina tilette';
 
   @override
   String detailDeleteTaskTitle(String name) {
-    return 'Delete “$name”?';
+    return 'Eliminare “$name”?';
   }
 
   @override
   String get detailDeleteTaskBody =>
-      'Everyone on it loses it from their schedule.';
+      'Verrà rimossa dal programma di tutti i partecipanti.';
 
   @override
-  String get detailEditFailed => 'Couldn’t save your change. Try again.';
+  String get detailEditFailed => 'Impossibile salvare la modifica. Riprova.';
 
   @override
   String get detailTaskLengthFixed =>
-      'A tilette’s length can’t change once it’s shared.';
+      'La durata di una tilette non può cambiare dopo la condivisione.';
+
+  @override
+  String get taskSheetAssignee => 'ASSEGNATARIO';
+
+  @override
+  String get taskSheetEveryone => 'Tutti in questo corso hanno questa tilette.';
+
+  @override
+  String taskSheetAfterShareDeadline(String when) {
+    return 'Questa data è successiva alla scadenza della condivisione ($when).';
+  }
+
+  @override
+  String get taskSheetNameTooShort => 'Usa almeno 3 caratteri';
+
+  @override
+  String get taskSheetPeopleHintClass =>
+      'Chiunque aggiungi qui riceve tutte le tilette del corso. Le modifiche ai partecipanti vengono inviate al salvataggio.';
+
+  @override
+  String get taskSheetPeopleHintProject =>
+      'La nuova assegnazione viene inviata al salvataggio.';
+
+  @override
+  String get tiletteNameLabel => 'NOME DELLA TILETTE';
+
+  @override
+  String get detailEditDetails => 'Modifica dettagli';
+
+  @override
+  String get detailDeleteShare => 'Elimina condivisione';
+
+  @override
+  String get detailDeleteShareBody =>
+      'Le sue tilette verranno rimosse dal programma di tutti.';
+
+  @override
+  String get detailDeleteShareFailed =>
+      'Impossibile eliminare la condivisione. Riprova.';
+
+  @override
+  String get shareNameLabel => 'NOME DELLA CONDIVISIONE';
+
+  @override
+  String get shareModeLabel => 'MODALITÀ';
+
+  @override
+  String get shareEditModeFixed =>
+      'La modalità non può cambiare dopo la condivisione.';
+
+  @override
+  String get shareEditEffort => 'IMPEGNO TOTALE';
+
+  @override
+  String get shareEditEffortHelper =>
+      'La somma delle durate delle sue tilette.';
+
+  @override
+  String get shareEditDiscardBody =>
+      'Le modifiche a questa condivisione andranno perse.';
+
+  @override
+  String shareEditTilettesPulledIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tilette accettate verranno spostate a questa scadenza.',
+      one: '1 tilette accettata verrà spostata a questa scadenza.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String shareEditTilettesKeep(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count tilette che nessuno ha accettato mantengono le loro scadenze successive.',
+      one:
+          '1 tilette che nessuno ha accettato mantiene la sua scadenza successiva.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String taskSheetMoveShareDeadline(String when) {
+    return 'Sposta anche la scadenza della condivisione a $when';
+  }
+
+  @override
+  String get createChooserTitle => 'Condividi attività';
+
+  @override
+  String get createChooserSubtitle => 'Come devono partecipare le persone?';
+
+  @override
+  String get createModeBroadcastBody =>
+      'Ognuno riceve la propria copia di una tilette';
+
+  @override
+  String get createModeClassBody =>
+      'Ognuno riceve la propria copia di un insieme di tilette';
+
+  @override
+  String get createModeProjectBody =>
+      'Tutti lavorano su un unico insieme condiviso di tilette';
+
+  @override
+  String get createComingSoon => 'Prossimamente';
+
+  @override
+  String get createBroadcastTitle => 'Nuova trasmissione';
+
+  @override
+  String get createBroadcastPeopleHint =>
+      'Ogni persona riceve la propria copia e viene invitata ad accettare.';
+
+  @override
+  String get createSend => 'Invia';
+
+  @override
+  String createSendTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Invia a $count persone',
+      one: 'Invia a 1 persona',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get createSending => 'Invio in corso…';
+
+  @override
+  String get createNeedsPerson => 'Aggiungi almeno una persona';
+
+  @override
+  String get createFailed =>
+      'Impossibile inviare al momento. I tuoi dati vengono conservati.';
+
+  @override
+  String get createDiscardTitle => 'Scartare questa condivisione?';
+
+  @override
+  String get createDiscardBody => 'I dati inseriti non verranno inviati.';
+
+  @override
+  String get createClassTitle => 'Nuovo corso';
+
+  @override
+  String get createNeedsTask => 'Aggiungi almeno una tilette';
+
+  @override
+  String get createClassPeopleHint =>
+      'Ogni persona riceve la propria copia di ogni tilette e viene invitata ad accettare.';
+
+  @override
+  String get createTilettesLabel => 'TILETTE';
+
+  @override
+  String createTiletteWithShare(String length) {
+    return '$length · scadenza della condivisione';
+  }
+
+  @override
+  String createTiletteDue(String length, String when) {
+    return '$length · scadenza: $when';
+  }
+
+  @override
+  String createClassSummary(int count, String effort, String when) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tilette',
+      one: '1 tilette',
+    );
+    return '$_temp0 · $effort · scadenza: $when';
+  }
+
+  @override
+  String createStepOf(int step, int total) {
+    return 'Passaggio $step di $total';
+  }
+
+  @override
+  String get createNextPeople => 'Avanti: persone';
+
+  @override
+  String get createProjectTitle => 'Nuovo progetto';
+
+  @override
+  String get createProjectSend => 'Crea progetto';
+
+  @override
+  String get createCreating => 'Creazione in corso…';
+
+  @override
+  String get createProjectHint =>
+      'Assegna le tilette alle persone dalla bacheca dopo la creazione, oppure tienile per te.';
+
+  @override
+  String get detailLoading => 'Caricamento della condivisione…';
+
+  @override
+  String get taskSheetPeopleLabel => 'PERSONE';
+
+  @override
+  String get taskSheetAddPerson => 'AGGIUNGI PERSONA';
+
+  @override
+  String get taskSheetWillBeAdded => 'Verrà aggiunto';
+
+  @override
+  String get taskSheetWillBeRemoved => 'Verrà rimosso';
+
+  @override
+  String get taskSheetWillBeAssigned => 'Verrà assegnato al salvataggio';
+
+  @override
+  String get taskSheetPeopleFailed =>
+      'Impossibile salvare alcune modifiche ai partecipanti. Riprova qui sotto.';
+
+  @override
+  String get tileShareSaveChanges => 'Salva modifiche';
+
+  @override
+  String get scheduleChangeRefresh => 'Aggiorna programma';
+
+  @override
+  String get scheduleChangeUncertainBody =>
+      'La modifica potrebbe essere arrivata al server. Aggiorna per verificare se il programma è stato aggiornato. Questo blocco terminerà automaticamente.';
+
+  @override
+  String get scheduleChangeRefreshing => 'Aggiornamento della linea temporale…';
+
+  @override
+  String get scheduleChangeUncertain => 'Conferma non disponibile';
+
+  @override
+  String scheduleChangeAcknowledged(String change) {
+    return '$change: La tua linea temporale è stata aggiornata. Rivedi le modifiche.';
+  }
+
+  @override
+  String scheduleChangeWentThrough(String change) {
+    return '$change è andato a buon fine.';
+  }
+
+  @override
+  String scheduleChangeFailedLate(String change) {
+    return '$change non è riuscito.';
+  }
+
+  @override
+  String scheduleChangeUnconfirmed(String change) {
+    return 'Impossibile confermare $change. Controlla il programma.';
+  }
+
+  @override
+  String scheduleChangeNotSent(String change) {
+    return 'Impossibile raggiungere Tiler, quindi $change non è stato inviato. Riprova.';
+  }
+
+  @override
+  String get scheduleChangeUnconfirmedGeneric =>
+      'Impossibile confermare l’ultima modifica al programma. Controlla il programma.';
+
+  @override
+  String get scheduleChangeReattemptTitle => 'Inviare di nuovo?';
+
+  @override
+  String scheduleChangeReattemptBody(String change) {
+    return '$change potrebbe essere già andato a buon fine. Inviarlo di nuovo?';
+  }
+
+  @override
+  String get scheduleChangeReattemptConfirm => 'Invia di nuovo';
+
+  @override
+  String scheduleChangeReattemptDeclined(String change) {
+    return '$change non è stato inviato di nuovo.';
+  }
+
+  @override
+  String get scheduleChangeAdding => 'Aggiunta dell’evento';
+
+  @override
+  String get scheduleChangeSettings =>
+      'Aggiornamento delle impostazioni del programma';
+
+  @override
+  String get scheduleChangeAccepting => 'Accettazione delle modifiche';
+
+  @override
+  String get scheduleChangeTargetSchedule => 'Il tuo programma';
+
+  @override
+  String get scheduleChangeTargetEvent => 'Evento';
+
+  @override
+  String get scheduleChangeAllEvents => 'Tutti gli eventi';
+
+  @override
+  String scheduleChangeEventCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count eventi',
+      one: '1 evento',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangesBlocked =>
+      'Completa la modifica in corso al programma prima di iniziarne un’altra.';
+
+  @override
+  String scheduleChangesBlockedBy(String change) {
+    return 'Completa la modifica in corso al programma ($change) prima di iniziarne un’altra.';
+  }
+
+  @override
+  String get scheduleChangeFailed => 'Modifica al programma non riuscita';
+
+  @override
+  String get scheduleUpdates => 'Aggiornamenti del programma';
+
+  @override
+  String get scheduleUpdatesDescription =>
+      'Come si muove la tua giornata quando il programma cambia.';
+
+  @override
+  String get scheduleUpdatesDetailed => 'Dettagliato';
+
+  @override
+  String get scheduleUpdatesDetailedDescription =>
+      'Mostra ogni modifica passo dopo passo.';
+
+  @override
+  String get scheduleUpdatesMinimal => 'Minimo';
+
+  @override
+  String get scheduleUpdatesMinimalDescription =>
+      'Fa scorrere i blocchi ai nuovi orari.';
+
+  @override
+  String get scheduleUpdatesOff => 'Disattivato';
+
+  @override
+  String get scheduleUpdatesOffDescription =>
+      'Aggiorna subito, senza animazione.';
+
+  @override
+  String get scheduleChangePlanUpdated => 'Piano aggiornato';
+
+  @override
+  String get scheduleChangeDayCleared => 'Giornata libera';
+
+  @override
+  String scheduleChangeTilesMoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString blocchi spostati',
+      one: '1 blocco spostato',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedToOtherDays(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString blocchi spostati ad altri giorni',
+      one: '1 blocco spostato a un altro giorno',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesAdded(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString blocchi aggiunti',
+      one: '1 blocco aggiunto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesRemoved(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString blocchi rimossi',
+      one: '1 blocco rimosso',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTravelUpdated(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString tempi di viaggio aggiornati',
+      one: '1 tempo di viaggio aggiornato',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeFreeGained(String duration) {
+    return '+$duration liberi';
+  }
+
+  @override
+  String get scheduleChangeSeeChanges => 'Vedi modifiche';
+
+  @override
+  String get scheduleChangeWhatChanged => 'Cosa è cambiato';
+
+  @override
+  String scheduleChangeAdded(String time) {
+    return 'Aggiunto · $time';
+  }
+
+  @override
+  String get scheduleChangeRemoved => 'Rimosso';
+
+  @override
+  String scheduleChangeTravelTo(String name) {
+    return 'Viaggio verso $name';
+  }
+
+  @override
+  String get scheduleChangeFreeTime => 'Tempo libero';
+
+  @override
+  String scheduleChangeMovedFrom(String time) {
+    return 'Spostato dalle $time';
+  }
+
+  @override
+  String scheduleChangeMovedTo(String time) {
+    return 'Spostato alle $time';
+  }
+
+  @override
+  String scheduleChangeTileMovedTo(String name, String when) {
+    return '$name spostato a $when';
+  }
+
+  @override
+  String scheduleChangeTilesMovedTo(int count, String when) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString blocchi spostati a $when',
+      one: '1 blocco spostato a $when',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedLater(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString blocchi spostati più tardi',
+      one: '1 blocco spostato più tardi',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMovedEarlier(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString blocchi spostati prima',
+      one: '1 blocco spostato prima',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleChangeTilesMoving(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString blocchi si spostano',
+      one: '1 blocco si sposta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleChangeTabChanges => 'Modifiche';
+
+  @override
+  String get scheduleChangeTabBeforeAfter => 'Prima e dopo';
+
+  @override
+  String get scheduleChangeBefore => 'Prima';
+
+  @override
+  String get scheduleChangeAfter => 'Dopo';
 
   @override
   String get vibeChatExecutionMode => 'Chat execution';
@@ -5088,168 +5702,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get vibeOpenTileShare => 'Open TileShare';
-
-  @override
-  String get taskSheetAssignee => 'ASSIGNEE';
-
-  @override
-  String get taskSheetEveryone => 'Everyone in this class has this tilette.';
-
-  @override
-  String taskSheetAfterShareDeadline(String when) {
-    return 'This is after the share’s deadline ($when).';
-  }
-
-  @override
-  String get taskSheetNameTooShort => 'Use at least 3 characters';
-
-  @override
-  String get taskSheetPeopleHintClass =>
-      'Anyone you add here gets every tilette in this class. People changes are sent when you save.';
-
-  @override
-  String get taskSheetPeopleHintProject =>
-      'A new assignee is sent when you save.';
-
-  @override
-  String get tiletteNameLabel => 'TILETTE NAME';
-
-  @override
-  String get detailEditDetails => 'Edit details';
-
-  @override
-  String get detailDeleteShare => 'Delete share';
-
-  @override
-  String get detailDeleteShareBody =>
-      'Everyone loses its tilettes from their schedule.';
-
-  @override
-  String get detailDeleteShareFailed => 'Couldn’t delete the share. Try again.';
-
-  @override
-  String get shareNameLabel => 'SHARE NAME';
-
-  @override
-  String get shareModeLabel => 'MODE';
-
-  @override
-  String get shareEditModeFixed => 'The mode can’t change after sharing.';
-
-  @override
-  String get shareEditEffort => 'TOTAL EFFORT';
-
-  @override
-  String get shareEditEffortHelper => 'The sum of its tilettes’ durations.';
-
-  @override
-  String get shareEditDiscardBody => 'Your edits to this share will be lost.';
-
-  @override
-  String shareEditTilettesPulledIn(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count accepted tilettes will be moved to this deadline.',
-      one: '1 accepted tilette will be moved to this deadline.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String shareEditTilettesKeep(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count tilettes nobody has accepted keep their later deadlines.',
-      one: '1 tilette nobody has accepted keeps its later deadline.',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String taskSheetMoveShareDeadline(String when) {
-    return 'Also move the share’s deadline to $when';
-  }
-
-  @override
-  String get createChooserTitle => 'Share work';
-
-  @override
-  String get createChooserSubtitle => 'How should people take part?';
-
-  @override
-  String get createModeBroadcastBody =>
-      'Everyone gets their own copy of one tilette';
-
-  @override
-  String get createModeClassBody =>
-      'Everyone gets their own copy of a set of tilettes';
-
-  @override
-  String get createModeProjectBody =>
-      'Everyone works on one shared set of tilettes';
-
-  @override
-  String get createComingSoon => 'Coming soon';
-
-  @override
-  String get createBroadcastTitle => 'New broadcast';
-
-  @override
-  String get createBroadcastPeopleHint =>
-      'Each person gets their own copy and is asked to accept.';
-
-  @override
-  String get createSend => 'Send';
-
-  @override
-  String createSendTo(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Send to $count people',
-      one: 'Send to 1 person',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get createSending => 'Sending…';
-
-  @override
-  String get createNeedsPerson => 'Add at least one person';
-
-  @override
-  String get createFailed => 'Could not send right now. Your details are kept.';
-
-  @override
-  String get createDiscardTitle => 'Discard this share?';
-
-  @override
-  String get createDiscardBody => 'What you’ve entered won’t be sent.';
-
-  @override
-  String get taskSheetPeopleLabel => 'PEOPLE';
-
-  @override
-  String get taskSheetAddPerson => 'ADD PERSON';
-
-  @override
-  String get taskSheetWillBeAdded => 'Will be added';
-
-  @override
-  String get taskSheetWillBeRemoved => 'Will be removed';
-
-  @override
-  String get taskSheetWillBeAssigned => 'Will be assigned when you save';
-
-  @override
-  String get taskSheetPeopleFailed =>
-      'Some people changes couldn’t be saved. Retry them below.';
-
-  @override
-  String get tileShareSaveChanges => 'Save changes';
 
   @override
   String get vibeProjectRenamed => 'Project renamed.';
@@ -5371,19 +5823,6 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get vibeUpdateUnknown =>
       'Update could not be confirmed. Check status before trying again.';
-
-  @override
-  String get createClassTitle => 'New class';
-
-  @override
-  String get createNeedsTask => 'Add at least one tilette';
-
-  @override
-  String get createClassPeopleHint =>
-      'Each person gets their own copy of every tilette and is asked to accept.';
-
-  @override
-  String get detailLoading => 'Loading share…';
 
   @override
   String get vibeScheduleUpdatePending =>
