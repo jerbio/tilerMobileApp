@@ -4,6 +4,67 @@ import 'package:tiler_app/components/vibeChat/tileShareReviewCard.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 
 void main() {
+  Widget host(Widget child) => MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(body: child));
+  testWidgets('plan review includes schedule effects for each target',
+      (tester) async {
+    await tester.pumpWidget(host(TileShareReviewCard(
+        result: {
+          'State': 'NotAttempted',
+          'ActionId': 'a',
+          'Operation': 'UpdatePlan',
+          'ReviewToken': 'review',
+          'Review': {
+            'Operation': 'UpdatePlan',
+            'Items': [
+              {
+                'PreviousName': 'Report',
+                'Name': 'Report',
+                'ScheduleSummary':
+                    'Duration: 60 minutes -> 90 minutes\nAccepted calendars to update: 2'
+              }
+            ]
+          }
+        },
+        onConfirm: (_) async => {},
+        onCheck: () async => {},
+        onChanged: (_) {})));
+    expect(find.textContaining('Duration: 60 minutes -> 90 minutes'),
+        findsOneWidget);
+    expect(find.text('Confirm update'), findsOneWidget);
+  });
+  for (final state in ['Pending', 'Failed']) {
+    testWidgets('$state plan displays each target without mutation retry',
+        (tester) async {
+      await tester.pumpWidget(host(TileShareReviewCard(
+          result: {
+            'State': state,
+            'ActionId': 'a',
+            'Operation': 'UpdatePlan',
+            'PlanTargets': [
+              {
+                'ProjectId': 'p',
+                'Name': 'Report',
+                'State': state == 'Pending' ? 'Pending' : 'NotAttempted'
+              }
+            ]
+          },
+          onConfirm: (_) async => {},
+          onCheck: () async => {},
+          onChanged: (_) {})));
+      expect(find.textContaining('Report'), findsOneWidget);
+      expect(
+          find.text(state == 'Pending'
+              ? 'Waiting for combined calculation'
+              : 'Not applied'),
+          findsOneWidget);
+      expect(find.text('Confirm update'), findsNothing);
+      expect(find.text('Check status'),
+          state == 'Pending' ? findsOneWidget : findsNothing);
+    });
+  }
   final review = <String, dynamic>{
     'State': 'NotAttempted',
     'ActionId': 'a',
@@ -22,17 +83,100 @@ void main() {
       ]
     }
   };
-  Widget host(Widget child) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: child));
+  testWidgets('plan reviews all targets and confirms one exact token',
+      (tester) async {
+    var confirmations = 0;
+    await tester.pumpWidget(host(TileShareReviewCard(
+        result: {
+          ...review,
+          'Operation': 'UpdatePlan',
+          'Review': {
+            'Operation': 'UpdatePlan',
+            'Name': 'Update shared work',
+            'Items': [
+              {
+                'PreviousName': 'Launch',
+                'Name': 'Release',
+                'UpdatesName': true
+              },
+              {
+                'PreviousName': 'Report',
+                'Name': 'Report',
+                'UpdatesNotes': true,
+                'PreviousNotes': 'Old instructions',
+                'Notes': ''
+              }
+            ]
+          }
+        },
+        onConfirm: (token) async {
+          expect(token, 'exact');
+          confirmations++;
+          return {
+            'State': 'Applied',
+            'ActionId': 'a',
+            'Operation': 'UpdatePlan'
+          };
+        },
+        onCheck: () async => {},
+        onChanged: (_) {})));
+    expect(find.text('Review shared-work plan'), findsOneWidget);
+    expect(find.textContaining('Launch'), findsWidgets);
+    expect(find.text('Old instructions'), findsOneWidget);
+    expect(find.text('Clear notes'), findsOneWidget);
+    expect(confirmations, 0);
+    await tester.tap(find.text('Confirm update'));
+    await tester.pumpAndSettle();
+    expect(confirmations, 1);
+  });
+  testWidgets('saved plan lists each updated target', (tester) async {
+    await tester.pumpWidget(host(TileShareReviewCard(
+        result: {
+          'State': 'Applied',
+          'ActionId': 'a',
+          'Operation': 'UpdatePlan',
+          'PlanTargets': [
+            {
+              'ProjectId': 'p',
+              'Name': 'Release',
+              'Url': '/tileshare/p',
+              'State': 'Applied'
+            },
+            {
+              'ProjectId': 'p',
+              'TiletteId': 't',
+              'Name': 'Report',
+              'Url': '/tileshare/p/tilette/t',
+              'State': 'Applied'
+            }
+          ]
+        },
+        onConfirm: (_) async => {},
+        onCheck: () async => {},
+        onChanged: (_) {})));
+    expect(find.text('Reviewed changes saved together.'), findsOneWidget);
+    expect(find.text('Release'), findsOneWidget);
+    expect(find.text('Report'), findsOneWidget);
+    expect(find.text('TileShare created.'), findsNothing);
+  });
   for (final operation in ['UpdateRecipients', 'UpdateAccess']) {
-    testWidgets('$operation presents effects and update confirmation', (tester) async {
-      await tester.pumpWidget(host(TileShareReviewCard(result: {
-        ...review, 'Operation': operation,
-        'Review': {'Operation': operation, 'Name': 'Launch', 'Tilettes': [],
-          'EffectsSummary': 'Participant: 1 calendar to suspend; independent grants survive.'}
-      }, onConfirm: (_) async => {}, onCheck: () async => {}, onChanged: (_) {})));
+    testWidgets('$operation presents effects and update confirmation',
+        (tester) async {
+      await tester.pumpWidget(host(TileShareReviewCard(
+          result: {
+            ...review,
+            'Operation': operation,
+            'Review': {
+              'Operation': operation,
+              'Name': 'Launch',
+              'Tilettes': [],
+              'EffectsSummary':
+                  'Participant: 1 calendar to suspend; independent grants survive.'
+            }
+          },
+          onConfirm: (_) async => {},
+          onCheck: () async => {},
+          onChanged: (_) {})));
       expect(find.textContaining('1 calendar to suspend'), findsOneWidget);
       expect(find.text('Confirm update'), findsOneWidget);
       expect(find.text('Confirm creation'), findsNothing);

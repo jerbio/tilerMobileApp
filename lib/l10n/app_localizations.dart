@@ -9235,6 +9235,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Access is saved. Calendar cleanup or restoration runs in the background.'**
   String get vibeAccessReconciliation;
+
+  /// No description provided for @vibePlanTargetPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for combined calculation'**
+  String get vibePlanTargetPending;
+
+  /// No description provided for @vibePlanTargetNotApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Not applied'**
+  String get vibePlanTargetNotApplied;
+
+  /// No description provided for @vibePlanReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review shared-work plan'**
+  String get vibePlanReview;
+
+  /// No description provided for @vibePlanUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed changes saved together.'**
+  String get vibePlanUpdated;
+
+  /// No description provided for @vibePlanNote.
+  ///
+  /// In en, this message translates to:
+  /// **'All displayed targets are saved together after confirmation. If any target changes or access is lost, review a new proposal.'**
+  String get vibePlanNote;
 }
 
 class _AppLocalizationsDelegate

@@ -75,6 +75,7 @@ class _ActionsListState extends State<ActionsList>
     ActionType.tileShareSetTiletteNotes,
     ActionType.tileShareUpdateTilette,
     ActionType.tileShareUpdateProject,
+    ActionType.tileShareUpdatePlan,
     ActionType.tileShareUpdateRecipients,
     ActionType.tileShareUpdateAccess,
     ActionType.tileShareDeleteTilette,
@@ -126,6 +127,7 @@ class _ActionsListState extends State<ActionsList>
             a.type != ActionType.tileShareRenameProject &&
             a.type != ActionType.tileShareDeleteTilette &&
             a.type != ActionType.tileShareUpdateProject &&
+            a.type != ActionType.tileShareUpdatePlan &&
             a.type != ActionType.tileShareUpdateRecipients &&
             a.type != ActionType.tileShareUpdateAccess &&
             a.type != ActionType.tileShareUpdateTilette &&

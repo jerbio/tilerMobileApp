@@ -25,6 +25,7 @@ enum ActionType {
   tileShareSetTiletteNotes,
   tileShareUpdateTilette,
   tileShareUpdateProject,
+  tileShareUpdatePlan,
   tileShareUpdateRecipients,
   tileShareUpdateAccess,
   tileShareDeleteTilette,
@@ -72,6 +73,8 @@ enum ActionType {
         return ActionType.tileShareUpdateAccess;
       case 'tileshare_update_project':
         return ActionType.tileShareUpdateProject;
+      case 'tileshare_update_plan':
+        return ActionType.tileShareUpdatePlan;
       case 'tileshare_update_tilette':
         return ActionType.tileShareUpdateTilette;
       case 'tileshare_set_tilette_notes':

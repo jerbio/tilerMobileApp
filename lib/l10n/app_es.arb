@@ -1932,5 +1932,10 @@
   "vibeManageRecipients": "Gestionar destinatarios",
   "vibeManagementUpdated": "Cambios de destinatarios o acceso guardados.",
   "vibeManagementNote": "Revisa los efectos sobre destinatarios y acceso. La suspensión y restauración del calendario se procesan en segundo plano.",
-  "vibeAccessReconciliation": "Acceso guardado. La suspensión o restauración del calendario se procesa en segundo plano."
+  "vibeAccessReconciliation": "Acceso guardado. La suspensión o restauración del calendario se procesa en segundo plano.",
+  "vibePlanTargetPending": "Esperando el cálculo conjunto",
+  "vibePlanTargetNotApplied": "Sin aplicar",
+  "vibePlanReview": "Revisar plan de trabajo compartido",
+  "vibePlanUpdated": "Los cambios revisados se guardaron juntos.",
+  "vibePlanNote": "Todos los elementos mostrados se guardan juntos después de confirmar. Si algún elemento cambia o pierdes el acceso, revisa una nueva propuesta."
 }

@@ -6,6 +6,24 @@ import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 
 void main() {
+  test('plan action hydration retains grouped targets', () {
+    final action = VibeAction.fromJson({
+      'id': 'plan',
+      'type': 'TileShare_Update_Plan',
+      'tileShareResult': {
+        'State': 'NotAttempted',
+        'Operation': 'UpdatePlan',
+        'Review': {
+          'Items': [
+            {'ProjectId': 'p'},
+            {'ProjectId': 'p', 'TiletteId': 't'}
+          ]
+        }
+      }
+    });
+    expect(action.type, ActionType.tileShareUpdatePlan);
+    expect((action.tileShareResult!['Review']['Items'] as List).length, 2);
+  });
   test('composite update hydration preserves field presence and exact review',
       () {
     final review = {

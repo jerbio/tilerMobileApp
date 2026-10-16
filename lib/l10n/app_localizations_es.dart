@@ -5416,4 +5416,20 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get vibeAccessReconciliation =>
       'Acceso guardado. La suspensión o restauración del calendario se procesa en segundo plano.';
+
+  @override
+  String get vibePlanTargetPending => 'Esperando el cálculo conjunto';
+
+  @override
+  String get vibePlanTargetNotApplied => 'Sin aplicar';
+
+  @override
+  String get vibePlanReview => 'Revisar plan de trabajo compartido';
+
+  @override
+  String get vibePlanUpdated => 'Los cambios revisados se guardaron juntos.';
+
+  @override
+  String get vibePlanNote =>
+      'Todos los elementos mostrados se guardan juntos después de confirmar. Si algún elemento cambia o pierdes el acceso, revisa una nueva propuesta.';
 }

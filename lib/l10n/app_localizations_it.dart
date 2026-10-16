@@ -5409,4 +5409,20 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get vibeAccessReconciliation =>
       'Access is saved. Calendar cleanup or restoration runs in the background.';
+
+  @override
+  String get vibePlanTargetPending => 'Waiting for combined calculation';
+
+  @override
+  String get vibePlanTargetNotApplied => 'Not applied';
+
+  @override
+  String get vibePlanReview => 'Review shared-work plan';
+
+  @override
+  String get vibePlanUpdated => 'Reviewed changes saved together.';
+
+  @override
+  String get vibePlanNote =>
+      'All displayed targets are saved together after confirmation. If any target changes or access is lost, review a new proposal.';
 }

@@ -2846,5 +2846,10 @@
   "vibeManageRecipients": "Manage recipients",
   "vibeManagementUpdated": "Recipient or access changes saved.",
   "vibeManagementNote": "Review the recipient and access effects above. Calendar access cleanup and restoration run in the background.",
-  "vibeAccessReconciliation": "Access is saved. Calendar cleanup or restoration runs in the background."
+  "vibeAccessReconciliation": "Access is saved. Calendar cleanup or restoration runs in the background.",
+  "vibePlanTargetPending": "Waiting for combined calculation",
+  "vibePlanTargetNotApplied": "Not applied",
+  "vibePlanReview": "Review shared-work plan",
+  "vibePlanUpdated": "Reviewed changes saved together.",
+  "vibePlanNote": "All displayed targets are saved together after confirmation. If any target changes or access is lost, review a new proposal."
 }

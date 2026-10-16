@@ -29,17 +29,27 @@ class _TileShareReviewCardState extends State<TileShareReviewCard> {
       rejected = false;
   }
 
-  bool get isAccess => widget.result['Operation'] == 'UpdateAccess' ||
-      (widget.result['Review'] is Map && widget.result['Review']['Operation'] == 'UpdateAccess');
-  bool get isRecipients => widget.result['Operation'] == 'UpdateRecipients' ||
-      (widget.result['Review'] is Map && widget.result['Review']['Operation'] == 'UpdateRecipients');
+  bool get isAccess =>
+      widget.result['Operation'] == 'UpdateAccess' ||
+      (widget.result['Review'] is Map &&
+          widget.result['Review']['Operation'] == 'UpdateAccess');
+  bool get isRecipients =>
+      widget.result['Operation'] == 'UpdateRecipients' ||
+      (widget.result['Review'] is Map &&
+          widget.result['Review']['Operation'] == 'UpdateRecipients');
   bool get isManagement => isAccess || isRecipients;
+  bool get isPlan =>
+      widget.result['Operation'] == 'UpdatePlan' ||
+      (widget.result['Review'] is Map &&
+          widget.result['Review']['Operation'] == 'UpdatePlan');
   bool get isProjectUpdate =>
       widget.result['Operation'] == 'UpdateProject' ||
       (widget.result['Review'] is Map &&
           widget.result['Review']['Operation'] == 'UpdateProject');
   bool get isUpdate =>
-      isManagement || isProjectUpdate ||
+      isPlan ||
+      isManagement ||
+      isProjectUpdate ||
       widget.result['Operation'] == 'UpdateTilette' ||
       (widget.result['Review'] is Map &&
           widget.result['Review']['Operation'] == 'UpdateTilette');
@@ -126,6 +136,25 @@ class _TileShareReviewCardState extends State<TileShareReviewCard> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
+    Widget planTargets() => !isPlan
+        ? const SizedBox.shrink()
+        : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            for (final item in (widget.result['PlanTargets'] as List? ?? [])
+                .whereType<Map>())
+              Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(item['Name'] as String? ?? ''),
+                        if (item['State'] == 'Pending')
+                          Text(l.vibePlanTargetPending,
+                              style: Theme.of(context).textTheme.bodySmall),
+                        if (item['State'] == 'NotAttempted')
+                          Text(l.vibePlanTargetNotApplied,
+                              style: Theme.of(context).textTheme.bodySmall),
+                      ]))
+          ]);
     if (widget.result['State'] == 'Pending')
       return Card(
           child: Padding(
@@ -136,6 +165,7 @@ class _TileShareReviewCardState extends State<TileShareReviewCard> {
                     Semantics(
                         liveRegion: true,
                         child: Text(l.vibeScheduleUpdatePending)),
+                    planTargets(),
                     if (notice != null)
                       Text(notice!, style: TextStyle(color: colors.error)),
                     TextButton(
@@ -146,31 +176,59 @@ class _TileShareReviewCardState extends State<TileShareReviewCard> {
       return Card(
           child: Padding(
               padding: const EdgeInsets.all(14),
-              child: Semantics(
-                  liveRegion: true,
-                  child: Text(
-                      widget.result['ErrorCode'] == 'schedule_no_fit'
-                          ? l.vibeScheduleNoFit
-                          : l.vibeScheduleUpdateFailed,
-                      style: TextStyle(color: colors.error)))));
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Semantics(
+                        liveRegion: true,
+                        child: Text(
+                            widget.result['ErrorCode'] == 'schedule_no_fit'
+                                ? l.vibeScheduleNoFit
+                                : l.vibeScheduleUpdateFailed,
+                            style: TextStyle(color: colors.error))),
+                    planTargets()
+                  ])));
+    if (widget.result['State'] == 'Applied' && isPlan) {
+      return Card(
+          child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.vibePlanUpdated),
+                    for (final item
+                        in (widget.result['PlanTargets'] as List? ?? [])
+                            .whereType<Map>())
+                      if (item['Url'] is String &&
+                          (item['Url'] as String).startsWith('/tileshare/'))
+                        TextButton(
+                            onPressed: () => launchUrl(
+                                Uri.https(Constants.tilerDomain, '/')
+                                    .resolve(item['Url'] as String)),
+                            child: Text(
+                                item['Name'] as String? ?? l.vibeOpenTileShare))
+                  ])));
+    }
     if (widget.result['State'] == 'Applied')
       return Padding(
           padding: const EdgeInsets.all(12),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(isManagement ? l.vibeManagementUpdated : isUpdate
-                ? (isProjectUpdate
-                    ? l.vibeProjectUpdated
-                    : l.vibeTiletteUpdated)
-                : isDelete
-                    ? l.vibeTiletteDeleted
-                    : isNotes
-                        ? l.vibeNotesUpdated
-                        : isTiletteRename
-                            ? l.vibeTiletteRenamed
-                            : isRename
-                                ? l.vibeProjectRenamed
-                                : l.vibeTileShareCreated),
+            Text(isManagement
+                ? l.vibeManagementUpdated
+                : isUpdate
+                    ? (isProjectUpdate
+                        ? l.vibeProjectUpdated
+                        : l.vibeTiletteUpdated)
+                    : isDelete
+                        ? l.vibeTiletteDeleted
+                        : isNotes
+                            ? l.vibeNotesUpdated
+                            : isTiletteRename
+                                ? l.vibeTiletteRenamed
+                                : isRename
+                                    ? l.vibeProjectRenamed
+                                    : l.vibeTileShareCreated),
             if (isAccess) Text(l.vibeAccessReconciliation),
             if (widget.result['Url'] is String &&
                 (widget.result['Url'] as String).startsWith('/tileshare/'))
@@ -191,6 +249,79 @@ class _TileShareReviewCardState extends State<TileShareReviewCard> {
     final review = widget.result['Review'];
     if (review is! Map || widget.result['ReviewToken'] is! String)
       return const SizedBox.shrink();
+    if (isPlan)
+      return Card(
+          child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.vibePlanReview,
+                        style: Theme.of(context).textTheme.titleSmall),
+                    ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 360),
+                        child: SingleChildScrollView(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                              for (final item
+                                  in (review['Items'] as List? ?? [])
+                                      .whereType<Map>())
+                                Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                              '${item['ProjectName'] == null ? '' : '${item['ProjectName']} / '}${item['PreviousName']}${item['UpdatesName'] == true ? ' → ${item['Name']}' : ''}'),
+                                          if (item['ScheduleSummary'] is String)
+                                            Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8),
+                                                child: SelectableText(
+                                                    item['ScheduleSummary']
+                                                        as String)),
+                                          if (item['UpdatesNotes'] == true) ...[
+                                            Text(l.vibePreviousNotes),
+                                            SelectableText(
+                                                (item['PreviousNotes']
+                                                                as String?)
+                                                            ?.isNotEmpty ==
+                                                        true
+                                                    ? item['PreviousNotes']
+                                                    : l.vibeEmptyNotes),
+                                            Text(l.vibeProposedNotes),
+                                            SelectableText(
+                                                (item['Notes'] as String?)
+                                                            ?.isNotEmpty ==
+                                                        true
+                                                    ? item['Notes']
+                                                    : l.vibeClearNotes)
+                                          ]
+                                        ]))
+                            ]))),
+                    Text(l.vibePlanNote,
+                        style: Theme.of(context).textTheme.bodySmall),
+                    if (notice != null ||
+                        widget.result['ErrorCode'] == 'review_changed')
+                      Text(notice ?? l.vibeReviewAgain,
+                          style: TextStyle(color: colors.error)),
+                    Wrap(spacing: 8, children: [
+                      FilledButton(
+                          onPressed:
+                              busy || uncertain || rejected || widget.disabled
+                                  ? null
+                                  : () => run(),
+                          child: Text(l.vibeConfirmUpdate)),
+                      if (uncertain)
+                        OutlinedButton(
+                            onPressed: busy ? null : () => run(check: true),
+                            child: Text(l.vibeCheckStatus))
+                    ])
+                  ])));
     String time(dynamic value) =>
         DateTime.fromMillisecondsSinceEpoch((value as num).toInt())
             .toLocal()
@@ -202,19 +333,23 @@ class _TileShareReviewCardState extends State<TileShareReviewCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                    isManagement ? (isAccess ? l.vibeManageAccess : l.vibeManageRecipients) : isUpdate
-                        ? (isProjectUpdate
-                            ? l.vibeProjectUpdateReview
-                            : l.vibeUpdateReview)
-                        : isDelete
-                            ? l.vibeDeleteReview
-                            : isNotes
-                                ? l.vibeNotesReview
-                                : isTiletteRename
-                                    ? l.vibeTiletteRenameReview
-                                    : isRename
-                                        ? l.vibeRenameReview
-                                        : l.vibeCreationReview,
+                    isManagement
+                        ? (isAccess
+                            ? l.vibeManageAccess
+                            : l.vibeManageRecipients)
+                        : isUpdate
+                            ? (isProjectUpdate
+                                ? l.vibeProjectUpdateReview
+                                : l.vibeUpdateReview)
+                            : isDelete
+                                ? l.vibeDeleteReview
+                                : isNotes
+                                    ? l.vibeNotesReview
+                                    : isTiletteRename
+                                        ? l.vibeTiletteRenameReview
+                                        : isRename
+                                            ? l.vibeRenameReview
+                                            : l.vibeCreationReview,
                     style: Theme.of(context).textTheme.titleSmall),
                 Text(
                     '${isManagement ? (isAccess ? l.vibeManageAccess : l.vibeManageRecipients) : isUpdate ? (isProjectUpdate ? l.vibeUpdateProject : l.vibeUpdateTilette) : isDelete ? l.vibeDeleteTilette : isNotes ? l.vibeEditNotes : isTiletteRename ? l.vibeRenameTilette : isRename ? l.vibeRenameProject : review['CreatesProject'] == true ? l.vibeCreateProject : l.vibeAddTilette}: ${review['Name']}'),
@@ -252,7 +387,8 @@ class _TileShareReviewCardState extends State<TileShareReviewCard> {
                                   ? review['Notes']
                                   : l.vibeClearNotes))),
                 ],
-                if (review['EffectsSummary'] is String) SelectableText(review['EffectsSummary'] as String),
+                if (review['EffectsSummary'] is String)
+                  SelectableText(review['EffectsSummary'] as String),
                 if (review['ScheduleSummary'] is String)
                   Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -282,17 +418,19 @@ class _TileShareReviewCardState extends State<TileShareReviewCard> {
                                   '${recipient['name']} - ${recipient['email'] ?? recipient['phone'] ?? ''}'),
                           ])),
                 Text(
-                    isManagement ? l.vibeManagementNote : isUpdate
-                        ? l.vibeUpdateNote
-                        : isDelete
-                            ? l.vibeDeleteNote
-                            : isNotes
-                                ? l.vibeNotesNote
-                                : isTiletteRename
-                                    ? l.vibeTiletteRenameNote
-                                    : isRename
-                                        ? l.vibeRenameNote
-                                        : l.vibeCreationNote,
+                    isManagement
+                        ? l.vibeManagementNote
+                        : isUpdate
+                            ? l.vibeUpdateNote
+                            : isDelete
+                                ? l.vibeDeleteNote
+                                : isNotes
+                                    ? l.vibeNotesNote
+                                    : isTiletteRename
+                                        ? l.vibeTiletteRenameNote
+                                        : isRename
+                                            ? l.vibeRenameNote
+                                            : l.vibeCreationNote,
                     style: Theme.of(context).textTheme.bodySmall),
                 if (notice != null ||
                     widget.result['ErrorCode'] == 'review_changed')
