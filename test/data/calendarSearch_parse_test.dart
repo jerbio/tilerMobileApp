@@ -9,8 +9,8 @@ void main() {
     });
 
     test('joins sources with commas when provided', () {
-      final params =
-          buildCalendarSearchQueryParameters('gym', sources: ['tiler', 'google']);
+      final params = buildCalendarSearchQueryParameters('gym',
+          sources: ['tiler', 'google']);
 
       expect(params['query'], 'gym');
       expect(params['sources'], 'tiler,google');
@@ -25,6 +25,19 @@ void main() {
   });
 
   group('parseCalendarSearchResponse', () {
+    test('malformed successful responses are errors rather than no matches',
+        () {
+      for (final body in [
+        '',
+        '{',
+        '{"Error":{"Code":"0"},"Content":{}}',
+        '{"Error":{"Code":"0"},"Content":{"items":[],"sources":"broken"}}'
+      ]) {
+        final result = parseCalendarSearchResponse(200, body);
+        expect(result.isError, isTrue);
+        expect(result.isSuccess, isFalse);
+      }
+    });
     test('200 with a PostBack envelope maps to a success envelope', () {
       final body =
           '{"Error":{"Code":"0","Message":""},"Content":{"items":[{"id":"e1","name":"Gym","start":1,"end":2,"source":"tiler","thirdPartyEventId":null,"thirdPartyUserId":null,"isReadOnly":false,"capabilities":{"canEdit":true,"canDelete":true,"canComplete":true,"canSetAsNow":true}}],"sources":[{"source":"tiler","status":"success","queryMode":"native-query"}],"correlationId":"abc"}}';
@@ -33,7 +46,8 @@ void main() {
       expect(result.isSuccess, isTrue);
       expect(result.envelope!.items.length, 1);
       expect(result.envelope!.items.first.name, 'Gym');
-      expect(result.envelope!.sources.first.status, CalendarSearchStatus.success);
+      expect(
+          result.envelope!.sources.first.status, CalendarSearchStatus.success);
       expect(result.envelope!.correlationId, 'abc');
     });
 
@@ -46,11 +60,10 @@ void main() {
       expect(result.envelope!.items, isEmpty);
     });
 
-    test('plain 404 maps to flagOff (never an error, never unavailable)', () {
+    test('a missing GA endpoint is an error, never empty matches', () {
       final result = parseCalendarSearchResponse(404, '');
 
-      expect(result.isFlagOff, isTrue);
-      expect(result.isError, isFalse);
+      expect(result.isError, isTrue);
       expect(result.isUnavailable, isFalse);
       expect(result.isSuccess, isFalse);
     });
@@ -74,7 +87,8 @@ void main() {
       final result = parseCalendarSearchResponse(502, '');
 
       expect(result.isUnavailable, isTrue);
-      expect(result.unavailable!.code, CalendarSearchUnavailableError.codeSearchUnavailable);
+      expect(result.unavailable!.code,
+          CalendarSearchUnavailableError.codeSearchUnavailable);
     });
 
     test('400 maps to an error (not a flag-off fallback)', () {
@@ -82,7 +96,6 @@ void main() {
           parseCalendarSearchResponse(400, 'Invalid search parameters');
 
       expect(result.isError, isTrue);
-      expect(result.isFlagOff, isFalse);
       expect(result.isUnavailable, isFalse);
     });
 
@@ -90,6 +103,85 @@ void main() {
       final result = parseCalendarSearchResponse(500, '');
 
       expect(result.isError, isTrue);
+    });
+  });
+  group('search batch contract', () {
+    test('serializes zero offset and UTC epoch bounds without timezone changes',
+        () {
+      expect(
+          buildCalendarSearchQueryParameters('gym',
+              batchSize: 10,
+              index: 0,
+              start: 0,
+              end: 1000,
+              sources: ['google']),
+          {
+            'query': 'gym',
+            'sources': 'google',
+            'batchSize': '10',
+            'index': '0',
+            'start': '0',
+            'end': '1000',
+          });
+    });
+
+    test(
+        'rejects invalid batches and incomplete, reversed or out-of-range windows',
+        () {
+      expect(() => buildCalendarSearchQueryParameters('gym', batchSize: 0),
+          throwsArgumentError);
+      expect(() => buildCalendarSearchQueryParameters('gym', batchSize: 151),
+          throwsArgumentError);
+      expect(() => buildCalendarSearchQueryParameters('gym', index: -1),
+          throwsArgumentError);
+      expect(() => buildCalendarSearchQueryParameters('gym', index: 2147483647),
+          throwsArgumentError);
+      expect(() => buildCalendarSearchQueryParameters('gym', start: 1),
+          throwsArgumentError);
+      expect(() => buildCalendarSearchQueryParameters('gym', end: 1),
+          throwsArgumentError);
+      expect(() => buildCalendarSearchQueryParameters('gym', start: 2, end: 1),
+          throwsArgumentError);
+      expect(() => buildCalendarSearchQueryParameters('gym', start: 1, end: 1),
+          throwsArgumentError);
+      expect(
+          () => buildCalendarSearchQueryParameters('gym',
+              start: -62135596800001, end: 1),
+          throwsArgumentError);
+      expect(
+          () => buildCalendarSearchQueryParameters('gym',
+              start: 0, end: 253402300800000),
+          throwsArgumentError);
+    });
+
+    test('parses server batch metadata including a terminal null nextIndex',
+        () {
+      final envelope = CalendarSearchEnvelope.fromJson({
+        'items': [],
+        'sources': [],
+        'correlationId': 'batch',
+        'index': 20,
+        'batchSize': 10,
+        'totalCount': 22,
+        'hasMore': false,
+        'nextIndex': null,
+      });
+      expect(envelope.index, 20);
+      expect(envelope.batchSize, 10);
+      expect(envelope.totalCount, 22);
+      expect(envelope.hasMore, isFalse);
+      expect(envelope.nextIndex, isNull);
+      final next =
+          CalendarSearchEnvelope.fromJson({'hasMore': true, 'nextIndex': 7});
+      expect(next.hasMore, isTrue);
+      expect(next.nextIndex, 7);
+    });
+
+    test('older responses never infer another batch from the item count', () {
+      final envelope =
+          CalendarSearchEnvelope.fromJson({'items': [], 'sources': []});
+      expect(envelope.hasMore, isFalse);
+      expect(envelope.nextIndex, isNull);
     });
   });
   group('CalendarSearchItem.fromJson', () {
@@ -124,7 +216,8 @@ void main() {
       expect(item.capabilities.canSetAsNow, isFalse);
     });
 
-    test('maps a microsoft provider row to TileSource.outlook via toTilerEvent', () {
+    test('maps a microsoft provider row to TileSource.outlook via toTilerEvent',
+        () {
       final item = CalendarSearchItem.fromJson({
         'id': 'ev-1',
         'name': 'Standalone',
@@ -146,7 +239,9 @@ void main() {
       expect(event.thirdPartyUserId, 'user@outlook.com');
     });
 
-    test('a native tiler row has a null provider id and defaults off capabilities', () {
+    test(
+        'a native tiler row has a null provider id and defaults off capabilities',
+        () {
       final item = CalendarSearchItem.fromJson({
         'id': 'tiler-1',
         'name': 'Tiler tile',
@@ -213,11 +308,7 @@ void main() {
       final error = CalendarSearchUnavailableError.fromJson({
         'error': 'search_unavailable',
         'sources': [
-          {
-            'provider': 'microsoft',
-            'email': 'x@y.z',
-            'category': 'provider'
-          }
+          {'provider': 'microsoft', 'email': 'x@y.z', 'category': 'provider'}
         ],
       });
 

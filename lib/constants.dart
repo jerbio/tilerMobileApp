@@ -7,9 +7,9 @@ const bool isStaging = true;
 const bool isRemote = true;
 const prodDomain = 'tiler.app';
 // const stagingDomain = '192.168.1.3:45472';
-// const stagingDomain = '10.0.2.2:44322';
+const stagingDomain = '10.0.2.2:44322';
 // const stagingDomain = '192.168.1.3:45472';
-const stagingDomain = 'tiler-stage.conveyor.cloud';
+// const stagingDomain = 'tiler-stage.conveyor.cloud';
 
 const devDomain = 'tiler-dev.conveyor.cloud';
 const String tilerDomain =

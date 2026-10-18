@@ -1,3 +1,4 @@
+import 'package:tiler_app/services/calendarSearchController.dart';
 import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
 import 'package:tiler_app/components/tileUI/searchResultDestination.dart';
 import 'package:tiler_app/components/tileUI/searchResultsPane.dart';
@@ -13,7 +14,6 @@ import 'package:tiler_app/data/calendarSearch.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
@@ -32,6 +32,11 @@ import '../../bloc/calendarTiles/calendar_tile_bloc.dart';
 import '../../constants.dart' as Constants;
 
 class EventNameSearchWidget extends SearchWidget {
+  /// Optional UTC epoch-millisecond overlap window, forwarded to every batch.
+  final int? start;
+  final int? end;
+  final int pageSize;
+
   EventNameSearchWidget(
       {onChanged,
       textField,
@@ -39,8 +44,14 @@ class EventNameSearchWidget extends SearchWidget {
       listView,
       context,
       renderBelowTextfield = true,
+      this.start,
+      this.end,
+      this.pageSize = 10,
       Key? key})
-      : super(
+      : assert(pageSize >= 1 && pageSize <= 150),
+        assert((start == null) == (end == null)),
+        assert(start == null || start < end!),
+        super(
             onChanged: onChanged,
             textField: textField,
             onInputCompletion: onInputCompletion,
@@ -59,54 +70,78 @@ class EventNameSearchState extends SearchWidgetState {
   late SubCalendarEventApi subCalendarEventApi;
   late IntegrationApi integrationApi;
   TextEditingController textController = TextEditingController();
-  List<Widget> nameSearchResult = [];
 
   // Deletion confirmation state: tracks which item ID is showing deletion confirmation
   String? _tileIdPendingDeletion;
 
-  // Cached search results so we can rebuild result widgets without a network call
-  List<CalendarSearchItem> _searchItems = [];
-  // Per-source execution status from the multi-source envelope (partial/failed)
-  List<CalendarSearchSourceStatus> _sourceStatuses = [];
-  // Set on a 502 total failure; rendered as a distinct "unavailable" state
-  CalendarSearchUnavailableError? _searchUnavailable;
-  // Current query text and provider filter (null = All).
-  String _query = '';
+  late CalendarSearchController _search;
+  EventNameSearchWidget get _searchWidget => widget as EventNameSearchWidget;
+  List<CalendarSearchItem> get _searchItems => _search.items;
+  List<CalendarSearchSourceStatus> get _sourceStatuses =>
+      _search.sourceStatuses;
+  CalendarSearchUnavailableError? get _searchUnavailable => _search.unavailable;
+  String get _query => _search.query;
   TileSource? _selectedProvider;
-  // Monotonic token so a slow earlier response never overwrites a newer one
-  int _searchSeq = 0;
-  // Once the server answers 404 (flag off) we stay on the legacy endpoint
-  bool _useLegacySearch = false;
   // Third-party providers the user has connected; drives which chips render.
   Set<TileSource> _connectedProviders = {};
   // Providers the server reported as `failed` on the last search; hidden
   // from the chip strip until a later search reports them healthy.
   Set<TileSource> _failedProviders = {};
 
-  // True once a completed search produced `nameSearchResult`; the build
-  // then renders the pinned-header pane from that list instead of the
-  // base class's `resultViewContainer` (its shimmer / hint placeholders).
-  bool _resultsReady = false;
-
-  // Rebuilds the cached results, e.g. when the deletion confirmation
-  // toggles or a provider chip re-queries.
   void _refreshResultView() {
-    final widgets = _buildResultWidgets();
+    if (mounted) setState(() {});
+  }
+
+  void _dismissResults() {
+    _search.cancelPending();
+    setState(() => showResponseContainer = false);
+  }
+
+  Widget _resultsPane() => SearchResultsPane(
+        header: _buildResultsHeader(),
+        results: _buildResultWidgets(),
+        onDismiss: _dismissResults,
+        decoration: widget.resultBoxDecoration,
+      );
+
+  CalendarSearchController _createSearchController() =>
+      CalendarSearchController(
+        loader: tileNameApi.searchCalendarEvents,
+        batchSize: _searchWidget.pageSize,
+        minimumQueryLength: Constants.autoCompleteMinCharLength + 1,
+      )..addListener(_onSearchChanged);
+
+  void _onSearchChanged() {
+    if (!mounted) return;
     setState(() {
-      nameSearchResult = widgets;
-      _resultsReady = true;
+      showResponseContainer = _query.trim().isNotEmpty;
+      if (_search.isLoading) _tileIdPendingDeletion = null;
+      if (_search.hasSearched && !_search.hasError) {
+        _failedProviders = {
+          for (final status in _sourceStatuses)
+            if (status.isFailed)
+              switch (parseCalendarSearchSource(status.source)) {
+                CalendarSearchSource.google => TileSource.google,
+                CalendarSearchSource.microsoft => TileSource.outlook,
+                _ => TileSource.tiler,
+              }
+        }..remove(TileSource.tiler);
+      }
     });
   }
 
-  /// The results with the count + filter header PINNED above them: the
-  /// header used to be the list's first item and scrolled away (2026-09-19).
-  Widget _resultsPane() {
-    return SearchResultsPane(
-      header: _buildResultsHeader(),
-      results: nameSearchResult,
-      onDismiss: () => setState(() => showResponseContainer = false),
-      decoration: this.widget.resultBoxDecoration,
-    );
+  void _onSearchTextChanged() {
+    final name = textController.text;
+    if (name == _query) return;
+    if (name.trim().length > Constants.autoCompleteMinCharLength) {
+      AnalysticsSignal.send('NAME_SEARCH_REQUEST_RECEIVED');
+    }
+    _search.scheduleSearch(name,
+        sources: _selectedProvider == null
+            ? null
+            : [_wireSource(_selectedProvider!)],
+        start: _searchWidget.start,
+        end: _searchWidget.end);
   }
 
   @override
@@ -114,7 +149,7 @@ class EventNameSearchState extends SearchWidgetState {
     super.initState();
     // The base SearchWidget registers this listener inside its build; since we
     // lay out the text field ourselves we register it here instead.
-    textController.addListener(onInputChangeDefault);
+    textController.addListener(_onSearchTextChanged);
     calendarEventApi = new CalendarEventApi(
         getContextCallBack: () => mounted ? context : null);
     subCalendarEventApi = new SubCalendarEventApi(
@@ -123,7 +158,23 @@ class EventNameSearchState extends SearchWidgetState {
         new TileNameApi(getContextCallBack: () => mounted ? context : null);
     integrationApi =
         new IntegrationApi(getContextCallBack: () => mounted ? context : null);
+    _search = _createSearchController();
     _loadConnectedProviders();
+  }
+
+  @override
+  void didUpdateWidget(covariant EventNameSearchWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final query = _query;
+    if (oldWidget.pageSize != _searchWidget.pageSize) {
+      _search.removeListener(_onSearchChanged);
+      _search.dispose();
+      _search = _createSearchController();
+      _runSearch(query);
+    } else if (oldWidget.start != _searchWidget.start ||
+        oldWidget.end != _searchWidget.end) {
+      _runSearch(query);
+    }
   }
 
   @override
@@ -184,6 +235,7 @@ class EventNameSearchState extends SearchWidgetState {
         scheduleStatus: prior.scheduleStatus,
         isAlreadyLoaded: true,
         callBack: pending));
+    _search.cancelPending();
     Navigator.pop(context);
   }
 
@@ -292,30 +344,6 @@ class EventNameSearchState extends SearchWidgetState {
   static TileSource _tileSourceOf(CalendarSearchItem item) =>
       tileSourceOfSearchItem(item);
 
-  /// Adapts a legacy name-search result so both code paths render the same.
-  static CalendarSearchItem _itemFromTilerEvent(TilerEvent tile) {
-    final TileSource source = tile.thirdpartyType ?? TileSource.tiler;
-    final bool isRecurring = tile.isRecurring ?? false;
-    return CalendarSearchItem(
-      id: tile.id ?? '',
-      name: tile.name ?? '',
-      start: tile.start?.toInt() ?? 0,
-      end: tile.end?.toInt() ?? 0,
-      source: _wireSource(source),
-      sourceKind: parseCalendarSearchSource(_wireSource(source)),
-      thirdPartyEventId: tile.thirdpartyId,
-      thirdPartyUserId:
-          tile.thirdPartyUserId.isEmpty ? null : tile.thirdPartyUserId,
-      isReadOnly: false,
-      capabilities: CalendarSearchCapabilities(
-        canEdit: true,
-        canDelete: true,
-        canComplete: !isRecurring,
-        canSetAsNow: true,
-      ),
-    );
-  }
-
   String _sourceStatusLabel(String wireSource) {
     switch (parseCalendarSearchSource(wireSource)) {
       case CalendarSearchSource.google:
@@ -395,7 +423,8 @@ class EventNameSearchState extends SearchWidgetState {
         Padding(
           padding: EdgeInsets.fromLTRB(4, 12, 4, 12),
           child: Text(
-            localization.searchResultsForQuery(_searchItems.length, _query),
+            localization.searchResultsForQuery(
+                _search.totalCount ?? _searchItems.length, _query),
             style: TextStyle(
               fontSize: 15,
               fontFamily: TileTextStyles.rubikFontName,
@@ -549,6 +578,8 @@ class EventNameSearchState extends SearchWidgetState {
   void _openEditTile(CalendarSearchItem item) {
     final Widget? destination = searchResultEditorFor(item);
     if (destination == null) return;
+    _search.cancelPending();
+    _refreshResultView();
     AnalysticsSignal.send('NAME_SEARCH_EDIT_OPENED');
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => destination));
@@ -742,7 +773,7 @@ class EventNameSearchState extends SearchWidgetState {
     final bool canOpen = searchResultEditorFor(item) != null;
     return _cardShell(
       child: SearchResultTapTarget(
-        key: ValueKey('searchResult_${item.id}'),
+        key: ValueKey('searchResult_${item.identityKey}'),
         onOpen: canOpen ? () => _openEditTile(item) : null,
         child: Padding(
           padding: EdgeInsets.fromLTRB(16, 16, 12, hasActionRow ? 8 : 16),
@@ -843,148 +874,67 @@ class EventNameSearchState extends SearchWidgetState {
   /// header is pinned above them by [_resultsPane].
   List<Widget> _buildResultWidgets() {
     final localization = AppLocalizations.of(context)!;
-    List<Widget> retValue = [];
-
-    // Total failure (502): a service issue, never rendered as "no matches".
-    if (_searchUnavailable != null) {
-      retValue.add(_messageBlock(
-        (_searchUnavailable!.message ?? '').isNotEmpty
-            ? _searchUnavailable!.message!
+    if (!_search.canSearch) {
+      return [_messageBlock(localization.atLeastThreeLettersForLookup)];
+    }
+    if (_search.isLoading) {
+      return [
+        const Center(child: CircularProgressIndicator()),
+        _messageBlock(localization.loading)
+      ];
+    }
+    final List<Widget> results = [];
+    if (_search.hasError) {
+      final message = _searchUnavailable?.message;
+      results.add(_messageBlock(
+        message != null && message.trim().isNotEmpty
+            ? message
             : localization.searchUnavailableMessage,
         icon: Icons.cloud_off_rounded,
       ));
-      retValue.add(Center(
-        child: TextButton(
-          onPressed: () => _runSearch(_query),
-          child: Text(localization.searchRetry),
-        ),
-      ));
-      return retValue;
+      results.add(Center(
+          child: TextButton(
+              onPressed: () => _runSearch(_query),
+              child: Text(localization.searchRetry))));
     }
-
-    final Widget? banner = _buildPartialFailureBanner();
-    if (banner != null) retValue.add(banner);
-
-    if (_searchItems.isEmpty) {
-      retValue.add(_messageBlock(
-        _selectedProvider == null
-            ? localization.noMatchWasFound
-            : localization.noResultsForProvider,
-      ));
-    } else {
-      retValue.addAll(_searchItems.map(searchItemToWidget));
+    final banner = _buildPartialFailureBanner();
+    if (banner != null) results.add(banner);
+    if (_search.showNoMatches) {
+      results.add(_messageBlock(_selectedProvider == null
+          ? localization.noMatchWasFound
+          : localization.noResultsForProvider));
     }
-    return retValue;
+    results.addAll(_searchItems.map(searchItemToWidget));
+    if (_search.hasMore) {
+      results.add(Center(
+          child: TextButton.icon(
+        key: const ValueKey('calendarSearchLoadMore'),
+        onPressed: _search.isLoadingMore ? null : () => _search.loadMore(),
+        icon: _search.isLoadingMore
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2))
+            : const Icon(Icons.expand_more),
+        label: Text(_search.isLoadingMore
+            ? localization.loading
+            : localization.tileShareActivityMore),
+      )));
+    }
+    return results;
   }
 
-  /// Executes a search against the multi-source endpoint, falling back to the
-  /// legacy name lookup when the server reports the feature flag off (404).
-  /// A sequence token discards stale / out-of-order responses.
-  Future<void> _runSearch(String name) async {
-    final int token = ++_searchSeq;
-    _query = name;
-    _tileIdPendingDeletion = null;
-    _searchUnavailable = null;
-
-    List<String>? sources =
-        _selectedProvider == null ? null : [_wireSource(_selectedProvider!)];
-
-    try {
-      List<CalendarSearchItem> items;
-      List<CalendarSearchSourceStatus> statuses = [];
-      CalendarSearchEnvelope? envelope;
-      if (!_useLegacySearch) {
-        CalendarSearchResult result =
-            await tileNameApi.searchCalendarEvents(name, sources: sources);
-        if (token != _searchSeq) return; // stale — discard
-        if (result.isFlagOff) {
-          // Feature flag off server-side: stay on the legacy endpoint.
-          _useLegacySearch = true;
-        } else if (result.isUnavailable) {
-          _searchItems = [];
-          _sourceStatuses = [];
-          _searchUnavailable = result.unavailable;
-          // A 502 on a single-provider query means that provider is down;
-          // stop offering it as a filter.
-          if (_selectedProvider != null &&
-              _selectedProvider != TileSource.tiler) {
-            _failedProviders = {..._failedProviders, _selectedProvider!};
-          }
-          if (mounted) _refreshResultView();
-          return;
-        } else if (result.isError) {
-          throw TilerError(Message: result.errorMessage);
-        } else {
-          envelope = result.envelope;
-        }
-      }
-      if (envelope != null) {
-        items = envelope.items;
-        statuses = envelope.sources;
-      } else {
-        List<TilerEvent> tileEvents = await tileNameApi.getTilesByName(name);
-        items = tileEvents.map(_itemFromTilerEvent).toList();
-        if (_selectedProvider != null) {
-          items = items
-              .where((item) => _tileSourceOf(item) == _selectedProvider)
-              .toList();
-        }
-      }
-      if (token != _searchSeq) return; // stale — discard
-      _searchItems = items;
-      _sourceStatuses = statuses;
-      // Drop chips for sources the server could not search at all.
-      _failedProviders = {
-        for (final status in statuses)
-          if (status.isFailed)
-            switch (parseCalendarSearchSource(status.source)) {
-              CalendarSearchSource.google => TileSource.google,
-              CalendarSearchSource.microsoft => TileSource.outlook,
-              _ => TileSource.tiler,
-            }
-      }..remove(TileSource.tiler);
-    } catch (error) {
-      if (token != _searchSeq) return;
-      print("Error in event name search: $error");
-      _searchItems = [];
-      _sourceStatuses = [];
-    }
-    if (!mounted) return;
-    _refreshResultView();
-  }
-
-  Future<List<Widget>> _onInputFieldChange(
-      String name, Function callBackOnCloseInput) async {
-    List<Widget> retValue = [
-      Container(
-        padding: EdgeInsets.all(10),
-        child: Text(
-            AppLocalizations.of(this.context)!.atLeastThreeLettersForLookup),
-        alignment: Alignment.center,
-      )
-    ];
-
-    bool ready = false;
-    if (name.length > Constants.autoCompleteMinCharLength) {
-      AnalysticsSignal.send('NAME_SEARCH_REQUEST_RECEIVED');
-      if (mounted) setState(() => _resultsReady = false);
-      await _runSearch(name);
-      retValue = _buildResultWidgets();
-      ready = true;
-    }
-
-    setState(() {
-      nameSearchResult = retValue;
-      _resultsReady = ready;
-    });
-
-    return retValue;
-  }
+  Future<void> _runSearch(String name) => _search.search(name,
+      sources:
+          _selectedProvider == null ? null : [_wireSource(_selectedProvider!)],
+      start: _searchWidget.start,
+      end: _searchWidget.end);
 
   TextField _buildSearchField() {
     final localization = AppLocalizations.of(context)!;
     return TextField(
       autofocus: true,
+      maxLength: 100,
       controller: textController,
       style: TextStyle(
         fontSize: 20,
@@ -993,6 +943,7 @@ class EventNameSearchState extends SearchWidgetState {
       ),
       decoration: InputDecoration(
         hintText: localization.tileName,
+        counterText: '',
         filled: true,
         isDense: true,
         fillColor: colorScheme.surfaceContainerLowest,
@@ -1022,15 +973,8 @@ class EventNameSearchState extends SearchWidgetState {
                     Icon(Icons.close, size: 16, color: colorScheme.onSurface),
               ),
               onPressed: () {
-                ++_searchSeq; // invalidate any in-flight request
+                _tileIdPendingDeletion = null;
                 textController.clear();
-                setState(() {
-                  _searchItems = [];
-                  _sourceStatuses = [];
-                  _searchUnavailable = null;
-                  _query = '';
-                  showResponseContainer = false;
-                });
               },
             );
           },
@@ -1072,7 +1016,6 @@ class EventNameSearchState extends SearchWidgetState {
           },
           child: BlocBuilder<ScheduleBloc, ScheduleState>(
               builder: (context, scheduleState) {
-            this.widget.onChanged = this._onInputFieldChange;
             this.widget.textField = _buildSearchField();
             this.widget.resultBoxDecoration = BoxDecoration();
 
@@ -1096,14 +1039,10 @@ class EventNameSearchState extends SearchWidgetState {
                         ),
                       ),
                       Expanded(
-                        child: showResponseContainer &&
-                                (_resultsReady || resultViewContainer != null)
+                        child: showResponseContainer
                             ? Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 16),
-                                child: _resultsReady
-                                    ? _resultsPane()
-                                    : resultViewContainer!,
-                              )
+                                child: _resultsPane())
                             : SizedBox.shrink(),
                       ),
                     ],
@@ -1119,6 +1058,11 @@ class EventNameSearchState extends SearchWidgetState {
 
   @override
   void dispose() {
+    textController.removeListener(_onSearchTextChanged);
+    _search.removeListener(_onSearchChanged);
+    _search.dispose();
+    tileNameApi.dispose();
+    integrationApi.dispose();
     textController.dispose();
     super.dispose();
   }

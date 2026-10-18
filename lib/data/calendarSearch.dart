@@ -159,6 +159,11 @@ class CalendarSearchItem {
   });
 
   bool get isFromTiler => sourceKind == CalendarSearchSource.tiler;
+
+  /// Mirrors the server's source/account/event/occurrence deduplication key.
+  String get identityKey => jsonEncode(thirdPartyEventId == null
+      ? ['tiler', id]
+      : [source, thirdPartyUserId, thirdPartyEventId, start]);
   bool get isFromProvider =>
       sourceKind == CalendarSearchSource.google ||
       sourceKind == CalendarSearchSource.microsoft;
@@ -215,24 +220,32 @@ class CalendarSearchItem {
 }
 
 /// Response envelope for `GET api/CalendarEvent/Search` (wire: the PostBack
-/// `Content`). NOT paginated: a per-source cap (50) + a merged cap (150) with
-/// silent truncation.
+/// `Content`). Batches are selected after merging, deduplication and ordering.
 class CalendarSearchEnvelope {
   final List<CalendarSearchItem> items;
   final List<CalendarSearchSourceStatus> sources;
   final String correlationId;
+  final int index;
+  final int? batchSize;
+  final int? totalCount;
+  final bool hasMore;
+  final int? nextIndex;
 
   const CalendarSearchEnvelope({
     required this.items,
     required this.sources,
     required this.correlationId,
+    this.index = 0,
+    this.batchSize,
+    this.totalCount,
+    this.hasMore = false,
+    this.nextIndex,
   });
 
   /// True when at least one source reported `partial` or `failed` — the UI
   /// surfaces a non-blocking warning + retry for those sources (the surviving
   /// `items` are still shown).
-  bool get hasPartialFailure =>
-      sources.any((s) => s.isPartial || s.isFailed);
+  bool get hasPartialFailure => sources.any((s) => s.isPartial || s.isFailed);
 
   factory CalendarSearchEnvelope.fromJson(Map<String, dynamic> json) {
     return CalendarSearchEnvelope(
@@ -244,6 +257,11 @@ class CalendarSearchEnvelope {
               CalendarSearchSourceStatus.fromJson(e as Map<String, dynamic>))
           .toList(),
       correlationId: json['correlationId']?.toString() ?? '',
+      index: (json['index'] as num?)?.toInt() ?? 0,
+      batchSize: (json['batchSize'] as num?)?.toInt(),
+      totalCount: (json['totalCount'] as num?)?.toInt(),
+      hasMore: json['hasMore'] == true,
+      nextIndex: (json['nextIndex'] as num?)?.toInt(),
     );
   }
 }
@@ -303,10 +321,8 @@ class CalendarSearchUnavailableError {
   }
 }
 
-/// The four distinct outcomes of a multi-source search request. Discriminating
-/// them keeps a flag-off 404 (fall back to legacy) and a 502 (typed error) from
-/// being mistaken for a successful empty result or a generic failure.
-enum CalendarSearchResultKind { success, flagOff, unavailable, error }
+/// A missing GA endpoint and a source failure are errors, never empty matches.
+enum CalendarSearchResultKind { success, unavailable, error }
 
 class CalendarSearchResult {
   final CalendarSearchResultKind kind;
@@ -325,36 +341,54 @@ class CalendarSearchResult {
       CalendarSearchResult._(
           kind: CalendarSearchResultKind.success, envelope: envelope);
 
-  factory CalendarSearchResult.flagOff() =>
-      const CalendarSearchResult._(kind: CalendarSearchResultKind.flagOff);
-
   factory CalendarSearchResult.unavailable(
           CalendarSearchUnavailableError error) =>
       CalendarSearchResult._(
           kind: CalendarSearchResultKind.unavailable, unavailable: error);
 
-  factory CalendarSearchResult.error(String message) =>
-      CalendarSearchResult._(
-          kind: CalendarSearchResultKind.error, errorMessage: message);
+  factory CalendarSearchResult.error(String message) => CalendarSearchResult._(
+      kind: CalendarSearchResultKind.error, errorMessage: message);
 
   bool get isSuccess => kind == CalendarSearchResultKind.success;
-  bool get isFlagOff => kind == CalendarSearchResultKind.flagOff;
   bool get isUnavailable => kind == CalendarSearchResultKind.unavailable;
   bool get isError => kind == CalendarSearchResultKind.error;
 }
 
 /// Builds the query-parameter map for `api/CalendarEvent/Search`. Mirrors the
-/// backend binding: `query` (required) + optional `sources` (comma-joined).
+/// backend binding: query, sources, merged batch offset/size and UTC time bounds.
 /// `sources` is omitted when null/empty so the server defaults to all sources.
 /// Pure + framework-free so it is unit-testable without the network.
 Map<String, dynamic> buildCalendarSearchQueryParameters(
   String query, {
   List<String>? sources,
+  int? batchSize,
+  int? index,
+  int? start,
+  int? end,
 }) {
+  if (batchSize != null && (batchSize < 1 || batchSize > 150)) {
+    throw ArgumentError.value(
+        batchSize, 'batchSize', 'Must be between 1 and 150');
+  }
+  if (index != null && (index < 0 || index > 2147483647 - (batchSize ?? 50))) {
+    throw ArgumentError.value(index, 'index', 'Invalid merged-result offset');
+  }
+  if ((start == null) != (end == null) ||
+      (start != null &&
+          (start >= end! ||
+              start < -62135596800000 ||
+              end > 253402300799999))) {
+    throw ArgumentError(
+        'Supply both start and end as valid UTC epoch milliseconds, with start < end');
+  }
   final Map<String, dynamic> params = {'query': query};
   if (sources != null && sources.isNotEmpty) {
     params['sources'] = sources.join(',');
   }
+  if (batchSize != null) params['batchSize'] = batchSize.toString();
+  if (index != null) params['index'] = index.toString();
+  if (start != null) params['start'] = start.toString();
+  if (end != null) params['end'] = end.toString();
   return params;
 }
 
@@ -363,15 +397,12 @@ Map<String, dynamic> buildCalendarSearchQueryParameters(
 /// without the network:
 /// - 200 + PostBack `{Error:{Code:'0'}, Content:{items, sources, correlationId}}`
 ///   -> success envelope (an empty `items` list is a legitimate "no matches").
-/// - 404 (plain) -> flagOff (feature flag off for this user -> legacy fallback).
 /// - 502 -> typed [CalendarSearchUnavailableError] (total source failure).
 /// - 400 / anything else -> error.
 CalendarSearchResult parseCalendarSearchResponse(int statusCode, String body) {
   switch (statusCode) {
     case 200:
       return _parseEnvelope(body);
-    case 404:
-      return CalendarSearchResult.flagOff();
     case 502:
       return _parseUnavailable(body);
     default:
@@ -391,7 +422,9 @@ CalendarSearchResult _parseEnvelope(String body) {
         final dynamic code = error['Code'];
         if (code?.toString() == '0') {
           final dynamic content = decoded['Content'];
-          if (content is Map<String, dynamic>) {
+          if (content is Map<String, dynamic> &&
+              content['items'] is List &&
+              content['sources'] is List) {
             return CalendarSearchResult.success(
               CalendarSearchEnvelope.fromJson(content),
             );
