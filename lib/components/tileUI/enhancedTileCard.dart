@@ -431,57 +431,41 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Time range; a block's lock (P8/A) follows it.
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                _formatTimeRange(context),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontFamily: TileTextStyles.rubikFontName,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: secondaryTextColor,
-                                ),
-                              ),
-                            ),
-                            if (subEvent.isRigid == true) ...[
-                              const SizedBox(width: 5),
-                              Icon(
-                                Icons.lock_outline,
-                                size: 12,
-                                color: secondaryTextColor,
-                              ),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 2),
+                        // Keep the time, lock and location together so the
+                        // tile name can use the full width on its own line.
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Expanded(
-                              child: Text(
-                                subEvent.name ?? '',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontFamily: TileTextStyles.rubikFontName,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: textColor,
-                                  decoration: rsvpStyle.showStrikethrough
-                                      ? TextDecoration.lineThrough
-                                      : null,
-                                ),
+                              child: Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      _formatTimeRange(context),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontFamily: TileTextStyles.rubikFontName,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: secondaryTextColor,
+                                      ),
+                                    ),
+                                  ),
+                                  if (subEvent.isRigid == true) ...[
+                                    const SizedBox(width: 5),
+                                    Icon(
+                                      Icons.lock_outline,
+                                      size: 12,
+                                      color: secondaryTextColor,
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
 
                             // Tappable location / video-link badge to the right
-                            // of the name (same labeled style as the detail
+                            // of the time (same labeled style as the detail
                             // bottom sheet). Opens maps for a physical address
                             // or the video/URL link (see _onLocationTap).
                             if (location != null) ...[
@@ -547,11 +531,26 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                             ],
                           ],
                         ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subEvent.name ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: TileTextStyles.rubikFontName,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: textColor,
+                            decoration: rsvpStyle.showStrikethrough
+                                ? TextDecoration.lineThrough
+                                : null,
+                          ),
+                        ),
                         // Inline time-scrub so the "now" tile stands out in the
                         // list (loadTimeScrub: false => scrub strip only, no
                         // play buttons; those live in the detail sheet).
                         if (isCurrent) ...[
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
                           SizedBox(
                             height: 34,
                             child: TimeScrubWidget(
