@@ -226,6 +226,17 @@ class SubCalendarEventApi extends AppApi {
     if (rsvpUpdateValue != null) {
       queryParameters['RsvpStatusUpdate'] = rsvpUpdateValue;
     }
+    if (subEvent.subEventIsLocationCleared != null) {
+      queryParameters['SubEventIsLocationCleared'] =
+          subEvent.subEventIsLocationCleared;
+    }
+    if (subEvent.subEventAddress != null) {
+      queryParameters['SubEventAddress'] = subEvent.subEventAddress;
+    }
+    if (subEvent.subEventAddressDescription != null) {
+      queryParameters['SubEventAddressDescription'] =
+          subEvent.subEventAddressDescription;
+    }
     return queryParameters;
   }
 
@@ -233,8 +244,8 @@ class SubCalendarEventApi extends AppApi {
       updateSubEventRequest(updateSubEventParams(subEvent));
 
   /// Sends an already-built update map. The legacy screen builds it from an
-  /// `EditTilerEvent` above; the redesigned one builds a wider map (priority,
-  /// location, colour, repetition, `ApplicableOccurence`) and sends it here.
+  /// `EditTilerEvent` above; the redesigned one adds `ApplicableOccurence`
+  /// and sends it here. Location fields apply to the occurrence only.
   Future<SubCalendarEvent> updateSubEventRequest(
       Map<String, dynamic> queryParameters) async {
     TilerError error = new TilerError();

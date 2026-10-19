@@ -6,7 +6,7 @@
 // Step 0.3 reproduced as properties.
 //
 // Since D19 the draft holds ONE occurrence's fields — title, start, end,
-// deadline. Repetition, priority, location, colour and sessions belong to
+// deadline and location. Repetition, priority, colour and sessions belong to
 // the calendar event and live in `TileDetailDraft`.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';

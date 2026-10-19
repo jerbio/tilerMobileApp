@@ -18,6 +18,9 @@ class EditTilerEvent {
   String? note;
   String? addressDescription;
   String? address;
+  bool? subEventIsLocationCleared;
+  String? subEventAddress;
+  String? subEventAddressDescription;
   bool? isAddressVerified;
   Repetition? repetition;
   UIConfig? uiConfig;
