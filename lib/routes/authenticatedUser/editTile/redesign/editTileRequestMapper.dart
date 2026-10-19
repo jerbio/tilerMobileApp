@@ -37,6 +37,9 @@ EditTilerEvent toEditTilerEvent(EditTileDraft d) => EditTilerEvent()
   ..subEventAddressDescription = d.dirtyFields.contains(EditTileField.location)
       ? d.location?.description ?? ''
       : null
+  ..isSubEventAddressVerified = d.dirtyFields.contains(EditTileField.location)
+      ? d.location?.isVerified
+      : null
   // The note exactly as loaded (not the display-sanitised `d.note`): the
   // wire value must stay the legacy one.
   ..note = d.original.noteData?.note;

@@ -237,6 +237,10 @@ class SubCalendarEventApi extends AppApi {
       queryParameters['SubEventAddressDescription'] =
           subEvent.subEventAddressDescription;
     }
+    if (subEvent.isSubEventAddressVerified != null) {
+      queryParameters['IsSubEventAddressVerified'] =
+          subEvent.isSubEventAddressVerified.toString();
+    }
     return queryParameters;
   }
 
