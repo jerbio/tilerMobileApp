@@ -1,7 +1,8 @@
 // Step 3.6 — mockup conformance, gaps G1, G4, G6 (plan §4.4).
 //
-// G2 (repeat detail), G3 (location row) and G5 (callouts) belong to the
-// calendar event since D19 and are pinned by the Tile Detail tests. D18
+// G2 (repeat detail) and G5 (callouts) belong to the calendar event since D19
+// and are pinned by the Tile Detail tests. Occurrence location is covered by
+// `edit_tile_location_test.dart`. D18
 // (Notes as a plain row) was taken on its default.
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';

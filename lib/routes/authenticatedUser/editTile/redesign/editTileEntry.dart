@@ -17,7 +17,9 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileRedesignScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileScheduleRefresher.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileSubmission.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
+import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
 
@@ -34,6 +36,8 @@ Widget buildEditTileRedesign(
     tileId: args.tileId,
     source: args.source,
     thirdPartyUserId: args.thirdPartyUserId,
+    locationSource: ApiAddTileLocationSource(
+        locationApi: LocationApi(getContextCallBack: () => context)),
     loader: ApiEditTileLoader(
       subCalendarEventApi: subCalendarEventApi,
       calendarEventApi: CalendarEventApi(getContextCallBack: () => context),

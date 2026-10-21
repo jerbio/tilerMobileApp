@@ -25,6 +25,7 @@ import 'package:tiler_app/components/thirdPartyDecisionBar.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -42,6 +43,9 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/tileFormSec
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDateTimeChoices.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePlaceEditor.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
 /// How long a time / sessions change settles before the what-if preview is
@@ -54,6 +58,9 @@ typedef EditTilePickTime = Future<TimeOfDay?> Function(
     BuildContext context, TimeOfDay seed);
 typedef EditTilePickDuration = Future<Duration?> Function(
     BuildContext context, Duration seed, DateTime? startTime);
+
+typedef EditTilePickLocation = Future<Location?> Function(
+    BuildContext context, Location? seed);
 
 Future<DateTime?> _platformDate(BuildContext context, DateTime seed) =>
     showDatePicker(
@@ -107,6 +114,9 @@ class EditTileRedesignScreen extends StatefulWidget {
     this.pickTime = _platformTime,
     this.pickDuration = _durationScreen,
     this.openSeries = _openTileDetail,
+    this.locationSource,
+    this.pickLocation,
+    this.editPlace,
   });
 
   final String tileId;
@@ -118,6 +128,9 @@ class EditTileRedesignScreen extends StatefulWidget {
   final EditTilePickTime pickTime;
   final EditTilePickDuration pickDuration;
   final EditTileOpenSeries openSeries;
+  final AddTileLocationSource? locationSource;
+  final EditTilePickLocation? pickLocation;
+  final EditTilePickLocation? editPlace;
 
   @override
   State<EditTileRedesignScreen> createState() => EditTileRedesignScreenState();
@@ -345,6 +358,54 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
         context, d.endTime.difference(d.startTime), d.startTime);
     if (picked == null || !mounted) return;
     d.setEndTime(d.startTime.add(picked));
+  }
+
+  Future<void> _editLocation() async {
+    final EditTileDraft d = draft!;
+    if (_submitting || d.mode != EditTileMode.editable) return;
+    final EditTilePickLocation? seam = widget.pickLocation;
+    final Location? picked;
+    if (seam != null) {
+      picked = await seam(context, d.location);
+    } else {
+      final AddTileLocationSource? source = widget.locationSource;
+      if (source == null) return;
+      picked = await Navigator.of(context).push<Location>(
+        MaterialPageRoute<Location>(
+          builder: (_) => AddTileLocationScreen(
+              source: source, initialLocation: d.location),
+        ),
+      );
+    }
+    if (picked == null || !mounted) return;
+    d.setLocation(picked);
+  }
+
+  Future<void> _nameLocation() async {
+    final EditTileDraft d = draft!;
+    if (_submitting || d.mode != EditTileMode.editable || d.location == null) {
+      return;
+    }
+    final EditTilePickLocation? seam = widget.editPlace;
+    final Location? picked;
+    if (seam != null) {
+      picked = await seam(context, d.location);
+    } else {
+      final AddTileLocationSource? source = widget.locationSource;
+      if (source == null) return;
+      picked = await Navigator.of(context).push<Location>(
+        MaterialPageRoute<Location>(
+          builder: (_) => AddTilePlaceEditorScreen(
+            source: source,
+            initialName: d.location?.description,
+            initialAddress: d.location?.address,
+            original: d.location,
+          ),
+        ),
+      );
+    }
+    if (picked == null || !mounted) return;
+    d.setLocation(picked);
   }
 
   /// The series screen may change what this tile shows (its name, colour,
@@ -606,6 +667,8 @@ class EditTileRedesignScreenState extends State<EditTileRedesignScreen> {
                         onEndTimeTap: _editEndTime,
                         onDurationTap: _editDuration,
                         onDeadlineTap: _editDeadline,
+                        onLocationTap: _editLocation,
+                        onNameLocationTap: _nameLocation,
                         onAction: _runAction,
                         onSuggestionTap: _createFromSuggestion,
                         onNotesTap: _openNotes,
@@ -677,6 +740,8 @@ class _Frame extends StatelessWidget {
     required this.onEndTimeTap,
     required this.onDurationTap,
     required this.onDeadlineTap,
+    required this.onLocationTap,
+    required this.onNameLocationTap,
     required this.onAction,
     required this.onSuggestionTap,
     required this.onNotesTap,
@@ -703,6 +768,8 @@ class _Frame extends StatelessWidget {
   final VoidCallback onEndTimeTap;
   final VoidCallback onDurationTap;
   final VoidCallback onDeadlineTap;
+  final VoidCallback onLocationTap;
+  final VoidCallback onNameLocationTap;
   final ValueChanged<EditTileAction> onAction;
   final ValueChanged<NextTileSuggestion> onSuggestionTap;
   final VoidCallback onNotesTap;
@@ -945,6 +1012,15 @@ class _Frame extends StatelessWidget {
                             ),
                           ),
                         ),
+                      heading(l10n.editTileSectionLocation),
+                      AddTileSection(children: [
+                        TileLocationRow(
+                          location: draft.location,
+                          onTap: isEditable ? onLocationTap : null,
+                          onClear: draft.clearLocation,
+                          onName: onNameLocationTap,
+                        ),
+                      ]),
                       if (actions.isNotEmpty) ...[
                         heading(l10n.editTileSectionActions),
                         _ActionsCard(

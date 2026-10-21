@@ -5,7 +5,8 @@
 // sends, produced by the same seam the old screen uses
 // (`updateSubEventParams`) from an `EditTilerEvent` the draft fills the way
 // the old screen did — pinned by `edit_tile_payload_baseline_test.dart` —
-// plus `ApplicableOccurence: Single` on a dirty save (D10, D19): the field
+// plus occurrence location fields when changed and
+// `ApplicableOccurence: Single` on a dirty save (D10, D19): the field
 // exists on the endpoint and this screen's answer is always "this one".
 //
 // The what-if preview keeps the legacy request exactly.
@@ -27,6 +28,18 @@ EditTilerEvent toEditTilerEvent(EditTileDraft d) => EditTilerEvent()
   ..thirdPartyId = d.thirdPartyId
   ..thirdPartyType = d.thirdPartyType
   ..thirdPartyUserId = d.thirdPartyUserId
+  // Null means untouched; empty strings plus the flag explicitly remove it.
+  ..subEventIsLocationCleared =
+      d.dirtyFields.contains(EditTileField.location) ? d.locationCleared : null
+  ..subEventAddress = d.dirtyFields.contains(EditTileField.location)
+      ? d.location?.address ?? ''
+      : null
+  ..subEventAddressDescription = d.dirtyFields.contains(EditTileField.location)
+      ? d.location?.description ?? ''
+      : null
+  ..isSubEventAddressVerified = d.dirtyFields.contains(EditTileField.location)
+      ? d.location?.isVerified
+      : null
   // The note exactly as loaded (not the display-sanitised `d.note`): the
   // wire value must stay the legacy one.
   ..note = d.original.noteData?.note;

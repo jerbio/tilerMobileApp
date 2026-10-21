@@ -6,8 +6,8 @@
 // (the legacy screen's defining defect, plan §1.1).
 //
 // Edit Tile edits ONE occurrence (D19): its title, when it happens, and its
-// deadline. Everything that belongs to the calendar event — repetition,
-// priority, location, colour, sessions — lives in `TileDetailDraft`.
+// deadline and location. Calendar-event settings — repetition, priority,
+// colour, sessions — live in `TileDetailDraft`.
 //
 // The rules it carries are the legacy rules, pinned in
 // `test/editTile/edit_tile_rules_baseline_test.dart` before this file
@@ -23,7 +23,9 @@
 // Notes are deliberately NOT here: they persist themselves through the Notes
 // API and never count as a change (D13).
 import 'package:flutter/foundation.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/locationOwnership.dart';
 
 /// `ApplicableOccurence` on the sub-event update (D10). Edit Tile edits one
 /// occurrence, so it only ever sends [single]; [all] is kept for the wire
@@ -54,7 +56,7 @@ enum EditTileMode {
 }
 
 /// The fields a user can change, for dirtiness tracking.
-enum EditTileField { name, startTime, endTime, deadline }
+enum EditTileField { name, startTime, endTime, deadline, location }
 
 /// Why a draft cannot be saved, for the CTA's disabled hint. Ordered as the
 /// legacy `isValid` checks them; the first failure is the one reported.
@@ -65,6 +67,7 @@ class EditTileDraft extends ChangeNotifier {
       : _name = original.name ?? '',
         _startTime = original.startTime,
         _endTime = original.endTime,
+        _location = _loadedLocation(original),
         // Local, like every other time the draft holds: the sub-event's
         // getter builds this one in UTC, and a picker seeded with it would
         // open on the wrong day near midnight.
@@ -73,6 +76,7 @@ class EditTileDraft extends ChangeNotifier {
     _originalStart = _startTime;
     _originalEnd = _endTime;
     _originalDeadline = _deadline;
+    _originalLocation = _presentLocation(_location);
   }
 
   /// The sub-event as loaded. Never mutated.
@@ -112,11 +116,13 @@ class EditTileDraft extends ChangeNotifier {
   DateTime _startTime;
   DateTime _endTime;
   DateTime? _deadline;
+  Location? _location;
 
   late final String _originalName;
   late final DateTime _originalStart;
   late final DateTime _originalEnd;
   late final DateTime? _originalDeadline;
+  late final Location? _originalLocation;
 
   String get name => _name;
   DateTime get startTime => _startTime;
@@ -125,10 +131,42 @@ class EditTileDraft extends ChangeNotifier {
   /// The occurrence's deadline (`calEndTime` on the wire).
   DateTime? get deadline => _deadline;
 
+  /// The location of this occurrence, independent of the series location.
+  Location? get location => _location;
+  bool get locationCleared => _originalLocation != null && _location == null;
+
   void setName(String value) => _update(() => _name = value);
   void setStartTime(DateTime value) => _update(() => _startTime = value);
   void setEndTime(DateTime value) => _update(() => _endTime = value);
   void setDeadline(DateTime? value) => _update(() => _deadline = value);
+  void setLocation(Location? value) =>
+      _update(() => _location = _presentLocation(value));
+  void clearLocation() => setLocation(null);
+
+  static Location? _loadedLocation(SubCalendarEvent event) {
+    if (locationHasContent(event.location)) {
+      return _presentLocation(event.location);
+    }
+    return _presentLocation(Location.fromJson(<String, dynamic>{
+      'address': event.address,
+      'description': event.addressDescription,
+    }));
+  }
+
+  // Pickers must not mutate the loaded event or the dirtiness snapshot.
+  static Location? _presentLocation(Location? location) {
+    if (!locationHasContent(location)) return null;
+    return Location.fromJson(Map<String, dynamic>.fromEntries(
+      location!.toJson().entries.where((entry) => entry.value != null),
+    ))
+      ..id = location.id
+      ..userRenamed = location.userRenamed
+      ..userEditedAddress = location.userEditedAddress;
+  }
+
+  static bool _samePlace(Location? a, Location? b) =>
+      (a?.address ?? '') == (b?.address ?? '') &&
+      (a?.description ?? '') == (b?.description ?? '');
 
   void _update(void Function() change) {
     change();
@@ -146,6 +184,7 @@ class EditTileDraft extends ChangeNotifier {
         if (!_sameInstant(_startTime, _originalStart)) EditTileField.startTime,
         if (!_sameInstant(_endTime, _originalEnd)) EditTileField.endTime,
         if (!_sameInstant(_deadline, _originalDeadline)) EditTileField.deadline,
+        if (!_samePlace(_location, _originalLocation)) EditTileField.location,
       };
 
   bool get isDirty => dirtyFields.isNotEmpty;

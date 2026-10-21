@@ -225,11 +225,15 @@ void main() {
       await tester.pump(editTileWhatIfDebounce);
       await tester.pumpAndSettle();
       await reveal(tester, key('editWhatIfClean'));
+      // The Location section makes the form scroll farther; bring Duration
+      // back into view before opening the next picker.
+      await tester.ensureVisible(shell.durationRow);
+      await tester.pumpAndSettle();
       shell.submission.previewGates = <Completer<WhatIfResult?>>[
         Completer<WhatIfResult?>()
       ];
       shell.pickedDurationAnswer = const Duration(hours: 4);
-      // Still in view; no settle while a gated check sweeps.
+      // No settle while a gated check sweeps.
       await tester.tap(shell.durationRow);
       await tester.pump(editTileWhatIfDebounce);
       await tester.pump();

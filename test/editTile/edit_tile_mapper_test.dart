@@ -2,8 +2,8 @@
 //
 // `EditTileDraft` → the sub-event update map. For an UNCHANGED draft the map
 // is byte-identical to what the legacy screen sends today
-// (`edit_tile_payload_baseline_test.dart`). A dirty save adds exactly one
-// key, `ApplicableOccurence: Single` — Edit Tile edits one occurrence (D19).
+// (`edit_tile_payload_baseline_test.dart`). A dirty save adds
+// `ApplicableOccurence: Single` and, when changed, occurrence location fields.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/redesign/editTileDraft.dart';

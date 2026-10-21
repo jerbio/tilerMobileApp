@@ -157,6 +157,8 @@ Future<void> pumpEdit(
   EditTileLoadResult? loadResult,
   Size viewSize = AddTileTestMatrix.standard,
   EditTileOpenSeries? openSeries,
+  EditTilePickLocation? pickLocation,
+  EditTilePickLocation? editPlace,
   double textScale = 1.0,
   bool dark = false,
 }) async {
@@ -220,6 +222,8 @@ Future<void> pumpEdit(
                   return pickedDurationAnswer;
                 },
                 openSeries: openSeries ?? (_, __) async {},
+                pickLocation: pickLocation,
+                editPlace: editPlace,
               ),
             )),
             child: const Text('open'),
@@ -389,7 +393,11 @@ void main() {
       await pumpEdit(tester, tile: loaded(note: 'null'));
       expect(find.text('null'), findsNothing);
       await scrollTo(tester, find.byKey(const ValueKey('editNotesRow')));
-      expect(find.text(testL10n.addTileValueNotSet), findsOneWidget);
+      expect(
+          find.descendant(
+              of: find.byKey(const ValueKey('editNotesRow')),
+              matching: find.text(testL10n.addTileValueNotSet)),
+          findsOneWidget);
     });
 
     testWidgets('the notes preview shows when there is a note', (tester) async {
