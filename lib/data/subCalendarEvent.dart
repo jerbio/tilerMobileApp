@@ -159,7 +159,7 @@ class SubCalendarEvent extends TilerEvent {
       isTardy = cast<bool>(json['isTardy'])!;
     }
 
-    if (json.containsKey('calendarEvent')) {
+    if (json.containsKey('calendarEvent') && json['calendarEvent'] != null) {
       calendarEvent = CalendarEvent.fromJson(json['calendarEvent']);
       if (calendarEvent != null) {
         split = calendarEvent!.split;

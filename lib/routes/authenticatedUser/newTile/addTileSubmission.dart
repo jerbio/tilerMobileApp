@@ -19,17 +19,19 @@
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
+import 'package:tiler_app/services/api/scheduleEventResponse.dart';
 
 /// The outcome of one submission attempt.
 class AddTileSubmissionResult {
   const AddTileSubmissionResult.success(this.tile)
       : failed = false,
+        message = null,
         reasonCode = null;
 
   /// [reasonCode] is an ALLOW-LISTED enum value, never a server or exception
   /// message: those can embed the user's own tile content, and §12 forbids
   /// user-entered text reaching analytics.
-  const AddTileSubmissionResult.failure(this.reasonCode)
+  const AddTileSubmissionResult.failure(this.reasonCode, {this.message})
       : failed = true,
         tile = null;
 
@@ -38,6 +40,9 @@ class AddTileSubmissionResult {
 
   final bool failed;
   final String? reasonCode;
+
+  /// Only locally authored response-contract errors are carried to the UI.
+  final String? message;
 }
 
 /// Creates a tile on the server.
@@ -59,11 +64,14 @@ class ApiAddTileSubmission implements AddTileSubmission {
     try {
       final result = await scheduleApi.addNewTile(tile);
       final SubCalendarEvent? created = result.item1;
-      if (result.item2 != null && created == null) {
+      if (result.item2 != null || created == null) {
         // The server declined. Its message is deliberately not read.
         return const AddTileSubmissionResult.failure('api_rejected');
       }
       return AddTileSubmissionResult.success(created);
+    } on ScheduleEventResponseError catch (error) {
+      return AddTileSubmissionResult.failure('api_rejected',
+          message: error.Message);
     } catch (_) {
       // Transport failure. The exception is not inspected or logged for the
       // same reason the server message is not.

@@ -36,7 +36,7 @@ class CalendarEvent extends TilerEvent {
         json['eachTileDuration'] != null) {
       _duration = Duration(
           milliseconds:
-              TilerEvent.cast<double>(json['eachTileDuration'])!.toInt());
+              TilerEvent.cast<num>(json['eachTileDuration'])!.toInt());
     }
   }
 

@@ -816,7 +816,12 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
   /// so a network failure re-enabled the button and left the user to guess.
   /// The draft is preserved either way, which is what makes retry the right
   /// offer.
-  void _showSubmissionFailure() {
+  void _showSubmissionFailure({String? message}) {
+    if (message != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          key: const ValueKey('addTileSubmitError'), content: Text(message)));
+      return;
+    }
     final l10n = AppLocalizations.of(context)!;
     showScheduleChangeFailure(
       context,
@@ -881,7 +886,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         if (result.failed) {
           _analytics.submitResult(_draft.type,
               outcome: 'api_error', reasonCode: result.reasonCode);
-          _showSubmissionFailure();
+          _showSubmissionFailure(message: result.message);
           return;
         }
         _applyCreatedTile(result.tile);

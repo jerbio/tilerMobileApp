@@ -20,6 +20,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/preview/previewWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
+import 'package:tiler_app/services/api/scheduleEventResponse.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
@@ -99,6 +100,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
       isPendingAdd = true;
     });
     retValue.then((newlyAddedTile) {
+      if (!mounted) return;
       if (newlyAddedTile.item1 != null) {
         SubCalendarEvent subEvent = newlyAddedTile.item1;
         print(subEvent.name);
@@ -124,10 +126,13 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         this.widget.onSubmit!(retValue);
       }
     }).onError((error, stackTrace) {
+      if (!mounted) return;
       AnalysticsSignal.send('ADD_TILE_NEWTILE_ADD_ERROR_RESPONSE');
       if (error != null) {
-        final message = scheduleChangeFailureMessage(context,
-            kind: ScheduleChangeKind.add, eventName: newTile.Name);
+        final message = error is ScheduleEventResponseError
+            ? error.Message!
+            : scheduleChangeFailureMessage(context,
+                kind: ScheduleChangeKind.add, eventName: newTile.Name);
         final scaffold = ScaffoldMessenger.of(context);
         scaffold.showSnackBar(
           SnackBar(
@@ -151,6 +156,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         refreshScheduleSummary(currentState.lookupTimeline);
       }
     }).whenComplete(() {
+      if (!mounted) return;
       setState(() {
         isPendingAdd = false;
       });

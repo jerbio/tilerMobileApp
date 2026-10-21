@@ -192,6 +192,23 @@ void main() {
   });
 
   group('A failed submission', () {
+    testWidgets(
+        'shows a response error without suggesting a duplicate creation',
+        (tester) async {
+      await pumpShell(tester,
+          draft: submittableFixed(),
+          submission: FakeSubmission(
+              result: const AddTileSubmissionResult.failure('api_rejected',
+                  message: 'Unexpected response. Check your schedule.')));
+      await tester.tap(find.byKey(const ValueKey('addTileCta')));
+      await tester.pumpAndSettle();
+      expect(find.text('Unexpected response. Check your schedule.'),
+          findsOneWidget);
+      expect(find.text('Retry'), findsNothing);
+      expect(find.byKey(const ValueKey('addTileCta')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('tells the user, rather than failing silently', (tester) async {
       // Previously the catch recorded an analytics outcome and showed nothing:
       // the button simply re-enabled itself and the user was left guessing.

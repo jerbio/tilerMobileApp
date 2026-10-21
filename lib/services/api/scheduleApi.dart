@@ -19,6 +19,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/services/api/scheduleEventResponse.dart';
 import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/util.dart';
 
@@ -423,23 +424,9 @@ class ScheduleApi extends AppApi {
           },
         );
 
-        var jsonResult = jsonDecode(response.body);
-        error.Message = "Issues with reaching Tiler servers";
-        print(response.body);
-        if (isJsonResponseOk(jsonResult)) {
-          if (isContentInResponse(jsonResult)) {
-            var subEventJson = jsonResult['Content'];
-            SubCalendarEvent subEvent = SubCalendarEvent.fromJson(subEventJson);
-            return new Tuple2(subEvent, null);
-          }
-        }
-        if (isTilerRequestError(jsonResult)) {
-          var errorJson = jsonResult['Error'];
-          error = TilerError.fromJson(errorJson);
-          throw FormatException(error.Message!);
-        } else {
-          error.Message = "Issues with reaching TIler servers";
-        }
+        final subEvent = parseCreatedScheduleEvent(response.body,
+            status: response.statusCode);
+        return Tuple2(subEvent, null);
       }
     }
     throw error;
