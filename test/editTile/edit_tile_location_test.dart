@@ -22,6 +22,7 @@ Finder key(String value) => find.byKey(ValueKey(value));
 
 void expectNoLocationUpdate(Map<String, dynamic> params) {
   expect(params.keys.where((key) => key.startsWith('SubEvent')), isEmpty);
+  expect(params.containsKey('IsSubEventAddressVerified'), isFalse);
 }
 
 void main() {
@@ -72,6 +73,15 @@ void main() {
       expect(params.containsKey('IsLocationCleared'), isFalse);
     });
 
+    test('selected locations send their address verification status', () {
+      for (final verified in <bool>[true, false]) {
+        final draft = EditTileDraft.fromLoaded(fixtures.tile())
+          ..setLocation(place('Work', '456 Market St')..isVerified = verified);
+        expect(editTileUpdateParams(draft)['IsSubEventAddressVerified'],
+            verified.toString());
+      }
+    });
+
     test('name-only places send an empty address', () {
       final draft = EditTileDraft.fromLoaded(fixtures.tile())
         ..setLocation(place('Bike shop'));
@@ -79,6 +89,7 @@ void main() {
       expect(params['SubEventIsLocationCleared'], isFalse);
       expect(params['SubEventAddress'], '');
       expect(params['SubEventAddressDescription'], 'Bike shop');
+      expect(params.containsKey('IsSubEventAddressVerified'), isFalse);
     });
 
     test('renaming and replacing a place each send the new values', () {
@@ -102,15 +113,16 @@ void main() {
       expect(params['SubEventIsLocationCleared'], isTrue);
       expect(params['SubEventAddress'], '');
       expect(params['SubEventAddressDescription'], '');
+      expect(params.containsKey('IsSubEventAddressVerified'), isFalse);
     });
 
     test('unrelated edits and reverting location omit location fields', () {
-      final draft = EditTileDraft.fromLoaded(
-          fixtures.tile(location: place('Work', '456 Market St')))
-        ..setName('Edited');
+      final original = fixtures.tile()
+        ..location = (place('Work', '456 Market St')..isVerified = true);
+      final draft = EditTileDraft.fromLoaded(original)..setName('Edited');
       expectNoLocationUpdate(editTileUpdateParams(draft));
       draft.clearLocation();
-      draft.setLocation(place('Work', '456 Market St'));
+      draft.setLocation(place('Work', '456 Market St')..isVerified = true);
       expectNoLocationUpdate(editTileUpdateParams(draft));
       final empty = EditTileDraft.fromLoaded(fixtures.tile())
         ..setLocation(place('Work', '456 Market St'))
