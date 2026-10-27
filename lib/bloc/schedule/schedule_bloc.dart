@@ -20,6 +20,7 @@ import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
+import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
@@ -37,10 +38,82 @@ export 'package:tiler_app/bloc/schedule/schedule_change_feed.dart'
 
 part 'schedule_event.dart';
 part 'schedule_state.dart';
+part 'schedule_read_state.dart';
 
 enum AuthorizedRouteTileListPage { Daily, Weekly, Monthly }
 
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
+  // Read failures outlive individual views and remain available while the
+  // calendar's main state is presenting an add/edit/complete evaluation.
+  final ScheduleReadCubit reads = ScheduleReadCubit();
+  final Duration readTimeout;
+  final ScheduleRecoveryMonitor Function(VoidCallback, VoidCallback)?
+      recoveryMonitorFactory;
+  _ScheduleReadAttempt? _activeRead;
+  bool _readsForeground = true;
+  DateTime? _lastAutomaticRead;
+  bool get canAutomaticallyRetryScheduleReads => _readsForeground && !_closing;
+
+  /// Completes for the actual request, including failure or supersession.
+  Future<ScheduleReadOutcome> refreshSchedule({
+    Timeline? timeline,
+    String? eventId,
+    bool automatic = false,
+  }) {
+    if (isClosed || _closing) {
+      return Future.value(ScheduleReadOutcome.skipped);
+    }
+    final completion = Completer<ScheduleReadOutcome>();
+    add(GetScheduleEvent(
+        scheduleTimeline: timeline,
+        eventId: eventId,
+        forceRefresh: true,
+        automatic: automatic,
+        completion: completion));
+    return completion.future;
+  }
+
+  Future<ScheduleReadOutcome> retryRead(ScheduleReadFailure failure) =>
+      refreshSchedule(timeline: failure.timeline, eventId: failure.eventId);
+
+  /// A gesture refreshes the visible day, even after an edge request failed.
+  /// The failure's Retry button separately retains its exact request range.
+  Timeline readTimelineFor(DateTime? date) {
+    final read = reads.state;
+    if (date != null) {
+      if (read.hasDataFor(date)) return read.coverage!;
+      if (read.requested != null && _includesDate(read.requested!, date)) {
+        return read.requested!;
+      }
+      return Timeline.fromDateTime(DateTime(date.year, date.month, date.day),
+          DateTime(date.year, date.month, date.day + 1));
+    }
+    return read.requested ??
+        ScheduleState.generatePriorScheduleState(state).previousLookupTimeline;
+  }
+
+  void recoverScheduleReads() {
+    if (!_readsForeground ||
+        isClosed ||
+        tutorialMode ||
+        state is ScheduleLoggedOutState ||
+        state is ScheduleInitialState) return;
+    // Recover the latest requested scope. An older failure on another day
+    // must not pull the calendar back to that day's range on reconnection.
+    final range = reads.state.requested ?? reads.state.coverage;
+    ScheduleReadFailure? failure;
+    for (final candidate in reads.state.failures.reversed) {
+      if (range != null && candidate.timeline.isEquivalent(range)) {
+        failure = candidate;
+        break;
+      }
+    }
+    // Reconnection cannot repair missing credentials; the UI offers Sign In.
+    if (failure?.error is ScheduleAuthenticationRequired) return;
+    unawaited(refreshSchedule(
+        timeline: range, eventId: failure?.eventId, automatic: true));
+  }
+
   static final Object _requestZoneKey = Object();
   static final Object _ownerZoneKey = Object();
 
@@ -765,7 +838,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void _publishEvaluation(
       {ScheduleEvaluation? released, String? releaseReason}) {
-    if (!isClosed)
+    if (!isClosed && !_closing)
       add(_EvaluationChangedEvent(_sessionGeneration,
           released: released, releaseReason: releaseReason));
   }
@@ -1343,26 +1416,35 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void startRecoveryMonitoring() {
     if (_recoveryMonitor != null) return;
-    _recoveryMonitor = ScheduleRecoveryMonitor(
-      onRecover: () {
-        _trace('recovery_requested', fields: {'canConfirmMutation': false});
-        if (!isClosed && !tutorialMode && state is! ScheduleLoggedOutState) {
-          _reconcileRevision();
-          revisions.recover();
-          resumeReconciliation();
-        }
-      },
-      onSuspend: () {
-        _trace('recovery_suspended');
-        revisions.suspend();
-        pauseReconciliation();
-      },
-    )..start();
+    void recover() {
+      _readsForeground = true;
+      // Rotate stale sockets after resume; leased requests keep their client.
+      scheduleApi.refreshHttpClient();
+      _trace('recovery_requested', fields: {'canConfirmMutation': false});
+      if (!isClosed && !tutorialMode && state is! ScheduleLoggedOutState) {
+        _reconcileRevision();
+        revisions.recover();
+        resumeReconciliation();
+        recoverScheduleReads();
+      }
+    }
+
+    void suspend() {
+      _readsForeground = false;
+      _trace('recovery_suspended');
+      revisions.suspend();
+      pauseReconciliation();
+    }
+
+    _recoveryMonitor = (recoveryMonitorFactory?.call(recover, suspend) ??
+        ScheduleRecoveryMonitor(onRecover: recover, onSuspend: suspend))
+      ..start();
   }
 
   @override
   Future<void> close() async {
     _closing = true;
+    _activeRead?.finish(ScheduleReadOutcome.skipped);
     timings.dispose();
     _evaluationTimer?.cancel();
     _reconcileTimer?.cancel();
@@ -1377,6 +1459,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     await _revisionAttribution?.cancel();
     await changeFeed.close();
     await revisions.close();
+    await reads.close();
     await super.close();
   }
 
@@ -1386,6 +1469,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   late PreviewApi previewApi;
   ScheduleBloc(
       {required Function this.getContextCallBack,
+      this.readTimeout = const Duration(seconds: 25),
+      this.recoveryMonitorFactory,
       ScheduleEvaluationStore? evaluationStore,
       this.evaluationConfig = const ScheduleEvaluationConfig(),
       DateTime Function()? now,
@@ -1396,11 +1481,14 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         super(ScheduleInitialState(
             currentView: AuthorizedRouteTileListPage.Daily)) {
     if (evaluationConfig.operationTimeout <= Duration.zero ||
+        readTimeout <= Duration.zero ||
         evaluationConfig.initializationTimeout <= Duration.zero ||
         evaluationConfig.baselineMaxAge < Duration.zero) {
       throw ArgumentError('Schedule evaluation timing must be positive');
     }
-    on<GetScheduleEvent>(_onGetSchedule, transformer: restartable());
+    // Admission below coalesces equivalent reads before they can cancel one
+    // another; different ranges retain the existing latest-request semantics.
+    on<GetScheduleEvent>(_onGetSchedule, transformer: concurrent());
     on<LogInScheduleEvent>(_onInitialLogInScheduleEvent);
     on<LogOutScheduleEvent>(_onLoggedOutScheduleEvent);
     on<ReloadLocalScheduleEvent>(_onLocalScheduleEvent);
@@ -1436,7 +1524,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           ScheduleState.generatePriorScheduleState(state).scheduleStatus;
       if (ScheduleRevision.fromStatus(rendered) != revision) {
         _trace('revision_requested_read');
-        add(GetScheduleEvent(forceRefresh: true, emitOnlyLoadedStated: true));
+        add(GetScheduleEvent(
+            forceRefresh: true, emitOnlyLoadedStated: true, automatic: true));
       }
     });
   }
@@ -1451,8 +1540,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     return scheduleApi.getSubEvents(timeLine);
   }
 
-  Future<bool> shouldGetRefreshedListOfTiles(ScheduleStatus currentStatus) {
+  Future<bool> shouldGetRefreshedListOfTiles(ScheduleStatus currentStatus,
+      {bool Function()? isCurrent}) {
     return scheduleApi.getScheduleStatus().then((value) {
+      if (isCurrent != null && !isCurrent()) return false;
       revisions.observe(value);
       _reconcileRevision();
       bool isAnalyisTheSame = false;
@@ -1480,6 +1571,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void _onLocalScheduleEvent(
       ReloadLocalScheduleEvent event, Emitter<ScheduleState> emit) {
+    reads.retain(event.lookupTimeline);
     revisions.observe(event.scheduleStatus);
     _reconcileRevision();
     LocalScheduleLoadedState put = LocalScheduleLoadedState(
@@ -1497,6 +1589,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   void _onLoggedOutScheduleEvent(
       LogOutScheduleEvent event, Emitter<ScheduleState> emit) async {
     _trace('session_logout');
+    _activeRead?.finish(ScheduleReadOutcome.skipped);
+    _activeRead = null;
+    reads.reset();
+    _lastAutomaticRead = null;
     ++_sessionGeneration;
     ++_readGeneration;
     _evaluation = null;
@@ -1528,6 +1624,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   void _onInitialLogInScheduleEvent(
       LogInScheduleEvent event, Emitter<ScheduleState> emit) async {
     _trace('session_login_reset');
+    _activeRead?.finish(ScheduleReadOutcome.skipped);
+    _activeRead = null;
+    reads.reset();
+    _lastAutomaticRead = null;
     ++_sessionGeneration;
     ++_readGeneration;
     _evaluation = null;
@@ -1568,6 +1668,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     _reconcileRevision();
     final endsRefresh = _refreshing?.id;
     if (tutorialMode || state is ScheduleLoggedOutState) {
+      event.completion?.complete(ScheduleReadOutcome.skipped);
       _trace('read_skipped', fields: {
         'reason': tutorialMode ? 'tutorial' : 'logged_out',
       });
@@ -1576,16 +1677,95 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       }
       return;
     }
-    final elapsed = Stopwatch()..start();
-    final generation = _sessionGeneration;
-    final read = ++_readGeneration;
     final snapshot = ScheduleState.generatePriorScheduleState(state);
     final updateTimeline =
         event.scheduleTimeline ?? snapshot.previousLookupTimeline;
-    final wasLoaded = state is ScheduleLoadedState ||
-        state is ScheduleEvaluationState ||
-        (state is ScheduleLoadingState &&
-            (state as ScheduleLoadingState).isAlreadyLoaded);
+    final active = _activeRead;
+    // Automatic hints join any active request so they cannot displace a user
+    // action. Explicit requests share work only when range, edge identity,
+    // freshness requirement, and post-change refresh ownership agree.
+    if (active != null &&
+        !active.completion.isCompleted &&
+        (event.automatic ||
+            (active.timeline.isEquivalent(updateTimeline) &&
+                active.event.eventId == event.eventId &&
+                (!event.forceRefresh || active.event.forceRefresh) &&
+                active.refreshId == endsRefresh))) {
+      if (event.completion != null) {
+        event.completion!.complete(await active.completion.future);
+      }
+      return;
+    }
+    // Resume and connectivity callbacks can arrive just after a fast read has
+    // finished. Debounce those hints; explicit Retry remains immediately usable.
+    if (event.automatic &&
+        (!_readsForeground ||
+            (_lastAutomaticRead != null &&
+                _now().difference(_lastAutomaticRead!) <
+                    const Duration(seconds: 2)))) {
+      event.completion?.complete(ScheduleReadOutcome.skipped);
+      return;
+    }
+    if (event.automatic) _lastAutomaticRead = _now();
+    // Release the old gesture immediately. Its eventual HTTP response is
+    // rejected by the request/session checks below rather than shown as failure.
+    active?.finish(ScheduleReadOutcome.superseded);
+    final attempt = _ScheduleReadAttempt(updateTimeline, event, endsRefresh);
+    _activeRead = attempt;
+    if (event.completion != null) {
+      unawaited(attempt.completion.future.then((outcome) {
+        if (!event.completion!.isCompleted) event.completion!.complete(outcome);
+      }));
+    }
+    // Status lookup and event retrieval share one budget, so a slow first
+    // stage cannot leave the user waiting for a second full timeout period.
+    final elapsed = Stopwatch()..start();
+    Duration remaining() {
+      final left = readTimeout - elapsed.elapsed;
+      if (left <= Duration.zero)
+        throw TimeoutException('Schedule read timed out');
+      return left;
+    }
+
+    final generation = _sessionGeneration;
+    final read = ++_readGeneration;
+    // Guard both identities: navigation may supersede a read, and logout/login
+    // may replace the account while an old response is still in flight.
+    bool isCurrentRead() =>
+        !isClosed &&
+        !_closing &&
+        generation == _sessionGeneration &&
+        read == _readGeneration &&
+        !attempt.completion.isCompleted;
+    // Stop waiting on timeout or supersession and always consume late errors.
+    // This releases our timer and waiter; it does not cancel the underlying I/O.
+    Future<T> bounded<T>(Future<T> work) {
+      final result = Completer<T>();
+      final timer = Timer(remaining(), () {
+        if (!result.isCompleted) {
+          result.completeError(TimeoutException('Schedule read timed out'));
+        }
+      });
+      _readTimeouts.add(timer);
+      work.then((value) {
+        if (!result.isCompleted) result.complete(value);
+      }, onError: (Object error, StackTrace stack) {
+        if (!result.isCompleted) result.completeError(error, stack);
+      });
+      unawaited(attempt.completion.future.then((_) {
+        if (!result.isCompleted)
+          result.completeError(_ScheduleReadSuperseded());
+      }));
+      return result.future.whenComplete(() {
+        timer.cancel();
+        _readTimeouts.remove(timer);
+      });
+    }
+
+    var outcome = ScheduleReadOutcome.superseded;
+    // Event count cannot establish readiness: a verified empty range is loaded.
+    final wasLoaded = reads.state.coverage != null;
+    reads.begin(updateTimeline, read);
     _fetching = true;
     _readsInFlight++;
     timings.readStarted();
@@ -1615,7 +1795,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           !wasLoaded ||
           event.scheduleTimeline == null ||
           !snapshot.previousLookupTimeline.isStartAndEndEqual(updateTimeline) ||
-          await shouldGetRefreshedListOfTiles(snapshot.scheduleStatus);
+          await bounded(shouldGetRefreshedListOfTiles(snapshot.scheduleStatus,
+              isCurrent: isCurrentRead));
       _trace('read_decision',
           fields: {'fetchTiles': fetch, 'readAttempt': read});
       if (emit.isDone ||
@@ -1631,7 +1812,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         return;
       }
       if (fetch) {
-        final data = await getSubTiles(updateTimeline);
+        final data = await bounded(getSubTiles(updateTimeline));
         if (emit.isDone ||
             generation != _sessionGeneration ||
             read != _readGeneration ||
@@ -1657,6 +1838,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         revisions.observe(data.item3);
         _reconcileRevision();
         _fetching = false;
+        reads.succeed(updateTimeline, _now(), read);
+        outcome = ScheduleReadOutcome.succeeded;
         // The card leaves in the same update that shows the new schedule.
         if (endsRefresh != null) _endRefreshing(endsRefresh, 'read_applied');
         _emitCalendar(
@@ -1675,6 +1858,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           'elapsedMs': elapsed.elapsedMilliseconds
         });
         _fetching = false;
+        reads.succeed(snapshot.previousLookupTimeline, _now(), read);
+        outcome = ScheduleReadOutcome.succeeded;
         if (endsRefresh != null) _endRefreshing(endsRefresh, 'read_reused');
         _emitCalendar(
             LocalScheduleLoadedState(
@@ -1688,6 +1873,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             emit);
       }
     } catch (error) {
+      if (error is _ScheduleReadSuperseded || !isCurrentRead()) return;
       _trace('read_failed', error: error, fields: {
         'readAttempt': read,
         'elapsedMs': elapsed.elapsedMilliseconds,
@@ -1699,6 +1885,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           generation != _sessionGeneration ||
           read != _readGeneration) return;
       _fetching = false;
+      reads.fail(ScheduleReadFailure(updateTimeline, read, error,
+          eventId: event.eventId));
+      outcome = ScheduleReadOutcome.failed;
       if (endsRefresh != null) _endRefreshing(endsRefresh, 'read_failed');
       // Failure of a read cannot settle a mutation or remove its feedback.
       final current = ScheduleState.generatePriorScheduleState(state);
@@ -1714,6 +1903,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
               eventId: event.eventId),
           emit);
     } finally {
+      attempt.finish(outcome);
+      if (identical(_activeRead, attempt)) _activeRead = null;
       _readsInFlight--;
       if (read == _readGeneration) _fetching = false;
       if (endsRefresh != null && read == _readGeneration) {

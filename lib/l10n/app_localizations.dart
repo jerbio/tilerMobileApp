@@ -112,6 +112,48 @@ abstract class AppLocalizations {
     Locale('pt')
   ];
 
+  /// No description provided for @scheduleReadFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your events.'**
+  String get scheduleReadFailedTitle;
+
+  /// No description provided for @scheduleReadFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again in a moment.'**
+  String get scheduleReadFailedBody;
+
+  /// No description provided for @scheduleReadRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t refresh your events.'**
+  String get scheduleReadRefreshFailed;
+
+  /// No description provided for @scheduleReadRetained.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing your last loaded schedule.'**
+  String get scheduleReadRetained;
+
+  /// No description provided for @scheduleReadRetrying.
+  ///
+  /// In en, this message translates to:
+  /// **'Trying again...'**
+  String get scheduleReadRetrying;
+
+  /// No description provided for @scheduleReadSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to load your events.'**
+  String get scheduleReadSignIn;
+
+  /// No description provided for @scheduleSummaryUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary unavailable'**
+  String get scheduleSummaryUnavailable;
+
   /// No description provided for @notesLoadFailed.
   ///
   /// In en, this message translates to:

@@ -113,6 +113,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final bus = ScheduleNoticeBus();
       final bloc = ScheduleBloc(getContextCallBack: () => null);
+      addTearDown(bus.dispose);
       await tester.pumpWidget(app(
           bus,
           const Scaffold(
@@ -156,6 +157,8 @@ void main() {
           findsOneWidget);
       // Its spinner keeps going while the read is out, so no settling here.
       await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.runAsync(bloc.close);
     });
   });
 
@@ -177,6 +180,8 @@ void main() {
       write.complete();
       await pending;
       await tester.pumpAndSettle();
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.runAsync(bloc.close);
     }
 
     /// The calendar with a button that opens a sheet; the sheet's button
@@ -217,6 +222,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       bloc = ScheduleBloc(getContextCallBack: () => null);
       final bus = ScheduleNoticeBus();
+      addTearDown(bus.dispose);
       await tester
           .pumpWidget(app(bus, home(sheetSurface: sheetSurface), bloc: bloc));
       bloc.add(ReloadLocalScheduleEvent(

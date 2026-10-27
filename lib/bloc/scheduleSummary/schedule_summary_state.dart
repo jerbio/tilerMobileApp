@@ -53,8 +53,16 @@ class ScheduleSummaryCompleteTaskState extends ScheduleSummaryState {
 class ScheduleSummaryErrorState extends ScheduleSummaryState {
   final String error;
 
-  ScheduleSummaryErrorState({required this.error, required String message});
+  /// Last successful counts remain usable while the header signals failure.
+  final List<TimelineSummary> dayData;
+  final Timeline? timeline;
+
+  ScheduleSummaryErrorState(
+      {required this.error,
+      required String message,
+      this.dayData = const [],
+      this.timeline});
 
   @override
-  List<Object?> get props => [error];
+  List<Object?> get props => [error, dayData, timeline];
 }

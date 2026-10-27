@@ -331,8 +331,8 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     final rsvpStyle = RsvpStyleConfig.forEvent(subEvent);
     final effectiveOpacity = rsvpStyle.opacity;
     final isTardy = subEvent.isTardy ?? false;
-    // Location / video link (if any) shown as a tappable icon to the right
-    // of the tile name.
+    // Location / video link (if any) sits beside the time, leaving the next
+    // line's full width available for the tile name.
     final String? location = _getLocationText();
     // The "now" tile (current time falls within it) shows an inline time-scrub
     // strip so it's easy to spot in the list; all other tiles stay short.

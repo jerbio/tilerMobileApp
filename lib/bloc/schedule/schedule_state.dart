@@ -109,7 +109,20 @@ class ScheduleLoadingState extends ScheduleState {
       : super(currentView: currentView);
 
   @override
-  List<Object> get props => [subEvents, currentView];
+  // A retry may retain identical events. Include the loading metadata so Bloc
+  // still emits the transition needed to update progress and retry controls.
+  List<Object> get props => [
+        subEvents,
+        currentView,
+        timelines,
+        loadingTime,
+        isAlreadyLoaded,
+        connectionState,
+        previousLookupTimeline.start!,
+        previousLookupTimeline.end!,
+        eventId ?? '',
+        message ?? '',
+      ];
 }
 
 class ScheduleLoadedState extends ScheduleState {

@@ -234,6 +234,8 @@ void main() {
       expect(ghost, findsNothing);
       expect(dyBetween(tester), closeTo(480, 1));
       await tester.pumpAndSettle();
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.runAsync(bloc.close);
     });
 
     testWidgets('a background refresh slides straight away, no outline',

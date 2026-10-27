@@ -1,4 +1,12 @@
 {
+  "scheduleReadFailedTitle": "No se pudieron cargar tus eventos.",
+  "scheduleReadFailedBody": "Vuelve a intentarlo en un momento.",
+  "scheduleReadRefreshFailed": "No se pudieron actualizar tus eventos.",
+  "scheduleReadRetained": "Se muestra la \u00faltima agenda cargada.",
+  "scheduleReadRetrying": "Intentando de nuevo...",
+  "scheduleReadSignIn": "Inicia sesi\u00f3n para cargar tus eventos.",
+  "scheduleSummaryUnavailable": "Resumen no disponible",
+
   "notesLoadFailed": "No se pudieron cargar tus notas. Vuelve a abrir el editor para intentarlo de nuevo.",
   "onboardingSubmitFailed": "No se pudo guardar tu configuración. Tus opciones se conservan. Inténtalo de nuevo u omite este paso por ahora.",
   "operationFailed": "{operation} falló. Inténtalo de nuevo.",

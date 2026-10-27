@@ -44,7 +44,14 @@ class ScheduleApi extends AppApi {
     DateTime currentTime = Utility.currentTime(minuteLimitAccuracy: false);
     // Utility.debugPrint(
     //     "|||||||Get sub event for timeline ${timeLine.toString()} |||||||");
-    if ((await this.authentication.isUserAuthenticated()).item1) {
+    final authenticationResult = await authentication.isUserAuthenticated();
+    // Inability to verify credentials may be a transport problem. Keep it
+    // retryable instead of incorrectly directing an offline user to sign in.
+    if (!authenticationResult.item1 &&
+        authenticationResult.item2 == Constants.cannotVerifyError) {
+      throw TilerError(Message: 'Could not verify credentials. Try again.');
+    }
+    if (authenticationResult.item1) {
       await checkAndReplaceCredentialCache();
 
       String tilerDomain = Constants.tilerDomain;
@@ -66,7 +73,7 @@ class ScheduleApi extends AppApi {
 
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(Message: 'Issues with authentication');
+          throw ScheduleAuthenticationRequired();
         }
 
         var response = await httpClient.get(uri, headers: header).timeout(
@@ -77,6 +84,15 @@ class ScheduleApi extends AppApi {
                     'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
           },
         );
+        // Validate HTTP status before interpreting the payload: an error body
+        // must never be accepted as a successful schedule with zero events.
+        if (response.statusCode == HttpStatus.unauthorized ||
+            response.statusCode == HttpStatus.forbidden) {
+          throw ScheduleAuthenticationRequired();
+        }
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw ScheduleServerUnavailable(status: response.statusCode);
+        }
         var jsonResult = decodeServerJson(response, operation: 'schedule_read');
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult) &&
@@ -127,10 +143,7 @@ class ScheduleApi extends AppApi {
             Message: 'Tiler disagrees with you, please try again later');
       }
     }
-    var retValue =
-        new Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>(
-            [], [], new ScheduleStatus());
-    return retValue;
+    throw ScheduleAuthenticationRequired();
   }
 
   Future<Map<int, TimelineSummary>> getDaySummary(Timeline timeline) async {

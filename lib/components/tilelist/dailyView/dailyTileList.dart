@@ -1,4 +1,5 @@
 import 'package:tiler_app/components/scheduleEvaluationFeedback.dart';
+import 'package:tiler_app/components/scheduleReadFeedback.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -82,6 +83,14 @@ class DailyTileList extends TileList {
 }
 
 class _DailyTileListState extends TileListState {
+  @override
+  DateTime? get visibleReadDate {
+    final date = context.read<UiDateManagerBloc>().state;
+    return date is UiDateManagerUpdated
+        ? date.currentDate
+        : Utility.currentTime();
+  }
+
   Map? contextParams;
   Key carouselKey = ValueKey(Utility.getUuid);
 
@@ -103,13 +112,13 @@ class _DailyTileListState extends TileListState {
   int? carouselSliderIndex = null;
 
   /// The carousel's *structural* signature — the day window +
-  /// current view day + forced-refresh counter. Used to keep [carouselKey]
+  /// forced-refresh counter. Used to keep [carouselKey]
   /// stable across pure schedule-data updates so the `CarouselSlider` (and
   /// every `DayGridWidget` inside it) is NOT remounted on every update. A
   /// remount would wipe the grid's position-transition state: a fresh
   /// `DayGridWidget` has no "old position" to animate from, so tiles hard-cut
   /// to their new spots instead of sliding. The carousel is only remounted
-  /// when this signature actually changes (day window / current day / refresh),
+  /// when this signature actually changes (day window / forced refresh),
   /// which is when `carousel_slider`'s non-reactive `initialPage` must
   /// re-apply.
   String _carouselStructureSignature = '';
@@ -119,6 +128,8 @@ class _DailyTileListState extends TileListState {
   static const int _edgeLoadingFutureIndex = -2;
   bool _isLoadingPastDays = false;
   bool _isLoadingFutureDays = false;
+  String? _pastEdgeRequestId;
+  String? _futureEdgeRequestId;
 
   /// User's configured end-of-day time, fetched once from settings on init.
   TimeOfDay? _userEndOfDay;
@@ -154,12 +165,10 @@ class _DailyTileListState extends TileListState {
   }
 
   void _updateCarouselKey(Timeline window) {
-    final dateState = context.read<UiDateManagerBloc>().state;
-    final day = dateState is UiDateManagerUpdated
-        ? dateState.currentDate.universalDayIndex
-        : Utility.currentTime().universalDayIndex;
+    // Selecting another already-loaded day moves the existing carousel; it
+    // does not discard that day's list state when a retry later succeeds.
     final signature =
-        'gridwin_${window.startTime.universalDayIndex}_${window.endTime.universalDayIndex}_d${day}_r$_forceRefreshCounter';
+        'gridwin_${window.startTime.universalDayIndex}_${window.endTime.universalDayIndex}_r$_forceRefreshCounter';
     if (signature != _carouselStructureSignature) {
       _carouselStructureSignature = signature;
       carouselKey = ValueKey(_generateCarouselKeyId(signature));
@@ -309,7 +318,21 @@ class _DailyTileListState extends TileListState {
     }
 
     Timeline queryTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
+    if (incremental) {
+      // Keep each edge's identity through failure and Retry so success can
+      // merge with the retained window. Retire an older mapping for that edge.
+      if (_isLoadingPastDays) {
+        incrementalIdToMapping.remove(_pastEdgeRequestId);
+        _pastEdgeRequestId = loopIncrementalIdToMapping;
+      }
+      if (_isLoadingFutureDays) {
+        incrementalIdToMapping.remove(_futureEdgeRequestId);
+        _futureEdgeRequestId = loopIncrementalIdToMapping;
+      }
+    }
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+          eventId: loopIncrementalIdToMapping,
+          emitOnlyLoadedStated: incremental || emitOnlyLoadedStated,
           previousSubEvents: subEvents,
           previousTimeline: previousTimeLine,
           isAlreadyLoaded: !forceRenderingPage,
@@ -667,10 +690,38 @@ class _DailyTileListState extends TileListState {
         ? AppLocalizations.of(context)!.loadingPreviousDays
         : AppLocalizations.of(context)!.loadingUpcomingDays;
 
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      decoration: BoxDecoration(color: colorScheme.surfaceContainerLowest),
-      child: PendingWidget(message: message),
+    final bloc = context.read<ScheduleBloc>();
+    final edgeId = isLoadingPast ? _pastEdgeRequestId : _futureEdgeRequestId;
+    return BlocBuilder<ScheduleReadCubit, ScheduleReadState>(
+      bloc: bloc.reads,
+      builder: (context, read) {
+        ScheduleReadFailure? failure;
+        for (final candidate in read.failures.reversed) {
+          if (edgeId != null && candidate.eventId == edgeId) {
+            failure = candidate;
+            break;
+          }
+        }
+        if (failure != null) {
+          final failed = failure;
+          return ScheduleReadFailureView(
+            failure: failed,
+            busy: read.isLoading &&
+                read.requested != null &&
+                read.requested!.isEquivalent(failed.timeline),
+            onRetry: () {
+              // Restore the edge intent before its request completes; the
+              // success listener uses it to reveal the newly available days.
+              setState(() {
+                _isLoadingPastDays = isLoadingPast;
+                _isLoadingFutureDays = !isLoadingPast;
+              });
+              return retryScheduleRead(context, failed);
+            },
+          );
+        }
+        return PendingWidget(message: message);
+      },
     );
   }
 
@@ -679,11 +730,8 @@ class _DailyTileListState extends TileListState {
     if (!isLoadingPast && _isLoadingFutureDays) return;
 
     setState(() {
-      if (isLoadingPast) {
-        _isLoadingPastDays = true;
-      } else {
-        _isLoadingFutureDays = true;
-      }
+      _isLoadingPastDays = isLoadingPast;
+      _isLoadingFutureDays = !isLoadingPast;
     });
 
     final currentState = context.read<UiDateManagerBloc>().state;
@@ -739,96 +787,102 @@ class _DailyTileListState extends TileListState {
                 .universalDayIndex ==
             disableDayIndex;
 
-    return CarouselSlider(
-        key: carouselKey,
-        carouselController: tileListDayCarouselController,
-        items: carouselItems,
-        options: CarouselOptions(
-          // Honor the bounded grid-mode height when provided;
-          // otherwise keep the full-screen height so list-mode callers are
-          // unchanged.
-          height: (widget as DailyTileList).carouselHeight ??
-              MediaQuery.of(context).size.height,
-          viewportFraction: 1,
-          initialPage: initialCarouselIndex,
-          enableInfiniteScroll: false,
-          reverse: false,
-          onPageChanged: (pageNumber, carouselData) {
-            int? dayIndexOfTileBatch;
-            Tuple2<int, Widget>? tileBatchTupleData;
-            DateTime dateOfCurrenCarouselIndex = Utility.currentTime().dayDate;
+    return LayoutBuilder(
+        builder: (context, constraints) => CarouselSlider(
+            key: carouselKey,
+            carouselController: tileListDayCarouselController,
+            items: carouselItems,
+            options: CarouselOptions(
+              // Honor the bounded grid-mode height when provided;
+              // otherwise keep the full-screen height so list-mode callers are
+              // unchanged.
+              height: constraints.hasBoundedHeight
+                  ? constraints.maxHeight
+                  : (widget as DailyTileList).carouselHeight ??
+                      MediaQuery.sizeOf(context).height,
+              viewportFraction: 1,
+              initialPage: initialCarouselIndex,
+              enableInfiniteScroll: false,
+              reverse: false,
+              onPageChanged: (pageNumber, carouselData) {
+                int? dayIndexOfTileBatch;
+                Tuple2<int, Widget>? tileBatchTupleData;
+                DateTime dateOfCurrenCarouselIndex =
+                    Utility.currentTime().dayDate;
 
-            this.dayIndexToCarouselIndex.forEach((key, value) {
-              if (value.item1 == pageNumber && dayIndexOfTileBatch == null) {
-                dayIndexOfTileBatch = key;
-                tileBatchTupleData = value;
-                // Only compute date for actual day indexes, not edge loading markers
-                if (key >= 0) {
-                  dateOfCurrenCarouselIndex = Utility.getTimeFromIndex(key);
+                this.dayIndexToCarouselIndex.forEach((key, value) {
+                  if (value.item1 == pageNumber &&
+                      dayIndexOfTileBatch == null) {
+                    dayIndexOfTileBatch = key;
+                    tileBatchTupleData = value;
+                    // Only compute date for actual day indexes, not edge loading markers
+                    if (key >= 0) {
+                      dateOfCurrenCarouselIndex = Utility.getTimeFromIndex(key);
+                    }
+                  }
+                });
+                print("dateOfCurrenCarouselIndex: " +
+                    dateOfCurrenCarouselIndex.toString());
+
+                // Check if user swiped to an edge loading placeholder
+                if (carouselData == CarouselPageChangedReason.manual &&
+                    dayIndexOfTileBatch != null) {
+                  if (dayIndexOfTileBatch == _edgeLoadingPastIndex) {
+                    // User swiped to the past edge loading page
+                    AnalysticsSignal.send('DAY_SWIPE_EDGE_PAST');
+                    _triggerEdgeLoading(isLoadingPast: true);
+                    return;
+                  } else if (dayIndexOfTileBatch == _edgeLoadingFutureIndex) {
+                    // User swiped to the future edge loading page
+                    AnalysticsSignal.send('DAY_SWIPE_EDGE_FUTURE');
+                    _triggerEdgeLoading(isLoadingPast: false);
+                    return;
+                  }
                 }
-              }
-            });
-            print("dateOfCurrenCarouselIndex: " +
-                dateOfCurrenCarouselIndex.toString());
 
-            // Check if user swiped to an edge loading placeholder
-            if (carouselData == CarouselPageChangedReason.manual &&
-                dayIndexOfTileBatch != null) {
-              if (dayIndexOfTileBatch == _edgeLoadingPastIndex) {
-                // User swiped to the past edge loading page
-                AnalysticsSignal.send('DAY_SWIPE_EDGE_PAST');
-                _triggerEdgeLoading(isLoadingPast: true);
-                return;
-              } else if (dayIndexOfTileBatch == _edgeLoadingFutureIndex) {
-                // User swiped to the future edge loading page
-                AnalysticsSignal.send('DAY_SWIPE_EDGE_FUTURE');
-                _triggerEdgeLoading(isLoadingPast: false);
-                return;
-              }
-            }
+                if (carouselData == CarouselPageChangedReason.manual &&
+                    dayIndexOfTileBatch != null &&
+                    dayIndexOfTileBatch! >= 0 &&
+                    tileBatchTupleData != null) {
+                  var uiDateManagerState =
+                      this.context.read<UiDateManagerBloc>().state;
+                  DateTime previousTime = Utility.currentTime().dayDate;
+                  dateOfCurrenCarouselIndex =
+                      Utility.getTimeFromIndex(dayIndexOfTileBatch!).dayDate;
+                  print("dateOfCurrenCarouselIndex: " +
+                      dateOfCurrenCarouselIndex.toString());
 
-            if (carouselData == CarouselPageChangedReason.manual &&
-                dayIndexOfTileBatch != null &&
-                dayIndexOfTileBatch! >= 0 &&
-                tileBatchTupleData != null) {
-              var uiDateManagerState =
-                  this.context.read<UiDateManagerBloc>().state;
-              DateTime previousTime = Utility.currentTime().dayDate;
-              dateOfCurrenCarouselIndex =
-                  Utility.getTimeFromIndex(dayIndexOfTileBatch!).dayDate;
-              print("dateOfCurrenCarouselIndex: " +
-                  dateOfCurrenCarouselIndex.toString());
+                  if (previousTime.millisecondsSinceEpoch >
+                      dateOfCurrenCarouselIndex.millisecondsSinceEpoch) {
+                    AnalysticsSignal.send('DAY_SWIPE_BACK');
+                  } else {
+                    AnalysticsSignal.send('DAY_SWIPE_FORWARD');
+                  }
 
-              if (previousTime.millisecondsSinceEpoch >
-                  dateOfCurrenCarouselIndex.millisecondsSinceEpoch) {
-                AnalysticsSignal.send('DAY_SWIPE_BACK');
-              } else {
-                AnalysticsSignal.send('DAY_SWIPE_FORWARD');
-              }
+                  if (uiDateManagerState is UiDateManagerUpdated) {
+                    previousTime = uiDateManagerState.currentDate;
+                  }
+                  if (previousTime.millisecondsSinceEpoch !=
+                      dateOfCurrenCarouselIndex.millisecondsSinceEpoch) {
+                    print("Swipe detected " +
+                        dateOfCurrenCarouselIndex.toString() +
+                        " " +
+                        previousTime.toString());
+                    this.context.read<UiDateManagerBloc>().add(DateChangeEvent(
+                        selectedDate: dateOfCurrenCarouselIndex,
+                        previousSelectedDate: previousTime));
+                  }
+                }
 
-              if (uiDateManagerState is UiDateManagerUpdated) {
-                previousTime = uiDateManagerState.currentDate;
-              }
-              if (previousTime.millisecondsSinceEpoch !=
-                  dateOfCurrenCarouselIndex.millisecondsSinceEpoch) {
-                print("Swipe detected " +
-                    dateOfCurrenCarouselIndex.toString() +
-                    " " +
-                    previousTime.toString());
-                this.context.read<UiDateManagerBloc>().add(DateChangeEvent(
-                    selectedDate: dateOfCurrenCarouselIndex,
-                    previousSelectedDate: previousTime));
-              }
-            }
-
-            updateDayCarouselSlide(
-                sliderIndex: pageNumber,
-                universalDayIndex: dateOfCurrenCarouselIndex.universalDayIndex);
-          },
-          scrollPhysics:
-              (scrollerIsDisabled) ? NeverScrollableScrollPhysics() : null,
-          scrollDirection: Axis.horizontal,
-        ));
+                updateDayCarouselSlide(
+                    sliderIndex: pageNumber,
+                    universalDayIndex:
+                        dateOfCurrenCarouselIndex.universalDayIndex);
+              },
+              scrollPhysics:
+                  (scrollerIsDisabled) ? NeverScrollableScrollPhysics() : null,
+              scrollDirection: Axis.horizontal,
+            )));
   }
 
   List<SubCalendarEvent> dedupeAndMergeSubEvents(
@@ -841,9 +895,7 @@ class _DailyTileListState extends TileListState {
     });
     source.forEach((eachSubEvent) {
       if (eachSubEvent.id != null) {
-        if (destinationResult.containsKey(eachSubEvent.id)) {
-          destinationResult[eachSubEvent.id!] = eachSubEvent;
-        }
+        destinationResult.putIfAbsent(eachSubEvent.id!, () => eachSubEvent);
       }
     });
     return destinationResult.values.toList();
@@ -859,18 +911,17 @@ class _DailyTileListState extends TileListState {
     });
     source.forEach((eachTimeline) {
       if (eachTimeline.id != null) {
-        if (destinationResult.containsKey(eachTimeline.id)) {
-          destinationResult[eachTimeline.toString()] = eachTimeline;
-        }
+        destinationResult.putIfAbsent(
+            eachTimeline.toString(), () => eachTimeline);
       }
     });
     return destinationResult.values.toList();
   }
 
   Timeline mergeTimeline(Timeline destination, Timeline source) {
-    DateTime start = (destination.start ?? 0) < (source.end ?? 0)
+    DateTime start = (destination.start ?? 0) < (source.start ?? 0)
         ? destination.startTime
-        : source.endTime;
+        : source.startTime;
 
     DateTime end = (destination.end ?? 0) > (source.end ?? 0)
         ? destination.endTime
@@ -925,6 +976,10 @@ class _DailyTileListState extends TileListState {
 
   @override
   Widget build(BuildContext context) {
+    final dateState = context.watch<UiDateManagerBloc>().state;
+    final selectedDay = dateState is UiDateManagerUpdated
+        ? dateState.currentDate
+        : Utility.currentTime();
     return MultiBlocListener(
       listeners: [
         BlocListener<ScheduleBloc, ScheduleState>(listener: (context, state) {
@@ -939,6 +994,15 @@ class _DailyTileListState extends TileListState {
                   textColor: colorScheme.onInverseSurface,
                   fontSize: 16.0);
             }
+          }
+          if (state is FailedScheduleLoadedState) {
+            // This failure subclasses ScheduleLoadedState, so handle it first.
+            // Preserve the carousel/mapping and avoid success-only navigation.
+            setState(() {
+              _isLoadingPastDays = false;
+              _isLoadingFutureDays = false;
+            });
+            return;
           }
           if (state is ScheduleLoadedState) {
             dayIndexToSubEvents = {};
@@ -1113,75 +1177,80 @@ class _DailyTileListState extends TileListState {
           });
         }),
       ],
-      child: BlocBuilder<ScheduleBloc, ScheduleState>(
-        builder: (context, state) {
-          // print("Day tile list refeshing " + state.toString());
-          if (state is ScheduleInitialState) {
-            context.read<ScheduleBloc>().add(GetScheduleEvent(
-                scheduleTimeline: timeLine,
-                previousSubEvents: List<SubCalendarEvent>.empty()));
-            refreshScheduleSummary(lookupTimeline: timeLine);
-            return PendingWidget();
-          }
+      child: ScheduleReadFeedback(
+          date: selectedDay,
+          child: BlocBuilder<ScheduleBloc, ScheduleState>(
+            builder: (context, state) {
+              // print("Day tile list refeshing " + state.toString());
+              if (state is ScheduleInitialState) {
+                context.read<ScheduleBloc>().add(GetScheduleEvent(
+                    scheduleTimeline: timeLine,
+                    previousSubEvents: List<SubCalendarEvent>.empty()));
+                refreshScheduleSummary(lookupTimeline: timeLine);
+                return PendingWidget();
+              }
 
-          if (state is ScheduleLoadedState) {
-            if (!(state is DelayedScheduleLoadedState)) {
-              handleNotificationsAndNextTile(state.subEvents);
-            }
-            List<Timeline> scheduleTimelines = state.timelines;
-            List<SubCalendarEvent> scheduleSubCalendarEvent = state.subEvents;
-            if (loadedTimeline != null) {
-              scheduleTimelines = loadedTimeline!;
-            }
+              if (state is ScheduleLoadedState) {
+                if (!(state is DelayedScheduleLoadedState)) {
+                  handleNotificationsAndNextTile(state.subEvents);
+                }
+                List<Timeline> scheduleTimelines = state.timelines;
+                List<SubCalendarEvent> scheduleSubCalendarEvent =
+                    state.subEvents;
+                if (loadedTimeline != null) {
+                  scheduleTimelines = loadedTimeline!;
+                }
 
-            if (loadedSubCalendarEvent != null) {
-              scheduleSubCalendarEvent = loadedSubCalendarEvent!;
-            }
-            return Stack(
-              children: [
-                buildDailyRenderSubCalendarTiles(
-                    Tuple2(scheduleTimelines, scheduleSubCalendarEvent))
-              ],
-            );
-          }
+                if (loadedSubCalendarEvent != null) {
+                  scheduleSubCalendarEvent = loadedSubCalendarEvent!;
+                }
+                return Stack(
+                  children: [
+                    buildDailyRenderSubCalendarTiles(
+                        Tuple2(scheduleTimelines, scheduleSubCalendarEvent))
+                  ],
+                );
+              }
 
-          if (state is ScheduleLoadingState) {
-            bool showPendingUI = !state.isAlreadyLoaded;
-            final dateMangerBloc = this.context.read<UiDateManagerBloc>().state;
-            if (dateMangerBloc is UiDateManagerUpdated &&
-                state.currentView == AuthorizedRouteTileListPage.Daily) {
-              showPendingUI = showPendingUI ||
-                  !state.previousLookupTimeline
-                      .isDateTimeWithin(dateMangerBloc.currentDate);
-            }
-            if (showPendingUI) {
-              return PendingWidget();
-            }
-            return Stack(children: [
-              buildDailyRenderSubCalendarTiles(
-                  Tuple2(state.timelines, state.subEvents))
-            ]);
-          }
+              if (state is ScheduleLoadingState) {
+                bool showPendingUI = !state.isAlreadyLoaded;
+                final dateMangerBloc =
+                    this.context.read<UiDateManagerBloc>().state;
+                if (dateMangerBloc is UiDateManagerUpdated &&
+                    state.currentView == AuthorizedRouteTileListPage.Daily) {
+                  showPendingUI = showPendingUI ||
+                      !state.previousLookupTimeline
+                          .isDateTimeWithin(dateMangerBloc.currentDate);
+                }
+                if (showPendingUI) {
+                  return PendingWidget();
+                }
+                return Stack(children: [
+                  buildDailyRenderSubCalendarTiles(Tuple2(
+                      loadedTimeline ?? state.timelines,
+                      loadedSubCalendarEvent ?? state.subEvents))
+                ]);
+              }
 
-          if (state is ScheduleEvaluationState) {
-            return Stack(
-              children: [
-                buildDailyRenderSubCalendarTiles(
-                    Tuple2(state.timelines, state.subEvents)),
-                // A calendar notice surface above shows the card itself.
-                if (!ScheduleNoticeSurface.hostsAmbientNotices(context))
-                  ScheduleEvaluationFeedback(state: state),
-              ],
-            );
-          }
+              if (state is ScheduleEvaluationState) {
+                return Stack(
+                  children: [
+                    buildDailyRenderSubCalendarTiles(
+                        Tuple2(state.timelines, state.subEvents)),
+                    // A calendar notice surface above shows the card itself.
+                    if (!ScheduleNoticeSurface.hostsAmbientNotices(context))
+                      ScheduleEvaluationFeedback(state: state),
+                  ],
+                );
+              }
 
-          Utility.debugPrint("Unknown state in daily tile list " +
-              state.toString() +
-              " " +
-              this.runtimeType.toString());
-          return Text(AppLocalizations.of(context)!.retrievingDataIssue);
-        },
-      ),
+              Utility.debugPrint("Unknown state in daily tile list " +
+                  state.toString() +
+                  " " +
+                  this.runtimeType.toString());
+              return Text(AppLocalizations.of(context)!.retrievingDataIssue);
+            },
+          )),
     );
   }
 

@@ -22,6 +22,12 @@ import 'package:async/async.dart'; // Import necessary packages.
 
 import '../../constants.dart' as Constants;
 
+/// Authentication failure is not a successful, empty schedule.
+class ScheduleAuthenticationRequired extends TilerError {
+  ScheduleAuthenticationRequired()
+      : super(Message: 'Sign in to load your schedule.', Code: '401');
+}
+
 /// The server answered with something other than JSON (an error page from
 /// a gateway, or a server still starting).
 class ScheduleServerUnavailable extends TilerError {

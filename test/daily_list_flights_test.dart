@@ -251,6 +251,8 @@ void main() {
       expect(flight, findsNothing);
       expect(rowOpacity(tester, 'T1'), 1);
       await tester.pump(const Duration(seconds: 1));
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.runAsync(bloc.close);
     });
 
     testWidgets('a tile that moves into view says where it came from',

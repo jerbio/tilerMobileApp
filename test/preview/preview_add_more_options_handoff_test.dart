@@ -42,13 +42,15 @@ Widget _wrap(Widget child) {
 
   return MultiBlocProvider(
     providers: [
-      BlocProvider.value(value: scheduleBloc),
-      BlocProvider.value(value: scheduleSummaryBloc),
+      // The fixture creates these instances, so the providers must own their
+      // disposal when drainTimers unmounts the tree. .value does not close them.
+      BlocProvider(create: (_) => scheduleBloc, lazy: false),
+      BlocProvider(create: (_) => scheduleSummaryBloc, lazy: false),
       BlocProvider(create: (_) => ForecastBloc(getContextCallBack: () => null)),
       BlocProvider(
           create: (_) => SubCalendarTileBloc(getContextCallBack: () => null)),
       BlocProvider(create: (_) => UiDateManagerBloc()),
-      BlocProvider.value(value: vibeChatBloc),
+      BlocProvider(create: (_) => vibeChatBloc, lazy: false),
     ],
     child: MaterialApp(
       theme: TileThemeData.lightTheme,

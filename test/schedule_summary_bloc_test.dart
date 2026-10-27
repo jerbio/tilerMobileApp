@@ -18,6 +18,8 @@
 //     unbounded union stretching back to the previous window.
 //   * Days loaded earlier are still retained (kept in the cache) after the jump.
 
+import 'dart:async';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -39,10 +41,14 @@ class _FakeScheduleApi extends ScheduleApi {
 
   final List<Timeline> requestedTimelines = [];
   final Map<int, int> completeCountByDay;
+  Object? failure;
+  Completer<void>? held;
 
   @override
   Future<Map<int, TimelineSummary>> getDaySummary(Timeline timeline) async {
     requestedTimelines.add(timeline);
+    await held?.future;
+    if (failure != null) throw failure!;
     final Map<int, TimelineSummary> result = {};
     final int startIndex = timeline.startTime.universalDayIndex;
     final int endIndex = timeline.endTime.universalDayIndex;
@@ -69,18 +75,122 @@ Future<ScheduleDaySummaryLoaded> _loadWindow(
   final loaded = bloc.stream
       .firstWhere((s) => s is ScheduleDaySummaryLoaded)
       .then((s) => s as ScheduleDaySummaryLoaded);
-  bloc.add(
-      GetScheduleDaySummaryEvent(timeline: _windowAround(day), requestId: requestId));
+  bloc.add(GetScheduleDaySummaryEvent(
+      timeline: _windowAround(day), requestId: requestId));
   return loaded;
 }
 
 int _completeCountFor(ScheduleDaySummaryLoaded loaded, int dayIndex) {
-  final summary =
-      loaded.dayData!.firstWhere((s) => s.dayIndex == dayIndex);
+  final summary = loaded.dayData!.firstWhere((s) => s.dayIndex == dayIndex);
   return summary.complete?.length ?? 0;
 }
 
 void main() {
+  test('closing a hung summary completes without waiting for HTTP', () async {
+    final api = _FakeScheduleApi()..held = Completer<void>();
+    final bloc = ScheduleSummaryBloc(getContextCallBack: () => null)
+      ..scheduleApi = api;
+    final loading =
+        bloc.stream.firstWhere((s) => s is ScheduleDaySummaryLoading);
+    bloc.add(GetScheduleDaySummaryEvent());
+    await loading;
+    await bloc.close().timeout(const Duration(seconds: 1));
+    expect(bloc.isClosed, isTrue);
+  });
+
+  for (final elapsed in [false, true]) {
+    test(
+        'closing a hung ${elapsed ? 'elapsed' : 'day'} read cancels its deadline',
+        () {
+      fakeAsync((clock) {
+        final api = _FakeScheduleApi()..held = Completer<void>();
+        final bloc = ScheduleSummaryBloc(getContextCallBack: () => null)
+          ..scheduleApi = api;
+        bloc.add(
+            elapsed ? GetElapsedTasksEvent() : GetScheduleDaySummaryEvent());
+        clock.flushMicrotasks();
+        expect(clock.pendingTimers, hasLength(1));
+
+        unawaited(bloc.close());
+        clock.flushMicrotasks();
+        // Leave the network unresolved: cleanup must not depend on its answer.
+        expect(clock.pendingTimers, isEmpty);
+      });
+    });
+  }
+
+  test('a newer day read cancels the old deadline and consumes its late error',
+      () {
+    fakeAsync((clock) {
+      final oldAnswer = Completer<void>();
+      final api = _FakeScheduleApi()..held = oldAnswer;
+      final bloc = ScheduleSummaryBloc(getContextCallBack: () => null)
+        ..scheduleApi = api;
+      bloc.add(GetScheduleDaySummaryEvent(requestId: 'old'));
+      clock.flushMicrotasks();
+      expect(clock.pendingTimers, hasLength(1));
+
+      final newAnswer = Completer<void>();
+      api.held = newAnswer;
+      bloc.add(GetScheduleDaySummaryEvent(requestId: 'new'));
+      clock.flushMicrotasks();
+      expect(api.requestedTimelines, hasLength(2));
+      expect(clock.pendingTimers, hasLength(1),
+          reason: 'Only the latest read should retain a deadline.');
+
+      newAnswer.complete();
+      clock.flushMicrotasks();
+      expect((bloc.state as ScheduleDaySummaryLoaded).requestId, 'new');
+      expect(clock.pendingTimers, isEmpty);
+
+      api.failure = StateError('late network failure');
+      oldAnswer.complete();
+      clock.flushMicrotasks();
+      expect(bloc.state, isA<ScheduleDaySummaryLoaded>());
+      bloc.close();
+      clock.flushMicrotasks();
+    });
+  });
+
+  test('logout cancels both day and elapsed deadlines without a network answer',
+      () {
+    fakeAsync((clock) {
+      final api = _FakeScheduleApi()..held = Completer<void>();
+      final bloc = ScheduleSummaryBloc(getContextCallBack: () => null)
+        ..scheduleApi = api;
+      bloc.add(GetScheduleDaySummaryEvent());
+      bloc.add(GetElapsedTasksEvent());
+      clock.flushMicrotasks();
+      expect(clock.pendingTimers, hasLength(2));
+      bloc.add(LogOutScheduleDaySummaryEvent());
+      clock.flushMicrotasks();
+      expect(bloc.state, isA<LoggedOutScheduleSummaryState>());
+      expect(clock.pendingTimers, isEmpty);
+      bloc.close();
+      clock.flushMicrotasks();
+    });
+  });
+
+  test('a hung summary still fails at its deadline and ignores late completion',
+      () {
+    fakeAsync((clock) {
+      final api = _FakeScheduleApi()..held = Completer<void>();
+      final bloc = ScheduleSummaryBloc(getContextCallBack: () => null)
+        ..scheduleApi = api;
+      bloc.add(GetScheduleDaySummaryEvent());
+      clock.flushMicrotasks();
+      clock.elapse(const Duration(seconds: 25));
+      clock.flushMicrotasks();
+      expect(bloc.state, isA<ScheduleSummaryErrorState>());
+      expect(clock.pendingTimers, isEmpty);
+      api.held!.complete();
+      clock.flushMicrotasks();
+      expect(bloc.state, isA<ScheduleSummaryErrorState>());
+      bloc.close();
+      clock.flushMicrotasks();
+    });
+  });
+
   test(
       'jumping to a far date queries a bounded window around the target '
       '(not an ever-growing union)', () async {
@@ -136,8 +246,7 @@ void main() {
     await bloc.close();
   });
 
-  test(
-      'retention preserves the completion COUNT for a day a later fetch omits',
+  test('retention preserves the completion COUNT for a day a later fetch omits',
       () async {
     final DateTime today = Utility.currentTime().dayDate;
     final int todayIndex = today.universalDayIndex;
@@ -187,15 +296,13 @@ void main() {
     await bloc.close();
   });
 
-  test(
-      'a request carrying a non-null requestId still emits the day summaries',
+  test('a request carrying a non-null requestId still emits the day summaries',
       () async {
     final DateTime today = Utility.currentTime().dayDate;
     final int todayIndex = today.universalDayIndex;
 
     final bloc = ScheduleSummaryBloc(getContextCallBack: () => null);
-    bloc.scheduleApi =
-        _FakeScheduleApi(completeCountByDay: {todayIndex: 4});
+    bloc.scheduleApi = _FakeScheduleApi(completeCountByDay: {todayIndex: 4});
 
     // The daily view dispatches with a non-null requestId
     // (incrementalTilerScrollId). The loaded state must still carry the data.
@@ -207,6 +314,46 @@ void main() {
         reason: 'A requestId-tagged load must still surface the completion '
             'data (DaySummary consumes it regardless of requestId).');
 
+    await bloc.close();
+  });
+
+  test('failed summary retains counts and can recover on retry', () async {
+    final day = Utility.currentTime().dayDate;
+    final index = day.universalDayIndex;
+    final api = _FakeScheduleApi(completeCountByDay: {index: 4});
+    final bloc = ScheduleSummaryBloc(getContextCallBack: () => null)
+      ..scheduleApi = api;
+    await _loadWindow(bloc, day);
+    api.failure = StateError('offline');
+    final error = bloc.stream.firstWhere((s) => s is ScheduleSummaryErrorState);
+    bloc.add(GetScheduleDaySummaryEvent(timeline: _windowAround(day)));
+    final failed = await error as ScheduleSummaryErrorState;
+    expect(failed.dayData.firstWhere((s) => s.dayIndex == index).complete,
+        hasLength(4));
+    api.failure = null;
+    api.completeCountByDay[index] = 2;
+    expect(_completeCountFor(await _loadWindow(bloc, day), index), 2);
+    await bloc.close();
+  });
+
+  test('logout prevents a late summary from restoring another account data',
+      () async {
+    final api = _FakeScheduleApi()..held = Completer<void>();
+    final bloc = ScheduleSummaryBloc(getContextCallBack: () => null)
+      ..scheduleApi = api;
+    final loading =
+        bloc.stream.firstWhere((s) => s is ScheduleDaySummaryLoading);
+    bloc.add(GetScheduleDaySummaryEvent(
+        timeline: _windowAround(Utility.currentTime())));
+    await loading;
+    final loggedOut =
+        bloc.stream.firstWhere((s) => s is LoggedOutScheduleSummaryState);
+    bloc.add(LogOutScheduleDaySummaryEvent());
+    await loggedOut;
+    api.held!.complete();
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+    expect(bloc.state, isA<LoggedOutScheduleSummaryState>());
     await bloc.close();
   });
 }

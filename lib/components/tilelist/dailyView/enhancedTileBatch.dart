@@ -370,16 +370,20 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch>
       buildFreeSlot: !widget.showFreeSlots
           ? null
           : (slot) {
-        final row = FreeSlotRow(slot: slot, preview: widget.preview);
-        if (widget.showTimelineMarkers) {
-          return _buildConnectorRowWithHourMarker(row);
-        }
-        return row;
-      },
+              final row = FreeSlotRow(slot: slot, preview: widget.preview);
+              if (widget.showTimelineMarkers) {
+                return _buildConnectorRowWithHourMarker(row);
+              }
+              return row;
+            },
     );
 
     _rowLayout = result;
-    return (result.keyedRows, result.selectedTileIndex, result.currentFocusIndex);
+    return (
+      result.keyedRows,
+      result.selectedTileIndex,
+      result.currentFocusIndex
+    );
   }
 
   /// Notes where the anchor tile sits before rows for a new schedule
@@ -398,8 +402,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch>
     _motion.anchor.capture(
       change: change,
       tiles: orderedTiles.whereType<SubCalendarEvent>().toList(),
-      day: Timeline.fromDateTime(dayStart,
-          DateTime(dayStart.year, dayStart.month, dayStart.day + 1)),
+      day: Timeline.fromDateTime(
+          dayStart, DateTime(dayStart.year, dayStart.month, dayStart.day + 1)),
       visibleRows: visible,
       alignmentOf: (row) {
         for (final p in positions) {
@@ -429,8 +433,10 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch>
             layout,
             rows.isEmpty
                 ? null
-                : (rows.reduce((a, b) => a < b ? a : b),
-                    rows.reduce((a, b) => a > b ? a : b)));
+                : (
+                    rows.reduce((a, b) => a < b ? a : b),
+                    rows.reduce((a, b) => a > b ? a : b)
+                  ));
       });
     }
     if (restore == null || !restore.moved) return;
@@ -508,7 +514,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch>
 
     if (currentScheduleSummaryState is ScheduleSummaryInitial ||
         currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
-        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+        currentScheduleSummaryState is ScheduleDaySummaryLoading ||
+        currentScheduleSummaryState is ScheduleSummaryErrorState) {
       context.read<ScheduleSummaryBloc>().add(
             GetScheduleDaySummaryEvent(timeline: lookupTimeline),
           );
@@ -570,7 +577,9 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch>
 
     // Day summary header - match original TileBatch margins (bottom margin
     // only). Omitted under the Daily top bar (which carries the same info).
-    if (widget.showDaySummaryHeader && dayData != null && widget.tiles != null) {
+    if (widget.showDaySummaryHeader &&
+        dayData != null &&
+        widget.tiles != null) {
       // Only nonViable can be derived from widget.tiles. The completed/tardy
       // lists are never present in widget.tiles (it only carries the day's
       // schedulable tiles) — those come solely from the daySummarys web
@@ -812,27 +821,28 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch>
               rowBuilder: _buildFlightRow,
               scrollToTile: _scrollToTile,
               child: ScrollablePositionedList.builder(
-              key: ValueKey<int>(_listGeneration),
-              initialScrollIndex: _initialRow,
-              initialAlignment: _initialAlignment,
-              itemScrollController: _itemScrollController,
-              itemPositionsListener: _itemPositionsListener,
-              itemCount: scrollableTiles.length + 1,
-              itemBuilder: (context, index) {
-                if (index == scrollableTiles.length) {
-                  return MediaQuery.of(context).orientation ==
-                          Orientation.landscape
-                      ? TileDimensions
-                          .bottomLandScapePaddingForTileBatchListOfTiles
-                      : TileDimensions
-                          .bottomPortraitPaddingForTileBatchListOfTiles;
-                }
-                final rowKeys = _rowLayout?.rowKeys;
-                return rowKeys == null || index >= rowKeys.length
-                    ? scrollableTiles[index]
-                    : _motion.wrapRow(rowKeys[index], scrollableTiles[index]);
-              },
-            ),
+                key: ValueKey<int>(_listGeneration),
+                initialScrollIndex: _initialRow,
+                initialAlignment: _initialAlignment,
+                itemScrollController: _itemScrollController,
+                itemPositionsListener: _itemPositionsListener,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: scrollableTiles.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == scrollableTiles.length) {
+                    return MediaQuery.of(context).orientation ==
+                            Orientation.landscape
+                        ? TileDimensions
+                            .bottomLandScapePaddingForTileBatchListOfTiles
+                        : TileDimensions
+                            .bottomPortraitPaddingForTileBatchListOfTiles;
+                  }
+                  final rowKeys = _rowLayout?.rowKeys;
+                  return rowKeys == null || index >= rowKeys.length
+                      ? scrollableTiles[index]
+                      : _motion.wrapRow(rowKeys[index], scrollableTiles[index]);
+                },
+              ),
             ),
           );
         },
@@ -853,9 +863,9 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch>
       final emptyFades = ScheduleMotion.modeFor(context).animates;
       if (!emptyFades) _emptyDayOpacity = 1;
       if (widget.dayIndex != null) {
-        dayContent = Flex(
-          direction: Axis.vertical,
-          children: [
+        dayContent = SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(children: [
             AnimatedOpacity(
               opacity: _emptyDayOpacity,
               duration: emptyFades
@@ -870,7 +880,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch>
                 ),
               ),
             ),
-          ],
+          ]),
         );
       }
       if (_emptyDayOpacity == 0) {
@@ -888,46 +898,13 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch>
       RefreshIndicator(
         color: colorScheme.tertiary,
         onRefresh: () async {
-          final currentState = context.read<ScheduleBloc>().state;
-          if (currentState is ScheduleEvaluationState) {
-            context.read<ScheduleBloc>().add(
-                  GetScheduleEvent(
-                    isAlreadyLoaded: true,
-                    previousSubEvents: currentState.subEvents,
-                    scheduleTimeline: currentState.lookupTimeline,
-                    previousTimeline: currentState.lookupTimeline,
-                    forceRefresh: true,
-                  ),
-                );
-            refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
-          }
-
-          if (currentState is ScheduleLoadedState) {
-            context.read<ScheduleBloc>().add(
-                  GetScheduleEvent(
-                    isAlreadyLoaded: true,
-                    previousSubEvents: currentState.subEvents,
-                    scheduleTimeline: currentState.lookupTimeline,
-                    previousTimeline: currentState.lookupTimeline,
-                    forceRefresh: true,
-                  ),
-                );
-            refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
-          }
-
-          if (currentState is ScheduleLoadingState) {
-            context.read<ScheduleBloc>().add(
-                  GetScheduleEvent(
-                    isAlreadyLoaded: true,
-                    previousSubEvents: currentState.subEvents,
-                    scheduleTimeline: currentState.previousLookupTimeline,
-                    previousTimeline: currentState.previousLookupTimeline,
-                    forceRefresh: true,
-                  ),
-                );
-            refreshScheduleSummary(
-                lookupTimeline: currentState.previousLookupTimeline);
-          }
+          final bloc = context.read<ScheduleBloc>();
+          final range = bloc.readTimelineFor(widget.dayIndex == null
+              ? Utility.currentTime()
+              : Utility.getTimeFromIndex(widget.dayIndex!));
+          refreshScheduleSummary(lookupTimeline: range);
+          // Keep the refresh spinner tied to this read's terminal outcome.
+          await bloc.refreshSchedule(timeline: range);
         },
         child: dayContent,
       ),

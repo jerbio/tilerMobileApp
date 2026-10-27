@@ -27,6 +27,11 @@ class ScheduleSummaryBloc
   /// its previously fetched completion data when a later fetch doesn't include
   /// that day.
   final Map<int, TimelineSummary> _retainedDaySummaries = {};
+  int _sessionGeneration = 0;
+  bool _closing = false;
+  final Set<_SummaryRead> _pendingReads = {};
+  _SummaryRead? _dayRead;
+  _SummaryRead? _elapsedRead;
 
   ScheduleSummaryBloc({required Function getContextCallBack})
       : super(ScheduleSummaryInitial()) {
@@ -37,6 +42,43 @@ class ScheduleSummaryBloc
     subCalendarEventApi =
         SubCalendarEventApi(getContextCallBack: getContextCallBack);
     scheduleApi = new ScheduleApi(getContextCallBack: getContextCallBack);
+  }
+
+  /// Own the deadline separately from HTTP so supersession, logout and close
+  /// can cancel it immediately. Future.timeout alone keeps its timer alive
+  /// when Bloc cancels the emitter but the underlying request never completes.
+  Future<Map<int, TimelineSummary>> _readSummary(Timeline timeline,
+      {bool elapsed = false}) async {
+    if (_closing) throw _SummaryReadCancelled();
+    (elapsed ? _elapsedRead : _dayRead)?.cancel();
+    final request = _SummaryRead(scheduleApi.getDaySummary(timeline));
+    if (elapsed) {
+      _elapsedRead = request;
+    } else {
+      _dayRead = request;
+    }
+    _pendingReads.add(request);
+    try {
+      return await request.result.future;
+    } finally {
+      _pendingReads.remove(request);
+      if (identical(_dayRead, request)) _dayRead = null;
+      if (identical(_elapsedRead, request)) _elapsedRead = null;
+    }
+  }
+
+  void _cancelReads() {
+    for (final request in List.of(_pendingReads)) {
+      request.cancel();
+    }
+  }
+
+  @override
+  Future<void> close() {
+    _closing = true;
+    ++_sessionGeneration;
+    _cancelReads();
+    return super.close();
   }
 
   /// Merges freshly fetched day summaries into the retained cache and returns
@@ -87,7 +129,10 @@ class ScheduleSummaryBloc
 
   Future<void> _onGetDayData(GetScheduleDaySummaryEvent event,
       Emitter<ScheduleSummaryState> emit) async {
-    List<TimelineSummary>? dayData;
+    // Logout is a different event type, so restartable() alone cannot prevent
+    // this request from restoring the previous account's counts afterward.
+    final generation = _sessionGeneration;
+    List<TimelineSummary>? dayData = _retainedDaySummaries.values.toList();
     Timeline timeline = event.timeline ?? Utility.todayTimeline();
 
     // Carry the previously loaded/retained summaries into the loading state so
@@ -107,7 +152,8 @@ class ScheduleSummaryBloc
     }
     emit(ScheduleDaySummaryLoading(timeline: timeline, dayData: dayData));
 
-    await scheduleApi.getDaySummary(timeline).then((value) async {
+    await _readSummary(timeline).then((value) async {
+      if (emit.isDone || generation != _sessionGeneration) return;
       List<TimelineSummary> daySummaries = value.values.toList();
       List<TilerEvent> elapsedTasks = _getElapsedTasks(daySummaries);
       List<TimelineSummary> mergedDayData =
@@ -118,21 +164,29 @@ class ScheduleSummaryBloc
           requestId: event.requestId,
           elapsedTiles: elapsedTasks));
     }).catchError((error) {
-      print('Error fetching day summary: $error');
+      if (error is _SummaryReadCancelled) return;
+      if (emit.isDone || generation != _sessionGeneration) return;
+      // Summary retrieval fails independently of the event list. Keep known
+      // counts available to newly mounted headers instead of implying zeros.
       emit(ScheduleSummaryErrorState(
-          error: error.toString(), message: 'Failed to load schedule summary'));
+          error: error.toString(),
+          message: 'Failed to load schedule summary',
+          timeline: timeline,
+          dayData: List.unmodifiable(_retainedDaySummaries.values)));
     });
   }
 
   Future<void> _onGetElapsedTasks(
       GetElapsedTasksEvent event, Emitter<ScheduleSummaryState> emit) async {
+    final generation = _sessionGeneration;
     DateTime now = Utility.currentTime();
     DateTime startOfWeek = now.subtract(Duration(days: 7));
     Timeline timeline = Timeline.fromDateTime(startOfWeek, now);
 
     emit(ScheduleDaySummaryLoading(timeline: timeline, dayData: []));
 
-    await scheduleApi.getDaySummary(timeline).then((value) async {
+    await _readSummary(timeline, elapsed: true).then((value) async {
+      if (emit.isDone || generation != _sessionGeneration) return;
       List<TimelineSummary> daySummaries = value.values.toList();
       List<TilerEvent> elapsedTasks = _getElapsedTasks(daySummaries);
       List<TimelineSummary> mergedDayData =
@@ -143,7 +197,13 @@ class ScheduleSummaryBloc
           requestId: null,
           elapsedTiles: elapsedTasks));
     }).catchError((error) {
-      emit(ScheduleSummaryErrorState(error: error.toString(), message: ''));
+      if (error is _SummaryReadCancelled) return;
+      if (emit.isDone || generation != _sessionGeneration) return;
+      emit(ScheduleSummaryErrorState(
+          error: error.toString(),
+          message: '',
+          timeline: timeline,
+          dayData: List.unmodifiable(_retainedDaySummaries.values)));
     });
   }
 
@@ -164,8 +224,40 @@ class ScheduleSummaryBloc
 
   FutureOr<void> _onLogOutScheduleDaySummaryEvent(
       LogOutScheduleDaySummaryEvent event, Emitter<ScheduleSummaryState> emit) {
+    ++_sessionGeneration;
+    _cancelReads();
     _retainedDaySummaries.clear();
     scheduleApi = new ScheduleApi(getContextCallBack: () => null);
     emit(LoggedOutScheduleSummaryState());
+  }
+}
+
+/// Cancellation releases waiters without presenting a network failure.
+class _SummaryReadCancelled implements Exception {}
+
+class _SummaryRead {
+  _SummaryRead(Future<Map<int, TimelineSummary>> source) {
+    _timer = Timer(const Duration(seconds: 25), () {
+      if (!result.isCompleted) {
+        result.completeError(TimeoutException('Schedule summary timed out'));
+      }
+    });
+    // Consume late errors even after cancellation; the HTTP request can finish
+    // after its owning screen or account has gone away.
+    source.then((value) {
+      _timer.cancel();
+      if (!result.isCompleted) result.complete(value);
+    }, onError: (Object error, StackTrace stack) {
+      _timer.cancel();
+      if (!result.isCompleted) result.completeError(error, stack);
+    });
+  }
+
+  final result = Completer<Map<int, TimelineSummary>>();
+  late final Timer _timer;
+
+  void cancel() {
+    _timer.cancel();
+    if (!result.isCompleted) result.completeError(_SummaryReadCancelled());
   }
 }

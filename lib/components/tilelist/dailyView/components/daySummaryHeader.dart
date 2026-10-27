@@ -95,6 +95,8 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
       stateDayData = state.dayData;
     } else if (state is ScheduleDaySummaryLoading) {
       stateDayData = state.dayData;
+    } else if (state is ScheduleSummaryErrorState) {
+      stateDayData = state.dayData;
     }
     if (stateDayData == null) {
       return null;
@@ -248,6 +250,10 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
                             ),
                             const SizedBox(width: 8),
                             // Day metrics inline with "Today"
+                            if (state is ScheduleSummaryErrorState)
+                              Tooltip(
+                                  message: l10n.scheduleSummaryUnavailable,
+                                  child: const Icon(Icons.cloud_off, size: 18)),
                             if (nonViableCount > 0 || _showPending) ...[
                               _buildMetricChip(
                                 icon: Icons.error,

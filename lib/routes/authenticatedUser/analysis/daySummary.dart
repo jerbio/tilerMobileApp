@@ -8,6 +8,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class DaySummary extends StatefulWidget {
   TimelineSummary dayTimelineSummary;
@@ -60,6 +61,8 @@ class _DaySummaryState extends State<DaySummary> {
     if (state is ScheduleDaySummaryLoaded) {
       stateDayData = state.dayData;
     } else if (state is ScheduleDaySummaryLoading) {
+      stateDayData = state.dayData;
+    } else if (state is ScheduleSummaryErrorState) {
       stateDayData = state.dayData;
     }
     if (stateDayData == null) {
@@ -133,6 +136,12 @@ class _DaySummaryState extends State<DaySummary> {
     final tardyCount = dayData?.tardy?.length ?? 0;
 
     List<Widget> rowSymbolElements = <Widget>[];
+    if (context.read<ScheduleSummaryBloc>().state
+        is ScheduleSummaryErrorState) {
+      rowSymbolElements.add(Tooltip(
+          message: AppLocalizations.of(context)!.scheduleSummaryUnavailable,
+          child: const Icon(Icons.cloud_off, size: 18)));
+    }
     const iconMargin = EdgeInsets.fromLTRB(5, 0, 5, 0);
 
     if (nonViableCount > 0 || isPending) {
@@ -242,8 +251,9 @@ class _DaySummaryState extends State<DaySummary> {
                       // refresh this row's counts instead of waiting on the
                       // next poll.
                       if (!context.mounted) return;
-                      context.read<ScheduleSummaryBloc>().add(
-                          GetScheduleDaySummaryEvent(timeline: timeline));
+                      context
+                          .read<ScheduleSummaryBloc>()
+                          .add(GetScheduleDaySummaryEvent(timeline: timeline));
                     });
                   },
             child: Row(

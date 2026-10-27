@@ -224,10 +224,9 @@ void main() {
     });
 
     testWidgets(
-        'shows a tappable location/video button right of the name only when a '
+        'shows a tappable location/video button beside the time only when a '
         'location is present', (tester) async {
-      // With a location => the button is present and sits to the right of,
-      // and on the same row as, the name.
+      // The metadata row groups time and location above the full-width name.
       await tester.pumpWidget(_harness(
         Center(
           child: EnhancedTileCard(
@@ -241,9 +240,15 @@ void main() {
           find.byKey(const ValueKey('compactTileLocationButton'));
       expect(buttonFinder, findsOneWidget);
       final btnRect = tester.getRect(buttonFinder);
+      final metadataRow =
+          find.ancestor(of: buttonFinder, matching: find.byType(Row)).first;
+      final timeRect = tester.getRect(
+          find.descendant(of: metadataRow, matching: find.byType(Text)).first);
 
-      expect(btnRect.left, greaterThan(nameRect.left));
-      expect(btnRect.center.dy, closeTo(nameRect.center.dy, 2.0));
+      expect(btnRect.left, greaterThan(timeRect.right));
+      expect(btnRect.center.dy, closeTo(timeRect.center.dy, 2.0));
+      expect(btnRect.bottom, lessThanOrEqualTo(nameRect.top));
+      expect(tester.widget<GestureDetector>(buttonFinder).onTap, isNotNull);
 
       // The badge is labeled (location text + open-in-new glyph), like the
       // bottom sheet's location badge.

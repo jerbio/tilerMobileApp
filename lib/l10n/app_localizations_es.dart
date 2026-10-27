@@ -9,6 +9,28 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
+  String get scheduleReadFailedTitle => 'No se pudieron cargar tus eventos.';
+
+  @override
+  String get scheduleReadFailedBody => 'Vuelve a intentarlo en un momento.';
+
+  @override
+  String get scheduleReadRefreshFailed =>
+      'No se pudieron actualizar tus eventos.';
+
+  @override
+  String get scheduleReadRetained => 'Se muestra la última agenda cargada.';
+
+  @override
+  String get scheduleReadRetrying => 'Intentando de nuevo...';
+
+  @override
+  String get scheduleReadSignIn => 'Inicia sesión para cargar tus eventos.';
+
+  @override
+  String get scheduleSummaryUnavailable => 'Resumen no disponible';
+
+  @override
   String get notesLoadFailed =>
       'No se pudieron cargar tus notas. Vuelve a abrir el editor para intentarlo de nuevo.';
 

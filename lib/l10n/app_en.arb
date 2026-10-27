@@ -1,4 +1,12 @@
  {
+  "scheduleReadFailedTitle": "Couldn't load your events.",
+  "scheduleReadFailedBody": "Try again in a moment.",
+  "scheduleReadRefreshFailed": "Couldn't refresh your events.",
+  "scheduleReadRetained": "Showing your last loaded schedule.",
+  "scheduleReadRetrying": "Trying again...",
+  "scheduleReadSignIn": "Sign in to load your events.",
+  "scheduleSummaryUnavailable": "Summary unavailable",
+
   "notesLoadFailed": "Couldn’t load your notes. Reopen the notes editor to try again.",
   "onboardingSubmitFailed": "Couldn’t save your setup. Your choices are kept. Try again or skip for now.",
   "operationFailed": "{operation} failed. Please try again.",

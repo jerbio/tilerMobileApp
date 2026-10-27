@@ -119,31 +119,33 @@ class DayQuickActionsRow extends StatelessWidget {
             trailing:
                 preview ? null : _FilterSegments(currentDate: currentDate),
           ),
-          BlocBuilder<ScheduleBloc, ScheduleState>(
-            buildWhen: (previous, current) =>
-                _isLoading(previous) != _isLoading(current),
-            builder: (context, state) => AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: _isLoading(state)
-                  ? LinearProgressIndicator(
-                      key: const ValueKey('schedule-loading-indicator'),
-                      minHeight: 3,
-                      backgroundColor: colorScheme.surfaceContainerHighest,
-                      color: colorScheme.tertiary,
-                    )
-                  : const SizedBox(
-                      key: ValueKey('schedule-loading-hidden'),
-                      height: 3,
-                    ),
+          // A fetch for another day/edge must not make this day's bar look busy.
+          // Change evaluation has its own progress lifetime and remains visible.
+          BlocBuilder<ScheduleReadCubit, ScheduleReadState>(
+            bloc: context.read<ScheduleBloc>().reads,
+            builder: (context, read) =>
+                BlocBuilder<ScheduleBloc, ScheduleState>(
+              builder: (context, state) => AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: read.loadingFor(currentDate) ||
+                        (read.requested == null &&
+                            state is ScheduleLoadingState) ||
+                        state is ScheduleEvaluationState
+                    ? LinearProgressIndicator(
+                        key: const ValueKey('schedule-loading-indicator'),
+                        minHeight: 3,
+                        backgroundColor: colorScheme.surfaceContainerHighest,
+                        color: colorScheme.tertiary,
+                      )
+                    : const SizedBox(
+                        key: ValueKey('schedule-loading-hidden'), height: 3),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-
-  static bool _isLoading(ScheduleState state) =>
-      state is ScheduleLoadingState || state is ScheduleEvaluationState;
 }
 
 /// All / Blocks / Tiles as a **collapsible** segmented pill bound to

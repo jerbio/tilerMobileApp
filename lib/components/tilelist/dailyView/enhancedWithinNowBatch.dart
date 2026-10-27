@@ -95,7 +95,6 @@ class EnhancedWithinNowBatchState extends TileBatchState
 
   // State
   double _emptyDayOpacity = 0;
-  bool _isEmptyDay = false;
   bool _isAutoScrolled = false;
   List<ConflictGroup> _detectedConflicts = [];
 
@@ -293,7 +292,11 @@ class EnhancedWithinNowBatchState extends TileBatchState
 
     _detectedConflicts = result.conflictGroups;
     _rowLayout = result;
-    return (result.keyedRows, result.selectedTileIndex, result.currentFocusIndex);
+    return (
+      result.keyedRows,
+      result.selectedTileIndex,
+      result.currentFocusIndex
+    );
   }
 
   /// Notes where the anchor tile sits before rows for a new schedule
@@ -318,8 +321,8 @@ class EnhancedWithinNowBatchState extends TileBatchState
     _motion.anchor.capture(
       change: change,
       tiles: orderedTiles.whereType<SubCalendarEvent>().toList(),
-      day: Timeline.fromDateTime(dayStart,
-          DateTime(dayStart.year, dayStart.month, dayStart.day + 1)),
+      day: Timeline.fromDateTime(
+          dayStart, DateTime(dayStart.year, dayStart.month, dayStart.day + 1)),
       visibleRows: [
         for (var row = range.$1; row <= range.$2; row++)
           if ((alignmentOf(row) ?? -1) >= 0) row,
@@ -374,38 +377,14 @@ class EnhancedWithinNowBatchState extends TileBatchState
   }
 
   /// Trigger schedule refresh
-  void _triggerRefresh() {
-    final currentState = context.read<ScheduleBloc>().state;
-
-    if (currentState is ScheduleEvaluationState) {
-      context.read<ScheduleBloc>().add(GetScheduleEvent(
-            isAlreadyLoaded: true,
-            previousSubEvents: currentState.subEvents,
-            scheduleTimeline: currentState.lookupTimeline,
-            previousTimeline: currentState.lookupTimeline,
-            forceRefresh: true,
-          ));
-      _refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
-    } else if (currentState is ScheduleLoadedState) {
-      context.read<ScheduleBloc>().add(GetScheduleEvent(
-            isAlreadyLoaded: true,
-            previousSubEvents: currentState.subEvents,
-            scheduleTimeline: currentState.lookupTimeline,
-            previousTimeline: currentState.lookupTimeline,
-            forceRefresh: true,
-          ));
-      _refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
-    } else if (currentState is ScheduleLoadingState) {
-      context.read<ScheduleBloc>().add(GetScheduleEvent(
-            isAlreadyLoaded: true,
-            previousSubEvents: currentState.subEvents,
-            scheduleTimeline: currentState.previousLookupTimeline,
-            previousTimeline: currentState.previousLookupTimeline,
-            forceRefresh: true,
-          ));
-      _refreshScheduleSummary(
-          lookupTimeline: currentState.previousLookupTimeline);
-    }
+  Future<void> _triggerRefresh() async {
+    final bloc = context.read<ScheduleBloc>();
+    // A failed neighboring-day load must not redirect this page's gesture.
+    final range = bloc.readTimelineFor(widget.dayIndex == null
+        ? Utility.currentTime()
+        : Utility.getTimeFromIndex(widget.dayIndex!));
+    _refreshScheduleSummary(lookupTimeline: range);
+    await bloc.refreshSchedule(timeline: range);
   }
 
   void _refreshScheduleSummary({Timeline? lookupTimeline}) {
@@ -413,7 +392,8 @@ class EnhancedWithinNowBatchState extends TileBatchState
 
     if (currentState is ScheduleSummaryInitial ||
         currentState is ScheduleDaySummaryLoaded ||
-        currentState is ScheduleDaySummaryLoading) {
+        currentState is ScheduleDaySummaryLoading ||
+        currentState is ScheduleSummaryErrorState) {
       context.read<ScheduleSummaryBloc>().add(
             GetScheduleDaySummaryEvent(timeline: lookupTimeline),
           );
@@ -422,7 +402,6 @@ class EnhancedWithinNowBatchState extends TileBatchState
 
   /// Render empty day state
   Widget _renderEmptyDayTile() {
-    _isEmptyDay = true;
     // With schedule-update motion off the empty state shows at once.
     final emptyFades = ScheduleMotion.modeFor(context).animates;
     if (!emptyFades) _emptyDayOpacity = 1;
@@ -633,15 +612,12 @@ class EnhancedWithinNowBatchState extends TileBatchState
     // Use CustomScrollView with SliverAppBar for sticky action chips
     final Widget list = RefreshIndicator(
       color: colorScheme.tertiary,
-      onRefresh: () async {
-        _triggerRefresh();
-      },
+      onRefresh: _triggerRefresh,
       child: CustomScrollView(
         controller: _scrollController,
         shrinkWrap: true,
-        physics: _isEmptyDay
-            ? const NeverScrollableScrollPhysics()
-            : const AlwaysScrollableScrollPhysics(),
+        // Empty days still need pull-to-refresh after a failed update.
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           // Sticky header with date, action chips, and loading indicator.
           // Omitted under the Daily top bar: the bar carries the day +

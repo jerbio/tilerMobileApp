@@ -8,6 +8,12 @@ abstract class ScheduleEvent extends Equatable {
 }
 
 class GetScheduleEvent extends ScheduleEvent {
+  /// Optional waiter for a gesture/button; completes when its read terminates,
+  /// including when another request supersedes it before HTTP finishes.
+  final Completer<ScheduleReadOutcome>? completion;
+
+  /// Lifecycle/timer hints yield to explicit navigation and retry requests.
+  final bool automatic;
   final List<SubCalendarEvent>? previousSubEvents;
   final Timeline? scheduleTimeline;
   final bool? isAlreadyLoaded;
@@ -23,6 +29,8 @@ class GetScheduleEvent extends ScheduleEvent {
       this.previousTimeline,
       this.message,
       this.eventId,
+      this.completion,
+      this.automatic = false,
       this.forceRefresh = false,
       this.emitOnlyLoadedStated = false});
 

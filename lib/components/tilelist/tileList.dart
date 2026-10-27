@@ -77,27 +77,20 @@ abstract class TileListState<T extends TileList> extends State<T>
   /// schedule and its summary counts stale with no visible indication.
   /// Foregrounding re-fetches to close that gap.
   ///
-  /// Cancels the pending auto-refresh tick FIRST. `GetScheduleEvent` and
-  /// `GetScheduleDaySummaryEvent` both use bloc_concurrency's `restartable()`,
-  /// so if the old timer's deadline had already elapsed while backgrounded it
-  /// fires on the very next event-loop tick after resume — i.e. right
-  /// alongside this refresh. Two concurrent dispatches race restartable():
-  /// whichever lands second cancels the first mid-flight, which is exactly
-  /// what a live device log showed — a forced resume refresh getting
-  /// superseded by the stale timer's un-forced one, doubling the network
-  /// calls (two `getDaySummary` round trips for one wake-up) while the
-  /// screen never visibly updated. Cancelling first and re-arming fresh
-  /// after means exactly one refresh happens per resume.
-  ///
-  /// Deliberately calls [handleRefresh] — the same pull-to-refresh path —
-  /// rather than [callScheduleRefresh], which also re-arms the timer itself;
-  /// re-arming is done explicitly below once the refresh settles instead.
+  /// Cancel the previous tick before recovery and re-arm only after the
+  /// actual request settles. The schedule coordinator coalesces overlapping
+  /// resume/reconnect reads; cancelling here also avoids duplicate summary
+  /// requests and keeps the timer paused while the app is inactive.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed && mounted) {
+    if (state != AppLifecycleState.resumed) {
       autoRefreshList?.cancel();
-      handleRefresh().whenComplete(() {
+      return;
+    }
+    if (mounted) {
+      autoRefreshList?.cancel();
+      handleRefresh(automatic: true).whenComplete(() {
         if (mounted) {
           autoRefreshTileList(
               Duration(minutes: autoRefreshSubEventDurationInMinutes));
@@ -153,52 +146,7 @@ abstract class TileListState<T extends TileList> extends State<T>
 
   void callScheduleRefresh() {
     if (this.mounted) {
-      final currentState = this.context.read<ScheduleBloc>().state;
-      Timeline? lookupTimeline;
-      if (currentState is ScheduleEvaluationState) {
-        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-              isAlreadyLoaded: true,
-              previousSubEvents: currentState.subEvents,
-              scheduleTimeline: currentState.lookupTimeline,
-              previousTimeline: currentState.lookupTimeline,
-            ));
-        lookupTimeline = currentState.lookupTimeline;
-        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
-      }
-
-      if (currentState is ScheduleLoadedState) {
-        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-              isAlreadyLoaded: true,
-              previousSubEvents: currentState.subEvents,
-              scheduleTimeline: currentState.lookupTimeline,
-              previousTimeline: currentState.lookupTimeline,
-            ));
-        lookupTimeline = currentState.lookupTimeline;
-        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
-      }
-
-      if (currentState is ScheduleLoadingState) {
-        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-              isAlreadyLoaded: true,
-              previousSubEvents: currentState.subEvents,
-              scheduleTimeline: currentState.previousLookupTimeline,
-              previousTimeline: currentState.previousLookupTimeline,
-            ));
-        lookupTimeline = currentState.previousLookupTimeline;
-        refreshScheduleSummary(
-            lookupTimeline: currentState.previousLookupTimeline);
-      }
-      final currentScheduleSummaryState =
-          this.context.read<ScheduleSummaryBloc>().state;
-      if (currentScheduleSummaryState is ScheduleSummaryInitial ||
-          currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
-          currentScheduleSummaryState is ScheduleDaySummaryLoading) {
-        this.context.read<ScheduleSummaryBloc>().add(
-              GetScheduleDaySummaryEvent(
-                timeline: lookupTimeline,
-              ),
-            );
-      }
+      handleRefresh(automatic: true);
     }
 
     autoRefreshTileList(
@@ -211,7 +159,8 @@ abstract class TileListState<T extends TileList> extends State<T>
 
     if (currentScheduleSummaryState is ScheduleSummaryInitial ||
         currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
-        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+        currentScheduleSummaryState is ScheduleDaySummaryLoading ||
+        currentScheduleSummaryState is ScheduleSummaryErrorState) {
       this.context.read<ScheduleSummaryBloc>().add(
             GetScheduleDaySummaryEvent(
                 timeline: lookupTimeline, requestId: incrementalTilerScrollId),
@@ -219,40 +168,17 @@ abstract class TileListState<T extends TileList> extends State<T>
     }
   }
 
-  Future<void> handleRefresh() async {
-    final currentState = this.context.read<ScheduleBloc>().state;
-    if (currentState is ScheduleEvaluationState) {
-      this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-            isAlreadyLoaded: true,
-            previousSubEvents: currentState.subEvents,
-            scheduleTimeline: currentState.lookupTimeline,
-            previousTimeline: currentState.lookupTimeline,
-            forceRefresh: true,
-          ));
-      refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
-    }
-
-    if (currentState is ScheduleLoadedState) {
-      this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-          isAlreadyLoaded: true,
-          previousSubEvents: currentState.subEvents,
-          scheduleTimeline: currentState.lookupTimeline,
-          previousTimeline: currentState.lookupTimeline,
-          forceRefresh: true));
-      refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
-    }
-
-    if (currentState is ScheduleLoadingState) {
-      this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-          isAlreadyLoaded: true,
-          previousSubEvents: currentState.subEvents,
-          scheduleTimeline: currentState.previousLookupTimeline,
-          previousTimeline: currentState.previousLookupTimeline,
-          forceRefresh: true));
-      refreshScheduleSummary(
-          lookupTimeline: currentState.previousLookupTimeline);
-    }
+  Future<void> handleRefresh({bool automatic = false}) async {
+    final bloc = context.read<ScheduleBloc>();
+    final range = bloc.readTimelineFor(visibleReadDate);
+    refreshScheduleSummary(lookupTimeline: range);
+    // RefreshIndicator awaits this Future, so return after the actual read
+    // terminates rather than immediately after dispatching a Bloc event.
+    await bloc.refreshSchedule(timeline: range, automatic: automatic);
   }
+
+  /// Daily lists supply their shown day; wider views use their requested range.
+  DateTime? get visibleReadDate => null;
 
   void handleAutoRefresh(List<SubCalendarEvent> tiles) {
     List<TilerEvent> orderedTiles = Utility.orderTiles(tiles);

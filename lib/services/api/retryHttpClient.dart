@@ -89,12 +89,21 @@ class RetryHttpClient extends http.BaseClient {
 
     while (true) {
       attempts++;
+      // The app can become inactive during backoff. Recheck before sending
+      // another attempt, while allowing the original explicit read to run.
+      if (attempts > 1 &&
+          scheduleLifecycle?.call()?.canAutomaticallyRetryScheduleReads ==
+              false) {
+        throw http.ClientException('Retry suspended while the app is inactive');
+      }
       try {
         // We need to copy the request for retries since StreamedRequest can only be sent once
         final requestCopy = _copyRequest(request);
         return await _sendOnce(requestCopy);
       } on SocketException catch (e) {
-        if (attempts >= maxRetries) {
+        if (attempts >= maxRetries ||
+            scheduleLifecycle?.call()?.canAutomaticallyRetryScheduleReads ==
+                false) {
           print(
               'RetryHttpClient: GET request failed after $maxRetries attempts (SocketException)');
           rethrow;
@@ -104,7 +113,9 @@ class RetryHttpClient extends http.BaseClient {
         refreshClient();
         await Future.delayed(retryDelay * attempts);
       } on http.ClientException catch (e) {
-        if (attempts >= maxRetries) {
+        if (attempts >= maxRetries ||
+            scheduleLifecycle?.call()?.canAutomaticallyRetryScheduleReads ==
+                false) {
           print(
               'RetryHttpClient: GET request failed after $maxRetries attempts (ClientException)');
           rethrow;
