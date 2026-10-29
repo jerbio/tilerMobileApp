@@ -1371,6 +1371,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     switch (kind) {
       case ScheduleChangeKind.revise:
       case ScheduleChangeKind.shuffle:
+      case ScheduleChangeKind.setup:
         return ScheduleChangeOrigin.tilerRevise;
       case ScheduleChangeKind.add:
         return ScheduleChangeOrigin.userAdd;

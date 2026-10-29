@@ -18,6 +18,7 @@ enum ScheduleChangeKind {
   resume,
   settings,
   accept,
+  setup,
 }
 
 /// HTTP writes are classified here so every entry point shares the same lock.

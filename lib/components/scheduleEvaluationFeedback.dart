@@ -50,7 +50,8 @@ String scheduleChangeActionTitle(
     ScheduleChangeKind.pause => l10n.pausing,
     ScheduleChangeKind.resume => l10n.resuming,
     ScheduleChangeKind.defer => l10n.procrastinating,
-    ScheduleChangeKind.shuffle => l10n.optimizingSchedule,
+    ScheduleChangeKind.shuffle => l10n.scheduleChangeShuffling,
+    ScheduleChangeKind.setup => l10n.scheduleChangeBuildingTimeline,
     ScheduleChangeKind.add => l10n.scheduleChangeAdding,
     ScheduleChangeKind.edit => l10n.editTileSaving,
     ScheduleChangeKind.settings => l10n.scheduleChangeSettings,
@@ -124,6 +125,8 @@ String scheduleChangeCommand(AppLocalizations l10n, ScheduleChangeKind kind) =>
       ScheduleChangeKind.edit => l10n.edit,
       ScheduleChangeKind.settings => l10n.settings,
       ScheduleChangeKind.accept => l10n.accept,
+      ScheduleChangeKind.shuffle => l10n.scheduleChangeShuffleCommand,
+      ScheduleChangeKind.setup => l10n.scheduleChangeSetupCommand,
       _ => l10n.reOptimizeChip,
     };
 
@@ -274,19 +277,9 @@ class ScheduleEvaluationFeedback extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final evaluation = state.evaluation;
     final phase = evaluation?.phase ?? ScheduleEvaluationPhase.pending;
-    final command = switch (evaluation?.kind) {
-      ScheduleChangeKind.complete => l10n.complete,
-      ScheduleChangeKind.delete => l10n.delete,
-      ScheduleChangeKind.startNow => l10n.startNow,
-      ScheduleChangeKind.pause => l10n.pause,
-      ScheduleChangeKind.resume => l10n.resume,
-      ScheduleChangeKind.defer => l10n.defer,
-      ScheduleChangeKind.add => l10n.addTile,
-      ScheduleChangeKind.edit => l10n.edit,
-      ScheduleChangeKind.settings => l10n.settings,
-      ScheduleChangeKind.accept => l10n.accept,
-      _ => l10n.reOptimizeChip,
-    };
+    final command = evaluation == null
+        ? l10n.reOptimizeChip
+        : scheduleChangeCommand(l10n, evaluation.kind);
     final icon = switch (evaluation?.kind) {
       ScheduleChangeKind.complete => Icons.check_circle_outline,
       ScheduleChangeKind.delete => Icons.delete_outline,
@@ -299,6 +292,7 @@ class ScheduleEvaluationFeedback extends StatelessWidget {
       ScheduleChangeKind.settings => Icons.tune,
       ScheduleChangeKind.accept => Icons.task_alt,
       ScheduleChangeKind.shuffle => Icons.shuffle,
+      ScheduleChangeKind.setup => Icons.auto_awesome_outlined,
       _ => Icons.autorenew,
     };
     final target =

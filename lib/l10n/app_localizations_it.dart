@@ -5351,6 +5351,19 @@ class AppLocalizationsIt extends AppLocalizations {
   String get scheduleChangeRefreshing => 'Aggiornamento della linea temporale…';
 
   @override
+  String get scheduleChangeShuffling => 'Provo una nuova disposizione…';
+
+  @override
+  String get scheduleChangeShuffleCommand => 'Rimescola';
+
+  @override
+  String get scheduleChangeBuildingTimeline =>
+      'Creazione della tua prima linea temporale…';
+
+  @override
+  String get scheduleChangeSetupCommand => 'Prima linea temporale';
+
+  @override
   String get scheduleChangeUncertain => 'Conferma non disponibile';
 
   @override

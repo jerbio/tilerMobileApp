@@ -5372,6 +5372,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get scheduleChangeRefreshing => 'Deine Zeitleiste wird aktualisiert …';
 
   @override
+  String get scheduleChangeShuffling =>
+      'Eine neue Anordnung wird ausprobiert …';
+
+  @override
+  String get scheduleChangeShuffleCommand => 'Neu mischen';
+
+  @override
+  String get scheduleChangeBuildingTimeline =>
+      'Deine erste Zeitleiste wird erstellt …';
+
+  @override
+  String get scheduleChangeSetupCommand => 'Erste Zeitleiste';
+
+  @override
   String get scheduleChangeUncertain => 'Bestätigung nicht verfügbar';
 
   @override

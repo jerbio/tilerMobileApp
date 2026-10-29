@@ -100,7 +100,8 @@ class GatedBuzzScheduleApi extends ScheduleApi {
   int buzzCalls = 0;
 
   @override
-  Future buzzSchedule({bool includeLocationParams = true}) async {
+  Future buzzSchedule(
+      {bool includeLocationParams = true, ScheduleChangeKind? kind}) async {
     buzzCalls++;
     await release.future;
   }

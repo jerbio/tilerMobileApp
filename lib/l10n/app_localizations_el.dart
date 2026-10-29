@@ -5378,6 +5378,19 @@ class AppLocalizationsEl extends AppLocalizations {
   String get scheduleChangeRefreshing => 'Ενημέρωση του χρονολογίου σου…';
 
   @override
+  String get scheduleChangeShuffling => 'Δοκιμή νέας διάταξης…';
+
+  @override
+  String get scheduleChangeShuffleCommand => 'Ανακάτεμα';
+
+  @override
+  String get scheduleChangeBuildingTimeline =>
+      'Δημιουργία του πρώτου χρονολογίου σου…';
+
+  @override
+  String get scheduleChangeSetupCommand => 'Πρώτο χρονολόγιο';
+
+  @override
   String get scheduleChangeUncertain => 'Η επιβεβαίωση δεν είναι διαθέσιμη';
 
   @override

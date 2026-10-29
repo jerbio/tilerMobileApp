@@ -92,7 +92,10 @@ class _OnboardingViewState extends State<OnboardingView> {
   /// refresh is issued.
   void _buzzThenRefreshSchedule() {
     final ScheduleBloc? scheduleBloc = _scheduleBlocOrNull();
-    scheduleApi.buzzSchedule(includeLocationParams: false).then((_) {
+    scheduleApi
+        .buzzSchedule(
+            includeLocationParams: false, kind: ScheduleChangeKind.setup)
+        .then((_) {
       scheduleBloc?.add(GetScheduleEvent()
         ..forceRefresh = true
         ..emitOnlyLoadedStated = true);

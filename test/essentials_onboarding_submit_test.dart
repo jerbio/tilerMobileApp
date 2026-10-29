@@ -33,6 +33,7 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 // advance the fake clock with bounded pumps (never pumpAndSettle while
 // the 2.5s toast timer is live).
 
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
@@ -92,12 +93,15 @@ class FakeOnBoardingApi extends OnBoardingApi {
 /// submit path never performs a real network request in tests.
 class FakeScheduleApi extends ScheduleApi {
   int buzzCalls = 0;
+  ScheduleChangeKind? buzzKind;
 
   FakeScheduleApi() : super(getContextCallBack: () => null);
 
   @override
-  Future buzzSchedule({bool includeLocationParams = true}) async {
+  Future buzzSchedule(
+      {bool includeLocationParams = true, ScheduleChangeKind? kind}) async {
     buzzCalls++;
+    buzzKind = kind;
   }
 }
 
@@ -457,6 +461,9 @@ void main() {
           reason: 'The onboarding flow is replaced after submit.');
       expect(scheduleApi.buzzCalls, 1,
           reason: 'A successful submit must buzz the schedule exactly once.');
+      expect(scheduleApi.buzzKind, ScheduleChangeKind.setup,
+          reason: 'It builds the first timeline; it is not a revise the user '
+              'asked for.');
 
       await tester.pumpWidget(const SizedBox());
     });

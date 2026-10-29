@@ -5376,6 +5376,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get scheduleChangeRefreshing => 'Mise à jour de votre chronologie…';
 
   @override
+  String get scheduleChangeShuffling => 'Essai d’une nouvelle disposition…';
+
+  @override
+  String get scheduleChangeShuffleCommand => 'Mélanger';
+
+  @override
+  String get scheduleChangeBuildingTimeline =>
+      'Création de votre première chronologie…';
+
+  @override
+  String get scheduleChangeSetupCommand => 'Première chronologie';
+
+  @override
   String get scheduleChangeUncertain => 'Confirmation indisponible';
 
   @override

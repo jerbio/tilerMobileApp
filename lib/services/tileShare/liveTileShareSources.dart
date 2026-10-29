@@ -1,4 +1,5 @@
 import 'package:tiler_app/data/contact.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/services/api/tileShareRecipientsApi.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/notesPayload.dart';
@@ -93,8 +94,8 @@ class LiveTileShareAssignmentsSource implements TileShareAssignmentsSource {
 
   @override
   Future<void> afterAccept() async {
+    await _scheduleApi.buzzSchedule(kind: ScheduleChangeKind.accept);
     await _api.analyzeSchedule();
-    await _scheduleApi.buzzSchedule();
   }
 }
 

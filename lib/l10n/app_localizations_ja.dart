@@ -5163,6 +5163,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scheduleChangeRefreshing => 'タイムラインを更新しています…';
 
   @override
+  String get scheduleChangeShuffling => '新しい並べ方を試しています…';
+
+  @override
+  String get scheduleChangeShuffleCommand => 'シャッフル';
+
+  @override
+  String get scheduleChangeBuildingTimeline => '最初のタイムラインを作成しています…';
+
+  @override
+  String get scheduleChangeSetupCommand => '最初のタイムライン';
+
+  @override
   String get scheduleChangeUncertain => '確認できません';
 
   @override

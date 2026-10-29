@@ -829,3 +829,19 @@ The others pass as compatibility checks. Three existing tests asserted the old c
 - `--dart-define=TILER_SCHEDULE_TIMINGS=false` turns them off.
 
 When off, nothing is recorded, logged or sent to analytics. In release, the log line also needs `TILER_SCHEDULE_LOGS=true`; the analytics event does not. Three tests were red first: resolving the flag, a disabled tracker reporting nothing, and the bloc reporting nothing when off.
+
+#### Naming changes for what they are (October 28, 2026; awaiting review)
+
+**Reported.** After signing in for the first time and finishing onboarding, the card said "Revising Schedule · Your schedule" although Re-optimize was never tapped. Shuffle said "Optimizing schedule".
+
+**Cause.** Onboarding's submit calls `buzzSchedule()` (`POST api/Schedule/Buzz`) to build the first timeline from the user's answers. Every write is classified by its URL, and `api/schedule/buzz` maps to `revise`, so the bloc admitted it as a revise. It is slow on the server, so the card showed through the product tour, and a tap in that window was refused with "Finish the current schedule change (Revising Schedule…)". Accepting a shared tile also ends with a buzz and was shown as a revise. Shuffle used the "Optimizing schedule" title and the "Re-optimize" command label.
+
+**Change.**
+
+- A caller can name its write: `buzzSchedule(kind:)` and `sendPostRequest(kind:)`. Otherwise the URL classifies it as before.
+- Onboarding buzzes with a new `ScheduleChangeKind.setup`: "Building your initial timeline…", with a sparkle glyph and "Initial timeline" in outcome messages. For motion it counts as a Tiler revise.
+- The TileShare accept buzzes as `accept`.
+- Shuffle reads "Trying a new arrangement…" and is named "Shuffle" in outcome and failure messages.
+- 4 new strings in all 9 locales.
+
+**Tests.** `test/schedule_change_labels_test.dart` plus one assertion each in the onboarding submit and TileShare source tests. Six were red first: shuffle words, setup words, setup glyph, buzz admitted as the named kind, onboarding passing `setup`, and accept passing `accept`. "Without a kind it is still a revise" is a compatibility check. The three buzz fakes were updated to the new signature.

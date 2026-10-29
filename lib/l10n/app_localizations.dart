@@ -9050,6 +9050,30 @@ abstract class AppLocalizations {
   /// **'Updating your timeline…'**
   String get scheduleChangeRefreshing;
 
+  /// Shown while Shuffle asks Tiler for a different arrangement of the schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Trying a new arrangement…'**
+  String get scheduleChangeShuffling;
+
+  /// The Shuffle action, named in messages about how it turned out.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle'**
+  String get scheduleChangeShuffleCommand;
+
+  /// Shown after onboarding while Tiler builds the new user's first timeline from their answers.
+  ///
+  /// In en, this message translates to:
+  /// **'Building your initial timeline…'**
+  String get scheduleChangeBuildingTimeline;
+
+  /// Building the first timeline after onboarding, named in messages about how it turned out.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial timeline'**
+  String get scheduleChangeSetupCommand;
+
   /// No description provided for @scheduleChangeUncertain.
   ///
   /// In en, this message translates to:

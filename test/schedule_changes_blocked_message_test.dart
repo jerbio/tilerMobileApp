@@ -46,7 +46,7 @@ void main() {
             l10n, evaluation(ScheduleChangeKind.complete, name: 'Gym')),
         'Completing · Gym');
     expect(scheduleChangeLabel(l10n, evaluation(ScheduleChangeKind.shuffle)),
-        '${l10n.optimizingSchedule} · ${l10n.scheduleChangeTargetSchedule}');
+        '${l10n.scheduleChangeShuffling} · ${l10n.scheduleChangeTargetSchedule}');
     expect(
         scheduleChangeLabel(
             l10n, evaluation(ScheduleChangeKind.defer, count: 4)),

@@ -6,6 +6,7 @@
 //     be told to fail once or to stall, so later tests can observe loading and
 //     error states.
 
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 import 'package:tiler_app/data/designatedTile.dart';
@@ -39,7 +40,10 @@ class _FakeClusterApi extends TileShareClusterApi {
 
   @override
   Future<List<TileShareClusterData>> getTileShareClusters(
-      {int index = 0, int pageSize = 50, String? clusterId, bool? isOutbox}) async {
+      {int index = 0,
+      int pageSize = 50,
+      String? clusterId,
+      bool? isOutbox}) async {
     log.add('getTileShareClusters(index: $index, pageSize: $pageSize, '
         'clusterId: $clusterId, isOutbox: $isOutbox)');
     _maybeFail();
@@ -91,8 +95,9 @@ class _FakeScheduleApi extends ScheduleApi {
   final List<String> log;
 
   @override
-  Future buzzSchedule({bool includeLocationParams = true}) async {
-    log.add('buzzSchedule()');
+  Future buzzSchedule(
+      {bool includeLocationParams = true, ScheduleChangeKind? kind}) async {
+    log.add(kind == null ? 'buzzSchedule()' : 'buzzSchedule(${kind.name})');
   }
 }
 
@@ -175,7 +180,8 @@ void main() {
       source = LiveTileShareAttentionSources(invitationsApi, activityApi);
     });
 
-    test('invitations reads the project summary, then each project, and '
+    test(
+        'invitations reads the project summary, then each project, and '
         'returns them as one flat list', () async {
       invitationsApi.projectPages = {
         null: const TileShareInvitationProjectPage([
@@ -199,7 +205,8 @@ void main() {
           hasLength(1));
     });
 
-    test('a project with more invitations than a page is read to the end '
+    test(
+        'a project with more invitations than a page is read to the end '
         '(Accept all needs every task)', () async {
       invitationsApi.projectPages = {
         null: const TileShareInvitationProjectPage(
@@ -293,7 +300,8 @@ void main() {
       await expectLater(source.setDismissed('e', true), throwsA(same(error)));
     });
 
-    test('one project failing fails the source: a partial inbox is not '
+    test(
+        'one project failing fails the source: a partial inbox is not '
         'reported as the whole inbox', () async {
       final error = StateError('cluster gone');
       invitationsApi.projectPages = {
@@ -325,7 +333,8 @@ void main() {
     test('clusters passes the paging and the inbox/outbox flag through',
         () async {
       api.clusterResult = [tsCluster('a'), tsCluster('b')];
-      final result = await source.clusters(isOutbox: true, index: 20, pageSize: 10);
+      final result =
+          await source.clusters(isOutbox: true, index: 20, pageSize: 10);
       expect(result.map((c) => c.id), ['a', 'b']);
       expect(log, [
         'getTileShareClusters(index: 20, pageSize: 10, clusterId: null, isOutbox: true)'
@@ -352,7 +361,8 @@ void main() {
       api.templateResult = [tsTilette('t1'), tsTilette('t2')];
       final result = await source.tilettes('c1');
       expect(result.map((t) => t.id), ['t1', 't2']);
-      expect(log.single, 'getTileShareTemplates(clusterId: c1, templateId: null)');
+      expect(
+          log.single, 'getTileShareTemplates(clusterId: c1, templateId: null)');
     });
 
     test('deleteCluster delegates', () async {
@@ -385,11 +395,13 @@ void main() {
       final result =
           await source.designatedTiles(clusterId: 'c1', index: 5, pageSize: 5);
       expect(result.single.id, 'd1');
-      expect(log.single, 'getDesignatedTiles(index: 5, pageSize: 5, clusterId: c1)');
+      expect(log.single,
+          'getDesignatedTiles(index: 5, pageSize: 5, clusterId: c1)');
     });
 
     test('respond sends the status and returns the updated tile', () async {
-      api.statusResult = tsDesignatedTile('d1', status: InvitationStatus.accepted);
+      api.statusResult =
+          tsDesignatedTile('d1', status: InvitationStatus.accepted);
       final updated = await source.respond('d1', InvitationStatus.accepted);
       expect(updated!.id, 'd1');
       expect(log.single, 'statusUpdate(d1, accepted)');
@@ -397,7 +409,8 @@ void main() {
 
     test('afterAccept re-analyzes the schedule and THEN buzzes it', () async {
       await source.afterAccept();
-      expect(log, ['analyzeSchedule()', 'buzzSchedule()']);
+      // Named as part of the accept, not as a revise.
+      expect(log, ['analyzeSchedule()', 'buzzSchedule(accept)']);
     });
 
     test('afterAccept does not buzz when analysis fails, and rethrows',
@@ -411,8 +424,8 @@ void main() {
     test('errors pass through unchanged', () async {
       final error = StateError('boom');
       api.failWith = error;
-      await expectLater(
-          source.respond('d1', InvitationStatus.declined), throwsA(same(error)));
+      await expectLater(source.respond('d1', InvitationStatus.declined),
+          throwsA(same(error)));
       await expectLater(source.designatedTiles(), throwsA(same(error)));
     });
   });
@@ -424,7 +437,8 @@ void main() {
         outbox: [for (int i = 0; i < 5; i++) tsCluster('o$i')],
         inbox: [tsCluster('i0')],
       );
-      expect((await fake.clusters(isOutbox: true, pageSize: 2)).map((c) => c.id),
+      expect(
+          (await fake.clusters(isOutbox: true, pageSize: 2)).map((c) => c.id),
           ['o0', 'o1']);
       expect(
           (await fake.clusters(isOutbox: true, index: 4, pageSize: 2))
@@ -526,8 +540,8 @@ void main() {
 
     test('a conflict is a failure', () async {
       notes.conflictNext = true;
-      await expectLater(source.saveTaskNotes('t1', 'Bring tape'),
-          throwsA(isA<StateError>()));
+      await expectLater(
+          source.saveTaskNotes('t1', 'Bring tape'), throwsA(isA<StateError>()));
     });
   });
 }

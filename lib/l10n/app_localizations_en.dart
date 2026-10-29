@@ -5287,6 +5287,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleChangeRefreshing => 'Updating your timeline…';
 
   @override
+  String get scheduleChangeShuffling => 'Trying a new arrangement…';
+
+  @override
+  String get scheduleChangeShuffleCommand => 'Shuffle';
+
+  @override
+  String get scheduleChangeBuildingTimeline =>
+      'Building your initial timeline…';
+
+  @override
+  String get scheduleChangeSetupCommand => 'Initial timeline';
+
+  @override
   String get scheduleChangeUncertain => 'Confirmation unavailable';
 
   @override

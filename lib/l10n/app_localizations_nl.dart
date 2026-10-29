@@ -5348,6 +5348,19 @@ class AppLocalizationsNl extends AppLocalizations {
   String get scheduleChangeRefreshing => 'Je tijdlijn wordt bijgewerkt…';
 
   @override
+  String get scheduleChangeShuffling => 'Een nieuwe indeling proberen…';
+
+  @override
+  String get scheduleChangeShuffleCommand => 'Husselen';
+
+  @override
+  String get scheduleChangeBuildingTimeline =>
+      'Je eerste tijdlijn wordt gemaakt…';
+
+  @override
+  String get scheduleChangeSetupCommand => 'Eerste tijdlijn';
+
+  @override
   String get scheduleChangeUncertain => 'Bevestiging niet beschikbaar';
 
   @override

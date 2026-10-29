@@ -285,12 +285,16 @@ abstract class AppApi {
     return requestParams;
   }
 
+  /// [kind] names a schedule write for what it is when the URL alone would
+  /// misname it (a buzz that builds the first timeline, or follows an
+  /// accept); otherwise the URL classifies it.
   Future<Response> sendPostRequest(String requestPath, Map queryParameters,
       {bool injectLocation = true,
       String? eventName,
       bool analyze = true,
-      bool usePutRequest = false}) {
-    final kind =
+      bool usePutRequest = false,
+      ScheduleChangeKind? kind}) {
+    kind ??=
         scheduleMutationKind(usePutRequest ? 'PUT' : 'POST', requestPath);
     Future<Response> request() => _sendPostRequest(requestPath, queryParameters,
         injectLocation: injectLocation,
