@@ -5,6 +5,7 @@ import 'package:tiler_app/bloc/tileShare/tile_share_detail_cubit.dart';
 import 'package:tiler_app/bloc/tileShare/tile_share_detail_state.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
+import 'package:tiler_app/data/tileShareRoster.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/clusters/clusterCopy.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/editShareScreen.dart';
@@ -14,6 +15,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/modeBadge.d
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/revealSlot.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/statusPill.dart';
 import 'package:tiler_app/util.dart';
+import 'shareDisplayOptions.dart';
 
 /// The one detail frame (redesign T10, §5.4) for every mode and role: a slim
 /// bar (back, the share's name, Activity), loading, error + Retry, not found,
@@ -34,12 +36,14 @@ class TileShareDetailScaffold extends StatefulWidget {
 
   /// "Now" for the deadline; the clock unless a test says otherwise.
   final DateTime? now;
+  final TileShareDisplaySettings? displaySettings;
 
   const TileShareDetailScaffold({
     super.key,
     this.contentBuilder,
     this.onOpenActivity,
     this.now,
+    this.displaySettings,
   });
 
   @override
@@ -48,9 +52,13 @@ class TileShareDetailScaffold extends StatefulWidget {
 }
 
 class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
+  late TileShareDisplaySettings _display;
+
   @override
   void initState() {
     super.initState();
+    _display = widget.displaySettings ?? TileShareDisplaySettings();
+    _display.load();
     final TileShareDetailCubit cubit = context.read<TileShareDetailCubit>();
     if (cubit.state.phase != DetailPhase.loading) {
       cubit.load();
@@ -58,95 +66,115 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
   }
 
   @override
+  void didUpdateWidget(covariant TileShareDetailScaffold oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.displaySettings != widget.displaySettings) {
+      if (oldWidget.displaySettings == null) _display.dispose();
+      _display = widget.displaySettings ?? TileShareDisplaySettings();
+      _display.load();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (widget.displaySettings == null) _display.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final ColorScheme scheme = Theme.of(context).colorScheme;
-    return BlocConsumer<TileShareDetailCubit, TileShareDetailState>(
-      // The share was deleted: there is nothing left to show.
-      listenWhen: (before, now) => !before.deleted && now.deleted,
-      listener: (context, _) => Navigator.of(context).maybePop(),
-      builder: (context, state) {
-        final TileShareDetailCubit cubit = context.read<TileShareDetailCubit>();
-        final String name = (state.cluster?.name ?? '').trim();
-        final bool loading = state.phase == DetailPhase.idle ||
-            state.phase == DetailPhase.loading;
-        return Scaffold(
-          appBar: AppBar(
-            toolbarHeight: 48,
-            automaticallyImplyLeading: false,
-            foregroundColor: scheme.onPrimary,
-            leading: IconButton(
-              key: const Key('detail_back'),
-              tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            title: Text(
-                loading
-                    ? l10n.detailLoading
-                    : name.isEmpty
-                        ? l10n.clusterTitleFallback
-                        : name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis),
-            actions: [
-              if (!loading && cubit.canEdit)
-                PopupMenuButton<_ShareAction>(
-                  key: const Key('detail_menu'),
-                  tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-                  icon: const Icon(Icons.more_horiz),
-                  enabled: !state.isSaving,
-                  onSelected: (action) => switch (action) {
-                    _ShareAction.edit => showEditShare(context, cubit),
-                    _ShareAction.delete => _deleteShare(context, state, cubit),
-                  },
-                  itemBuilder: (_) => [
-                    PopupMenuItem<_ShareAction>(
-                      key: const Key('detail_menu_edit'),
-                      value: _ShareAction.edit,
-                      child: Text(l10n.detailEditDetails),
-                    ),
-                    PopupMenuItem<_ShareAction>(
-                      key: const Key('detail_menu_delete'),
-                      value: _ShareAction.delete,
-                      child: Text(l10n.detailDeleteShare,
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.error)),
-                    ),
-                  ],
+    return TileShareDisplayScope(
+        settings: _display,
+        child: BlocConsumer<TileShareDetailCubit, TileShareDetailState>(
+          // The share was deleted: there is nothing left to show.
+          listenWhen: (before, now) => !before.deleted && now.deleted,
+          listener: (context, _) => Navigator.of(context).maybePop(),
+          builder: (context, state) {
+            final TileShareDetailCubit cubit =
+                context.read<TileShareDetailCubit>();
+            final String name = (state.cluster?.name ?? '').trim();
+            final bool loading = state.phase == DetailPhase.idle ||
+                state.phase == DetailPhase.loading;
+            return Scaffold(
+              appBar: AppBar(
+                automaticallyImplyLeading: false,
+                leading: IconButton(
+                  key: const Key('detail_back'),
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
-              if (widget.onOpenActivity != null)
-                IconButton(
-                  key: const Key('detail_activity'),
-                  tooltip: l10n.tileShareActivityTitle,
-                  icon: const Icon(Icons.history),
-                  onPressed: widget.onOpenActivity,
+                title: Text(
+                    loading
+                        ? l10n.detailLoading
+                        : name.isEmpty
+                            ? l10n.clusterTitleFallback
+                            : name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                actions: [
+                  if (!loading && cubit.canEdit)
+                    PopupMenuButton<_ShareAction>(
+                      key: const Key('detail_menu'),
+                      tooltip:
+                          MaterialLocalizations.of(context).showMenuTooltip,
+                      icon: const Icon(Icons.more_horiz),
+                      enabled: !state.isSaving,
+                      onSelected: (action) => switch (action) {
+                        _ShareAction.edit => showEditShare(context, cubit),
+                        _ShareAction.delete =>
+                          _deleteShare(context, state, cubit),
+                      },
+                      itemBuilder: (_) => [
+                        PopupMenuItem<_ShareAction>(
+                          key: const Key('detail_menu_edit'),
+                          value: _ShareAction.edit,
+                          child: Text(l10n.detailEditDetails),
+                        ),
+                        PopupMenuItem<_ShareAction>(
+                          key: const Key('detail_menu_delete'),
+                          value: _ShareAction.delete,
+                          child: Text(l10n.detailDeleteShare,
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error)),
+                        ),
+                      ],
+                    ),
+                  if (widget.onOpenActivity != null && !loading)
+                    IconButton(
+                      key: const Key('detail_activity'),
+                      tooltip: l10n.tileShareActivityTitle,
+                      icon: const Icon(Icons.history),
+                      onPressed: widget.onOpenActivity,
+                    ),
+                ],
+                bottom: loading || state.isRefreshing || state.isSaving
+                    ? PreferredSize(
+                        preferredSize: Size.fromHeight(2),
+                        child: LinearProgressIndicator(
+                          key: const Key('detail_load_progress'),
+                          minHeight: 2,
+                          color: scheme.primary,
+                          backgroundColor:
+                              scheme.primary.withValues(alpha: 0.2),
+                          semanticsLabel:
+                              loading ? l10n.detailLoading : l10n.loading,
+                        ))
+                    : null,
+              ),
+              body: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: KeyedSubtree(
+                  key: ValueKey<DetailPhase>(
+                      loading ? DetailPhase.loading : state.phase),
+                  child: _body(context, state, cubit),
                 ),
-            ],
-            bottom: loading || state.isRefreshing || state.isSaving
-                ? PreferredSize(
-                    preferredSize: Size.fromHeight(2),
-                    child: LinearProgressIndicator(
-                      key: const Key('detail_load_progress'),
-                      minHeight: 2,
-                      color: scheme.onPrimary,
-                      backgroundColor: scheme.onPrimary.withValues(alpha: 0.2),
-                      semanticsLabel:
-                          loading ? l10n.detailLoading : l10n.loading,
-                    ))
-                : null,
-          ),
-          body: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: KeyedSubtree(
-              key: ValueKey<DetailPhase>(
-                  loading ? DetailPhase.loading : state.phase),
-              child: _body(context, state, cubit),
-            ),
-          ),
-        );
-      },
-    );
+              ),
+            );
+          },
+        ));
   }
 
   /// Deletes the share after asking; once it is gone the detail closes
@@ -189,54 +217,65 @@ class _TileShareDetailScaffoldState extends State<TileShareDetailScaffold> {
       case DetailPhase.ready:
         return RefreshIndicator(
           onRefresh: cubit.refresh,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              // The banners grow in and shrink out instead of pushing the
-              // page down in one frame (T11, no snapping).
-              SliverToBoxAdapter(
-                child: RevealSlot(
-                  child: state.refreshFailed
-                      ? TileShareErrorBanner(
-                          key: const Key('detail_refresh_failed'),
-                          message: l10n.detailRefreshFailed,
-                          retryLabel: l10n.attentionRetry,
-                          onRetry: cubit.refresh,
-                        )
-                      : null,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: RevealSlot(
-                  child: state.editFailed != null
-                      ? TileShareErrorBanner(
-                          key: const Key('detail_edit_failed'),
-                          message: state.editFailed == DetailEdit.deleteShare
-                              ? l10n.detailDeleteShareFailed
-                              : l10n.detailEditFailed,
-                          retryLabel: l10n.attentionRetry,
-                          onRetry: cubit.retryEdit,
-                        )
-                      : null,
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                sliver: SliverToBoxAdapter(
-                  child: TileShareDetailHeader(
-                      state: state, now: widget.now ?? DateTime.now()),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                sliver: SliverToBoxAdapter(
-                  child: widget.contentBuilder?.call(context, state) ??
-                      TileShareDetailTasks(
-                          state: state, onRetry: cubit.refresh),
-                ),
-              ),
-            ],
-          ),
+          child: NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                if (notification.depth == 0) {
+                  final offset = notification.metrics.pixels;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) _display.updateScroll(offset);
+                  });
+                }
+                return false;
+              },
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  // The banners grow in and shrink out instead of pushing the
+                  // page down in one frame (T11, no snapping).
+                  SliverToBoxAdapter(
+                    child: RevealSlot(
+                      child: state.refreshFailed
+                          ? TileShareErrorBanner(
+                              key: const Key('detail_refresh_failed'),
+                              message: l10n.detailRefreshFailed,
+                              retryLabel: l10n.attentionRetry,
+                              onRetry: cubit.refresh,
+                            )
+                          : null,
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: RevealSlot(
+                      child: state.editFailed != null
+                          ? TileShareErrorBanner(
+                              key: const Key('detail_edit_failed'),
+                              message:
+                                  state.editFailed == DetailEdit.deleteShare
+                                      ? l10n.detailDeleteShareFailed
+                                      : l10n.detailEditFailed,
+                              retryLabel: l10n.attentionRetry,
+                              onRetry: cubit.retryEdit,
+                            )
+                          : null,
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: TileShareDetailHeader(
+                          state: state, now: widget.now ?? DateTime.now()),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                    sliver: SliverToBoxAdapter(
+                      child: widget.contentBuilder?.call(context, state) ??
+                          TileShareDetailTasks(
+                              state: state, onRetry: cubit.refresh),
+                    ),
+                  ),
+                ],
+              )),
         );
     }
   }
@@ -270,7 +309,11 @@ class TileShareDetailHeader extends StatelessWidget {
     final ClusterDueState? dueState = ClusterCopy.dueState(item, now);
     final bool urgent =
         dueState == ClusterDueState.soon || dueState == ClusterDueState.overdue;
-    final int tasks = state.tilettes.length;
+    final int tasks = state.isOwner ? state.tilettes.length : state.mine.length;
+    final int people =
+        state.isOwner ? RosterPeople.of(state.tilettes, {}).length : 0;
+    final comfortable =
+        TileShareDisplayScope.densityOf(context) == TiletteDensity.comfortable;
 
     return Card(
       key: const Key('detail_header'),
@@ -282,31 +325,43 @@ class TileShareDetailHeader extends StatelessWidget {
         side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.6)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(comfortable ? 16 : 10),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TileShareModeBadge(mode: mode),
+            TileShareModeBadge(mode: mode, size: comfortable ? 64 : 36),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (comfortable)
+                    Text(
+                        (state.cluster?.name ?? '').trim().isEmpty
+                            ? l10n.clusterTitleFallback
+                            : state.cluster!.name!.trim(),
+                        style: theme.textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                  if (comfortable) const SizedBox(height: 6),
                   Text(ClusterCopy.subtitle(l10n, item),
                       style: theme.textTheme.bodyMedium),
-                  const SizedBox(height: 8),
+                  SizedBox(height: comfortable ? 8 : 4),
                   Wrap(
                     spacing: 8,
                     runSpacing: 6,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      if (item.mine != null)
+                      if (item.mine != null && comfortable)
                         TileShareStatusPill(
                           label: ClusterCopy.mineLabel(l10n, item.mine!),
                           tone: ClusterCopy.mineTone(item.mine!),
                         ),
                       if (mode != TileShareMode.broadcast && tasks > 0)
                         Text(l10n.attentionMetaTasks(tasks),
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(color: scheme.onSurfaceVariant)),
+                      if (state.isOwner && mode != TileShareMode.broadcast)
+                        Text(l10n.sharePeopleCount(people),
                             style: theme.textTheme.bodySmall
                                 ?.copyWith(color: scheme.onSurfaceVariant)),
                       if (due != null)
@@ -330,6 +385,15 @@ class TileShareDetailHeader extends StatelessWidget {
                         ),
                     ],
                   ),
+                  if (mode != TileShareMode.broadcast && comfortable) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                        mode == TileShareMode.class_
+                            ? l10n.shareClassHint
+                            : l10n.shareProjectHint,
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(color: scheme.onSurfaceVariant)),
+                  ],
                 ],
               ),
             ),

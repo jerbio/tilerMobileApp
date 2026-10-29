@@ -9,28 +9,34 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
-  String get scheduleReadFailedTitle => 'Couldn\'t load your events.';
+  String get scheduleReadFailedTitle => 'イベントを読み込めませんでした。';
 
   @override
-  String get scheduleReadFailedBody => 'Try again in a moment.';
+  String get scheduleReadFailedBody => 'しばらくしてからもう一度お試しください。';
 
   @override
-  String get scheduleReadRefreshFailed => 'Couldn\'t refresh your events.';
+  String get scheduleReadRefreshFailed => 'イベントを更新できませんでした。';
 
   @override
-  String get scheduleReadRetained => 'Showing your last loaded schedule.';
+  String get scheduleReadRetained => '最後に読み込んだ予定を表示しています。';
 
   @override
-  String get scheduleReadRetrying => 'Trying again...';
+  String get scheduleReadRetrying => '再試行しています...';
 
   @override
-  String get scheduleReadSignIn => 'Sign in to load your events.';
+  String get scheduleReadSignIn => 'イベントを読み込むにはログインしてください。';
 
   @override
-  String get scheduleSummaryUnavailable => 'Summary unavailable';
+  String get scheduleSummaryUnavailable => '概要を表示できません';
 
   @override
   String get notesLoadFailed => 'メモを読み込めませんでした。メモエディターを開き直してください。';
+
+  @override
+  String get shareNotesLoadFailed => 'メモを読み込めませんでした。もう一度お試しください。';
+
+  @override
+  String get shareAddPerson => '参加者を追加';
 
   @override
   String get onboardingSubmitFailed =>
@@ -5467,238 +5473,362 @@ class AppLocalizationsJa extends AppLocalizations {
   String get scheduleChangeAfter => '変更後';
 
   @override
-  String get vibeChatExecutionMode => 'Chat execution';
+  String get vibeChatExecutionMode => 'チャットのアクション実行';
 
   @override
-  String get vibeConfirmFirst => 'Confirm first';
+  String get vibeConfirmFirst => '先に確認する';
 
   @override
-  String get vibeAutoAct => 'Auto act';
+  String get vibeAutoAct => '自動実行';
 
   @override
   String get vibeAutoActNote =>
-      'Run supported chat actions automatically. Bulk and destructive changes still need review.';
+      '対応するチャットのアクションを自動実行します。一括変更や削除などの操作は引き続き確認が必要です。';
 
   @override
-  String get vibeConfirmNote => 'Review chat changes before they run.';
+  String get vibeConfirmNote => 'チャットによる変更を実行前に確認します。';
 
   @override
-  String get vibeConfirmCreation => 'Confirm creation';
+  String get vibeConfirmCreation => '作成を確定';
 
   @override
-  String get vibeCheckStatus => 'Check status';
+  String get vibeCheckStatus => '状態を確認';
 
   @override
-  String get vibeCreationUnknown =>
-      'Creation could not be confirmed. Check status before trying again.';
+  String get vibeCreationUnknown => '作成を確認できませんでした。再試行する前に状態を確認してください。';
 
   @override
-  String get vibeReviewAgain =>
-      'Review the current proposal before confirming again.';
+  String get vibeReviewAgain => '再度確定する前に、現在の提案を確認してください。';
 
   @override
-  String get vibeTileShareCreated => 'TileShare created.';
+  String get vibeTileShareCreated => 'TileShareを作成しました。';
 
   @override
-  String get vibeCreationReview => 'Review TileShare creation';
+  String get vibeCreationReview => 'TileShareの作成を確認';
 
   @override
   String get vibeCreationNote =>
-      'Nothing is created until you confirm. Recipients still choose whether to accept; notifications are not sent by this action.';
+      '確定するまで何も作成されません。受信者は承諾するかどうかを引き続き選べます。この操作では通知は送信されません。';
 
   @override
-  String get vibeCreateProject => 'Create project';
+  String get vibeCreateProject => 'プロジェクトを作成';
 
   @override
-  String get vibeAddTilette => 'Add tilette';
+  String get vibeAddTilette => 'Tiletteを追加';
 
   @override
-  String get vibeReviewProject => 'Project';
+  String get vibeReviewProject => 'プロジェクト';
 
   @override
-  String get vibeReviewStarts => 'Starts';
+  String get vibeReviewStarts => '開始';
 
   @override
-  String get vibeReviewDeadline => 'Deadline';
+  String get vibeReviewDeadline => '締切';
 
   @override
-  String get vibeReviewMinutes => 'minutes';
+  String get vibeReviewMinutes => '分';
 
   @override
-  String get vibeOpenTileShare => 'Open TileShare';
+  String get vibeOpenTileShare => 'TileShareを開く';
 
   @override
-  String get vibeProjectRenamed => 'Project renamed.';
+  String get vibeProjectRenamed => 'プロジェクトの名前を変更しました。';
 
   @override
-  String get vibeRenameReview => 'Review project rename';
+  String get vibeRenameReview => 'プロジェクトの名前変更を確認';
 
   @override
-  String get vibeRenameProject => 'Rename project';
+  String get vibeRenameProject => 'プロジェクトの名前を変更';
 
   @override
-  String get vibePreviousName => 'Current name';
+  String get vibePreviousName => '現在の名前';
 
   @override
-  String get vibeRenameNote =>
-      'Only the project name changes after confirmation.';
+  String get vibeRenameNote => '確定後に変更されるのはプロジェクトの名前だけです。';
 
   @override
-  String get vibeConfirmRename => 'Confirm rename';
+  String get vibeConfirmRename => '名前変更を確定';
 
   @override
-  String get vibeRenameUnknown =>
-      'Rename could not be confirmed. Check status before trying again.';
+  String get vibeRenameUnknown => '名前変更を確認できませんでした。再試行する前に状態を確認してください。';
 
   @override
-  String get vibeTiletteRenamed => 'Tilette renamed.';
+  String get vibeTiletteRenamed => 'Tiletteの名前を変更しました。';
 
   @override
-  String get vibeTiletteRenameReview => 'Review tilette rename';
+  String get vibeTiletteRenameReview => 'Tiletteの名前変更を確認';
 
   @override
-  String get vibeRenameTilette => 'Rename tilette';
+  String get vibeRenameTilette => 'Tiletteの名前を変更';
 
   @override
   String get vibeTiletteRenameNote =>
-      'Only the shared tilette name changes. Personal calendar titles stay as they are.';
+      '共有されているTiletteの名前だけが変更されます。個人のカレンダーのタイトルは変わりません。';
 
   @override
-  String get vibeNotesUpdated => 'Tilette notes updated.';
+  String get vibeNotesUpdated => 'Tiletteのメモを更新しました。';
 
   @override
-  String get vibeNotesReview => 'Review tilette notes';
+  String get vibeNotesReview => 'Tiletteのメモを確認';
 
   @override
-  String get vibeEditNotes => 'Update tilette notes';
+  String get vibeEditNotes => 'Tiletteのメモを更新';
 
   @override
-  String get vibePreviousNotes => 'Current notes';
+  String get vibePreviousNotes => '現在のメモ';
 
   @override
-  String get vibeProposedNotes => 'Proposed notes';
+  String get vibeProposedNotes => '提案されたメモ';
 
   @override
-  String get vibeEmptyNotes => 'No notes';
+  String get vibeEmptyNotes => 'メモなし';
 
   @override
-  String get vibeClearNotes => 'Clear notes';
+  String get vibeClearNotes => 'メモを消去';
 
   @override
-  String get vibeNotesNote =>
-      'The proposed text replaces the complete tilette notes after confirmation.';
+  String get vibeNotesNote => '確定後、提案されたテキストがTiletteのメモ全体を置き換えます。';
 
   @override
-  String get vibeConfirmNotes => 'Confirm notes';
+  String get vibeConfirmNotes => 'メモを確定';
 
   @override
-  String get vibeNotesUnknown =>
-      'Notes update could not be confirmed. Check status before trying again.';
+  String get vibeNotesUnknown => 'メモの更新を確認できませんでした。再試行する前に状態を確認してください。';
 
   @override
-  String get vibeTiletteDeleted => 'Tilette deleted.';
+  String get vibeTiletteDeleted => 'Tiletteを削除しました。';
 
   @override
-  String get vibeDeleteReview => 'Review tilette deletion';
+  String get vibeDeleteReview => 'Tiletteの削除を確認';
 
   @override
-  String get vibeDeleteTilette => 'Delete tilette';
+  String get vibeDeleteTilette => 'Tiletteを削除';
 
   @override
-  String get vibeAssignmentCount => 'Assignments';
+  String get vibeAssignmentCount => '割り当て';
 
   @override
-  String get vibeLinkedCalendarCount => 'Linked calendar items';
+  String get vibeLinkedCalendarCount => 'リンクされたカレンダー項目';
 
   @override
   String get vibeDeleteNote =>
-      'This disables the tilette and linked calendar work. The project and other tilettes stay available. Assignment history is retained; undo is not provided here.';
+      'Tiletteとリンクされたカレンダーの作業を無効にします。プロジェクトと他のTiletteは引き続き利用できます。割り当て履歴は保持されます。ここでは元に戻せません。';
 
   @override
-  String get vibeConfirmDeletion => 'Confirm deletion';
+  String get vibeConfirmDeletion => '削除を確定';
 
   @override
-  String get vibeDeleteUnknown =>
-      'Deletion could not be confirmed. Check status before trying again.';
+  String get vibeDeleteUnknown => '削除を確認できませんでした。再試行する前に状態を確認してください。';
 
   @override
-  String get vibeOpenProject => 'Open project';
+  String get vibeOpenProject => 'プロジェクトを開く';
 
   @override
-  String get vibeTiletteUpdated => 'Tilette updated.';
+  String get vibeTiletteUpdated => 'Tiletteを更新しました。';
 
   @override
-  String get vibeUpdateReview => 'Review tilette update';
+  String get vibeUpdateReview => 'Tiletteの更新を確認';
 
   @override
-  String get vibeUpdateTilette => 'Update tilette';
+  String get vibeUpdateTilette => 'Tiletteを更新';
 
   @override
   String get vibeUpdateNote =>
-      'All displayed changes are saved together after confirmation. Supplied notes replace the complete note.';
+      '確定後、表示されたすべての変更をまとめて保存します。入力されたメモは既存のメモ全体を置き換えます。';
 
   @override
-  String get vibeConfirmUpdate => 'Confirm update';
+  String get vibeConfirmUpdate => '更新を確定';
 
   @override
-  String get vibeUpdateRejected =>
-      'No changes were applied. Review the response and request a revised update.';
+  String get vibeUpdateRejected => '変更は適用されませんでした。回答を確認し、修正した更新案を依頼してください。';
 
   @override
-  String get vibeUpdateUnknown =>
-      'Update could not be confirmed. Check status before trying again.';
+  String get vibeUpdateUnknown => '更新を確認できませんでした。再試行する前に状態を確認してください。';
 
   @override
-  String get vibeScheduleUpdatePending =>
-      'Calculating accepted-work schedules. No changes have been saved yet.';
+  String get vibeScheduleUpdatePending => '承諾済みの作業の予定を計算しています。変更はまだ保存されていません。';
 
   @override
   String get vibeScheduleNoFit =>
-      'No changes were applied. The remaining work could not fit around protected sessions. Adjust the duration or deadline and request a revised update.';
+      '変更は適用されませんでした。保護されたセッションの合間に残りの作業を予定できませんでした。所要時間または締切を調整し、修正した更新案を依頼してください。';
 
   @override
   String get vibeScheduleUpdateFailed =>
-      'No changes were applied. The schedule changed or calculation could not complete. Request a revised update.';
+      '変更は適用されませんでした。予定が変更されたか、計算を完了できませんでした。修正した更新案を依頼してください。';
 
   @override
-  String get vibeUpdateProject => 'Update project';
+  String get vibeUpdateProject => 'プロジェクトを更新';
 
   @override
-  String get vibeProjectUpdateReview => 'Review project update';
+  String get vibeProjectUpdateReview => 'プロジェクトの更新を確認';
 
   @override
-  String get vibeProjectUpdated => 'Project updated.';
+  String get vibeProjectUpdated => 'プロジェクトを更新しました。';
 
   @override
-  String get vibeManageAccess => 'Manage project access';
+  String get vibeManageAccess => 'プロジェクトへのアクセスを管理';
 
   @override
-  String get vibeManageRecipients => 'Manage recipients';
+  String get vibeManageRecipients => '受信者を管理';
 
   @override
-  String get vibeManagementUpdated => 'Recipient or access changes saved.';
+  String get vibeManagementUpdated => '受信者またはアクセスの変更を保存しました。';
 
   @override
   String get vibeManagementNote =>
-      'Review the recipient and access effects above. Calendar access cleanup and restoration run in the background.';
+      '上記の受信者とアクセスへの影響を確認してください。カレンダーへのアクセスの整理と復元はバックグラウンドで行われます。';
 
   @override
   String get vibeAccessReconciliation =>
-      'Access is saved. Calendar cleanup or restoration runs in the background.';
+      'アクセスを保存しました。カレンダーの整理または復元はバックグラウンドで行われます。';
 
   @override
-  String get vibePlanTargetPending => 'Waiting for combined calculation';
+  String get vibePlanTargetPending => '全体の計算を待機中';
 
   @override
-  String get vibePlanTargetNotApplied => 'Not applied';
+  String get vibePlanTargetNotApplied => '未適用';
 
   @override
-  String get vibePlanReview => 'Review shared-work plan';
+  String get vibePlanReview => '共有作業のプランを確認';
 
   @override
-  String get vibePlanUpdated => 'Reviewed changes saved together.';
+  String get vibePlanUpdated => '確認済みの変更をまとめて保存しました。';
 
   @override
   String get vibePlanNote =>
-      'All displayed targets are saved together after confirmation. If any target changes or access is lost, review a new proposal.';
+      '確定後、表示されたすべての対象をまとめて保存します。対象が変更された場合やアクセスを失った場合は、新しい提案を確認してください。';
+
+  @override
+  String get shareViewOptions => '表示オプション';
+
+  @override
+  String get shareDensityComfortable => 'ゆったり';
+
+  @override
+  String get shareDensityCompact => 'コンパクト';
+
+  @override
+  String get shareDensityList => 'リスト';
+
+  @override
+  String get shareDensityComfortableHint => 'メモのプレビューと操作名を表示したカード。';
+
+  @override
+  String get shareDensityCompactHint => 'クイック操作が使える小さめのカード。おすすめです。';
+
+  @override
+  String get shareDensityListHint => '行を詰めて表示します。Tiletteをタップすると詳細と操作が展開されます。';
+
+  @override
+  String get shareExpandTilette => 'Tiletteを展開';
+
+  @override
+  String get shareCollapseTilette => 'Tiletteを折りたたむ';
+
+  @override
+  String get shareWork => '作業';
+
+  @override
+  String get sharePeople => '参加者';
+
+  @override
+  String get shareActivity => 'アクティビティ';
+
+  @override
+  String get shareMyWork => '自分の作業';
+
+  @override
+  String get shareClassHint => '全員が各Tiletteのコピーをそれぞれ受け取ります。';
+
+  @override
+  String get shareProjectHint => '複数の参加者にTiletteを割り当て、1つの目標に向けて作業します。';
+
+  @override
+  String get shareNeedsDecision => '判断が必要です';
+
+  @override
+  String get shareTilette => 'Tilette';
+
+  @override
+  String get shareViewTilette => 'Tiletteを表示';
+
+  @override
+  String get shareReviewRequest => 'リクエストを確認';
+
+  @override
+  String get shareAssignedTo => '担当者';
+
+  @override
+  String get shareAssignedToYou => 'あなたに割り当て済み';
+
+  @override
+  String get shareYourResponse => 'あなたの回答';
+
+  @override
+  String get shareInvitationHint => 'このTiletteを自分の予定に追加するかどうかを選んでください。';
+
+  @override
+  String get shareReadNotes => 'メモを読む';
+
+  @override
+  String get shareEditNotes => 'メモを編集';
+
+  @override
+  String get shareOpenDiscussion => 'ディスカッションを開く';
+
+  @override
+  String get shareThreadUnavailable => 'このTiletteのディスカッションは利用できません。';
+
+  @override
+  String get shareCommitments => 'あなたが引き受けた作業';
+
+  @override
+  String get shareNeedsAttention => '要確認';
+
+  @override
+  String get shareInProgress => '進行中';
+
+  @override
+  String get shareNotStarted => '未開始';
+
+  @override
+  String get shareAwaitingResponse => '回答待ち';
+
+  @override
+  String get shareNoAssignments => 'この共有では、まだあなたにTiletteが割り当てられていません。';
+
+  @override
+  String get shareNotesEmpty => 'まだメモは追加されていません。';
+
+  @override
+  String get shareNoMatches => 'この絞り込み条件に一致するTiletteはありません。';
+
+  @override
+  String get shareProjectNoPeople =>
+      'まだ参加者はいません。Tiletteを割り当てると、このプロジェクトに参加者を追加できます。';
+
+  @override
+  String shareCompletionCount(int done, int total) {
+    return '$total件中$done件完了';
+  }
+
+  @override
+  String shareMissingAssignments(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '割り当てが$count件不足しています',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sharePeopleCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count人',
+    );
+    return '$_temp0';
+  }
 }

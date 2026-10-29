@@ -34,6 +34,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn’t load your notes. Reopen the notes editor to try again.';
 
   @override
+  String get shareNotesLoadFailed => 'Couldn\'t load notes. Try again.';
+
+  @override
+  String get shareAddPerson => 'Add person';
+
+  @override
   String get onboardingSubmitFailed =>
       'Couldn’t save your setup. Your choices are kept. Try again or skip for now.';
 
@@ -5845,4 +5851,147 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get vibePlanNote =>
       'All displayed targets are saved together after confirmation. If any target changes or access is lost, review a new proposal.';
+
+  @override
+  String get shareViewOptions => 'View options';
+
+  @override
+  String get shareDensityComfortable => 'Comfortable';
+
+  @override
+  String get shareDensityCompact => 'Compact';
+
+  @override
+  String get shareDensityList => 'List';
+
+  @override
+  String get shareDensityComfortableHint =>
+      'Full cards with note previews and labeled actions.';
+
+  @override
+  String get shareDensityCompactHint =>
+      'Smaller cards with quick actions. Recommended.';
+
+  @override
+  String get shareDensityListHint =>
+      'Condensed rows. Tap a tilette to expand its details and actions.';
+
+  @override
+  String get shareExpandTilette => 'Expand tilette';
+
+  @override
+  String get shareCollapseTilette => 'Collapse tilette';
+
+  @override
+  String get shareWork => 'Work';
+
+  @override
+  String get sharePeople => 'People';
+
+  @override
+  String get shareActivity => 'Activity';
+
+  @override
+  String get shareMyWork => 'My work';
+
+  @override
+  String get shareClassHint => 'Everyone gets their own copy of each tilette.';
+
+  @override
+  String get shareProjectHint =>
+      'Tilettes assigned across people, working toward one goal.';
+
+  @override
+  String get shareNeedsDecision => 'Needs your decision';
+
+  @override
+  String get shareTilette => 'Tilette';
+
+  @override
+  String get shareViewTilette => 'View tilette';
+
+  @override
+  String get shareReviewRequest => 'Review request';
+
+  @override
+  String get shareAssignedTo => 'Assigned to';
+
+  @override
+  String get shareAssignedToYou => 'Assigned to you';
+
+  @override
+  String get shareYourResponse => 'Your response';
+
+  @override
+  String get shareInvitationHint =>
+      'Choose whether to add this tilette to your schedule.';
+
+  @override
+  String get shareReadNotes => 'Read notes';
+
+  @override
+  String get shareEditNotes => 'Edit notes';
+
+  @override
+  String get shareOpenDiscussion => 'Open discussion';
+
+  @override
+  String get shareThreadUnavailable =>
+      'This tilette’s discussion is unavailable.';
+
+  @override
+  String get shareCommitments => 'Your commitments';
+
+  @override
+  String get shareNeedsAttention => 'Needs attention';
+
+  @override
+  String get shareInProgress => 'In progress';
+
+  @override
+  String get shareNotStarted => 'Not started';
+
+  @override
+  String get shareAwaitingResponse => 'Awaiting response';
+
+  @override
+  String get shareNoAssignments =>
+      'No tilettes are assigned to you in this share yet.';
+
+  @override
+  String get shareNotesEmpty => 'No notes have been added yet.';
+
+  @override
+  String get shareNoMatches => 'No tilettes match this filter.';
+
+  @override
+  String get shareProjectNoPeople =>
+      'No one yet. Assign a tilette to add someone to this project.';
+
+  @override
+  String shareCompletionCount(int done, int total) {
+    return '$done of $total complete';
+  }
+
+  @override
+  String shareMissingAssignments(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count missing assignments',
+      one: '1 missing assignment',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sharePeopleCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people',
+      one: '1 person',
+    );
+    return '$_temp0';
+  }
 }

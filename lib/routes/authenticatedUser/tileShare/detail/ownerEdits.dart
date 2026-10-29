@@ -10,7 +10,8 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotePage.dart';
 import 'package:tiler_app/services/api/notesApi.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/taskSheet.dart';
-import 'package:tiler_app/theme/today_status_tokens.dart';
+import 'shareDisplayOptions.dart';
+export 'tiletteWorkCard.dart' show TaskCard;
 
 /// Asks before something that cannot be undone; `true` once confirmed.
 Future<bool> confirmDestructive(
@@ -223,8 +224,9 @@ class TaskMenu extends StatelessWidget {
 class TasksHeader extends StatelessWidget {
   final int count;
   final VoidCallback? onAdd;
+  final Widget? filter;
 
-  const TasksHeader({super.key, required this.count, this.onAdd});
+  const TasksHeader({super.key, required this.count, this.onAdd, this.filter});
 
   @override
   Widget build(BuildContext context) {
@@ -232,43 +234,27 @@ class TasksHeader extends StatelessWidget {
     final VoidCallback? add = onAdd;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 8,
         children: [
-          Expanded(
-            child: Text('${l10n.detailTasks} ($count)',
-                style: Theme.of(context).textTheme.titleMedium),
-          ),
-          if (add != null)
-            TextButton.icon(
-              key: const Key('roster_add_task'),
-              onPressed: add,
-              icon: const Icon(Icons.add),
-              label: Text(l10n.detailAddTask),
-            ),
+          Text('${l10n.detailTasks} ($count)',
+              style: Theme.of(context).textTheme.titleLarge),
+          Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
+            const ShareViewOptionsButton(),
+            if (filter != null) filter!,
+            if (add != null)
+              FilledButton.icon(
+                key: const Key('roster_add_task'),
+                onPressed: add,
+                icon: const Icon(Icons.add),
+                label: Text(l10n.detailAddTask),
+              ),
+          ]),
         ],
       ),
-    );
-  }
-}
-
-/// A task as a card in the Tasks tab (mock B's task rows).
-class TaskCard extends StatelessWidget {
-  final Widget child;
-
-  const TaskCard({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final TodayStatusTokens tokens = TodayStatusTokens.of(context);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
-      decoration: BoxDecoration(
-        color: tokens.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: tokens.border),
-      ),
-      child: child,
     );
   }
 }

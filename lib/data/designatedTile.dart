@@ -1,7 +1,6 @@
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/userProfile.dart';
-import 'package:tiler_app/util.dart';
 
 enum InvitationStatus { accepted, declined, none }
 
@@ -72,7 +71,33 @@ class DesignatedTile {
   /// template's designated user, and every recipient's own template looked
   /// like someone else's.
   String? get designatedUserId {
-    for (final entry in tileTemplate?.designatedUsers ?? const []) {
+    return _userIdIn(tileTemplate);
+  }
+
+  /// Mobile assignment responses can omit the embedded roster (or send
+  /// `[null]`). Fall back to the separately loaded tilette with the same id
+  /// and cluster, matching its roster by this assignment's id. A known
+  /// embedded owner takes precedence; [user] is never an ownership fallback.
+  String? resolveDesignatedUserId(Iterable<TileShareTemplate> tilettes) {
+    final String? embedded = designatedUserId;
+    if (embedded != null) return embedded;
+    final TileShareTemplate? template = tileTemplate;
+    if (template == null ||
+        (template.id ?? '').isEmpty ||
+        (template.clusterId ?? '').isEmpty) return null;
+    for (final tilette in tilettes) {
+      if (tilette.id == template.id &&
+          tilette.clusterId == template.clusterId) {
+        final String? owner = _userIdIn(tilette);
+        if (owner != null) return owner;
+      }
+    }
+    return null;
+  }
+
+  String? _userIdIn(TileShareTemplate? template) {
+    if ((id ?? '').isEmpty) return null;
+    for (final entry in template?.designatedUsers ?? const []) {
       if (entry.designatedTileTemplateId == id) {
         final String? owner = entry.userId ?? entry.userProfile?.id;
         if (owner != null && owner.isNotEmpty) return owner;

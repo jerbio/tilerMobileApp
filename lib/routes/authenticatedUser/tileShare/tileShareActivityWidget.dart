@@ -12,6 +12,7 @@ class TileShareActivityWidget extends StatefulWidget {
   final String? clusterId;
   final String? tiletteId;
   final TileShareActivityLoader? loader;
+  final bool embedded;
 
   /// Opens a share's detail; pushes it unless a test says otherwise. An
   /// activity about a task opens its share too - the task is in its Tasks.
@@ -21,6 +22,7 @@ class TileShareActivityWidget extends StatefulWidget {
       this.clusterId,
       this.tiletteId,
       this.loader,
+      this.embedded = false,
       this.onOpenShare});
 
   @override
@@ -161,9 +163,10 @@ class _TileShareActivityState extends State<TileShareActivityWidget>
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final material = MaterialLocalizations.of(context);
-    return RefreshIndicator(
-        onRefresh: _load,
-        child: ListView(children: [
+    final list = ListView(
+        shrinkWrap: widget.embedded,
+        physics: widget.embedded ? const NeverScrollableScrollPhysics() : null,
+        children: [
           Padding(
               padding: const EdgeInsets.all(16),
               child: Row(children: [
@@ -230,7 +233,10 @@ class _TileShareActivityState extends State<TileShareActivityWidget>
             TextButton(
                 onPressed: () => _load(more: true),
                 child: Text(l.tileShareActivityMore)),
-        ]));
+        ]);
+    return widget.embedded
+        ? list
+        : RefreshIndicator(onRefresh: _load, child: list);
   }
 }
 

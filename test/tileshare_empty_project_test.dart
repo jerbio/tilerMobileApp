@@ -100,8 +100,8 @@ void main() {
     expect(find.textContaining('above'), findsNothing,
         reason: 'a Project has no add field there');
     expect(
-        find.text('No one yet. Assign a tilette to someone on the Tilettes '
-            'tab.'),
+        find.text(
+            'No one yet. Assign a tilette to add someone to this project.'),
         findsOneWidget);
     await detail.close();
   });

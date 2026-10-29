@@ -3,6 +3,7 @@
 // card (section 5.3). Pure: derived from the user's own assignments.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/data/tileShareMyStatus.dart';
 
 import 'helpers/tileshare_fixtures.dart';
@@ -12,7 +13,8 @@ void main() {
       tsDesignatedTile(id, clusterId: cluster, status: status);
 
   test('one unanswered task is pending and needs an answer', () {
-    final s = MyClusterStatus.byCluster(userId: 'me', [tile('a', 'c1', InvitationStatus.none)])['c1']!;
+    final s = MyClusterStatus.byCluster(
+        userId: 'me', [tile('a', 'c1', InvitationStatus.none)])['c1']!;
     expect(s.taskCount, 1);
     expect(s.pending, 1);
     expect(s.answer, MyClusterAnswer.pending);
@@ -34,7 +36,8 @@ void main() {
     expect(declined.answer, MyClusterAnswer.declined);
   });
 
-  test('a mix of answered and unanswered tasks is mixed and still needs an '
+  test(
+      'a mix of answered and unanswered tasks is mixed and still needs an '
       'answer', () {
     final s = MyClusterStatus.byCluster(userId: 'me', [
       tile('a', 'c1', InvitationStatus.accepted),
@@ -46,7 +49,8 @@ void main() {
     expect(s.needsAnswer, isTrue);
   });
 
-  test('the tasks still to answer are named, so one can be previewed '
+  test(
+      'the tasks still to answer are named, so one can be previewed '
       '(Step 9.11b)', () {
     final s = MyClusterStatus.byCluster(userId: 'me', [
       tile('a', 'c1', InvitationStatus.accepted),
@@ -56,13 +60,15 @@ void main() {
     ])['c1']!;
     expect(s.pendingAssignmentIds, ['b', 'd']);
     expect(
-        MyClusterStatus.byCluster(userId: 'me', [tile('a', 'c1', InvitationStatus.accepted)])[
-                'c1']!
+        MyClusterStatus.byCluster(
+                userId: 'me',
+                [tile('a', 'c1', InvitationStatus.accepted)])['c1']!
             .pendingAssignmentIds,
         isEmpty);
   });
 
-  test('accepted on some and declined on the rest, none pending, is mixed '
+  test(
+      'accepted on some and declined on the rest, none pending, is mixed '
       'and needs nothing', () {
     final s = MyClusterStatus.byCluster(userId: 'me', [
       tile('a', 'c1', InvitationStatus.accepted),
@@ -108,8 +114,7 @@ void main() {
   // signed-in user are mine - otherwise "Check fit" previewed someone else's
   // template and the server answered 404.
   group('only my own assignments', () {
-    test('another person\'s assignment in the same cluster is not mine',
-        () {
+    test('another person\'s assignment in the same cluster is not mine', () {
       final s = MyClusterStatus.byCluster(userId: 'me', [
         tsDesignatedTile('mine', clusterId: 'c1'),
         tsDesignatedTile('theirs', clusterId: 'c1', ownerId: 'someone'),
@@ -146,6 +151,57 @@ void main() {
   // The designated tile template's user, read as the web reads it: the
   // tilette's `designatedUsers` entry for this template, by `userId`.
   group('whose designated tile template a tile is', () {
+    test(
+        'full roster fallback requires matching tilette, cluster and assignment',
+        () {
+      final tile = DesignatedTile.fromJson({
+        'id': 'a1',
+        'invitationStatus': 'none',
+        'template': {
+          'id': 't1',
+          'clusterId': 'c1',
+          'designatedUsers': [null],
+        },
+      });
+      TileShareTemplate roster(String id, String cluster, String assignment) =>
+          TileShareTemplate.fromJson({
+            'id': id,
+            'clusterId': cluster,
+            'designatedUsers': [
+              {'designatedTileTemplateId': assignment, 'userId': 'me'},
+            ],
+          });
+      for (final unrelated in [
+        roster('other', 'c1', 'a1'),
+        roster('t1', 'other', 'a1'),
+        roster('t1', 'c1', 'other'),
+      ]) {
+        expect(tile.resolveDesignatedUserId([unrelated]), isNull);
+      }
+      final full = roster('t1', 'c1', 'a1');
+      expect(tile.resolveDesignatedUserId([full]), 'me');
+      expect(MyClusterStatus.byCluster([tile], userId: 'me'), isEmpty);
+      final status =
+          MyClusterStatus.byCluster([tile], userId: 'me', tilettes: [full]);
+      expect(status['c1']?.pendingAssignmentIds, ['a1']);
+      expect(MyClusterStatus.byCluster([tile], userId: null, tilettes: [full]),
+          isEmpty);
+    });
+
+    test('a full roster does not override a known embedded owner', () {
+      final tile = tsDesignatedTile('a1', clusterId: 'c1', ownerId: 'other');
+      final full = TileShareTemplate.fromJson({
+        'id': 'tpl-a1',
+        'clusterId': 'c1',
+        'designatedUsers': [
+          {'designatedTileTemplateId': 'a1', 'userId': 'me'},
+        ],
+      });
+      expect(tile.resolveDesignatedUserId([full]), 'other');
+      expect(MyClusterStatus.byCluster([tile], userId: 'me', tilettes: [full]),
+          isEmpty);
+    });
+
     test('the user of this template\'s entry in its tilette', () {
       final tile = DesignatedTile.fromJson({
         'id': 'a1',
@@ -167,14 +223,18 @@ void main() {
         'template': {
           'id': 't1',
           'designatedUsers': [
-            {'designatedTileTemplateId': 'a1', 'userProfile': {'id': 'u1'}},
+            {
+              'designatedTileTemplateId': 'a1',
+              'userProfile': {'id': 'u1'}
+            },
           ],
         },
       });
       expect(tile.designatedUserId, 'u1');
     });
 
-    test('never the tile-level `user`: it is not the template\'s designated '
+    test(
+        'never the tile-level `user`: it is not the template\'s designated '
         'user (seen on device - Check fit vanished for recipients)', () {
       final tile = DesignatedTile.fromJson({
         'id': 'a1',
@@ -188,8 +248,10 @@ void main() {
       });
       expect(tile.designatedUserId, 'recipient');
       expect(
-          DesignatedTile.fromJson({'id': 'a1', 'user': {'id': 'owner'}})
-              .designatedUserId,
+          DesignatedTile.fromJson({
+            'id': 'a1',
+            'user': {'id': 'owner'}
+          }).designatedUserId,
           isNull);
     });
 
@@ -199,6 +261,7 @@ void main() {
   });
 
   test('nothing in, nothing out', () {
-    expect(MyClusterStatus.byCluster(const <DesignatedTile>[], userId: 'me'), isEmpty);
+    expect(MyClusterStatus.byCluster(const <DesignatedTile>[], userId: 'me'),
+        isEmpty);
   });
 }

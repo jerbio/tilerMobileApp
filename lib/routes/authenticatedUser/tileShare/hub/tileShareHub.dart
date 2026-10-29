@@ -166,8 +166,8 @@ class _TileShareHubState extends State<TileShareHub>
   Future<void> _preview(String assignmentId) async {
     TileShareLog.d('TileShareHub', 'opening the preview of $assignmentId');
     await widget.onPreview!(assignmentId);
-    TileShareLog.d('TileShareHub',
-        'preview of $assignmentId closed; reloading the lists');
+    TileShareLog.d(
+        'TileShareHub', 'preview of $assignmentId closed; reloading the lists');
     if (!mounted) return;
     widget.attention.refresh();
     if (_clustersVisited) widget.clusters.refresh();
@@ -214,7 +214,6 @@ class _TileShareHubState extends State<TileShareHub>
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
-    final ColorScheme scheme = Theme.of(context).colorScheme;
 
     return MultiBlocProvider(
       providers: [
@@ -229,9 +228,7 @@ class _TileShareHubState extends State<TileShareHub>
         },
         child: Scaffold(
           appBar: AppBar(
-            toolbarHeight: 48,
             automaticallyImplyLeading: false,
-            foregroundColor: scheme.onPrimary,
             leading: IconButton(
               key: const Key('hub_back'),
               tooltip: MaterialLocalizations.of(context).backButtonTooltip,
@@ -344,8 +341,7 @@ class _AttentionLabel extends StatelessWidget {
               const SizedBox(width: 6),
               Container(
                 key: const Key('hub_badge'),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primary,
                   borderRadius: BorderRadius.circular(10),

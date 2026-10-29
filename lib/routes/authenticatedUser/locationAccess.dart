@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/services/accessManager.dart';
+import 'package:tiler_app/services/locationDiagnostics.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -56,6 +56,16 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
       bool doNotCallAgain = false,
       bool enableCallBack = true}) {
     VoidCallback retValue = () async {
+      final lookupId = Utility.getUuid;
+      final timer = Stopwatch()..start();
+      locationFlowLog('widget_request_started', fields: {
+        'lookupId': lookupId,
+        'forceDeviceCheck': forceDeviceCheck,
+        'statusCheck': statusCheck,
+        'denyAccess': denyAccess ?? false,
+        'enableCallBack': enableCallBack,
+        'doNotCallAgain': doNotCallAgain,
+      });
       setState(() {
         isLocationRequestTriggered = true;
       });
@@ -63,43 +73,48 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
           .locationAccess(
               forceDeviceCheck: forceDeviceCheck,
               statusCheck: statusCheck,
-              denyAccess: denyAccess ?? false)
+              denyAccess: denyAccess ?? false,
+              diagnosticId: lookupId)
           .then((value) {
-        print('LocationAccessWidgetState.generateCallBack: value: $value');
-        String loadedId = Utility.getUuid;
-        if (BlocProvider.of<DeviceSettingBloc>(context)
-                is DeviceLocationSettingLoading &&
-            (BlocProvider.of<DeviceSettingBloc>(context)
-                        as DeviceLocationSettingLoading)
-                    .id !=
-                null) {
-          loadedId = (BlocProvider.of<DeviceSettingBloc>(context)
-                  as DeviceLocationSettingLoading)
-              .id!;
-        } else {
-          print('Not DeviceLocationSettingLoading');
-        }
-        BlocProvider.of<DeviceSettingBloc>(context).add(
-            LoadedLocationProfileDeviceSettingEvent(
-                deviceLocationProfile: value ?? LocationProfile.empty(),
-                id: loadedId));
-
+        locationFlowLog('widget_result_received', fields: {
+          'lookupId': lookupId,
+          'elapsedMs': timer.elapsedMilliseconds,
+          'mounted': mounted,
+          'permissionGranted': value.isGranted,
+          'isDefaultPosition': value.position == Utility.getDefaultPosition(),
+        });
         if (!mounted) return;
+        final deviceSettingBloc = context.read<DeviceSettingBloc>();
+        final actualState = deviceSettingBloc.state;
+        final loadedId = actualState is DeviceLocationSettingLoading
+            ? actualState.id ?? Utility.getUuid
+            : Utility.getUuid;
+        locationFlowLog('widget_profile_dispatch', fields: {
+          'lookupId': lookupId,
+          'eventId': loadedId,
+          'blocState': actualState.runtimeType.toString(),
+          'stateIsLocationLoading': actualState is DeviceLocationSettingLoading,
+          'pendingId': actualState is DeviceLocationSettingLoading
+              ? actualState.id
+              : null,
+        });
+        deviceSettingBloc.add(LoadedLocationProfileDeviceSettingEvent(
+            deviceLocationProfile: value, id: loadedId));
 
         setState(() {
-          if (value != null) {
-            locationAccess = value;
-            if (this.widget.onChange != null && enableCallBack) {
-              this.widget.onChange!(value);
-            }
-            return;
-          }
-          if (!doNotCallAgain) {
-            generateCallBack(forceDeviceCheck: true, doNotCallAgain: true)();
-          }
+          locationAccess = value;
+          isLocationRequestTriggered = false;
         });
+        if (enableCallBack) this.widget.onChange?.call(value);
       }).catchError((error) {
-        print('LocationAccessWidgetState.generateCallBack: error: $error');
+        locationFlowLog('widget_request_failed',
+            fields: {
+              'lookupId': lookupId,
+              'elapsedMs': timer.elapsedMilliseconds,
+              'mounted': mounted,
+            },
+            error: error);
+        if (mounted) setState(() => isLocationRequestTriggered = false);
       });
     };
 

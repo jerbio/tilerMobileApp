@@ -13,6 +13,7 @@ import 'package:tiler_app/bloc/tileShare/tile_share_detail_state.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/tileShareDetailScaffold.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/shareDisplayOptions.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
 import 'helpers/tileshare_fakes.dart';
@@ -22,6 +23,9 @@ final DateTime _now = DateTime(2026, 10, 3, 9);
 int _inDays(int d) => _now.add(Duration(days: d)).millisecondsSinceEpoch;
 
 class _Rig {
+  // This suite covers the full header; mobile experience tests cover density.
+  final display =
+      TileShareDisplaySettings.memory(density: TiletteDensity.comfortable);
   final FakeTileShareClustersSource clusters;
   final FakeTileShareAssignmentsSource assignments;
   late final TileShareDetailCubit cubit;
@@ -53,6 +57,7 @@ class _Rig {
           tsDesignatedTile('d1', clusterId: 'shared'),
           tsDesignatedTile('d2', clusterId: 'shared'),
         ]) {
+    addTearDown(display.dispose);
     cubit = TileShareDetailCubit(
       clusters: clusters,
       assignments: assignments,
@@ -91,6 +96,7 @@ Widget _app(_Rig rig,
                         builder: (_) => BlocProvider.value(
                             value: rig.cubit,
                             child: TileShareDetailScaffold(
+                              displaySettings: rig.display,
                               now: _now,
                               onOpenActivity:
                                   activity ? () => rig.activityOpened++ : null,
@@ -277,14 +283,22 @@ void main() {
   });
 
   group('the bar', () {
-    testWidgets('is slim, titled by the share, with Activity', (tester) async {
+    testWidgets(
+        'inherits shared toolbar sizing, with the share title and Activity',
+        (tester) async {
       final rig = _Rig();
-      await _open(tester, rig);
-      final bar = tester.widget<AppBar>(find.byType(AppBar));
-      expect(bar.toolbarHeight, 48);
+      final theme = TileThemeData.lightTheme;
+      await _open(tester, rig,
+          theme: theme.copyWith(
+              appBarTheme: theme.appBarTheme.copyWith(toolbarHeight: 64)));
+      expect(tester.getSize(find.byType(AppBar)).height, 64);
       expect(
           find.descendant(
               of: find.byType(AppBar), matching: find.text('Launch Prep')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: _key('detail_header'), matching: find.text('Launch Prep')),
           findsOneWidget);
       await tester.tap(_key('detail_activity'));
       expect(rig.activityOpened, 1);

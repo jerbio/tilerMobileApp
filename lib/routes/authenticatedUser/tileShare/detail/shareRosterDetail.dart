@@ -15,7 +15,10 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/forms/taskSheet.dar
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/animatedKeyedColumn.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/revealSlot.dart';
 import 'package:tiler_app/services/tileShare/tileShareSources.dart';
-import 'package:tiler_app/util.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'shareWorkWidgets.dart';
+import 'tiletteWorkCard.dart';
+import 'shareDisplayOptions.dart';
 
 /// Which owner roster: everyone their own copy of one task (Broadcast), of
 /// every task (Class), or one shared project with an assignee per task
@@ -45,7 +48,7 @@ class BroadcastDetail extends StatelessWidget {
       onComments: onComments);
 }
 
-/// The owner's Class detail (Step 9.14): Overview · Tasks · Participants.
+/// A Class's shared work, people and activity, with completion per person.
 class ClassDetail extends StatelessWidget {
   final TileShareDetailState detail;
   final TileShareRecipientsSource recipients;
@@ -53,23 +56,31 @@ class ClassDetail extends StatelessWidget {
   /// Opens a tilette's comments (its one thread, shared with everyone on
   /// it); no comments buttons without it.
   final void Function(TileShareTemplate tilette)? onComments;
+  final WidgetBuilder? activityBuilder;
+  final void Function(TileShareTemplate)? onNotes;
+  final void Function(TileShareTemplate)? onOpen;
 
   const ClassDetail(
       {super.key,
       required this.detail,
       required this.recipients,
-      this.onComments});
+      this.onComments,
+      this.activityBuilder,
+      this.onNotes,
+      this.onOpen});
 
   @override
   Widget build(BuildContext context) => ShareRosterDetail(
       detail: detail,
       recipients: recipients,
       mode: RosterMode.classMode,
+      onOpen: onOpen,
+      activityBuilder: activityBuilder,
+      onNotes: onNotes,
       onComments: onComments);
 }
 
-/// The owner's Project detail (Step 9.15): Overview · Tasks (the board) ·
-/// Participants.
+/// A Project's work board, people and activity, with progress per tilette.
 class ProjectDetail extends StatelessWidget {
   final TileShareDetailState detail;
   final TileShareRecipientsSource recipients;
@@ -77,22 +88,31 @@ class ProjectDetail extends StatelessWidget {
   /// Opens a tilette's comments (its one thread, shared with everyone on
   /// it); no comments buttons without it.
   final void Function(TileShareTemplate tilette)? onComments;
+  final WidgetBuilder? activityBuilder;
+  final void Function(TileShareTemplate)? onNotes;
+  final void Function(TileShareTemplate)? onOpen;
 
   const ProjectDetail(
       {super.key,
       required this.detail,
       required this.recipients,
-      this.onComments});
+      this.onComments,
+      this.activityBuilder,
+      this.onNotes,
+      this.onOpen});
 
   @override
   Widget build(BuildContext context) => ShareRosterDetail(
       detail: detail,
       recipients: recipients,
       mode: RosterMode.project,
+      onOpen: onOpen,
+      activityBuilder: activityBuilder,
+      onNotes: onNotes,
       onComments: onComments);
 }
 
-enum _Segment { overview, tasks, participants }
+enum _Segment { overview, tasks, participants, activity }
 
 /// The owner's roster detail (redesign §5.4), under the detail header: a
 /// **Broadcast** (everyone their own copy of one task), a **Class** (of every
@@ -121,6 +141,9 @@ class ShareRosterDetail extends StatefulWidget {
   /// Opens a tilette's comments (its one thread, shared with everyone on
   /// it); no comments buttons without it.
   final void Function(TileShareTemplate tilette)? onComments;
+  final WidgetBuilder? activityBuilder;
+  final void Function(TileShareTemplate)? onNotes;
+  final void Function(TileShareTemplate)? onOpen;
 
   /// How many people (or tasks) the Overview previews.
   static const int previewCount = 3;
@@ -131,6 +154,9 @@ class ShareRosterDetail extends StatefulWidget {
     required this.recipients,
     required this.mode,
     this.onComments,
+    this.activityBuilder,
+    this.onNotes,
+    this.onOpen,
   });
 
   @override
@@ -140,6 +166,7 @@ class ShareRosterDetail extends StatefulWidget {
 class _ShareRosterDetailState extends State<ShareRosterDetail> {
   TileShareRosterCubit? _roster;
   _Segment _segment = _Segment.overview;
+  ShareWorkFilter _filter = ShareWorkFilter.all;
 
   List<TileShareTemplate> get _tilettes => widget.mode == RosterMode.broadcast
       ? widget.detail.tilettes.take(1).toList()
@@ -148,6 +175,7 @@ class _ShareRosterDetailState extends State<ShareRosterDetail> {
   @override
   void initState() {
     super.initState();
+    if (widget.mode != RosterMode.broadcast) _segment = _Segment.tasks;
     _start();
   }
 
@@ -187,43 +215,78 @@ class _ShareRosterDetailState extends State<ShareRosterDetail> {
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final TileShareRosterCubit? roster = _roster;
+    final comfortable =
+        TileShareDisplayScope.densityOf(context) == TiletteDensity.comfortable;
     if (roster == null) return const SizedBox.shrink();
     final List<_Segment> segments = [
-      _Segment.overview,
+      if (widget.mode == RosterMode.broadcast) _Segment.overview,
       if (widget.mode != RosterMode.broadcast) _Segment.tasks,
       _Segment.participants,
+      if (widget.mode != RosterMode.broadcast)
+        widget.activityBuilder == null ? _Segment.overview : _Segment.activity,
     ];
     String label(_Segment s) => switch (s) {
           _Segment.overview => l10n.overview,
-          _Segment.tasks => l10n.detailTasks,
-          _Segment.participants => l10n.broadcastParticipants,
+          _Segment.tasks => l10n.shareWork,
+          _Segment.participants => l10n.sharePeople,
+          _Segment.activity => l10n.shareActivity,
         };
     return BlocProvider<TileShareRosterCubit>.value(
       value: roster,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SegmentedButton<_Segment>(
-            showSelectedIcon: false,
-            segments: [
-              for (final _Segment s in segments)
-                ButtonSegment<_Segment>(
-                  value: s,
-                  label: Text(label(s),
-                      key: Key('roster_segment_${s.name}'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+          if (widget.mode != RosterMode.broadcast) ...[
+            BlocBuilder<TileShareRosterCubit, TileShareRosterState>(
+              builder: (context, state) => InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  showDragHandle: true,
+                  builder: (sheetContext) => TileShareDisplayScope.wrap(
+                      context,
+                      SafeArea(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(20),
+                          child: _Overview(
+                            state: state,
+                            mode: widget.mode,
+                            tilettes: _tilettes,
+                            onParticipants: () {
+                              Navigator.pop(sheetContext);
+                              _go(_Segment.participants);
+                            },
+                            onTasks: () {
+                              Navigator.pop(sheetContext);
+                              _go(_Segment.tasks);
+                            },
+                            onComments: widget.onComments,
+                          ),
+                        ),
+                      )),
                 ),
+                child: _WorkSummary(
+                    state: state, mode: widget.mode, tilettes: _tilettes),
+              ),
+            ),
+            SizedBox(height: comfortable ? 20 : 8),
+          ],
+          ShareDetailTabs<_Segment>(
+            tabs: [
+              for (final _Segment s in segments)
+                (s, label(s), Key('roster_segment_${s.name}')),
             ],
-            selected: {_segment},
-            onSelectionChanged: (s) => _go(s.first),
+            selected: _segment,
+            onChanged: _go,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: comfortable ? 16 : 8),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             child: BlocBuilder<TileShareRosterCubit, TileShareRosterState>(
               key: ValueKey<_Segment>(_segment),
               builder: (context, state) => switch (_segment) {
+                _Segment.activity => widget.activityBuilder!(context),
                 _Segment.overview => _Overview(
                     state: state,
                     mode: widget.mode,
@@ -236,10 +299,19 @@ class _ShareRosterDetailState extends State<ShareRosterDetail> {
                         state: state,
                         roster: roster,
                         tilettes: _tilettes,
+                        filter: _filter,
+                        onFilter: (filter) => setState(() => _filter = filter),
+                        onNotes: widget.onNotes,
+                        onOpen: widget.onOpen,
                         onComments: widget.onComments)
                     : _Tasks(
                         state: state,
                         tilettes: _tilettes,
+                        filter: _filter,
+                        onFilter: (filter) => setState(() => _filter = filter),
+                        onNotes: widget.onNotes,
+                        onOpen: widget.onOpen,
+                        onMissingAssignments: () => _go(_Segment.participants),
                         onComments: widget.onComments),
                 _Segment.participants => _Participants(
                     state: state,
@@ -268,6 +340,97 @@ List<(RosterRow, RosterCell)> _assigneesOf(List<RosterRow> rows, int index) =>
         if (index < r.cells.length && r.cells[index].isPresent)
           (r, r.cells[index]),
     ];
+
+class _WorkSummary extends StatelessWidget {
+  final TileShareRosterState state;
+  final RosterMode mode;
+  final List<TileShareTemplate> tilettes;
+  const _WorkSummary(
+      {required this.state, required this.mode, required this.tilettes});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final rows = state.rows.where((r) => r.assignmentId != null).toList();
+    bool complete(RosterCell c) =>
+        c.rsvp == InvitationStatus.accepted &&
+        (shareCompletion(c.completion) ?? 0) >= 100;
+    if (mode == RosterMode.classMode) {
+      final assignments =
+          rows.expand((r) => r.cells).where((c) => c.isPresent).toList();
+      final total = assignments.length;
+      final missing = rows.length * tilettes.length - total;
+      final done = assignments.where(complete).length;
+      final attention = rows
+          .where((r) =>
+              r.isIncomplete ||
+              r.delivery == RecipientDelivery.failed ||
+              r.cells.any(
+                  (c) => c.isPresent && c.rsvp != InvitationStatus.accepted))
+          .length;
+      return ShareWorkSummary(
+        key: const Key('class_work_summary'),
+        progress:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          ShareCompletionBar(
+              value: total == 0 ? 0 : done / total,
+              label: l.shareCompletionCount(done, total)),
+          if (missing > 0)
+            Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(l.shareMissingAssignments(missing),
+                    style: TextStyle(color: TileColors.progressMedium))),
+        ]),
+        stats: [
+          (Icons.people_outline, rows.length, l.sharePeople, scheme.tertiary),
+          (
+            Icons.error_outline,
+            attention,
+            l.shareNeedsAttention,
+            TileColors.progressMedium
+          ),
+        ],
+      );
+    }
+    int attention = 0, active = 0, done = 0, accepted = 0;
+    for (int i = 0; i < tilettes.length; i++) {
+      final cells = _assigneesOf(rows, i).map((a) => a.$2).toList();
+      if (cells.isEmpty ||
+          cells.any((c) => c.rsvp != InvitationStatus.accepted)) {
+        attention++;
+      } else if (cells.every(complete)) {
+        done++;
+      } else if (cells.any((c) => (shareCompletion(c.completion) ?? 0) > 0)) {
+        active++;
+      } else {
+        accepted++;
+      }
+    }
+    return ShareWorkSummary(key: const Key('project_work_summary'), stats: [
+      (
+        Icons.error_outline,
+        attention,
+        l.shareNeedsAttention,
+        TileColors.progressMedium
+      ),
+      (
+        Icons.timelapse,
+        active,
+        l.shareInProgress,
+        TileColors.responseTileShare
+      ),
+      (
+        Icons.check_circle_outline,
+        done,
+        l.completed,
+        TileColors.acceptedTileShare
+      ),
+      if (accepted > 0)
+        (Icons.check, accepted, l.accepted, scheme.onSurfaceVariant),
+    ]);
+  }
+}
 
 class _Overview extends StatelessWidget {
   final TileShareRosterState state;
@@ -460,12 +623,20 @@ class _Board extends StatelessWidget {
   final List<TileShareTemplate> tilettes;
 
   final void Function(TileShareTemplate tilette)? onComments;
+  final void Function(TileShareTemplate)? onNotes;
+  final void Function(TileShareTemplate)? onOpen;
+  final ShareWorkFilter filter;
+  final ValueChanged<ShareWorkFilter> onFilter;
 
   const _Board(
       {required this.state,
       required this.roster,
       required this.tilettes,
-      this.onComments});
+      this.onComments,
+      this.onNotes,
+      this.onOpen,
+      required this.filter,
+      required this.onFilter});
 
   Future<void> _assign(BuildContext context, int index) async {
     final TileShareTemplate tilette = tilettes[index];
@@ -483,12 +654,21 @@ class _Board extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TaskEditor? editor = TaskEditor.of(context);
+    final visible = [
+      for (int i = 0; i < tilettes.length; i++)
+        if (matchesShareWorkFilter(
+            filter,
+            _assigneesOf(state.rows, i)
+                .map((a) => (a.$2.rsvp, a.$2.completion))))
+          i
+    ];
     return Column(
       key: const Key('project_board'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         TasksHeader(
           count: tilettes.length,
+          filter: ShareWorkFilterButton(selected: filter, onChanged: onFilter),
           // A new Project task goes to the assignee picked, or to no one.
           onAdd: editor == null
               ? null
@@ -496,8 +676,11 @@ class _Board extends StatelessWidget {
                   people: TaskSheetPeople.assignee, projectPeople: state.rows),
         ),
         AnimatedKeyedColumn(children: [
-          for (int i = 0; i < tilettes.length; i++)
-            TaskCard(
+          if (visible.isEmpty && filter != ShareWorkFilter.all)
+            Text(AppLocalizations.of(context)!.shareNoMatches,
+                key: const Key('share_filter_empty')),
+          for (final i in visible)
+            KeyedSubtree(
               key: ValueKey<String>('project_card_${tilettes[i].id}'),
               child: ProjectTaskRow(
                 tilette: tilettes[i],
@@ -507,6 +690,8 @@ class _Board extends StatelessWidget {
                 onRetry: () => roster.retryTask(tilettes[i].id ?? ''),
                 onComments:
                     onComments == null ? null : () => onComments!(tilettes[i]),
+                onNotes: onNotes == null ? null : () => onNotes!(tilettes[i]),
+                onOpen: onOpen == null ? null : () => onOpen!(tilettes[i]),
                 menu: editor == null
                     ? null
                     : TaskMenu(
@@ -526,8 +711,21 @@ class _Tasks extends StatelessWidget {
   final List<TileShareTemplate> tilettes;
 
   final void Function(TileShareTemplate tilette)? onComments;
+  final void Function(TileShareTemplate)? onNotes;
+  final void Function(TileShareTemplate)? onOpen;
+  final ShareWorkFilter filter;
+  final ValueChanged<ShareWorkFilter> onFilter;
+  final VoidCallback onMissingAssignments;
 
-  const _Tasks({required this.state, required this.tilettes, this.onComments});
+  const _Tasks(
+      {required this.state,
+      required this.tilettes,
+      this.onComments,
+      this.onNotes,
+      this.onOpen,
+      required this.filter,
+      required this.onFilter,
+      required this.onMissingAssignments});
 
   @override
   Widget build(BuildContext context) {
@@ -536,12 +734,26 @@ class _Tasks extends StatelessWidget {
     final TextStyle? quiet = theme.textTheme.bodySmall
         ?.copyWith(color: theme.colorScheme.onSurfaceVariant);
     final TaskEditor? editor = TaskEditor.of(context);
+    final savedRows = state.rows.where((r) => r.assignmentId != null).toList();
+    List<RosterCell> cellsAt(int i) => [
+          for (final r in savedRows)
+            if (i < r.cells.length && r.cells[i].isPresent) r.cells[i],
+        ];
+    final visible = [
+      for (int i = 0; i < tilettes.length; i++)
+        if (filter == ShareWorkFilter.attention &&
+                cellsAt(i).length < savedRows.length ||
+            matchesShareWorkFilter(
+                filter, cellsAt(i).map((c) => (c.rsvp, c.completion))))
+          i
+    ];
     return Column(
       key: const Key('class_tasks'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         TasksHeader(
           count: tilettes.length,
+          filter: ShareWorkFilterButton(selected: filter, onChanged: onFilter),
           // Everyone in a Class has every task, the new one too.
           onAdd: editor == null
               ? null
@@ -554,56 +766,75 @@ class _Tasks extends StatelessWidget {
                       ]),
         ),
         AnimatedKeyedColumn(children: [
-          for (int i = 0; i < tilettes.length; i++)
+          if (visible.isEmpty && filter != ShareWorkFilter.all)
+            Text(l10n.shareNoMatches, key: const Key('share_filter_empty')),
+          for (final i in visible)
             () {
-              final List<RosterCell> cells = <RosterCell>[
-                for (final RosterRow r in state.rows)
-                  if (i < r.cells.length && r.cells[i].isPresent) r.cells[i],
-              ];
+              final cells = cellsAt(i);
+              final missing = savedRows.length - cells.length;
+              final done = cells
+                  .where((c) =>
+                      c.rsvp == InvitationStatus.accepted &&
+                      (shareCompletion(c.completion) ?? 0) >= 100)
+                  .length;
               final int accepted = cells
                   .where((c) => c.rsvp == InvitationStatus.accepted)
                   .length;
               final TileShareTemplate t = tilettes[i];
-              return TaskCard(
+              return TiletteWorkCard(
                 key: Key('class_task_${t.id}'),
-                child: Row(
-                  children: [
-                    Icon(Icons.task_alt,
-                        size: 18, color: theme.colorScheme.onSurfaceVariant),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text((t.name ?? '').trim().isEmpty
-                              ? l10n.clusterTitleFallback
-                              : t.name!.trim()),
-                          Text(l10n.clusterRsvpAccepted(accepted, cells.length),
-                              style: quiet),
-                        ],
-                      ),
-                    ),
-                    if ((t.durationInMs ?? 0) > 0)
-                      Text(
-                          Duration(milliseconds: t.durationInMs!)
-                              .toHumanLocalized(context),
-                          style: quiet),
-                    if (onComments != null)
-                      IconButton(
-                        key: Key('class_task_comments_${t.id}'),
-                        tooltip: l10n.commentsTitle,
-                        icon: const Icon(Icons.chat_bubble_outline),
-                        onPressed: () => onComments!(t),
-                      ),
-                    if (editor != null)
-                      TaskMenu(
-                          tilette: t,
-                          editor: editor,
-                          people: TaskSheetPeople.everyone)
-                    else
-                      const SizedBox(width: 10, height: 48),
-                  ],
-                ),
+                title: t.name ?? '',
+                onOpen: onOpen == null ? null : () => onOpen!(t),
+                durationMs: t.durationInMs,
+                dueMs: t.end,
+                menu: editor == null
+                    ? null
+                    : TaskMenu(
+                        tilette: t,
+                        editor: editor,
+                        people: TaskSheetPeople.everyone),
+                status: Text(
+                    cells.isEmpty
+                        ? l10n.projectUnassigned
+                        : l10n.clusterRsvpAccepted(accepted, cells.length),
+                    style: quiet),
+                compactStatus: Text(
+                    cells.isEmpty
+                        ? l10n.projectUnassigned
+                        : l10n.clusterRsvpAccepted(accepted, cells.length),
+                    style: quiet),
+                listStatus: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Text(
+                      cells.isEmpty
+                          ? l10n.projectUnassigned
+                          : l10n.shareCompletionCount(done, cells.length),
+                      style: quiet),
+                  if (missing > 0)
+                    Tooltip(
+                        message: l10n.shareMissingAssignments(missing),
+                        child: const Icon(Icons.person_add_alt_1_outlined,
+                            size: 18, color: TileColors.progressMedium)),
+                ]),
+                details: missing == 0
+                    ? null
+                    : Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: TextButton.icon(
+                            key: Key('class_task_missing_${t.id}'),
+                            onPressed: onMissingAssignments,
+                            icon: const Icon(Icons.person_add_alt_1_outlined,
+                                size: 18),
+                            label:
+                                Text(l10n.shareMissingAssignments(missing)))),
+                progress: cells.isEmpty
+                    ? null
+                    : ShareCompletionBar(
+                        value: done / cells.length,
+                        label: l10n.shareCompletionCount(done, cells.length)),
+                onNotes: onNotes == null ? null : () => onNotes!(t),
+                onComments: onComments == null ? null : () => onComments!(t),
+                notesKey: Key('class_task_notes_${t.id}'),
+                commentsKey: Key('class_task_comments_${t.id}'),
               );
             }(),
         ]),
@@ -675,7 +906,7 @@ class _Participants extends StatelessWidget {
             // assigned a tilette.
             child: Text(
                 mode == RosterMode.project
-                    ? l10n.projectNoParticipants
+                    ? l10n.shareProjectNoPeople
                     : l10n.broadcastNoParticipants,
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),

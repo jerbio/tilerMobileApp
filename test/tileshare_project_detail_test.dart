@@ -15,7 +15,9 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/shareRosterDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/tileShareDetailScaffold.dart';
 import 'package:tiler_app/theme/theme_data.dart';
+import 'package:tiler_app/services/tileShare/tileShareDisplaySettings.dart';
 
+import 'helpers/tap_visible.dart';
 import 'helpers/tileshare_fakes.dart';
 import 'helpers/tileshare_fixtures.dart';
 
@@ -39,7 +41,8 @@ class _Rig {
           tsTilette('t3', clusterId: 'p', name: 'Launch', assignees: []),
         ] {
     clusters = FakeTileShareClustersSource(outbox: [
-      tsCluster('p', name: 'Launch prep', mode: TileShareMode.project, creatorId: 'me'),
+      tsCluster('p',
+          name: 'Launch prep', mode: TileShareMode.project, creatorId: 'me'),
     ], tilettesByCluster: {
       'p': tilettes,
     });
@@ -53,7 +56,8 @@ class _Rig {
   }
 
   List<String> changes() => recipients.calls
-      .where((c) => c.startsWith('addRecipient') || c.startsWith('removeRecipient'))
+      .where((c) =>
+          c.startsWith('addRecipient') || c.startsWith('removeRecipient'))
       .toList();
 }
 
@@ -66,7 +70,11 @@ Future<void> _settle(WidgetTester tester) async {
 Future<void> _open(WidgetTester tester, _Rig rig,
     {Size size = const Size(390, 1000),
     ThemeData? theme,
+    TiletteDensity density = TiletteDensity.compact,
+    void Function(TileShareTemplate)? onOpen,
     double textScale = 1}) async {
+  final display = TileShareDisplaySettings.memory(density: density);
+  addTearDown(display.dispose);
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
@@ -88,9 +96,10 @@ Future<void> _open(WidgetTester tester, _Rig rig,
     home: BlocProvider.value(
       value: rig.detail,
       child: TileShareDetailScaffold(
+        displaySettings: display,
         now: _now,
-        contentBuilder: (context, state) =>
-            ProjectDetail(detail: state, recipients: rig.recipients),
+        contentBuilder: (context, state) => ProjectDetail(
+            detail: state, recipients: rig.recipients, onOpen: onOpen),
       ),
     ),
   ));
@@ -101,21 +110,109 @@ Finder _key(String k) => find.byKey(Key(k));
 Finder _task(String id) => _key('project_task_$id');
 
 Future<void> _segment(WidgetTester tester, String name) async {
-  await tester.tap(_key('roster_segment_$name'));
+  await tapVisible(tester, _key('roster_segment_$name'));
   await _settle(tester);
 }
 
 void main() {
+  testWidgets('owners can assign the first person directly in every density',
+      (tester) async {
+    for (final density in TiletteDensity.values) {
+      final rig = _Rig();
+      rig.clusters.tilettesByCluster['p'] = [rig.tilettes.last];
+      final opened = <String>[];
+      await _open(tester, rig,
+          density: density,
+          size: density == TiletteDensity.list
+              ? const Size(320, 900)
+              : const Size(390, 1000),
+          textScale: density == TiletteDensity.list ? 1.6 : 1,
+          onOpen: (task) => opened.add(task.id!));
+      await _segment(tester, 'tasks');
+      await tapVisible(tester, _key('project_assign_t3'));
+      await _settle(tester);
+      expect(opened, isEmpty,
+          reason: 'Assign opens the picker, not the detail');
+      await tester.enterText(
+          find.descendant(
+              of: _key('project_assign_sheet'),
+              matching: find.byType(TextField)),
+          'first@x.com');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await _settle(tester);
+      expect(rig.changes(), ['addRecipient(t3, first@x.com)']);
+      expect(rig.tilettes.last.designatedUsers, hasLength(1));
+      expect(_key('project_assign_t3'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await rig.detail.close();
+    }
+  });
+
+  testWidgets(
+      'pending assignment fits every density without duplicate controls',
+      (tester) async {
+    for (final density in TiletteDensity.values) {
+      final rig = _Rig();
+      rig.clusters.tilettesByCluster['p'] = [rig.tilettes.last];
+      await _open(tester, rig, density: density, onOpen: (_) {});
+      await _segment(tester, 'tasks');
+      await tapVisible(tester, _key('project_assign_t3'));
+      await _settle(tester);
+      rig.recipients.hold();
+      await tester.enterText(
+          find.descendant(
+              of: _key('project_assign_sheet'),
+              matching: find.byType(TextField)),
+          'first@x.com');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await _settle(tester);
+      expect(_key('project_assign_t3'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      rig.recipients.release();
+      await _settle(tester);
+      expect(_key('project_assign_t3'), findsOneWidget);
+      expect(rig.changes(), ['addRecipient(t3, first@x.com)']);
+      await rig.detail.close();
+    }
+  });
+
+  testWidgets('List view keeps failed assignment retry accessible',
+      (tester) async {
+    final rig = _Rig();
+    rig.clusters.tilettesByCluster['p'] = [rig.tilettes.last];
+    await _open(tester, rig, density: TiletteDensity.list, onOpen: (_) {});
+    await _segment(tester, 'tasks');
+    rig.recipients.failNextOn('addRecipient', StateError('offline'));
+    await tapVisible(tester, _key('project_assign_t3'));
+    await _settle(tester);
+    await tester.enterText(
+        find.descendant(
+            of: _key('project_assign_sheet'), matching: find.byType(TextField)),
+        'first@x.com');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await _settle(tester);
+    expect(rig.tilettes.last.designatedUsers, isEmpty);
+    await tapVisible(tester, _key('project_retry_t3'));
+    await _settle(tester);
+    expect(rig.tilettes.last.designatedUsers, hasLength(1));
+    expect(_key('project_retry_t3'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await rig.detail.close();
+  });
+
   group('Overview', () {
-    testWidgets('counts tasks, flags tasks with no one, and previews the '
+    testWidgets(
+        'counts tasks, flags tasks with no one, and previews the '
         'board', (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
+      await _segment(tester, 'overview');
       expect(find.text('1 of 3 tilettes accepted'), findsOneWidget);
       expect(find.text('1 tilette has no one assigned'), findsOneWidget);
       expect(_task('t1'), findsOneWidget);
       expect(find.text('Accept all'), findsNothing);
-      await tester.tap(find.text('1 tilette has no one assigned'));
+      await tapVisible(tester, find.text('1 tilette has no one assigned'));
       await _settle(tester);
       expect(_key('project_assign_t3'), findsOneWidget);
       await rig.detail.close();
@@ -123,7 +220,8 @@ void main() {
   });
 
   group('Tasks', () {
-    testWidgets('each task with its assignee, their answer and that task\'s '
+    testWidgets(
+        'each task with its assignee, their answer and that task\'s '
         'own progress; a task with no one is flagged', (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
@@ -136,7 +234,9 @@ void main() {
           findsOneWidget);
       expect(find.descendant(of: _task('t2'), matching: find.text('Invited')),
           findsOneWidget);
-      expect(find.descendant(of: _task('t3'), matching: find.text('No one assigned')),
+      expect(
+          find.descendant(
+              of: _task('t3'), matching: find.text('No one assigned')),
           findsOneWidget);
       expect(find.descendant(of: _task('t3'), matching: find.text('Assign')),
           findsOneWidget);
@@ -152,12 +252,13 @@ void main() {
       final rig = _Rig();
       await _open(tester, rig);
       await _segment(tester, 'tasks');
-      await tester.tap(_key('project_assign_t1'));
+      await tapVisible(tester, _key('project_assign_t1'));
       await _settle(tester);
       expect(find.text('Assign Research'), findsOneWidget);
       await tester.enterText(
           find.descendant(
-              of: _key('project_assign_sheet'), matching: find.byType(TextField)),
+              of: _key('project_assign_sheet'),
+              matching: find.byType(TextField)),
           'cy@x.com');
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await _settle(tester);
@@ -170,15 +271,19 @@ void main() {
       await rig.detail.close();
     });
 
-    testWidgets('a task with no one can be given to someone already in the '
+    testWidgets(
+        'a task with no one can be given to someone already in the '
         'project', (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
       await _segment(tester, 'tasks');
-      await tester.tap(_key('project_assign_t3'));
+      await tapVisible(tester, _key('project_assign_t3'));
       await _settle(tester);
-      await tester.tap(find.descendant(
-          of: _key('project_assign_sheet'), matching: find.text('bob@x.com')));
+      await tapVisible(
+          tester,
+          find.descendant(
+              of: _key('project_assign_sheet'),
+              matching: find.text('bob@x.com')));
       await _settle(tester);
       expect(rig.changes(), ['addRecipient(t3, bob@x.com)']);
       expect(find.descendant(of: _task('t3'), matching: find.text('bob@x.com')),
@@ -192,19 +297,22 @@ void main() {
       await _open(tester, rig);
       await _segment(tester, 'tasks');
       rig.recipients.failNextOn('addRecipient', StateError('offline'));
-      await tester.tap(_key('project_assign_t1'));
+      await tapVisible(tester, _key('project_assign_t1'));
       await _settle(tester);
       await tester.enterText(
           find.descendant(
-              of: _key('project_assign_sheet'), matching: find.byType(TextField)),
+              of: _key('project_assign_sheet'),
+              matching: find.byType(TextField)),
           'cy@x.com');
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await _settle(tester);
-      expect(find.descendant(of: _task('t1'), matching: find.text('Couldn’t reassign.')),
+      expect(
+          find.descendant(
+              of: _task('t1'), matching: find.text('Couldn’t reassign.')),
           findsOneWidget);
       expect(find.descendant(of: _task('t1'), matching: find.text('ann@x.com')),
           findsOneWidget);
-      await tester.tap(_key('project_retry_t1'));
+      await tapVisible(tester, _key('project_retry_t1'));
       await _settle(tester);
       expect(find.descendant(of: _task('t1'), matching: find.text('cy@x.com')),
           findsOneWidget);
@@ -213,18 +321,21 @@ void main() {
   });
 
   group('Participants', () {
-    testWidgets('who is in and what each owns; people join through a task, '
+    testWidgets(
+        'who is in and what each owns; people join through a task, '
         'so there is no add field', (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
       await _segment(tester, 'participants');
       expect(
           find.descendant(
-              of: _key('participant_row_ann@x.com'), matching: find.text('Owns 1 tilette')),
+              of: _key('participant_row_ann@x.com'),
+              matching: find.text('Owns 1 tilette')),
           findsOneWidget);
       expect(
           find.descendant(
-              of: _key('participant_row_ann@x.com'), matching: find.text('Research')),
+              of: _key('participant_row_ann@x.com'),
+              matching: find.text('Research')),
           findsOneWidget);
       expect(_key('roster_add_participant'), findsNothing);
       await rig.detail.close();

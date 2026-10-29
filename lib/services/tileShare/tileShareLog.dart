@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/util.dart';
 
@@ -5,13 +6,21 @@ import 'package:tiler_app/util.dart';
 /// where they came from (`TileShareAttention: …`, `TileShareInvitationsApi: …`)
 /// and easy to filter in the console.
 ///
-/// The default sink is the project's [Utility.debugPrint], which prints in
-/// debug builds and for the developer account in production. Tests replace
-/// [sink] to read what was logged.
+/// Flutter debug builds log regardless of which backend they connect to.
+/// Profile/release builds can opt in with
+/// `--dart-define=TILESHARE_DIAGNOSTICS=true`; otherwise they keep the project's
+/// [Utility.debugPrint] policy. Tests replace [sink] to read what was logged.
 abstract final class TileShareLog {
+  static const bool _diagnosticsEnabled =
+      bool.fromEnvironment('TILESHARE_DIAGNOSTICS');
+
   static void Function(String message) sink = _defaultSink;
 
   static void _defaultSink(String message) {
+    if (kDebugMode || _diagnosticsEnabled) {
+      debugPrint(message);
+      return;
+    }
     Utility.debugPrint(message);
   }
 

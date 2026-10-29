@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
 
 /// Where the signed-in user stands in one cluster shared with them.
 enum MyClusterAnswer {
@@ -61,15 +62,17 @@ class MyClusterStatus extends Equatable {
   /// or with no signed-in user, is never mine. A tile without a cluster is
   /// ignored. A status the server spells unexpectedly (`tentative`, something
   /// new) counts as still to answer, never as an answer.
+  /// [tilettes] supplies full rosters when mobile assignments omit them.
   static Map<String, MyClusterStatus> byCluster(Iterable<DesignatedTile> tiles,
-      {required String? userId}) {
+      {required String? userId,
+      Iterable<TileShareTemplate> tilettes = const <TileShareTemplate>[]}) {
     if (userId == null || userId.isEmpty) {
       return const <String, MyClusterStatus>{};
     }
     final Map<String, List<int>> counts = <String, List<int>>{};
     final Map<String, List<String>> pendingIds = <String, List<String>>{};
     for (final DesignatedTile tile in tiles) {
-      if (tile.designatedUserId != userId) continue;
+      if (tile.resolveDesignatedUserId(tilettes) != userId) continue;
       final String? clusterId = tile.tileTemplate?.clusterId;
       if (clusterId == null || clusterId.isEmpty) continue;
       // [accepted, declined, pending]

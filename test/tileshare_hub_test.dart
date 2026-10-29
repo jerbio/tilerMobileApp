@@ -182,7 +182,7 @@ void main() {
         (tester) async {
       final rig = _Rig();
       await _openHub(tester, rig);
-      expect(tester.getSize(find.byType(AppBar)).height, 48);
+      expect(tester.getSize(find.byType(AppBar)).height, kToolbarHeight);
       expect(find.text('Tile Share'), findsOneWidget);
       expect(find.byKey(const Key('hub_activity')), findsOneWidget);
       expect(find.byKey(const Key('hub_create')), findsOneWidget);

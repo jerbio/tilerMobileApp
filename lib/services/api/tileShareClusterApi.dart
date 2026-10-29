@@ -16,8 +16,51 @@ import 'package:tiler_app/util.dart';
 import '../../constants.dart' as Constants;
 
 class TileShareClusterApi extends AppApi {
+  static const String _tag = 'TileShareClusterApi';
+
   TileShareClusterApi({required Function? getContextCallBack})
       : super(getContextCallBack: getContextCallBack);
+
+  /// Report the response shape without dumping profiles, notes or credentials.
+  void _logAssignmentResponse(String request, http.Response response) {
+    TileShareLog.d(_tag,
+        '$request -> HTTP ${response.statusCode} (${response.body.length} chars)');
+    try {
+      final dynamic decoded = jsonDecode(response.body);
+      if (decoded is! Map) {
+        TileShareLog.d(_tag, '$request response type=${decoded.runtimeType}');
+        return;
+      }
+      final dynamic error = decoded['Error'];
+      final dynamic content = decoded['Content'];
+      TileShareLog.d(
+          _tag,
+          '$request response keys=${decoded.keys.toList()} '
+          'errorCode=${error is Map ? error['Code'] : '-'} '
+          'errorMessage=${error is Map ? error['Message'] : '-'} '
+          'content=${content is Map ? content.keys.toList() : content.runtimeType}');
+      if (content is Map && content['designatedTiles'] is List) {
+        final List rows = content['designatedTiles'];
+        TileShareLog.d(_tag, '$request designatedTiles=${rows.length}');
+        // Field names reveal missing/case-mismatched mobile payload fields.
+        for (final row in rows.take(50)) {
+          if (row is! Map) continue;
+          final dynamic template = row['template'];
+          final dynamic roster =
+              template is Map ? template['designatedUsers'] : null;
+          TileShareLog.d(
+              _tag,
+              '$request assignment=${row['id']} keys=${row.keys.toList()} '
+              'templateKeys=${template is Map ? template.keys.toList() : template.runtimeType} '
+              'rosterCount=${roster is List ? roster.length : '-'} '
+              'rosterEntryKeys=${roster is List ? roster.whereType<Map>().take(1).map((u) => u.keys.toList()).toList() : []}');
+        }
+      }
+    } catch (_) {
+      TileShareLog.d(_tag, '$request response shape unavailable');
+    }
+  }
+
   /// Creates [tileCluster]; answers with the new share as the server sends
   /// it back (with its id).
   Future<TileShareClusterData> createCluster(
@@ -153,6 +196,9 @@ class TileShareClusterApi extends AppApi {
 
   Future<List<DesignatedTile>> getDesignatedTiles(
       {int index = 0, int pageSize = 50, String? clusterId}) async {
+    final String request = 'GET api/DesignatedTile/designated '
+        'cluster=$clusterId index=$index pageSize=$pageSize MobileApp=true';
+    TileShareLog.d(_tag, '$request preparing');
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
       String tilerDomain = Constants.tilerDomain;
@@ -173,15 +219,16 @@ class TileShareClusterApi extends AppApi {
 
         var header = this.getHeaders();
         if (header == null) {
+          TileShareLog.d(_tag, '$request not sent: no headers');
           throw TilerError(Message: 'Issues with authentication');
         }
 
+        TileShareLog.d(_tag, '$request sending');
         var response = await http.get(uri, headers: header);
+        _logAssignmentResponse(request, response);
         var jsonResult = jsonDecode(response.body);
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
-            Utility.debugPrint("We have a result");
-            print(jsonResult);
             if (jsonResult['Content'].containsKey('designatedTiles')) {
               List designatedTilesJson =
                   jsonResult['Content']['designatedTiles'];
@@ -189,15 +236,22 @@ class TileShareClusterApi extends AppApi {
                   .where((element) => element != null)
                   .map<DesignatedTile>((e) => DesignatedTile.fromJson(e))
                   .toList();
-              print("jsonParseComplete");
+              TileShareLog.d(_tag,
+                  '$request parsed assignments=${designatedTiles.length}');
 
               return designatedTiles;
             }
           }
         }
+        TileShareLog.d(_tag,
+            '$request failed: expected successful designatedTiles content');
         throw TilerError(
             Message: 'Tiler disagrees with you, please try again later');
+      } else {
+        TileShareLog.d(_tag, '$request not sent: no cached credentials');
       }
+    } else {
+      TileShareLog.d(_tag, '$request not sent: not authenticated');
     }
     throw TilerError(
         Message: 'Tiler disagrees with you, please try again later');
@@ -397,6 +451,9 @@ class TileShareClusterApi extends AppApi {
 
   Future<DesignatedTile?> statusUpdate(
       String designatedTileId, InvitationStatus invitationStatus) async {
+    final String request = 'POST api/DesignatedTile/status '
+        'id=$designatedTileId status=${invitationStatus.name}';
+    TileShareLog.d(_tag, '$request preparing');
     TilerError error = new TilerError();
     error.Message = "Did not send request";
     bool userIsAuthenticated = true;
@@ -412,31 +469,29 @@ class TileShareClusterApi extends AppApi {
           "Status": invitationStatus.name.toString()
         };
 
-        Utility.debugPrint(
-            "Designated tile update" + updatedStatusCluster.toString());
         Map<String, dynamic> injectedParameters = await injectRequestParams(
             updatedStatusCluster,
             includeLocationParams: false);
-        Utility.debugPrint("injectRequestParams Tilecluster api" +
-            updatedStatusCluster.toString());
         Uri uri = Uri.https(url, 'api/DesignatedTile/status');
         var header = this.getHeaders();
-        Utility.debugPrint(
-            "headers Tilecluster api" + updatedStatusCluster.toString());
         if (header == null) {
+          TileShareLog.d(_tag, '$request not sent: no headers');
           throw TilerError(Message: 'Issues with authentication');
         }
+        TileShareLog.d(_tag, '$request sending');
         var response = await httpClient
             .post(uri, headers: header, body: jsonEncode(injectedParameters))
             .timeout(
           AppApi.requestTimeout,
           onTimeout: () {
+            TileShareLog.d(_tag, '$request timed out');
             throw TilerError(
                 Message:
                     LocalizationService.instance.translations.requestTimeout);
           },
         );
 
+        _logAssignmentResponse(request, response);
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
@@ -446,20 +501,31 @@ class TileShareClusterApi extends AppApi {
             if (designatedTileJson != null) {
               DesignatedTile designatedTile =
                   DesignatedTile.fromJson(designatedTileJson);
+              TileShareLog.d(_tag,
+                  '$request parsed id=${designatedTile.id} status=${designatedTile.invitationStatus}');
               return designatedTile;
             }
+            TileShareLog.d(
+                _tag, '$request succeeded without a designatedTile in content');
             return null;
           }
         }
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];
           error = TilerError.fromJson(errorJson);
+          TileShareLog.d(
+              _tag, '$request failed: ${TileShareLog.describe(error)}');
           throw FormatException(error.Message!);
         } else {
           error.Message = "Issues with reaching Tiler servers";
         }
+      } else {
+        TileShareLog.d(_tag, '$request not sent: no cached credentials');
       }
+    } else {
+      TileShareLog.d(_tag, '$request not sent: not authenticated');
     }
+    TileShareLog.d(_tag, '$request failed: ${TileShareLog.describe(error)}');
     throw error;
   }
 
@@ -632,9 +698,8 @@ class TileShareClusterApi extends AppApi {
   /// and the whole body (an exception's details when the server sends them)
   /// - to troubleshoot from the device log (O30).
   void _dumpCreateFailure(Response response) {
-    final String headers = response.headers.entries
-        .map((e) => '${e.key}: ${e.value}')
-        .join('; ');
+    final String headers =
+        response.headers.entries.map((e) => '${e.key}: ${e.value}').join('; ');
     TileShareLog.d(
         'TileShareClusterApi',
         'create failed: HTTP ${response.statusCode}\n'

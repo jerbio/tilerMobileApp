@@ -581,8 +581,9 @@ class FakeTileShareEditSource
       });
 
   @override
-  Future<void> saveTaskNotes(String tiletteId, String notes) =>
-      run('saveTaskNotes($tiletteId, $notes)', () => notes_.store(tiletteId, notes));
+  Future<void> saveTaskNotes(String tiletteId, String notes) => run(
+      'saveTaskNotes($tiletteId, $notes)',
+      () => notes_.store(tiletteId, notes));
 
   /// The tilettes' notes endpoint, in memory.
   late final FakeTileShareNotesApi notes_ = FakeTileShareNotesApi(clusters);
@@ -605,9 +606,8 @@ class FakeTileShareEditSource
 /// changes with it; a write with a stale etag is a conflict that carries the
 /// stored note. Notes live on the tilettes in [clusters], so a reload shows
 /// them.
-class FakeTileShareNotesApi extends NotesApi {
+class FakeTileShareNotesApi extends NotesApi with FakeSourceControls {
   final FakeTileShareClustersSource clusters;
-  final List<String> calls = <String>[];
 
   /// The next write is a conflict, as if someone else saved first.
   bool conflictNext = false;
@@ -629,7 +629,8 @@ class FakeTileShareNotesApi extends NotesApi {
 
   /// Stores [note] on tilette [id] as the server would.
   void store(String id, String note) {
-    _tilette(id)?.miscData = TileShareTemplateMiscData.fromJson({'userNote': note});
+    _tilette(id)?.miscData =
+        TileShareTemplateMiscData.fromJson({'userNote': note});
     _etags[id] = 'e${++_version}-$id';
   }
 
@@ -642,10 +643,8 @@ class FakeTileShareNotesApi extends NotesApi {
 
   @override
   Future<NotesPayload> getNotes(String eventId,
-      {NotesScope scope = NotesScope.auto}) async {
-    calls.add('get($eventId)');
-    return _payload(eventId);
-  }
+          {NotesScope scope = NotesScope.auto}) =>
+      run('get($eventId)', () => _payload(eventId));
 
   @override
   Future<NotesPayload> updateNotes({

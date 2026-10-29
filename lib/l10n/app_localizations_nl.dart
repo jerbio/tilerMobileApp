@@ -9,29 +9,39 @@ class AppLocalizationsNl extends AppLocalizations {
   AppLocalizationsNl([String locale = 'nl']) : super(locale);
 
   @override
-  String get scheduleReadFailedTitle => 'Couldn\'t load your events.';
+  String get scheduleReadFailedTitle =>
+      'Je gebeurtenissen konden niet worden geladen.';
 
   @override
-  String get scheduleReadFailedBody => 'Try again in a moment.';
+  String get scheduleReadFailedBody => 'Probeer het zo nog eens.';
 
   @override
-  String get scheduleReadRefreshFailed => 'Couldn\'t refresh your events.';
+  String get scheduleReadRefreshFailed =>
+      'Je gebeurtenissen konden niet worden vernieuwd.';
 
   @override
-  String get scheduleReadRetained => 'Showing your last loaded schedule.';
+  String get scheduleReadRetained =>
+      'Je laatst geladen planning wordt getoond.';
 
   @override
-  String get scheduleReadRetrying => 'Trying again...';
+  String get scheduleReadRetrying => 'Opnieuw proberen...';
 
   @override
-  String get scheduleReadSignIn => 'Sign in to load your events.';
+  String get scheduleReadSignIn => 'Log in om je gebeurtenissen te laden.';
 
   @override
-  String get scheduleSummaryUnavailable => 'Summary unavailable';
+  String get scheduleSummaryUnavailable => 'Samenvatting niet beschikbaar';
 
   @override
   String get notesLoadFailed =>
       'Je notities konden niet worden geladen. Open de notitie-editor opnieuw.';
+
+  @override
+  String get shareNotesLoadFailed =>
+      'Notities konden niet worden geladen. Probeer het opnieuw.';
+
+  @override
+  String get shareAddPerson => 'Persoon toevoegen';
 
   @override
   String get onboardingSubmitFailed =>
@@ -5673,238 +5683,384 @@ class AppLocalizationsNl extends AppLocalizations {
   String get scheduleChangeAfter => 'Na';
 
   @override
-  String get vibeChatExecutionMode => 'Chat execution';
+  String get vibeChatExecutionMode => 'Chat-acties uitvoeren';
 
   @override
-  String get vibeConfirmFirst => 'Confirm first';
+  String get vibeConfirmFirst => 'Eerst bevestigen';
 
   @override
-  String get vibeAutoAct => 'Auto act';
+  String get vibeAutoAct => 'Automatisch uitvoeren';
 
   @override
   String get vibeAutoActNote =>
-      'Run supported chat actions automatically. Bulk and destructive changes still need review.';
+      'Voer ondersteunde chat-acties automatisch uit. Wijzigingen in bulk en destructieve wijzigingen moeten nog steeds worden gecontroleerd.';
 
   @override
-  String get vibeConfirmNote => 'Review chat changes before they run.';
+  String get vibeConfirmNote =>
+      'Controleer chatwijzigingen voordat ze worden uitgevoerd.';
 
   @override
-  String get vibeConfirmCreation => 'Confirm creation';
+  String get vibeConfirmCreation => 'Aanmaken bevestigen';
 
   @override
-  String get vibeCheckStatus => 'Check status';
+  String get vibeCheckStatus => 'Status controleren';
 
   @override
   String get vibeCreationUnknown =>
-      'Creation could not be confirmed. Check status before trying again.';
+      'Het aanmaken kon niet worden bevestigd. Controleer de status voordat je het opnieuw probeert.';
 
   @override
   String get vibeReviewAgain =>
-      'Review the current proposal before confirming again.';
+      'Bekijk het huidige voorstel voordat je opnieuw bevestigt.';
 
   @override
-  String get vibeTileShareCreated => 'TileShare created.';
+  String get vibeTileShareCreated => 'TileShare gemaakt.';
 
   @override
-  String get vibeCreationReview => 'Review TileShare creation';
+  String get vibeCreationReview => 'Aanmaken van TileShare controleren';
 
   @override
   String get vibeCreationNote =>
-      'Nothing is created until you confirm. Recipients still choose whether to accept; notifications are not sent by this action.';
+      'Er wordt niets gemaakt totdat je bevestigt. Ontvangers kiezen nog steeds zelf of ze accepteren; deze actie verstuurt geen meldingen.';
 
   @override
-  String get vibeCreateProject => 'Create project';
+  String get vibeCreateProject => 'Project maken';
 
   @override
-  String get vibeAddTilette => 'Add tilette';
+  String get vibeAddTilette => 'Tegeltje toevoegen';
 
   @override
   String get vibeReviewProject => 'Project';
 
   @override
-  String get vibeReviewStarts => 'Starts';
+  String get vibeReviewStarts => 'Begint';
 
   @override
   String get vibeReviewDeadline => 'Deadline';
 
   @override
-  String get vibeReviewMinutes => 'minutes';
+  String get vibeReviewMinutes => 'minuten';
 
   @override
-  String get vibeOpenTileShare => 'Open TileShare';
+  String get vibeOpenTileShare => 'TileShare openen';
 
   @override
-  String get vibeProjectRenamed => 'Project renamed.';
+  String get vibeProjectRenamed => 'Project hernoemd.';
 
   @override
-  String get vibeRenameReview => 'Review project rename';
+  String get vibeRenameReview => 'Hernoemen van project controleren';
 
   @override
-  String get vibeRenameProject => 'Rename project';
+  String get vibeRenameProject => 'Project hernoemen';
 
   @override
-  String get vibePreviousName => 'Current name';
+  String get vibePreviousName => 'Huidige naam';
 
   @override
   String get vibeRenameNote =>
-      'Only the project name changes after confirmation.';
+      'Na bevestiging verandert alleen de projectnaam.';
 
   @override
-  String get vibeConfirmRename => 'Confirm rename';
+  String get vibeConfirmRename => 'Hernoemen bevestigen';
 
   @override
   String get vibeRenameUnknown =>
-      'Rename could not be confirmed. Check status before trying again.';
+      'Het hernoemen kon niet worden bevestigd. Controleer de status voordat je het opnieuw probeert.';
 
   @override
-  String get vibeTiletteRenamed => 'Tilette renamed.';
+  String get vibeTiletteRenamed => 'Tegeltje hernoemd.';
 
   @override
-  String get vibeTiletteRenameReview => 'Review tilette rename';
+  String get vibeTiletteRenameReview => 'Hernoemen van tegeltje controleren';
 
   @override
-  String get vibeRenameTilette => 'Rename tilette';
+  String get vibeRenameTilette => 'Tegeltje hernoemen';
 
   @override
   String get vibeTiletteRenameNote =>
-      'Only the shared tilette name changes. Personal calendar titles stay as they are.';
+      'Alleen de naam van het gedeelde tegeltje verandert. Titels in persoonlijke agenda’s blijven hetzelfde.';
 
   @override
-  String get vibeNotesUpdated => 'Tilette notes updated.';
+  String get vibeNotesUpdated => 'Notities van tegeltje bijgewerkt.';
 
   @override
-  String get vibeNotesReview => 'Review tilette notes';
+  String get vibeNotesReview => 'Notities van tegeltje controleren';
 
   @override
-  String get vibeEditNotes => 'Update tilette notes';
+  String get vibeEditNotes => 'Notities van tegeltje bijwerken';
 
   @override
-  String get vibePreviousNotes => 'Current notes';
+  String get vibePreviousNotes => 'Huidige notities';
 
   @override
-  String get vibeProposedNotes => 'Proposed notes';
+  String get vibeProposedNotes => 'Voorgestelde notities';
 
   @override
-  String get vibeEmptyNotes => 'No notes';
+  String get vibeEmptyNotes => 'Geen notities';
 
   @override
-  String get vibeClearNotes => 'Clear notes';
+  String get vibeClearNotes => 'Notities wissen';
 
   @override
   String get vibeNotesNote =>
-      'The proposed text replaces the complete tilette notes after confirmation.';
+      'De voorgestelde tekst vervangt na bevestiging alle notities van het tegeltje.';
 
   @override
-  String get vibeConfirmNotes => 'Confirm notes';
+  String get vibeConfirmNotes => 'Notities bevestigen';
 
   @override
   String get vibeNotesUnknown =>
-      'Notes update could not be confirmed. Check status before trying again.';
+      'Het bijwerken van de notities kon niet worden bevestigd. Controleer de status voordat je het opnieuw probeert.';
 
   @override
-  String get vibeTiletteDeleted => 'Tilette deleted.';
+  String get vibeTiletteDeleted => 'Tegeltje verwijderd.';
 
   @override
-  String get vibeDeleteReview => 'Review tilette deletion';
+  String get vibeDeleteReview => 'Verwijderen van tegeltje controleren';
 
   @override
-  String get vibeDeleteTilette => 'Delete tilette';
+  String get vibeDeleteTilette => 'Tegeltje verwijderen';
 
   @override
-  String get vibeAssignmentCount => 'Assignments';
+  String get vibeAssignmentCount => 'Toewijzingen';
 
   @override
-  String get vibeLinkedCalendarCount => 'Linked calendar items';
+  String get vibeLinkedCalendarCount => 'Gekoppelde agenda-items';
 
   @override
   String get vibeDeleteNote =>
-      'This disables the tilette and linked calendar work. The project and other tilettes stay available. Assignment history is retained; undo is not provided here.';
+      'Dit schakelt het tegeltje en het gekoppelde agendawerk uit. Het project en andere tegeltjes blijven beschikbaar. De toewijzingsgeschiedenis blijft bewaard; ongedaan maken is hier niet mogelijk.';
 
   @override
-  String get vibeConfirmDeletion => 'Confirm deletion';
+  String get vibeConfirmDeletion => 'Verwijderen bevestigen';
 
   @override
   String get vibeDeleteUnknown =>
-      'Deletion could not be confirmed. Check status before trying again.';
+      'Het verwijderen kon niet worden bevestigd. Controleer de status voordat je het opnieuw probeert.';
 
   @override
-  String get vibeOpenProject => 'Open project';
+  String get vibeOpenProject => 'Project openen';
 
   @override
-  String get vibeTiletteUpdated => 'Tilette updated.';
+  String get vibeTiletteUpdated => 'Tegeltje bijgewerkt.';
 
   @override
-  String get vibeUpdateReview => 'Review tilette update';
+  String get vibeUpdateReview => 'Bijwerken van tegeltje controleren';
 
   @override
-  String get vibeUpdateTilette => 'Update tilette';
+  String get vibeUpdateTilette => 'Tegeltje bijwerken';
 
   @override
   String get vibeUpdateNote =>
-      'All displayed changes are saved together after confirmation. Supplied notes replace the complete note.';
+      'Alle getoonde wijzigingen worden na bevestiging samen opgeslagen. Opgegeven notities vervangen de volledige notitie.';
 
   @override
-  String get vibeConfirmUpdate => 'Confirm update';
+  String get vibeConfirmUpdate => 'Bijwerken bevestigen';
 
   @override
   String get vibeUpdateRejected =>
-      'No changes were applied. Review the response and request a revised update.';
+      'Er zijn geen wijzigingen toegepast. Bekijk het antwoord en vraag om een aangepast voorstel.';
 
   @override
   String get vibeUpdateUnknown =>
-      'Update could not be confirmed. Check status before trying again.';
+      'Het bijwerken kon niet worden bevestigd. Controleer de status voordat je het opnieuw probeert.';
 
   @override
   String get vibeScheduleUpdatePending =>
-      'Calculating accepted-work schedules. No changes have been saved yet.';
+      'Planningen voor geaccepteerd werk worden berekend. Er zijn nog geen wijzigingen opgeslagen.';
 
   @override
   String get vibeScheduleNoFit =>
-      'No changes were applied. The remaining work could not fit around protected sessions. Adjust the duration or deadline and request a revised update.';
+      'Er zijn geen wijzigingen toegepast. Het resterende werk past niet rondom beschermde sessies. Pas de duur of deadline aan en vraag om een aangepast voorstel.';
 
   @override
   String get vibeScheduleUpdateFailed =>
-      'No changes were applied. The schedule changed or calculation could not complete. Request a revised update.';
+      'Er zijn geen wijzigingen toegepast. De planning is veranderd of de berekening kon niet worden voltooid. Vraag om een aangepast voorstel.';
 
   @override
-  String get vibeUpdateProject => 'Update project';
+  String get vibeUpdateProject => 'Project bijwerken';
 
   @override
-  String get vibeProjectUpdateReview => 'Review project update';
+  String get vibeProjectUpdateReview => 'Bijwerken van project controleren';
 
   @override
-  String get vibeProjectUpdated => 'Project updated.';
+  String get vibeProjectUpdated => 'Project bijgewerkt.';
 
   @override
-  String get vibeManageAccess => 'Manage project access';
+  String get vibeManageAccess => 'Projecttoegang beheren';
 
   @override
-  String get vibeManageRecipients => 'Manage recipients';
+  String get vibeManageRecipients => 'Ontvangers beheren';
 
   @override
-  String get vibeManagementUpdated => 'Recipient or access changes saved.';
+  String get vibeManagementUpdated =>
+      'Wijzigingen in ontvangers of toegang opgeslagen.';
 
   @override
   String get vibeManagementNote =>
-      'Review the recipient and access effects above. Calendar access cleanup and restoration run in the background.';
+      'Bekijk hierboven de gevolgen voor ontvangers en toegang. Het opschonen en herstellen van agendatoegang gebeurt op de achtergrond.';
 
   @override
   String get vibeAccessReconciliation =>
-      'Access is saved. Calendar cleanup or restoration runs in the background.';
+      'De toegang is opgeslagen. Het opschonen of herstellen van de agenda gebeurt op de achtergrond.';
 
   @override
-  String get vibePlanTargetPending => 'Waiting for combined calculation';
+  String get vibePlanTargetPending => 'Wachten op gezamenlijke berekening';
 
   @override
-  String get vibePlanTargetNotApplied => 'Not applied';
+  String get vibePlanTargetNotApplied => 'Niet toegepast';
 
   @override
-  String get vibePlanReview => 'Review shared-work plan';
+  String get vibePlanReview => 'Plan voor gedeeld werk controleren';
 
   @override
-  String get vibePlanUpdated => 'Reviewed changes saved together.';
+  String get vibePlanUpdated => 'Gecontroleerde wijzigingen samen opgeslagen.';
 
   @override
   String get vibePlanNote =>
-      'All displayed targets are saved together after confirmation. If any target changes or access is lost, review a new proposal.';
+      'Alle getoonde onderdelen worden na bevestiging samen opgeslagen. Als een onderdeel verandert of de toegang vervalt, bekijk dan een nieuw voorstel.';
+
+  @override
+  String get shareViewOptions => 'Weergaveopties';
+
+  @override
+  String get shareDensityComfortable => 'Ruim';
+
+  @override
+  String get shareDensityCompact => 'Compact';
+
+  @override
+  String get shareDensityList => 'Lijst';
+
+  @override
+  String get shareDensityComfortableHint =>
+      'Volledige kaarten met notitievoorbeelden en acties met labels.';
+
+  @override
+  String get shareDensityCompactHint =>
+      'Kleinere kaarten met snelle acties. Aanbevolen.';
+
+  @override
+  String get shareDensityListHint =>
+      'Compacte rijen. Tik op een tegeltje om de details en acties uit te klappen.';
+
+  @override
+  String get shareExpandTilette => 'Tegeltje uitklappen';
+
+  @override
+  String get shareCollapseTilette => 'Tegeltje inklappen';
+
+  @override
+  String get shareWork => 'Werk';
+
+  @override
+  String get sharePeople => 'Personen';
+
+  @override
+  String get shareActivity => 'Activiteit';
+
+  @override
+  String get shareMyWork => 'Mijn werk';
+
+  @override
+  String get shareClassHint =>
+      'Iedereen krijgt een eigen kopie van elk tegeltje.';
+
+  @override
+  String get shareProjectHint =>
+      'Tegeltjes verdeeld over personen die aan één doel werken.';
+
+  @override
+  String get shareNeedsDecision => 'Je beslissing is nodig';
+
+  @override
+  String get shareTilette => 'Tegeltje';
+
+  @override
+  String get shareViewTilette => 'Tegeltje bekijken';
+
+  @override
+  String get shareReviewRequest => 'Verzoek controleren';
+
+  @override
+  String get shareAssignedTo => 'Toegewezen aan';
+
+  @override
+  String get shareAssignedToYou => 'Aan jou toegewezen';
+
+  @override
+  String get shareYourResponse => 'Je antwoord';
+
+  @override
+  String get shareInvitationHint =>
+      'Kies of je dit tegeltje aan je planning wilt toevoegen.';
+
+  @override
+  String get shareReadNotes => 'Notities lezen';
+
+  @override
+  String get shareEditNotes => 'Notities bewerken';
+
+  @override
+  String get shareOpenDiscussion => 'Discussie openen';
+
+  @override
+  String get shareThreadUnavailable =>
+      'De discussie van dit tegeltje is niet beschikbaar.';
+
+  @override
+  String get shareCommitments => 'Je toezeggingen';
+
+  @override
+  String get shareNeedsAttention => 'Aandacht nodig';
+
+  @override
+  String get shareInProgress => 'Bezig';
+
+  @override
+  String get shareNotStarted => 'Niet gestart';
+
+  @override
+  String get shareAwaitingResponse => 'Wacht op antwoord';
+
+  @override
+  String get shareNoAssignments =>
+      'Er zijn nog geen tegeltjes aan jou toegewezen in dit gedeelde werk.';
+
+  @override
+  String get shareNotesEmpty => 'Er zijn nog geen notities toegevoegd.';
+
+  @override
+  String get shareNoMatches => 'Geen tegeltjes komen overeen met dit filter.';
+
+  @override
+  String get shareProjectNoPeople =>
+      'Nog niemand. Wijs een tegeltje toe om iemand aan dit project toe te voegen.';
+
+  @override
+  String shareCompletionCount(int done, int total) {
+    return '$done van $total voltooid';
+  }
+
+  @override
+  String shareMissingAssignments(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ontbrekende toewijzingen',
+      one: '1 ontbrekende toewijzing',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sharePeopleCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count personen',
+      one: '1 persoon',
+    );
+    return '$_temp0';
+  }
 }

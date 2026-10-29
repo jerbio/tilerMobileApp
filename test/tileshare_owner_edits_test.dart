@@ -17,7 +17,10 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/shareRosterDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/tileShareDetailScaffold.dart';
 import 'package:tiler_app/theme/theme_data.dart';
+import 'package:tiler_app/services/tileShare/tileShareDisplaySettings.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/redesign/tiletteDetailScreen.dart';
 
+import 'helpers/tap_visible.dart';
 import 'helpers/tileshare_fakes.dart';
 import 'helpers/tileshare_fixtures.dart';
 
@@ -37,11 +40,14 @@ class _Rig {
       int? shareEndMs,
       int? t1EndMs}) {
     final tilettes = [
-      tsTilette('t1', clusterId: 'k', name: 'Write the brief', endMs: t1EndMs,
+      tsTilette('t1',
+          clusterId: 'k',
+          name: 'Write the brief',
+          endMs: t1EndMs,
           assignees: [
-        tsAssignee('ann@x.com', status: InvitationStatus.accepted),
-        if (mode != TileShareMode.project) tsAssignee('bob@x.com'),
-      ]),
+            tsAssignee('ann@x.com', status: InvitationStatus.accepted),
+            if (mode != TileShareMode.project) tsAssignee('bob@x.com'),
+          ]),
       tsTilette('t2', clusterId: 'k', name: 'Review the deck', assignees: [
         if (mode != TileShareMode.project) tsAssignee('ann@x.com'),
         tsAssignee('bob@x.com'),
@@ -77,7 +83,11 @@ Future<void> _settle(WidgetTester tester) async {
 Future<void> _open(WidgetTester tester, _Rig rig,
     {Size size = const Size(390, 1000),
     ThemeData? theme,
+    TiletteDensity density = TiletteDensity.compact,
+    bool openTilettes = false,
     double textScale = 1}) async {
+  final display = TileShareDisplaySettings.memory(density: density);
+  addTearDown(display.dispose);
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
@@ -100,13 +110,25 @@ Future<void> _open(WidgetTester tester, _Rig rig,
     home: BlocProvider.value(
       value: rig.detail,
       child: TileShareDetailScaffold(
+        displaySettings: display,
         now: _now,
         contentBuilder: (context, state) => switch (rig.mode) {
-          TileShareMode.project =>
-            ProjectDetail(detail: state, recipients: rig.recipients),
+          TileShareMode.project => ProjectDetail(
+              detail: state,
+              recipients: rig.recipients,
+              onOpen: openTilettes
+                  ? (t) => TiletteDetailScreen.byTemplate(
+                      context: context, tilette: t)
+                  : null),
           TileShareMode.broadcast =>
             BroadcastDetail(detail: state, recipients: rig.recipients),
-          _ => ClassDetail(detail: state, recipients: rig.recipients),
+          _ => ClassDetail(
+              detail: state,
+              recipients: rig.recipients,
+              onOpen: openTilettes
+                  ? (t) => TiletteDetailScreen.byTemplate(
+                      context: context, tilette: t)
+                  : null),
         },
       ),
     ),
@@ -149,19 +171,76 @@ Future<void> _openPushed(WidgetTester tester, _Rig rig) async {
       ),
     ),
   ));
-  await tester.tap(find.text('open detail'));
+  await tapVisible(tester, find.text('open detail'));
   await _settle(tester);
 }
 
 Finder _key(String k) => find.byKey(Key(k));
 
 Future<void> _tap(WidgetTester tester, String key) async {
-  await tester.ensureVisible(_key(key));
-  await tester.tap(_key(key));
+  await tapVisible(tester, _key(key));
   await _settle(tester);
 }
 
 void main() {
+  testWidgets('List rows keep owner Edit and Delete beside detail navigation',
+      (tester) async {
+    for (final mode in [TileShareMode.class_, TileShareMode.project]) {
+      final rig = _Rig(mode: mode);
+      await _open(tester, rig,
+          density: TiletteDensity.list, openTilettes: true);
+      await _tap(tester, 'task_menu_t1');
+      expect(find.byType(TiletteDetailScreen), findsNothing);
+      expect(_key('task_edit_t1'), findsOneWidget);
+      expect(_key('task_delete_t1'), findsOneWidget);
+      await _tap(tester, 'task_edit_t1');
+      expect(_key('task_sheet'), findsOneWidget);
+      expect(find.byType(TiletteDetailScreen), findsNothing);
+      await tester.enterText(_key('task_sheet_name'), 'Updated brief');
+      await _tap(tester, 'task_sheet_save');
+      expect(
+          rig.edits.calls, ['updateTask(t1, name: Updated brief, end: null)']);
+      await _tap(tester, 'task_menu_t2');
+      await _tap(tester, 'task_delete_t2');
+      await tapVisible(tester, find.text('Cancel'));
+      await _settle(tester);
+      expect(rig.edits.calls, hasLength(1));
+      await _tap(tester, 'task_menu_t2');
+      await _tap(tester, 'task_delete_t2');
+      await _tap(tester, 'task_delete_confirm');
+      expect(rig.edits.calls.last, 'deleteTask(t2)');
+      expect(_key('task_menu_t2'), findsNothing);
+      await tapVisible(tester, find.text('Updated brief'));
+      await _settle(tester);
+      expect(find.byType(TiletteDetailScreen), findsOneWidget);
+      await tester.pageBack();
+      await _settle(tester);
+      expect(_key('task_menu_t1'), findsOneWidget);
+      await rig.detail.close();
+    }
+  });
+
+  testWidgets('owner List menus fit narrow screens with assignment controls',
+      (tester) async {
+    for (final theme in [TileThemeData.lightTheme, TileThemeData.darkTheme]) {
+      final rig = _Rig(mode: TileShareMode.project);
+      await _open(tester, rig,
+          density: TiletteDensity.list,
+          openTilettes: true,
+          size: const Size(320, 850),
+          textScale: 1.6,
+          theme: theme);
+      expect(_key('project_assign_t1'), findsOneWidget);
+      await _tap(tester, 'task_menu_t1');
+      expect(_key('task_edit_t1'), findsOneWidget);
+      expect(find.byType(TiletteDetailScreen), findsNothing);
+      expect(tester.takeException(), isNull);
+      Navigator.of(tester.element(_key('task_edit_t1'))).pop();
+      await _settle(tester);
+      await rig.detail.close();
+    }
+  });
+
   group('the share', () {
     testWidgets('the owner edits it from the ⋯ menu', (tester) async {
       final rig = _Rig();
@@ -199,7 +278,7 @@ void main() {
       await _tap(tester, 'detail_menu');
       await _tap(tester, 'detail_menu_delete');
       expect(find.text('Delete “Interview prep”?'), findsOneWidget);
-      await tester.tap(find.text('Cancel'));
+      await tapVisible(tester, find.text('Cancel'));
       await _settle(tester);
       expect(rig.clusters.calls.where((c) => c.startsWith('deleteCluster')),
           isEmpty);
@@ -221,7 +300,7 @@ void main() {
       await _tap(tester, 'share_delete_confirm');
       expect(_key('detail_header'), findsOneWidget);
       expect(_key('detail_edit_failed'), findsOneWidget);
-      await tester.tap(find.text('Retry'));
+      await tapVisible(tester, find.text('Retry'));
       await _settle(tester);
       expect(_key('detail_header'), findsNothing);
       await rig.detail.close();
@@ -281,8 +360,7 @@ void main() {
           reason: "the share's roster reaches the sheet");
       await tester.enterText(_key('task_sheet_name'), 'Write it');
       await _tap(tester, 'task_sheet_save');
-      expect(rig.edits.calls,
-          ['updateTask(t1, name: Write it, end: null)']);
+      expect(rig.edits.calls, ['updateTask(t1, name: Write it, end: null)']);
       expect(
           find.descendant(
               of: _key('class_task_t1'), matching: find.text('Write it')),
@@ -333,7 +411,7 @@ void main() {
       await _tap(tester, 'task_menu_t2');
       await _tap(tester, 'task_delete_t2');
       expect(find.text('Delete “Review the deck”?'), findsOneWidget);
-      await tester.tap(find.text('Cancel'));
+      await tapVisible(tester, find.text('Cancel'));
       await _settle(tester);
       expect(rig.edits.calls, isEmpty);
       await _tap(tester, 'task_menu_t2');
@@ -365,7 +443,7 @@ void main() {
       quill.replaceText(0, quill.document.length - 1, 'Bring tape',
           const TextSelection.collapsed(offset: 10));
       await tester.pump();
-      await tester.tap(find.text('Done'));
+      await tapVisible(tester, find.text('Done'));
       await _settle(tester);
       rig.edits.failNextOn('saveTaskNotes', StateError('offline'));
       await _tap(tester, 'task_sheet_save');
@@ -373,7 +451,7 @@ void main() {
           reason: 'the task was added, so the sheet closes');
       expect(_key('class_task_new-1'), findsOneWidget);
       expect(_key('detail_edit_failed'), findsOneWidget);
-      await tester.tap(find.text('Retry'));
+      await tapVisible(tester, find.text('Retry'));
       await _settle(tester);
       expect(rig.edits.calls, [
         'addTask(k, Label boxes, contacts: 2)',
@@ -384,7 +462,8 @@ void main() {
       await rig.detail.close();
     });
 
-    testWidgets("an existing tilette's notes save themselves through the notes "
+    testWidgets(
+        "an existing tilette's notes save themselves through the notes "
         'endpoint, and the share reloads', (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
@@ -397,12 +476,14 @@ void main() {
       quill.replaceText(0, quill.document.length - 1, 'Bring tape',
           const TextSelection.collapsed(offset: 10));
       await tester.pump();
-      await tester.tap(find.text('Save now'));
+      await tapVisible(tester, find.text('Save now'));
       await _settle(tester);
       expect(rig.edits.notes_.calls, contains('put(t1, Bring tape, e0-t1)'),
           reason: 'written with the etag it read');
-      expect(find.descendant(of: _key('task_sheet_notes'),
-          matching: find.text('Bring tape')), findsOneWidget);
+      expect(
+          find.descendant(
+              of: _key('task_sheet_notes'), matching: find.text('Bring tape')),
+          findsOneWidget);
       expect(rig.edits.calls.where((c) => c.startsWith('updateTask')), isEmpty,
           reason: 'notes are not sent with the tilette');
       final int loads =

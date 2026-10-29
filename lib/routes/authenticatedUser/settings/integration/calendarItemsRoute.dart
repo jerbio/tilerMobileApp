@@ -7,7 +7,6 @@ import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/int
 import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
@@ -204,10 +203,6 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
         appBar: AppBar(
           title: Text(AppLocalizations.of(context)!.integratedCalendars),
           centerTitle: true,
-          titleTextStyle: TextStyle(
-            fontSize: 20,
-            fontFamily: TileTextStyles.rubikFontName,
-          ),
           leading: SizedBox.shrink(),
         ),
         child: Container(

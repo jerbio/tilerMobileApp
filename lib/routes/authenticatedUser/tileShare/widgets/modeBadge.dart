@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 /// The sharing mode as a small tinted icon tile (redesign §5.5): Broadcast,
 /// Class or Project. An unknown mode (the server did not say, and it has not
@@ -38,7 +39,7 @@ class TileShareModeBadge extends StatelessWidget {
     }
   }
 
-  /// Theme-derived, never the tiles' own colours.
+  /// Class and Project keep distinct mode colours in both themes.
   static Color colorOf(ColorScheme scheme, TileShareMode? mode) {
     switch (mode) {
       case TileShareMode.broadcast:
@@ -46,7 +47,7 @@ class TileShareModeBadge extends StatelessWidget {
       case TileShareMode.class_:
         return scheme.tertiary;
       case TileShareMode.project:
-        return scheme.secondary;
+        return TileColors.responseTileShare;
       case null:
         return scheme.outline;
     }

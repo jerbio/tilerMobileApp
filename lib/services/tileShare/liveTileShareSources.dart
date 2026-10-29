@@ -94,8 +94,14 @@ class LiveTileShareAssignmentsSource implements TileShareAssignmentsSource {
 
   @override
   Future<void> afterAccept() async {
+    TileShareLog.d(
+        'TileShareAssignments', 'afterAccept: buzz schedule started');
     await _scheduleApi.buzzSchedule(kind: ScheduleChangeKind.accept);
+    TileShareLog.d('TileShareAssignments',
+        'afterAccept: buzz schedule finished; analyze schedule started');
     await _api.analyzeSchedule();
+    TileShareLog.d(
+        'TileShareAssignments', 'afterAccept: analyze schedule finished');
   }
 }
 

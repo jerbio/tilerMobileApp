@@ -13,12 +13,12 @@ import 'package:tiler_app/bloc/schedule/schedule_diagnostics.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/accessManager.dart';
+import 'package:tiler_app/services/locationDiagnostics.dart';
 import 'package:tiler_app/services/api/retryHttpClient.dart';
 import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import '../localAuthentication.dart';
-import 'package:async/async.dart'; // Import necessary packages.
 
 import '../../constants.dart' as Constants;
 
@@ -199,6 +199,16 @@ abstract class AppApi {
 
   Future<Map<String, dynamic>> injectRequestParams(Map jsonMap,
       {bool includeLocationParams = false}) async {
+    final locationRequestId = 'injectRequestParams-' +
+        Utility.msCurrentTime.toString() +
+        '-' +
+        Utility.getUuid;
+    final locationTimer = Stopwatch()..start();
+    locationFlowLog('request_params_started', fields: {
+      'requestId': locationRequestId,
+      'includeLocationParams': includeLocationParams,
+      'hasContextCallback': getContextCallBack != null,
+    });
     Map<String, dynamic> requestParams = Map.from(jsonMap);
     Position position = Utility.getDefaultPosition();
     bool isLocationVerified = false;
@@ -207,63 +217,62 @@ abstract class AppApi {
       try {
         if (this.getContextCallBack != null) {
           BuildContext? buildContext = this.getContextCallBack!();
+          locationFlowLog('request_context_checked', fields: {
+            'requestId': locationRequestId,
+            'hasContext': buildContext != null,
+            'mounted': buildContext?.mounted,
+          });
           if (buildContext != null && buildContext.mounted) {
-            var awaitableUiChanges = CancelableOperation.fromFuture(
-                Future.delayed(const Duration(seconds: 600)));
+            final locationResult = Completer<LocationProfile?>();
 
             BlocProvider.of<DeviceSettingBloc>(buildContext).add(
                 GetLocationProfileDeviceSettingEvent(
-                    id: 'injectRequestParams-' +
-                        Utility.msCurrentTime.toString() +
-                        '-' +
-                        Utility.getUuid,
+                    id: locationRequestId,
                     showLocationPermissionWidget: true,
                     context: buildContext,
                     callBacks: <Function>[
-                  (_) {
-                    awaitableUiChanges.cancel();
+                  (LocationProfile? profile) {
+                    locationFlowLog('request_location_callback', fields: {
+                      'requestId': locationRequestId,
+                      'elapsedMs': locationTimer.elapsedMilliseconds,
+                    });
+                    if (!locationResult.isCompleted) {
+                      locationResult.complete(profile);
+                    }
                   }
                 ]));
 
-            var cancelledOrValue =
-                await awaitableUiChanges.valueOrCancellation();
-            if (buildContext.mounted) {
-              var deviceSettingState =
-                  BlocProvider.of<DeviceSettingBloc>(buildContext).state;
-              if (deviceSettingState is DeviceSettingLoaded) {
-                if (deviceSettingState.sessionProfile?.locationProfile !=
-                    null) {
-                  locationAccessResult =
-                      deviceSettingState.sessionProfile!.locationProfile!;
-                }
-              } else {
-                print("DeviceSetting not Loaded");
-              }
-            } else {
-              locationAccessResult = await accessManager.locationAccess();
-            }
+            final profile = await locationResult.future.timeout(
+              const Duration(seconds: 600),
+              onTimeout: () => null,
+            );
+            locationFlowLog('request_location_wait_finished', fields: {
+              'requestId': locationRequestId,
+              'elapsedMs': locationTimer.elapsedMilliseconds,
+              'completedByCallback': locationResult.isCompleted,
+              'mounted': buildContext.mounted,
+            });
+            // Use the callback's result even if another settings event has
+            // changed the bloc state or the requesting widget was disposed.
+            locationAccessResult = profile ?? LocationProfile.empty();
           }
         }
       } catch (e) {
-        debugPrint("Error in injectRequestParams: $e");
-        locationAccessResult = await accessManager.locationAccess();
+        locationFlowLog('request_location_error',
+            fields: {
+              'requestId': locationRequestId,
+              'elapsedMs': locationTimer.elapsedMilliseconds,
+            },
+            error: e);
+        locationAccessResult =
+            await accessManager.locationAccess(diagnosticId: locationRequestId);
       }
 
-      if (locationAccessResult.permission != null) {
-        if (locationAccessResult.permission!.isGranted == true &&
-            locationAccessResult.position != null) {
-          isLocationVerified = true;
-          position = locationAccessResult.position!;
-        }
-      }
-      if (position == Utility.getDefaultPosition()) {
-        print("location not set");
-      } else {
-        print("location is set");
+      if (locationAccessResult.hasVerifiedPosition) {
+        isLocationVerified = true;
+        position = locationAccessResult.position!;
       }
     }
-    print(
-        "Longitude and latitude sent: ${position.longitude}, ${position.latitude}");
     if (!requestParams.containsKey('TimeZoneOffset')) {
       requestParams['TimeZoneOffset'] = Utility.getTimeZoneOffset().toString();
     }
@@ -282,6 +291,30 @@ abstract class AppApi {
     if (!requestParams.containsKey('UserLocationVerified')) {
       requestParams['UserLocationVerified'] = (isLocationVerified).toString();
     }
+    // Validate the final coordinates, including any supplied by the caller.
+    if (!Utility.isValidCoordinates(
+        double.tryParse(requestParams['UserLatitude'].toString()),
+        double.tryParse(requestParams['UserLongitude'].toString()))) {
+      requestParams['UserLocationVerified'] = false.toString();
+    }
+    locationFlowLog('request_params_finished', fields: {
+      'requestId': locationRequestId,
+      'elapsedMs': locationTimer.elapsedMilliseconds,
+      'includeLocationParams': includeLocationParams,
+      'permissionGranted': locationAccessResult.isGranted,
+      'hasProfilePosition': locationAccessResult.position != null,
+      'isDefaultPosition': position == Utility.getDefaultPosition(),
+      'computedVerified': isLocationVerified,
+      'outgoingVerified': requestParams['UserLocationVerified']?.toString(),
+      'outgoingHasDefaultCoordinate':
+          requestParams['UserLongitude']?.toString() ==
+                  Utility.getDefaultPosition().longitude.toString() ||
+              requestParams['UserLatitude']?.toString() ==
+                  Utility.getDefaultPosition().latitude.toString(),
+      'locationParamsProvided': jsonMap.containsKey('UserLongitude') ||
+          jsonMap.containsKey('UserLatitude') ||
+          jsonMap.containsKey('UserLocationVerified'),
+    });
     return requestParams;
   }
 
@@ -294,8 +327,7 @@ abstract class AppApi {
       bool analyze = true,
       bool usePutRequest = false,
       ScheduleChangeKind? kind}) {
-    kind ??=
-        scheduleMutationKind(usePutRequest ? 'PUT' : 'POST', requestPath);
+    kind ??= scheduleMutationKind(usePutRequest ? 'PUT' : 'POST', requestPath);
     Future<Response> request() => _sendPostRequest(requestPath, queryParameters,
         injectLocation: injectLocation,
         analyze: analyze,

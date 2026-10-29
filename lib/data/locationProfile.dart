@@ -23,6 +23,10 @@ class LocationProfile {
     return permission?.isGranted ?? false;
   }
 
+  /// Permission alone does not mean that acquisition returned coordinates.
+  bool get hasVerifiedPosition =>
+      isGranted && Utility.isValidPosition(position);
+
   bool canRecheckPermission() {
     if (permission == null ||
         permission!.lastCheck == null ||

@@ -196,7 +196,6 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin {
 
   PreferredSizeWidget _buildAppBar(VibeChatState state) {
     return AppBar(
-      backgroundColor: colorScheme.surface,
       leading: IconButton(
         icon: Icon(Icons.arrow_back),
         onPressed: () {
@@ -207,11 +206,6 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin {
       ),
       title: Text(
         state.currentSession?.title ?? localization.newChat,
-        style: TextStyle(
-          color: colorScheme.onSurface,
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-        ),
       ),
       actions: [
         Builder(

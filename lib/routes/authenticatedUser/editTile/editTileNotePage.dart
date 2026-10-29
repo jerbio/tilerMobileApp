@@ -152,19 +152,7 @@ class _NoteFullPageState extends State<NoteFullPage> {
       child: Scaffold(
         backgroundColor: colorScheme.surface,
         appBar: AppBar(
-          backgroundColor: colorScheme.surface,
-          foregroundColor: colorScheme.onSurface,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 1,
           titleSpacing: 0,
-          // Force full-opacity onSurface for nav/action icons so they read
-          // clearly against the pale surface background (the default Material
-          // 3 IconTheme inside an AppBar drops alpha which made these look
-          // washed-out in light mode).
-          iconTheme: IconThemeData(color: colorScheme.onSurface, size: 24),
-          actionsIconTheme:
-              IconThemeData(color: colorScheme.onSurface, size: 24),
           title: ValueListenableBuilder<NotesSaveStatus>(
             valueListenable: _status,
             builder: (context, status, _) {

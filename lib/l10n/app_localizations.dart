@@ -160,6 +160,18 @@ abstract class AppLocalizations {
   /// **'Couldn’t load your notes. Reopen the notes editor to try again.'**
   String get notesLoadFailed;
 
+  /// No description provided for @shareNotesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load notes. Try again.'**
+  String get shareNotesLoadFailed;
+
+  /// No description provided for @shareAddPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Add person'**
+  String get shareAddPerson;
+
   /// No description provided for @onboardingSubmitFailed.
   ///
   /// In en, this message translates to:
@@ -9829,6 +9841,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All displayed targets are saved together after confirmation. If any target changes or access is lost, review a new proposal.'**
   String get vibePlanNote;
+
+  /// No description provided for @shareViewOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'View options'**
+  String get shareViewOptions;
+
+  /// No description provided for @shareDensityComfortable.
+  ///
+  /// In en, this message translates to:
+  /// **'Comfortable'**
+  String get shareDensityComfortable;
+
+  /// No description provided for @shareDensityCompact.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact'**
+  String get shareDensityCompact;
+
+  /// No description provided for @shareDensityList.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get shareDensityList;
+
+  /// No description provided for @shareDensityComfortableHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Full cards with note previews and labeled actions.'**
+  String get shareDensityComfortableHint;
+
+  /// No description provided for @shareDensityCompactHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Smaller cards with quick actions. Recommended.'**
+  String get shareDensityCompactHint;
+
+  /// No description provided for @shareDensityListHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Condensed rows. Tap a tilette to expand its details and actions.'**
+  String get shareDensityListHint;
+
+  /// No description provided for @shareExpandTilette.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand tilette'**
+  String get shareExpandTilette;
+
+  /// No description provided for @shareCollapseTilette.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse tilette'**
+  String get shareCollapseTilette;
+
+  /// No description provided for @shareWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get shareWork;
+
+  /// No description provided for @sharePeople.
+  ///
+  /// In en, this message translates to:
+  /// **'People'**
+  String get sharePeople;
+
+  /// No description provided for @shareActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get shareActivity;
+
+  /// No description provided for @shareMyWork.
+  ///
+  /// In en, this message translates to:
+  /// **'My work'**
+  String get shareMyWork;
+
+  /// No description provided for @shareClassHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone gets their own copy of each tilette.'**
+  String get shareClassHint;
+
+  /// No description provided for @shareProjectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilettes assigned across people, working toward one goal.'**
+  String get shareProjectHint;
+
+  /// No description provided for @shareNeedsDecision.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs your decision'**
+  String get shareNeedsDecision;
+
+  /// No description provided for @shareTilette.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilette'**
+  String get shareTilette;
+
+  /// No description provided for @shareViewTilette.
+  ///
+  /// In en, this message translates to:
+  /// **'View tilette'**
+  String get shareViewTilette;
+
+  /// No description provided for @shareReviewRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Review request'**
+  String get shareReviewRequest;
+
+  /// No description provided for @shareAssignedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to'**
+  String get shareAssignedTo;
+
+  /// No description provided for @shareAssignedToYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to you'**
+  String get shareAssignedToYou;
+
+  /// No description provided for @shareYourResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Your response'**
+  String get shareYourResponse;
+
+  /// No description provided for @shareInvitationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose whether to add this tilette to your schedule.'**
+  String get shareInvitationHint;
+
+  /// No description provided for @shareReadNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Read notes'**
+  String get shareReadNotes;
+
+  /// No description provided for @shareEditNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit notes'**
+  String get shareEditNotes;
+
+  /// No description provided for @shareOpenDiscussion.
+  ///
+  /// In en, this message translates to:
+  /// **'Open discussion'**
+  String get shareOpenDiscussion;
+
+  /// No description provided for @shareThreadUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This tilette’s discussion is unavailable.'**
+  String get shareThreadUnavailable;
+
+  /// No description provided for @shareCommitments.
+  ///
+  /// In en, this message translates to:
+  /// **'Your commitments'**
+  String get shareCommitments;
+
+  /// No description provided for @shareNeedsAttention.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get shareNeedsAttention;
+
+  /// No description provided for @shareInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get shareInProgress;
+
+  /// No description provided for @shareNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get shareNotStarted;
+
+  /// No description provided for @shareAwaitingResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting response'**
+  String get shareAwaitingResponse;
+
+  /// No description provided for @shareNoAssignments.
+  ///
+  /// In en, this message translates to:
+  /// **'No tilettes are assigned to you in this share yet.'**
+  String get shareNoAssignments;
+
+  /// No description provided for @shareNotesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes have been added yet.'**
+  String get shareNotesEmpty;
+
+  /// No description provided for @shareNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No tilettes match this filter.'**
+  String get shareNoMatches;
+
+  /// No description provided for @shareProjectNoPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'No one yet. Assign a tilette to add someone to this project.'**
+  String get shareProjectNoPeople;
+
+  /// No description provided for @shareCompletionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} complete'**
+  String shareCompletionCount(int done, int total);
+
+  /// No description provided for @shareMissingAssignments.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 missing assignment} other{{count} missing assignments}}'**
+  String shareMissingAssignments(int count);
+
+  /// No description provided for @sharePeopleCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 person} other{{count} people}}'**
+  String sharePeopleCount(int count);
 }
 
 class _AppLocalizationsDelegate

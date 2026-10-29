@@ -98,7 +98,6 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
-    final ColorScheme scheme = Theme.of(context).colorScheme;
     return BlocConsumer<TileSharePreviewCubit, TileSharePreviewState>(
       listenWhen: (previous, current) =>
           previous.phase == PreviewPhase.submitting &&
@@ -118,9 +117,7 @@ class _TileSharePreviewPageState extends State<TileSharePreviewPage> {
           },
           child: Scaffold(
             appBar: AppBar(
-              toolbarHeight: 48,
               automaticallyImplyLeading: false,
-              foregroundColor: scheme.onPrimary,
               leading: IconButton(
                 key: const Key('preview_back'),
                 tooltip: MaterialLocalizations.of(context).backButtonTooltip,

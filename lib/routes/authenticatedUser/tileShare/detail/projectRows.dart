@@ -10,7 +10,8 @@ import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/participantRow.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/widgets/statusPill.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/util.dart';
+import 'shareWorkWidgets.dart';
+import 'tiletteWorkCard.dart';
 
 /// A task's name, or the fallback for a task without one.
 String projectTaskName(AppLocalizations l10n, TileShareTemplate t) =>
@@ -35,6 +36,8 @@ class ProjectTaskRow extends StatelessWidget {
 
   /// Opens the task's comments; no button without it.
   final VoidCallback? onComments;
+  final VoidCallback? onNotes;
+  final VoidCallback? onOpen;
 
   const ProjectTaskRow({
     super.key,
@@ -45,6 +48,8 @@ class ProjectTaskRow extends StatelessWidget {
     this.onRetry,
     this.menu,
     this.onComments,
+    this.onNotes,
+    this.onOpen,
   });
 
   @override
@@ -56,35 +61,59 @@ class ProjectTaskRow extends StatelessWidget {
         theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant);
     final bool working = change?.phase == TaskChangePhase.working;
     final bool failed = change?.phase == TaskChangePhase.failed;
-    return Padding(
+    return TiletteWorkCard(
       key: Key('project_task_${tilette.id}'),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
+      title: projectTaskName(l10n, tilette),
+      durationMs: tilette.durationInMs,
+      dueMs: tilette.end,
+      menu: menu,
+      onNotes: onNotes,
+      onOpen: onOpen,
+      onComments: onComments,
+      notesKey: Key('project_task_notes_${tilette.id}'),
+      commentsKey: Key('project_task_comments_${tilette.id}'),
+      listAction: working
+          ? SizedBox(
+              key: Key('project_assign_working_${tilette.id}'),
+              width: 48,
+              height: 48,
+              child: const Center(
+                  child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2))))
+          : failed
+              ? IconButton(
+                  key: Key('project_retry_${tilette.id}'),
+                  tooltip:
+                      '${l10n.projectReassignFailed} ${l10n.attentionRetry}',
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh))
+              : onAssign == null
+                  ? null
+                  : IconButton(
+                      key: Key('project_assign_${tilette.id}'),
+                      tooltip: assignees.isEmpty
+                          ? l10n.projectAssign
+                          : l10n.projectReassign,
+                      onPressed: onAssign,
+                      icon: const Icon(Icons.person_add_alt_1_outlined)),
+      listStatus: assignees.length == 1
+          ? ShareWorkStatus(
+              response: assignees.first.$2.rsvp,
+              completion: assignees.first.$2.completion)
+          : Text(
+              assignees.isEmpty
+                  ? l10n.projectUnassigned
+                  : l10n.clusterRsvpAccepted(
+                      assignees
+                          .where((a) => a.$2.rsvp == InvitationStatus.accepted)
+                          .length,
+                      assignees.length),
+              style: quiet),
+      status: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(projectTaskName(l10n, tilette),
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(fontWeight: FontWeight.w600)),
-              ),
-              if ((tilette.durationInMs ?? 0) > 0)
-                Text(
-                    Duration(milliseconds: tilette.durationInMs!)
-                        .toHumanLocalized(context),
-                    style: quiet),
-              if (onComments != null)
-                IconButton(
-                  key: Key('project_task_comments_${tilette.id}'),
-                  tooltip: l10n.commentsTitle,
-                  icon: const Icon(Icons.chat_bubble_outline),
-                  onPressed: onComments,
-                ),
-              if (menu != null) menu!,
-            ],
-          ),
-          const SizedBox(height: 6),
           if (assignees.isEmpty)
             Text(l10n.projectUnassigned,
                 key: Key('project_unassigned_${tilette.id}'),
@@ -98,6 +127,7 @@ class ProjectTaskRow extends StatelessWidget {
                 runSpacing: 4,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
+                  PersonAvatar(label: person.label),
                   Text(person.label, style: theme.textTheme.bodyMedium),
                   switch (cell.rsvp) {
                     InvitationStatus.accepted => TileShareStatusPill(
@@ -110,12 +140,34 @@ class ProjectTaskRow extends StatelessWidget {
                   },
                   if (cell.rsvp == InvitationStatus.accepted &&
                       cell.completion != null)
-                    Text('${cell.completion!.round()}%', style: quiet),
+                    ShareWorkStatus(
+                        response: cell.rsvp, completion: cell.completion),
                 ],
               ),
             ),
-          if (working)
-            Row(children: [
+        ],
+      ),
+      progress: assignees.any((a) =>
+              a.$2.rsvp == InvitationStatus.accepted &&
+              shareCompletion(a.$2.completion) != null)
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final (person, cell) in assignees)
+                  if (cell.rsvp == InvitationStatus.accepted &&
+                      shareCompletion(cell.completion) != null)
+                    Padding(
+                        padding: const EdgeInsets.only(top: 6, bottom: 8),
+                        child: ShareCompletionBar(
+                            value: shareCompletion(cell.completion)! / 100,
+                            label:
+                                '${assignees.length > 1 ? '${person.label} · ' : ''}'
+                                '${shareCompletion(cell.completion)!.round()}%')),
+              ],
+            )
+          : null,
+      details: working
+          ? Row(children: [
               const SizedBox(
                   width: 12,
                   height: 12,
@@ -123,33 +175,30 @@ class ProjectTaskRow extends StatelessWidget {
               const SizedBox(width: 8),
               Flexible(child: Text(l10n.projectReassigning, style: quiet)),
             ])
-          else if (failed)
-            Row(children: [
-              Expanded(
-                child: Text(l10n.projectReassignFailed,
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: scheme.error)),
-              ),
-              TextButton(
-                key: Key('project_retry_${tilette.id}'),
-                onPressed: onRetry,
-                child: Text(l10n.attentionRetry),
-              ),
-            ]),
-          if (onAssign != null && !working)
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: TextButton.icon(
-                key: Key('project_assign_${tilette.id}'),
-                onPressed: onAssign,
-                icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
-                label: Text(assignees.isEmpty
-                    ? l10n.projectAssign
-                    : l10n.projectReassign),
-              ),
-            ),
-        ],
-      ),
+          : failed
+              ? Row(children: [
+                  Expanded(
+                    child: Text(l10n.projectReassignFailed,
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(color: scheme.error)),
+                  ),
+                  TextButton(
+                    key: Key('project_retry_${tilette.id}'),
+                    onPressed: onRetry,
+                    child: Text(l10n.attentionRetry),
+                  ),
+                ])
+              : null,
+      actions: [
+        if (onAssign != null && !working)
+          TextButton.icon(
+            key: Key('project_assign_${tilette.id}'),
+            onPressed: onAssign,
+            icon: const Icon(Icons.person_add_alt_1_outlined, size: 18),
+            label: Text(
+                assignees.isEmpty ? l10n.projectAssign : l10n.projectReassign),
+          ),
+      ],
     );
   }
 }

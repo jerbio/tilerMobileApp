@@ -48,7 +48,7 @@ class TileThemeData {
       extensions: <ThemeExtension<dynamic>>[
         TileThemeExtension.light,
       ],
-      appBarTheme: TileAppBarTheme.theme,
+      appBarTheme: TileAppBarTheme.forBrightness(Brightness.light),
       bottomNavigationBarTheme: TileBottomNavTheme.theme,
       inputDecorationTheme: TileInputTheme.inputDecorationTheme,
       textSelectionTheme: TileInputTheme.textSelectionTheme,
@@ -95,7 +95,7 @@ class TileThemeData {
       extensions: <ThemeExtension<dynamic>>[
         TileThemeExtension.dark,
       ],
-      appBarTheme: TileAppBarTheme.theme,
+      appBarTheme: TileAppBarTheme.forBrightness(Brightness.dark),
       bottomNavigationBarTheme: TileBottomNavTheme.theme,
       inputDecorationTheme: TileInputTheme.inputDecorationTheme,
       textSelectionTheme: TileInputTheme.textSelectionTheme,

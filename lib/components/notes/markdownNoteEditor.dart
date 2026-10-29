@@ -507,12 +507,27 @@ class MarkdownNoteView extends StatelessWidget {
       shrinkWrap: true,
       softLineBreak: true,
       extensionSet: md.ExtensionSet.gitHubFlavored,
+      checkboxBuilder: (checked) => Semantics(
+          checked: checked,
+          child: Icon(checked ? Icons.check_box : Icons.check_box_outline_blank,
+              size: 20,
+              color: checked
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurfaceVariant)),
     );
     final int? lines = maxLines;
     if (lines == null) return body;
     return ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: 24.0 * lines + 12),
-      child: ClipRect(child: body),
+      constraints: BoxConstraints(
+          maxHeight: MediaQuery.textScalerOf(context).scale(24) * lines + 12),
+      // Markdown contains its own Column. Lay it out at its natural height
+      // before clipping so long notes and enlarged text cannot overflow it.
+      child: ClipRect(
+          child: SingleChildScrollView(
+        primary: false,
+        physics: const NeverScrollableScrollPhysics(),
+        child: body,
+      )),
     );
   }
 }

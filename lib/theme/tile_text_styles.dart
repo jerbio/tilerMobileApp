@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 
 class TileTextStyles {
@@ -50,9 +49,9 @@ class TileTextStyles {
       );
 
   static const appBar = TextStyle(
-    fontWeight: FontWeight.w800,
-    color: TileColors.lightContent,
-    fontSize: 22,
+    fontFamily: rubikFontName,
+    fontWeight: FontWeight.w600,
+    fontSize: 18,
   );
 
   static const hourAndMinutesTimePicker =

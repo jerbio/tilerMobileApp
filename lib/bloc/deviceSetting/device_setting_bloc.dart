@@ -11,6 +11,7 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/authorization.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import 'package:tiler_app/services/storageManager.dart';
+import 'package:tiler_app/services/locationDiagnostics.dart';
 import 'package:tiler_app/services/themerHelper.dart';
 import 'package:tiler_app/util.dart';
 
@@ -23,6 +24,7 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
   final Authentication authentication = Authentication();
   late AuthorizationApi authorizationApi;
   final SecureStorageManager secureStorageManager = SecureStorageManager();
+  List<Function>? _pendingLocationCallbacks;
   DeviceSettingBloc({
     required this.getContextCallBack,
     required bool initialIsDarkMode,
@@ -81,14 +83,23 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
   Future<void> _onLoadedLocationProfile(
       LoadedLocationProfileDeviceSettingEvent event,
       Emitter<DeviceSettingState> emit) async {
+    locationFlowLog('bloc_profile_received', fields: {
+      'eventId': event.id,
+      'state': state.runtimeType.toString(),
+      'pendingId': state is DeviceLocationSettingLoading
+          ? (state as DeviceLocationSettingLoading).id
+          : null,
+      'callbackCount': state is DeviceLocationSettingLoading
+          ? (state as DeviceLocationSettingLoading).callBacks?.length ?? 0
+          : 0,
+      'permissionGranted': event.deviceLocationProfile.isGranted,
+      'isDefaultPosition':
+          event.deviceLocationProfile.position == Utility.getDefaultPosition(),
+    });
     sessionProfile.locationProfile = event.deviceLocationProfile;
-    if (state is DeviceLocationSettingLoading) {
-      callPendingCallBacks((state as DeviceLocationSettingLoading).callBacks,
-          sessionProfile.locationProfile);
-    }
-
     emit(DeviceSettingLoaded(
         sessionProfile: sessionProfile, isDarkMode: state.isDarkMode));
+    _finishLocationRequest();
   }
 
   Future<void> _onLoadedUserProfile(LoadedUserProfileDeviceSettingEvent event,
@@ -171,17 +182,35 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
     }
   }
 
+  void _finishLocationRequest() {
+    final callbacks = _pendingLocationCallbacks;
+    _pendingLocationCallbacks = null;
+    callPendingCallBacks(callbacks, sessionProfile.locationProfile);
+  }
+
   Future<void> _onGetLocationProfile(GetLocationProfileDeviceSettingEvent event,
       Emitter<DeviceSettingState> emit) async {
     DeviceSettingState currentState = state;
-    if (currentState is DeviceLocationSettingUIPending) {
+    locationFlowLog('bloc_location_requested', fields: {
+      'requestId': event.id,
+      'state': currentState.runtimeType.toString(),
+      'callbackCount': event.callBacks?.length ?? 0,
+      'permissionGranted': sessionProfile.locationProfile?.isGranted,
+    });
+    if (_pendingLocationCallbacks != null) {
+      _pendingLocationCallbacks!.addAll(event.callBacks ?? []);
+      locationFlowLog('bloc_location_request_joined', fields: {
+        'requestId': event.id,
+        'callbackCount': _pendingLocationCallbacks!.length,
+      });
       return;
     }
+    _pendingLocationCallbacks = [...?event.callBacks];
     emit(
       DeviceLocationSettingLoading(
           id: event.id,
           renderLoadingUI: event.showLocationPermissionWidget,
-          callBacks: event.callBacks,
+          callBacks: _pendingLocationCallbacks,
           isDarkMode: state.isDarkMode),
     );
     try {
@@ -192,12 +221,12 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
               id: event.id,
               sessionProfile: sessionProfile,
               isDarkMode: state.isDarkMode));
-          callPendingCallBacks(event.callBacks, sessionProfile.locationProfile);
+          _finishLocationRequest();
         } else {
           if (sessionProfile.locationProfile!.canRecheckPermission()) {
             emit(DeviceLocationSettingUIPending(
                 id: event.id,
-                callBacks: event.callBacks,
+                callBacks: _pendingLocationCallbacks,
                 isDarkMode: state.isDarkMode));
 
             showGeneralDialog(
@@ -227,8 +256,7 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
                 id: event.id,
                 sessionProfile: sessionProfile,
                 isDarkMode: state.isDarkMode));
-            callPendingCallBacks(
-                event.callBacks, sessionProfile.locationProfile);
+            _finishLocationRequest();
           }
         }
       } else {
@@ -241,7 +269,7 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
           sessionProfile: sessionProfile,
           error: e,
           isDarkMode: state.isDarkMode));
-      callPendingCallBacks(event.callBacks, sessionProfile.locationProfile);
+      _finishLocationRequest();
     }
   }
 

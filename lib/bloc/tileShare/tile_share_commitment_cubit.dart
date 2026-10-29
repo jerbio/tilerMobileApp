@@ -51,7 +51,8 @@ class TileShareCommitmentState extends Equatable {
       ];
 
   @override
-  List<Object?> get props => [statuses, sending, failure, scheduleRefreshFailed];
+  List<Object?> get props =>
+      [statuses, sending, failure, scheduleRefreshFailed];
 }
 
 /// Answering a share I was invited to, from its detail (redesign §5.8, T20):
@@ -78,7 +79,8 @@ class TileShareCommitmentCubit extends Cubit<TileShareCommitmentState> {
   })  : _assignments = assignments,
         super(TileShareCommitmentState(statuses: _statusesOf(mine)));
 
-  static Map<String, InvitationStatus> _statusesOf(List<DesignatedTile> tiles) =>
+  static Map<String, InvitationStatus> _statusesOf(
+          List<DesignatedTile> tiles) =>
       <String, InvitationStatus>{
         for (final DesignatedTile t in tiles)
           if ((t.id ?? '').isNotEmpty)
@@ -106,6 +108,10 @@ class TileShareCommitmentCubit extends Cubit<TileShareCommitmentState> {
   Future<void> respond(List<String> ids, InvitationStatus status) async {
     final List<String> todo =
         ids.where((id) => !state.sending.contains(id)).toList();
+    TileShareLog.d(
+        _tag,
+        'response requested status=${status.name} ids=$ids '
+        'toSend=$todo alreadySending=${state.sending.toList()}');
     if (todo.isEmpty) return;
     _emit(TileShareCommitmentState(
       statuses: state.statuses,
@@ -117,15 +123,21 @@ class TileShareCommitmentCubit extends Cubit<TileShareCommitmentState> {
     for (int i = 0; i < todo.length; i++) {
       final String id = todo[i];
       try {
-        await _assignments.respond(id, status);
+        TileShareLog.d(_tag, 'sending $id: ${status.name}');
+        final DesignatedTile? result = await _assignments.respond(id, status);
         answered++;
-        TileShareLog.d(_tag, 'answered $id: ${status.name}');
+        TileShareLog.d(
+            _tag,
+            'answered $id: ${status.name}; '
+            'returnedId=${result?.id ?? '-'} '
+            'returnedStatus=${result?.invitationStatus ?? '-'}');
         _emit(TileShareCommitmentState(
           statuses: <String, InvitationStatus>{...state.statuses, id: status},
           sending: <String>{...state.sending}..remove(id),
         ));
       } catch (error) {
-        TileShareLog.d(_tag, 'answering $id failed: $error');
+        TileShareLog.d(_tag,
+            'answering $id status=${status.name} failed: ${TileShareLog.describe(error)}');
         failure = CommitmentFailure(
           status: status,
           answered: answered,
@@ -138,10 +150,13 @@ class TileShareCommitmentCubit extends Cubit<TileShareCommitmentState> {
     bool refreshFailed = false;
     if (status == InvitationStatus.accepted && answered > 0) {
       try {
+        TileShareLog.d(_tag, 'refreshing schedule after $answered accepts');
         await _assignments.afterAccept();
+        TileShareLog.d(_tag, 'schedule refreshed after accepting');
       } catch (error) {
         refreshFailed = true;
-        TileShareLog.d(_tag, 'schedule refresh after accepting failed: $error');
+        TileShareLog.d(_tag,
+            'schedule refresh after accepting failed: ${TileShareLog.describe(error)}');
       }
     }
     _emit(TileShareCommitmentState(
@@ -150,6 +165,10 @@ class TileShareCommitmentCubit extends Cubit<TileShareCommitmentState> {
       failure: failure,
       scheduleRefreshFailed: refreshFailed,
     ));
+    TileShareLog.d(
+        _tag,
+        'response finished status=${status.name} answered=$answered/${todo.length} '
+        'remaining=${failure?.remaining ?? []} scheduleRefreshFailed=$refreshFailed');
     if (answered > 0) onAnswered?.call();
   }
 

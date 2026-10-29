@@ -81,7 +81,7 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => Scaffold(
         appBar: AppBar(title: Text(l10n.tileShareActivityTitle)),
-        body: const TileShareActivityWidget(),
+        body: TileShareActivityWidget(clusterId: _cubit.state.cluster?.id),
       ),
     ));
   }
@@ -102,7 +102,16 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
     await Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => TileSharePreviewHost(
             assignmentId: assignmentId, accountKey: _userId)));
-    if (mounted) _cubit.refresh();
+    if (mounted) await _cubit.refresh();
+  }
+
+  Future<DesignatedTile?> _previewAssignment(DesignatedTile tile) async {
+    await _preview(tile.id!);
+    if (!mounted) return null;
+    for (final updated in _cubit.state.mine) {
+      if (updated.id == tile.id) return updated;
+    }
+    return null;
   }
 
   void _openTile(DesignatedTile tile) {
@@ -113,12 +122,70 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
             designatedTileTemplateId: id, loadSubEvents: true)));
   }
 
-  void _comments(DesignatedTile tile) =>
-      TiletteDetailScreen.byTilette(context: context, designatedTile: tile);
+  TileShareTemplate? _fullTemplate(String? id) {
+    for (final tilette in _cubit.state.tilettes) {
+      if (tilette.id == id) return tilette;
+    }
+    return null;
+  }
+
+  TiletteDetailOptions _tiletteOptions(DesignatedTile tile) {
+    final personal = _cubit.state.mine
+        .any((t) => (tile.id ?? '').isNotEmpty && t.id == tile.id);
+    return TiletteDetailOptions(
+      shareName: _cubit.state.cluster?.name,
+      mode: _cubit.state.mode,
+      template: _fullTemplate(tile.tileTemplate?.id) ?? tile.tileTemplate,
+      canRespond: personal,
+      assignments: personal ? _assignments : null,
+      onAnswered: _cubit.refresh,
+      onOpenTile: personal ? () => _openTile(tile) : null,
+      onPreview: personal ? () => _previewAssignment(tile) : null,
+      notesApi: _cubit.canEdit ? _cubit.tiletteNotes : null,
+      notesReadApi: _cubit.tiletteNotes,
+      onNotesChanged: _cubit.refresh,
+      ownerRecipients: _cubit.canEdit ? _recipients : null,
+      ownerTilettes: _cubit.state.tilettes,
+      onPeopleChanged: () {
+        if (mounted) _cubit.refresh();
+      },
+    );
+  }
+
+  void _openTilette(DesignatedTile tile) => TiletteDetailScreen.byTilette(
+      context: context, designatedTile: tile, options: _tiletteOptions(tile));
+
+  void _comments(DesignatedTile tile) => TiletteDetailScreen.byTilette(
+      context: context,
+      designatedTile: tile,
+      options: _tiletteOptions(tile),
+      initialTab: TiletteDetailTab.comments);
 
   /// The owner's way to a tilette's comments - the same thread.
   void _tiletteComments(TileShareTemplate tilette) =>
-      TiletteDetailScreen.byTemplate(context: context, tilette: tilette);
+      _openTemplate(tilette, TiletteDetailTab.comments);
+
+  void _openTemplate(TileShareTemplate tilette,
+      [TiletteDetailTab tab = TiletteDetailTab.overview]) {
+    final tile = TiletteDetailScreen.tileFor(tilette);
+    TiletteDetailScreen.byTilette(
+        context: context,
+        designatedTile: tile,
+        initialTab: tab,
+        options: _tiletteOptions(tile));
+  }
+
+  void _tiletteNotes(TileShareTemplate tilette) =>
+      _openTemplate(tilette, TiletteDetailTab.notes);
+
+  void _notes(DesignatedTile tile) => TiletteDetailScreen.byTilette(
+      context: context,
+      designatedTile: tile,
+      options: _tiletteOptions(tile),
+      initialTab: TiletteDetailTab.notes);
+
+  Widget _activity(BuildContext context) => TileShareActivityWidget(
+      clusterId: _cubit.state.cluster!.id, embedded: true);
 
   /// The mode's content under the header.
   Widget _content(BuildContext context, TileShareDetailState state) {
@@ -132,11 +199,17 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
         return ClassDetail(
             detail: state,
             recipients: _recipients,
+            activityBuilder: _activity,
+            onNotes: _tiletteNotes,
+            onOpen: _openTemplate,
             onComments: _tiletteComments);
       case DetailVariant.project:
         return ProjectDetail(
             detail: state,
             recipients: _recipients,
+            activityBuilder: _activity,
+            onNotes: _tiletteNotes,
+            onOpen: _openTemplate,
             onComments: _tiletteComments);
       case DetailVariant.commitment:
         return CommitmentDetail(
@@ -145,7 +218,10 @@ class _TileShareDetailHostState extends State<TileShareDetailHost> {
           onAnswered: _cubit.refresh,
           onPreview: _preview,
           onOpenTile: _openTile,
+          onOpenTilette: _openTilette,
           onComments: _comments,
+          onNotes: _notes,
+          activityBuilder: _activity,
         );
     }
   }

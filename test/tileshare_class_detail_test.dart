@@ -17,6 +17,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/shareRosterD
 import 'package:tiler_app/routes/authenticatedUser/tileShare/detail/tileShareDetailScaffold.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
+import 'helpers/tap_visible.dart';
 import 'helpers/tileshare_fakes.dart';
 import 'helpers/tileshare_fixtures.dart';
 
@@ -103,11 +104,39 @@ Finder _key(String k) => find.byKey(Key(k));
 Finder _row(String label) => _key('participant_row_$label');
 
 Future<void> _segment(WidgetTester tester, String name) async {
-  await tester.tap(_key('roster_segment_$name'));
+  await tapVisible(tester, _key('roster_segment_$name'));
   await _settle(tester);
 }
 
 void main() {
+  testWidgets(
+      'a partial Class uses assigned people for both counts and flags the rest',
+      (tester) async {
+    final rig = _Rig();
+    rig.tilettes.first.designatedUsers!.add(tsAssignee('cy@x.com'));
+    rig.tilettes.last.designatedUsers!.first.rsvpStatus = InvitationStatus.none;
+    await _open(tester, rig);
+    final card = _key('class_task_t3');
+    expect(find.descendant(of: card, matching: find.text('0 of 1 complete')),
+        findsOneWidget);
+    expect(find.descendant(of: card, matching: find.text('0 of 1 accepted')),
+        findsOneWidget);
+    expect(
+        find.descendant(of: card, matching: find.text('2 missing assignments')),
+        findsOneWidget);
+    expect(find.descendant(of: card, matching: find.text('0 of 3 complete')),
+        findsNothing);
+    expect(
+        find.descendant(
+            of: _key('class_work_summary'),
+            matching: find.text('0 of 6 complete')),
+        findsOneWidget);
+    await tapVisible(tester, _key('class_task_missing_t3'));
+    await _settle(tester);
+    expect(_key('roster_participants'), findsOneWidget);
+    await rig.detail.close();
+  });
+
   testWidgets('three tabs: Overview, Tasks, Participants', (tester) async {
     final rig = _Rig();
     await _open(tester, rig);
@@ -118,14 +147,18 @@ void main() {
   });
 
   group('Overview', () {
-    testWidgets('counts people, not assignments, and flags who is missing '
+    testWidgets(
+        'counts people, not assignments, and flags who is missing '
         'from some tasks', (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
+      await _segment(tester, 'overview');
       expect(find.text('1 of 2 people accepted'), findsOneWidget,
           reason: 'ann accepted every task; bob did not');
-      expect(find.text('1 person is missing from some tilettes'), findsOneWidget);
-      await tester.tap(find.text('1 person is missing from some tilettes'));
+      expect(
+          find.text('1 person is missing from some tilettes'), findsOneWidget);
+      await tapVisible(
+          tester, find.text('1 person is missing from some tilettes'));
       await _settle(tester);
       expect(_key('roster_add_participant'), findsOneWidget);
       await rig.detail.close();
@@ -139,22 +172,26 @@ void main() {
       await _segment(tester, 'tasks');
       expect(
           find.descendant(
-              of: _key('class_task_t1'), matching: find.text('Write the brief')),
+              of: _key('class_task_t1'),
+              matching: find.text('Write the brief')),
           findsOneWidget);
       expect(
           find.descendant(
-              of: _key('class_task_t1'), matching: find.text('1 of 2 accepted')),
+              of: _key('class_task_t1'),
+              matching: find.text('1 of 2 accepted')),
           findsOneWidget);
       expect(
           find.descendant(
-              of: _key('class_task_t3'), matching: find.text('1 of 1 accepted')),
+              of: _key('class_task_t3'),
+              matching: find.text('1 of 1 accepted')),
           findsOneWidget);
       await rig.detail.close();
     });
   });
 
   group('Participants', () {
-    testWidgets('each person shows one segment per task and how many they '
+    testWidgets(
+        'each person shows one segment per task and how many they '
         'accepted', (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
@@ -164,38 +201,51 @@ void main() {
           findsNWidgets(3));
       expect(
           find.descendant(
-              of: _row('ann@x.com'), matching: find.text('3 of 3 tilettes accepted')),
+              of: _row('ann@x.com'),
+              matching: find.text('3 of 3 tilettes accepted')),
           findsOneWidget);
       expect(
           find.descendant(
-              of: _row('bob@x.com'), matching: find.text('0 of 3 tilettes accepted')),
+              of: _row('bob@x.com'),
+              matching: find.text('0 of 3 tilettes accepted')),
           findsOneWidget);
       await rig.detail.close();
     });
 
-    testWidgets('a person missing from a task says so and can be added to all '
+    testWidgets(
+        'a person missing from a task says so and can be added to all '
         'tasks', (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
       await _segment(tester, 'participants');
-      expect(find.descendant(of: _row('bob@x.com'), matching: find.text('Not on 1 tilette')),
+      expect(
+          find.descendant(
+              of: _row('bob@x.com'), matching: find.text('Not on 1 tilette')),
           findsOneWidget);
-      await tester.tap(find.descendant(
-          of: _row('bob@x.com'), matching: find.text('Add to all tilettes')));
+      await tapVisible(
+          tester,
+          find.descendant(
+              of: _row('bob@x.com'),
+              matching: find.text('Add to all tilettes')));
       await _settle(tester);
       expect(rig.recipients.calls.where((c) => c.startsWith('addRecipient')),
           ['addRecipient(t3, bob@x.com)']);
-      expect(find.descendant(of: _row('bob@x.com'), matching: find.text('Not on 1 tilette')),
+      expect(
+          find.descendant(
+              of: _row('bob@x.com'), matching: find.text('Not on 1 tilette')),
           findsNothing);
       await rig.detail.close();
     });
 
-    testWidgets('tapping a person lists their tasks, one by one', (tester) async {
+    testWidgets('tapping a person lists their tasks, one by one',
+        (tester) async {
       final rig = _Rig();
       await _open(tester, rig);
       await _segment(tester, 'participants');
-      await tester.tap(find.descendant(
-          of: _row('bob@x.com'), matching: find.text('bob@x.com')));
+      await tapVisible(
+          tester,
+          find.descendant(
+              of: _row('bob@x.com'), matching: find.text('bob@x.com')));
       await _settle(tester);
       final sheet = _key('class_person_sheet');
       expect(sheet, findsOneWidget);
@@ -206,7 +256,8 @@ void main() {
       expect(find.descendant(of: sheet, matching: find.text('Declined')),
           findsOneWidget);
       expect(find.descendant(of: sheet, matching: find.text('Not added')),
-          findsOneWidget, reason: 'Rehearse');
+          findsOneWidget,
+          reason: 'Rehearse');
       await rig.detail.close();
     });
 
@@ -228,7 +279,8 @@ void main() {
       ]);
       expect(
           find.descendant(
-              of: _row('cy@x.com'), matching: find.text('0 of 3 tilettes accepted')),
+              of: _row('cy@x.com'),
+              matching: find.text('0 of 3 tilettes accepted')),
           findsOneWidget);
       await rig.detail.close();
     });
@@ -238,11 +290,14 @@ void main() {
       final rig = _Rig();
       await _open(tester, rig);
       await _segment(tester, 'participants');
-      await tester.tap(find.descendant(
-          of: _row('bob@x.com'), matching: find.byTooltip('Remove')));
+      await tapVisible(
+          tester,
+          find.descendant(
+              of: _row('bob@x.com'), matching: find.byTooltip('Remove')));
       await _settle(tester);
-      expect(find.text('They will be removed from every tilette.'), findsOneWidget);
-      await tester.tap(_key('participant_remove_confirm'));
+      expect(find.text('They will be removed from every tilette.'),
+          findsOneWidget);
+      await tapVisible(tester, _key('participant_remove_confirm'));
       await _settle(tester);
       expect(_row('bob@x.com'), findsNothing);
       expect(rig.recipients.calls.where((c) => c.startsWith('removeRecipient')),

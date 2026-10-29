@@ -88,6 +88,10 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
   Future<void> _fetch() async {
     final int generation = ++_generation;
     final bool keep = _hasContent;
+    TileShareLog.d(
+        _tag,
+        'load#$generation cluster=${_clusterId ?? '-'} '
+        'designatedTile=${target.designatedTileId ?? '-'} refresh=$keep');
     _emit(keep
         ? state.copyWith(isRefreshing: true)
         : const TileShareDetailState(phase: DetailPhase.loading));
@@ -128,16 +132,62 @@ class TileShareDetailCubit extends Cubit<TileShareDetailState> {
       }
 
       final String? me = _currentUserId();
+      final List<TileShareTemplate> rosters =
+          loadedTilettes ?? const <TileShareTemplate>[];
       final List<DesignatedTile> mine = loadedDesignated == null
           ? state.mine
           : (me == null
               ? const <DesignatedTile>[]
               : loadedDesignated
-                  .where((t) => t.designatedUserId == me)
+                  .where((t) => t.resolveDesignatedUserId(rosters) == me)
                   .toList());
-      final MyClusterStatus? myStatus =
-          MyClusterStatus.byCluster(mine, userId: me)[clusterId];
+      final MyClusterStatus? myStatus = MyClusterStatus.byCluster(mine,
+          userId: me, tilettes: rosters)[clusterId];
       final bool isOwner = _owner(cluster, me, _ownerHint);
+      TileShareLog.d(
+          _tag,
+          'load#$generation assignment filter cluster=$clusterId '
+          'sessionUserId=${me ?? 'unknown'} '
+          'assignmentsSource=${_assignments != null} '
+          'returned=${loadedDesignated?.length ?? 'failed'} '
+          'mine=${mine.length} keptPrevious=${loadedDesignated == null} '
+          'creatorId=${cluster.creator?.id ?? '-'} ownerHint=$_ownerHint');
+      for (final tile in loadedDesignated ?? const <DesignatedTile>[]) {
+        final roster = tile.tileTemplate?.designatedUsers;
+        TileShareLog.d(
+            _tag,
+            'load#$generation assignment=${tile.id} '
+            'tilette=${tile.tileTemplate?.id ?? '-'} '
+            'cluster=${tile.tileTemplate?.clusterId ?? '-'} '
+            'status=${tile.invitationStatus} '
+            'tileUserId=${tile.user?.id ?? '-'} '
+            'designatedUserId=${tile.designatedUserId ?? '-'} '
+            'resolvedUserId=${tile.resolveDesignatedUserId(rosters) ?? '-'} '
+            'rosterCount=${roster?.length ?? 0} '
+            'matchingRosterEntries=${roster?.where((u) => u.designatedTileTemplateId == tile.id).length ?? 0} '
+            'included=${me != null && tile.resolveDesignatedUserId(rosters) == me}');
+      }
+      for (final tilette in loadedTilettes ?? const <TileShareTemplate>[]) {
+        final roster = tilette.designatedUsers;
+        TileShareLog.d(
+            _tag,
+            'load#$generation tilette=${tilette.id} '
+            'rosterCount=${roster?.length ?? 0} '
+            'myRosterAssignments=${roster?.where((u) => me != null && (u.userId ?? u.userProfile?.id) == me).map((u) => u.designatedTileTemplateId).take(10).toList() ?? []}');
+      }
+      if (!isOwner && mine.isEmpty) {
+        final String reason = loadedDesignated == null
+            ? 'assignment load failed; previous assignments retained'
+            : _assignments == null
+                ? 'no assignments source'
+                : me == null
+                    ? 'session user unknown; assignments cannot be matched'
+                    : loadedDesignated.isEmpty
+                        ? 'API returned no assignments'
+                        : 'no assignment resolved designated user matches session user';
+        TileShareLog.d(_tag,
+            'load#$generation recipient has no tilette rows or accept buttons: $reason');
+      }
       TileShareLog.d(
           _tag,
           'loaded $clusterId: ${isOwner ? 'owner' : 'recipient'}, '

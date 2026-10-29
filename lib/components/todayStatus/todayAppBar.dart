@@ -30,10 +30,6 @@ class TodayAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       toolbarHeight: preferredSize.height,
-      backgroundColor: tokens.background,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      centerTitle: true,
       automaticallyImplyLeading: false,
       leading: Semantics(
         button: true,
@@ -52,14 +48,7 @@ class TodayAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
       ),
-      title: Text(
-        date.humanDate(context),
-        style: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.w700,
-          color: tokens.textPrimary,
-        ),
-      ),
+      title: Text(date.humanDate(context)),
       // Keeps the title optically centred when there is no trailing control.
       actions: [
         trailing ?? const SizedBox(width: TodayStatusTokens.minTouchTarget),

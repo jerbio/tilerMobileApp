@@ -9,29 +9,39 @@ class AppLocalizationsEl extends AppLocalizations {
   AppLocalizationsEl([String locale = 'el']) : super(locale);
 
   @override
-  String get scheduleReadFailedTitle => 'Couldn\'t load your events.';
+  String get scheduleReadFailedTitle =>
+      'Δεν ήταν δυνατή η φόρτωση των συμβάντων σου.';
 
   @override
-  String get scheduleReadFailedBody => 'Try again in a moment.';
+  String get scheduleReadFailedBody => 'Δοκίμασε ξανά σε λίγο.';
 
   @override
-  String get scheduleReadRefreshFailed => 'Couldn\'t refresh your events.';
+  String get scheduleReadRefreshFailed =>
+      'Δεν ήταν δυνατή η ανανέωση των συμβάντων σου.';
 
   @override
-  String get scheduleReadRetained => 'Showing your last loaded schedule.';
+  String get scheduleReadRetained =>
+      'Εμφανίζεται το τελευταίο πρόγραμμα που φορτώθηκε.';
 
   @override
-  String get scheduleReadRetrying => 'Trying again...';
+  String get scheduleReadRetrying => 'Νέα προσπάθεια...';
 
   @override
-  String get scheduleReadSignIn => 'Sign in to load your events.';
+  String get scheduleReadSignIn => 'Συνδέσου για να φορτώσεις τα συμβάντα σου.';
 
   @override
-  String get scheduleSummaryUnavailable => 'Summary unavailable';
+  String get scheduleSummaryUnavailable => 'Η σύνοψη δεν είναι διαθέσιμη';
 
   @override
   String get notesLoadFailed =>
       'Δεν ήταν δυνατή η φόρτωση των σημειώσεών σας. Ανοίξτε ξανά τον επεξεργαστή σημειώσεων.';
+
+  @override
+  String get shareNotesLoadFailed =>
+      'Δεν ήταν δυνατή η φόρτωση των σημειώσεων. Δοκίμασε ξανά.';
+
+  @override
+  String get shareAddPerson => 'Προσθήκη ατόμου';
 
   @override
   String get onboardingSubmitFailed =>
@@ -5702,238 +5712,384 @@ class AppLocalizationsEl extends AppLocalizations {
   String get scheduleChangeAfter => 'Μετά';
 
   @override
-  String get vibeChatExecutionMode => 'Chat execution';
+  String get vibeChatExecutionMode => 'Εκτέλεση ενεργειών συνομιλίας';
 
   @override
-  String get vibeConfirmFirst => 'Confirm first';
+  String get vibeConfirmFirst => 'Πρώτα επιβεβαίωση';
 
   @override
-  String get vibeAutoAct => 'Auto act';
+  String get vibeAutoAct => 'Αυτόματη εκτέλεση';
 
   @override
   String get vibeAutoActNote =>
-      'Run supported chat actions automatically. Bulk and destructive changes still need review.';
+      'Εκτέλεση των υποστηριζόμενων ενεργειών συνομιλίας αυτόματα. Οι μαζικές και καταστροφικές αλλαγές εξακολουθούν να χρειάζονται έλεγχο.';
 
   @override
-  String get vibeConfirmNote => 'Review chat changes before they run.';
+  String get vibeConfirmNote =>
+      'Έλεγξε τις αλλαγές της συνομιλίας πριν εκτελεστούν.';
 
   @override
-  String get vibeConfirmCreation => 'Confirm creation';
+  String get vibeConfirmCreation => 'Επιβεβαίωση δημιουργίας';
 
   @override
-  String get vibeCheckStatus => 'Check status';
+  String get vibeCheckStatus => 'Έλεγχος κατάστασης';
 
   @override
   String get vibeCreationUnknown =>
-      'Creation could not be confirmed. Check status before trying again.';
+      'Δεν ήταν δυνατή η επιβεβαίωση της δημιουργίας. Έλεγξε την κατάσταση πριν δοκιμάσεις ξανά.';
 
   @override
   String get vibeReviewAgain =>
-      'Review the current proposal before confirming again.';
+      'Έλεγξε την τρέχουσα πρόταση πριν επιβεβαιώσεις ξανά.';
 
   @override
-  String get vibeTileShareCreated => 'TileShare created.';
+  String get vibeTileShareCreated => 'Δημιουργήθηκε TileShare.';
 
   @override
-  String get vibeCreationReview => 'Review TileShare creation';
+  String get vibeCreationReview => 'Έλεγχος δημιουργίας TileShare';
 
   @override
   String get vibeCreationNote =>
-      'Nothing is created until you confirm. Recipients still choose whether to accept; notifications are not sent by this action.';
+      'Δεν δημιουργείται τίποτα μέχρι να επιβεβαιώσεις. Οι παραλήπτες εξακολουθούν να επιλέγουν αν θα αποδεχτούν· αυτή η ενέργεια δεν στέλνει ειδοποιήσεις.';
 
   @override
-  String get vibeCreateProject => 'Create project';
+  String get vibeCreateProject => 'Δημιουργία έργου';
 
   @override
-  String get vibeAddTilette => 'Add tilette';
+  String get vibeAddTilette => 'Προσθήκη tilette';
 
   @override
-  String get vibeReviewProject => 'Project';
+  String get vibeReviewProject => 'Έργο';
 
   @override
-  String get vibeReviewStarts => 'Starts';
+  String get vibeReviewStarts => 'Έναρξη';
 
   @override
-  String get vibeReviewDeadline => 'Deadline';
+  String get vibeReviewDeadline => 'Προθεσμία';
 
   @override
-  String get vibeReviewMinutes => 'minutes';
+  String get vibeReviewMinutes => 'λεπτά';
 
   @override
-  String get vibeOpenTileShare => 'Open TileShare';
+  String get vibeOpenTileShare => 'Άνοιγμα TileShare';
 
   @override
-  String get vibeProjectRenamed => 'Project renamed.';
+  String get vibeProjectRenamed => 'Το έργο μετονομάστηκε.';
 
   @override
-  String get vibeRenameReview => 'Review project rename';
+  String get vibeRenameReview => 'Έλεγχος μετονομασίας έργου';
 
   @override
-  String get vibeRenameProject => 'Rename project';
+  String get vibeRenameProject => 'Μετονομασία έργου';
 
   @override
-  String get vibePreviousName => 'Current name';
+  String get vibePreviousName => 'Τρέχον όνομα';
 
   @override
   String get vibeRenameNote =>
-      'Only the project name changes after confirmation.';
+      'Μετά την επιβεβαίωση αλλάζει μόνο το όνομα του έργου.';
 
   @override
-  String get vibeConfirmRename => 'Confirm rename';
+  String get vibeConfirmRename => 'Επιβεβαίωση μετονομασίας';
 
   @override
   String get vibeRenameUnknown =>
-      'Rename could not be confirmed. Check status before trying again.';
+      'Δεν ήταν δυνατή η επιβεβαίωση της μετονομασίας. Έλεγξε την κατάσταση πριν δοκιμάσεις ξανά.';
 
   @override
-  String get vibeTiletteRenamed => 'Tilette renamed.';
+  String get vibeTiletteRenamed => 'Η tilette μετονομάστηκε.';
 
   @override
-  String get vibeTiletteRenameReview => 'Review tilette rename';
+  String get vibeTiletteRenameReview => 'Έλεγχος μετονομασίας tilette';
 
   @override
-  String get vibeRenameTilette => 'Rename tilette';
+  String get vibeRenameTilette => 'Μετονομασία tilette';
 
   @override
   String get vibeTiletteRenameNote =>
-      'Only the shared tilette name changes. Personal calendar titles stay as they are.';
+      'Αλλάζει μόνο το όνομα της κοινόχρηστης tilette. Οι τίτλοι στα προσωπικά ημερολόγια παραμένουν ίδιοι.';
 
   @override
-  String get vibeNotesUpdated => 'Tilette notes updated.';
+  String get vibeNotesUpdated => 'Οι σημειώσεις της tilette ενημερώθηκαν.';
 
   @override
-  String get vibeNotesReview => 'Review tilette notes';
+  String get vibeNotesReview => 'Έλεγχος σημειώσεων tilette';
 
   @override
-  String get vibeEditNotes => 'Update tilette notes';
+  String get vibeEditNotes => 'Ενημέρωση σημειώσεων tilette';
 
   @override
-  String get vibePreviousNotes => 'Current notes';
+  String get vibePreviousNotes => 'Τρέχουσες σημειώσεις';
 
   @override
-  String get vibeProposedNotes => 'Proposed notes';
+  String get vibeProposedNotes => 'Προτεινόμενες σημειώσεις';
 
   @override
-  String get vibeEmptyNotes => 'No notes';
+  String get vibeEmptyNotes => 'Χωρίς σημειώσεις';
 
   @override
-  String get vibeClearNotes => 'Clear notes';
+  String get vibeClearNotes => 'Εκκαθάριση σημειώσεων';
 
   @override
   String get vibeNotesNote =>
-      'The proposed text replaces the complete tilette notes after confirmation.';
+      'Το προτεινόμενο κείμενο αντικαθιστά όλες τις σημειώσεις της tilette μετά την επιβεβαίωση.';
 
   @override
-  String get vibeConfirmNotes => 'Confirm notes';
+  String get vibeConfirmNotes => 'Επιβεβαίωση σημειώσεων';
 
   @override
   String get vibeNotesUnknown =>
-      'Notes update could not be confirmed. Check status before trying again.';
+      'Δεν ήταν δυνατή η επιβεβαίωση της ενημέρωσης των σημειώσεων. Έλεγξε την κατάσταση πριν δοκιμάσεις ξανά.';
 
   @override
-  String get vibeTiletteDeleted => 'Tilette deleted.';
+  String get vibeTiletteDeleted => 'Η tilette διαγράφηκε.';
 
   @override
-  String get vibeDeleteReview => 'Review tilette deletion';
+  String get vibeDeleteReview => 'Έλεγχος διαγραφής tilette';
 
   @override
-  String get vibeDeleteTilette => 'Delete tilette';
+  String get vibeDeleteTilette => 'Διαγραφή tilette';
 
   @override
-  String get vibeAssignmentCount => 'Assignments';
+  String get vibeAssignmentCount => 'Αναθέσεις';
 
   @override
-  String get vibeLinkedCalendarCount => 'Linked calendar items';
+  String get vibeLinkedCalendarCount => 'Συνδεδεμένα στοιχεία ημερολογίου';
 
   @override
   String get vibeDeleteNote =>
-      'This disables the tilette and linked calendar work. The project and other tilettes stay available. Assignment history is retained; undo is not provided here.';
+      'Αυτό απενεργοποιεί την tilette και τις συνδεδεμένες εργασίες ημερολογίου. Το έργο παραμένει διαθέσιμο, όπως και οι άλλες tilettes. Το ιστορικό αναθέσεων διατηρείται· δεν παρέχεται αναίρεση εδώ.';
 
   @override
-  String get vibeConfirmDeletion => 'Confirm deletion';
+  String get vibeConfirmDeletion => 'Επιβεβαίωση διαγραφής';
 
   @override
   String get vibeDeleteUnknown =>
-      'Deletion could not be confirmed. Check status before trying again.';
+      'Δεν ήταν δυνατή η επιβεβαίωση της διαγραφής. Έλεγξε την κατάσταση πριν δοκιμάσεις ξανά.';
 
   @override
-  String get vibeOpenProject => 'Open project';
+  String get vibeOpenProject => 'Άνοιγμα έργου';
 
   @override
-  String get vibeTiletteUpdated => 'Tilette updated.';
+  String get vibeTiletteUpdated => 'Η tilette ενημερώθηκε.';
 
   @override
-  String get vibeUpdateReview => 'Review tilette update';
+  String get vibeUpdateReview => 'Έλεγχος ενημέρωσης tilette';
 
   @override
-  String get vibeUpdateTilette => 'Update tilette';
+  String get vibeUpdateTilette => 'Ενημέρωση tilette';
 
   @override
   String get vibeUpdateNote =>
-      'All displayed changes are saved together after confirmation. Supplied notes replace the complete note.';
+      'Όλες οι εμφανιζόμενες αλλαγές αποθηκεύονται μαζί μετά την επιβεβαίωση. Οι σημειώσεις που παρέχονται αντικαθιστούν ολόκληρη τη σημείωση.';
 
   @override
-  String get vibeConfirmUpdate => 'Confirm update';
+  String get vibeConfirmUpdate => 'Επιβεβαίωση ενημέρωσης';
 
   @override
   String get vibeUpdateRejected =>
-      'No changes were applied. Review the response and request a revised update.';
+      'Δεν εφαρμόστηκε καμία αλλαγή. Έλεγξε την απάντηση και ζήτησε μια αναθεωρημένη ενημέρωση.';
 
   @override
   String get vibeUpdateUnknown =>
-      'Update could not be confirmed. Check status before trying again.';
+      'Δεν ήταν δυνατή η επιβεβαίωση της ενημέρωσης. Έλεγξε την κατάσταση πριν δοκιμάσεις ξανά.';
 
   @override
   String get vibeScheduleUpdatePending =>
-      'Calculating accepted-work schedules. No changes have been saved yet.';
+      'Υπολογισμός προγραμμάτων για την αποδεκτή εργασία. Δεν έχουν αποθηκευτεί ακόμη αλλαγές.';
 
   @override
   String get vibeScheduleNoFit =>
-      'No changes were applied. The remaining work could not fit around protected sessions. Adjust the duration or deadline and request a revised update.';
+      'Δεν εφαρμόστηκε καμία αλλαγή. Η υπόλοιπη εργασία δεν χωρά γύρω από τις προστατευμένες συνεδρίες. Προσάρμοσε τη διάρκεια ή την προθεσμία και ζήτησε μια αναθεωρημένη ενημέρωση.';
 
   @override
   String get vibeScheduleUpdateFailed =>
-      'No changes were applied. The schedule changed or calculation could not complete. Request a revised update.';
+      'Δεν εφαρμόστηκε καμία αλλαγή. Το πρόγραμμα άλλαξε ή ο υπολογισμός δεν ολοκληρώθηκε. Ζήτησε μια αναθεωρημένη ενημέρωση.';
 
   @override
-  String get vibeUpdateProject => 'Update project';
+  String get vibeUpdateProject => 'Ενημέρωση έργου';
 
   @override
-  String get vibeProjectUpdateReview => 'Review project update';
+  String get vibeProjectUpdateReview => 'Έλεγχος ενημέρωσης έργου';
 
   @override
-  String get vibeProjectUpdated => 'Project updated.';
+  String get vibeProjectUpdated => 'Το έργο ενημερώθηκε.';
 
   @override
-  String get vibeManageAccess => 'Manage project access';
+  String get vibeManageAccess => 'Διαχείριση πρόσβασης στο έργο';
 
   @override
-  String get vibeManageRecipients => 'Manage recipients';
+  String get vibeManageRecipients => 'Διαχείριση παραληπτών';
 
   @override
-  String get vibeManagementUpdated => 'Recipient or access changes saved.';
+  String get vibeManagementUpdated =>
+      'Οι αλλαγές παραληπτών ή πρόσβασης αποθηκεύτηκαν.';
 
   @override
   String get vibeManagementNote =>
-      'Review the recipient and access effects above. Calendar access cleanup and restoration run in the background.';
+      'Έλεγξε παραπάνω τις επιπτώσεις στους παραλήπτες και στην πρόσβαση. Η εκκαθάριση και η επαναφορά πρόσβασης στο ημερολόγιο εκτελούνται στο παρασκήνιο.';
 
   @override
   String get vibeAccessReconciliation =>
-      'Access is saved. Calendar cleanup or restoration runs in the background.';
+      'Η πρόσβαση αποθηκεύτηκε. Η εκκαθάριση ή η επαναφορά του ημερολογίου εκτελείται στο παρασκήνιο.';
 
   @override
-  String get vibePlanTargetPending => 'Waiting for combined calculation';
+  String get vibePlanTargetPending => 'Αναμονή συνδυασμένου υπολογισμού';
 
   @override
-  String get vibePlanTargetNotApplied => 'Not applied';
+  String get vibePlanTargetNotApplied => 'Δεν εφαρμόστηκε';
 
   @override
-  String get vibePlanReview => 'Review shared-work plan';
+  String get vibePlanReview => 'Έλεγχος πλάνου κοινής εργασίας';
 
   @override
-  String get vibePlanUpdated => 'Reviewed changes saved together.';
+  String get vibePlanUpdated => 'Οι ελεγμένες αλλαγές αποθηκεύτηκαν μαζί.';
 
   @override
   String get vibePlanNote =>
-      'All displayed targets are saved together after confirmation. If any target changes or access is lost, review a new proposal.';
+      'Όλα τα εμφανιζόμενα στοιχεία αποθηκεύονται μαζί μετά την επιβεβαίωση. Αν κάποιο στοιχείο αλλάξει ή χαθεί η πρόσβαση, έλεγξε μια νέα πρόταση.';
+
+  @override
+  String get shareViewOptions => 'Επιλογές προβολής';
+
+  @override
+  String get shareDensityComfortable => 'Άνετη';
+
+  @override
+  String get shareDensityCompact => 'Συμπαγής';
+
+  @override
+  String get shareDensityList => 'Λίστα';
+
+  @override
+  String get shareDensityComfortableHint =>
+      'Πλήρεις κάρτες με προεπισκοπήσεις σημειώσεων και ενέργειες με ετικέτες.';
+
+  @override
+  String get shareDensityCompactHint =>
+      'Μικρότερες κάρτες με γρήγορες ενέργειες. Συνιστάται.';
+
+  @override
+  String get shareDensityListHint =>
+      'Συμπτυγμένες γραμμές. Πάτησε μια tilette για να αναπτύξεις τις λεπτομέρειες και τις ενέργειές της.';
+
+  @override
+  String get shareExpandTilette => 'Ανάπτυξη tilette';
+
+  @override
+  String get shareCollapseTilette => 'Σύμπτυξη tilette';
+
+  @override
+  String get shareWork => 'Εργασία';
+
+  @override
+  String get sharePeople => 'Άτομα';
+
+  @override
+  String get shareActivity => 'Δραστηριότητα';
+
+  @override
+  String get shareMyWork => 'Η εργασία μου';
+
+  @override
+  String get shareClassHint =>
+      'Όλοι λαμβάνουν το δικό τους αντίγραφο κάθε tilette.';
+
+  @override
+  String get shareProjectHint =>
+      'Tilettes ανατεθειμένες σε άτομα που εργάζονται για έναν κοινό στόχο.';
+
+  @override
+  String get shareNeedsDecision => 'Χρειάζεται η απόφασή σου';
+
+  @override
+  String get shareTilette => 'Tilette';
+
+  @override
+  String get shareViewTilette => 'Προβολή tilette';
+
+  @override
+  String get shareReviewRequest => 'Έλεγχος αιτήματος';
+
+  @override
+  String get shareAssignedTo => 'Ανατέθηκε σε';
+
+  @override
+  String get shareAssignedToYou => 'Ανατέθηκε σε εσένα';
+
+  @override
+  String get shareYourResponse => 'Η απάντησή σου';
+
+  @override
+  String get shareInvitationHint =>
+      'Επίλεξε αν θα προσθέσεις αυτή την tilette στο πρόγραμμά σου.';
+
+  @override
+  String get shareReadNotes => 'Ανάγνωση σημειώσεων';
+
+  @override
+  String get shareEditNotes => 'Επεξεργασία σημειώσεων';
+
+  @override
+  String get shareOpenDiscussion => 'Άνοιγμα συζήτησης';
+
+  @override
+  String get shareThreadUnavailable =>
+      'Η συζήτηση αυτής της tilette δεν είναι διαθέσιμη.';
+
+  @override
+  String get shareCommitments => 'Οι δεσμεύσεις σου';
+
+  @override
+  String get shareNeedsAttention => 'Χρειάζεται προσοχή';
+
+  @override
+  String get shareInProgress => 'Σε εξέλιξη';
+
+  @override
+  String get shareNotStarted => 'Δεν έχει ξεκινήσει';
+
+  @override
+  String get shareAwaitingResponse => 'Αναμονή απάντησης';
+
+  @override
+  String get shareNoAssignments =>
+      'Δεν σου έχει ανατεθεί ακόμη καμία tilette σε αυτή την κοινοποίηση.';
+
+  @override
+  String get shareNotesEmpty => 'Δεν έχουν προστεθεί ακόμη σημειώσεις.';
+
+  @override
+  String get shareNoMatches => 'Καμία tilette δεν ταιριάζει με αυτό το φίλτρο.';
+
+  @override
+  String get shareProjectNoPeople =>
+      'Κανείς ακόμη. Ανάθεσε μια tilette για να προσθέσεις κάποιον σε αυτό το έργο.';
+
+  @override
+  String shareCompletionCount(int done, int total) {
+    return '$done από $total ολοκληρώθηκαν';
+  }
+
+  @override
+  String shareMissingAssignments(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count αναθέσεις λείπουν',
+      one: '1 ανάθεση λείπει',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sharePeopleCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count άτομα',
+      one: '1 άτομο',
+    );
+    return '$_temp0';
+  }
 }

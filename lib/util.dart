@@ -22,6 +22,7 @@ import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/services/onBoardingHelper.dart';
+import 'package:tiler_app/services/locationDiagnostics.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import 'package:faker/faker.dart' as faker;
@@ -297,6 +298,20 @@ class Utility {
   static Position getDefaultPosition() {
     return _defaultPosition;
   }
+
+  static bool isValidCoordinates(double? latitude, double? longitude) {
+    return latitude != null &&
+        longitude != null &&
+        latitude.isFinite &&
+        longitude.isFinite &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180;
+  }
+
+  static bool isValidPosition(Position? position) =>
+      isValidCoordinates(position?.latitude, position?.longitude);
 
   static int get msCurrentTime {
     return currentTime().toUtc().millisecondsSinceEpoch;
@@ -778,12 +793,28 @@ class Utility {
   ///
   /// When the location services are not enabled or permissions
   /// are denied the `Future` will return an error.
-  static Future<Position> determineDevicePosition() async {
+  static Future<Position> determineDevicePosition(
+      {String? diagnosticId}) async {
+    final lookupId = diagnosticId ?? Utility.getUuid;
+    final timer = Stopwatch()..start();
+    void trace(String event,
+        {Map<String, Object?> fields = const {}, Object? error}) {
+      locationFlowLog(event,
+          fields: {
+            'lookupId': lookupId,
+            'elapsedMs': timer.elapsedMilliseconds,
+            ...fields,
+          },
+          error: error);
+    }
+
+    trace('device_check_started');
     bool serviceEnabled;
     LocationPermission permission;
 
     // Test if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    trace('service_checked', fields: {'enabled': serviceEnabled});
     if (!serviceEnabled) {
       // Location services are not enabled don't continue
       // accessing the position and request users of the
@@ -792,8 +823,12 @@ class Utility {
     }
 
     permission = await Geolocator.checkPermission();
+    trace('permission_checked', fields: {'permission': permission.name});
     if (permission == LocationPermission.denied) {
+      trace('permission_request_started');
       permission = await Geolocator.requestPermission();
+      trace('permission_request_finished',
+          fields: {'permission': permission.name});
       if (permission == LocationPermission.denied) {
         // Permissions are denied, next time you could try
         // requesting permissions again (this is also where
@@ -812,15 +847,28 @@ class Utility {
 
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
+    const locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      timeLimit: Duration(seconds: 20),
+    );
     try {
-      return await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.medium,
-          timeLimit: Duration(seconds: 5),
-        ),
+      trace('position_request_started', fields: {
+        'accuracy': locationSettings.accuracy.name,
+        'timeLimitMs': locationSettings.timeLimit?.inMilliseconds,
+      });
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: locationSettings,
       );
+      trace('position_received', fields: {
+        'accuracyMeters': position.accuracy,
+        'positionAgeMs':
+            DateTime.now().difference(position.timestamp).inMilliseconds,
+        'isMocked': position.isMocked,
+        'isDefaultPosition': position == Utility.getDefaultPosition(),
+      });
+      return position;
     } catch (e) {
-      print("Error getting location: $e");
+      trace('position_failed_using_default', error: e);
       return Utility.getDefaultPosition();
     }
   }

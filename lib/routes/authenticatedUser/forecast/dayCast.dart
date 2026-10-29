@@ -244,7 +244,7 @@ class _WidgetGoogleMapState extends State<DayCast> {
         appBar: AppBar(
           automaticallyImplyLeading: false,
           leading: TextButton(
-            style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),
+            style: TextButton.styleFrom(foregroundColor: colorScheme.onSurface),
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,

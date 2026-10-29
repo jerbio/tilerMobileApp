@@ -13,6 +13,7 @@ import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/request/contactModel.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tileShareMode.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/services/tileShare/tileShareLog.dart';
 
 import 'helpers/tileshare_fakes.dart';
@@ -90,6 +91,49 @@ void main() {
   tearDown(() => TileShareLog.sink = originalSink);
 
   group('opening', () {
+    test('mobile null embedded roster uses the full tilette roster', () async {
+      final tiles = [
+        for (final id in ['d1', 'd-other'])
+          DesignatedTile.fromJson({
+            'id': id,
+            'invitationStatus': 'none',
+            'user': {'id': 'me'},
+            'template': {
+              'id': 't1',
+              'clusterId': 'shared',
+              'designatedUsers': [null],
+            },
+          }),
+      ];
+      final clusters = _clusters();
+      clusters.tilettesByCluster['shared'] = [
+        TileShareTemplate.fromJson({
+          'id': 't1',
+          'clusterId': 'shared',
+          'designatedUsers': [
+            {'designatedTileTemplateId': 'd1', 'userId': 'me'},
+            {'designatedTileTemplateId': 'd-other', 'userId': 'someone'},
+          ],
+        }),
+      ];
+      final rig = _Rig(const TileShareDetailTarget.cluster('shared'),
+          clusters: clusters, mine: tiles);
+      addTearDown(rig.close);
+      await rig.cubit.load();
+      expect(rig.state.mine.map((t) => t.id), ['d1']);
+      expect(rig.state.myStatus?.pendingAssignmentIds, ['d1']);
+      expect(rig.state.myStatus?.taskCount, 1);
+      expect(tiles.first.designatedUserId, isNull,
+          reason: 'resolving ownership must not mutate the API response');
+      expect(logs.any((l) => l.contains('resolvedUserId=me')), isTrue);
+
+      clusters.failNextOn('tilettes', StateError('roster unavailable'));
+      await rig.cubit.refresh();
+      expect(rig.state.mine, isEmpty,
+          reason:
+              'do not infer ownership from the tile user or a stale roster');
+    });
+
     test(
         'by cluster id: loading, then the cluster, its tilettes and my own '
         'templates in it', () async {
@@ -347,10 +391,8 @@ void ownerEdits() {
       expect(rig.state.tilettes.first.name, 'Write it');
       expect(await rig.cubit.deleteTask('t2'), isTrue);
       expect(rig.state.tilettes.map((t) => t.id), ['t1']);
-      expect(rig.edits!.calls, [
-        'updateTask(t1, name: Write it, end: null)',
-        'deleteTask(t2)'
-      ]);
+      expect(rig.edits!.calls,
+          ['updateTask(t1, name: Write it, end: null)', 'deleteTask(t2)']);
       await rig.close();
     });
 
@@ -438,7 +480,8 @@ void taskNotes() {
       await rig.close();
     });
 
-    test("an existing tilette's notes are edited on the notes page, through "
+    test(
+        "an existing tilette's notes are edited on the notes page, through "
         "the edit source's notes endpoint", () async {
       final rig =
           _Rig(const TileShareDetailTarget.cluster('mine-b'), withEdits: true);
@@ -530,4 +573,3 @@ void shareStart() {
     await rig.close();
   });
 }
-
