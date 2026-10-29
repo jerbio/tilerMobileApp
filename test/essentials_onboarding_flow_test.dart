@@ -138,6 +138,9 @@ Future<void> _flushToasts(WidgetTester tester) async {
 
 Future<void> _advanceToLocationPage(
     WidgetTester tester, OnboardingBloc bloc) async {
+  await tester.tap(find
+      .text(lookupAppLocalizations(const Locale('en')).medicalProfessional));
+  await tester.pump();
   await tester.tap(find.byIcon(Icons.arrow_forward));
   await tester.pumpAndSettle();
   expect(bloc.state.pageNumber, 1);
@@ -161,9 +164,8 @@ void main() {
       await tester.pumpWidget(_wrapOnboarding(bloc));
       await tester.pump();
 
-      final indicator = tester
-          .widget<OnBoardingProgressIndicator>(
-              find.byType(OnBoardingProgressIndicator));
+      final indicator = tester.widget<OnBoardingProgressIndicator>(
+          find.byType(OnBoardingProgressIndicator));
       expect(indicator.totalPages, 2,
           reason: 'The essentials flow must consist of exactly 2 pages.');
 
@@ -185,6 +187,8 @@ void main() {
       expect(find.text(l10n.primaryLocationQuestion), findsNothing);
 
       // Next -> page 1: location.
+      await tester.tap(find.text(l10n.medicalProfessional));
+      await tester.pump();
       await tester.tap(find.byIcon(Icons.arrow_forward));
       await tester.pumpAndSettle();
 
@@ -199,7 +203,7 @@ void main() {
           reason: 'Navigation alone must never touch the geolocator.');
     });
 
-testWidgets(
+    testWidgets(
         'progression is blocked until a custom profession has 3 characters',
         (tester) async {
       final geolocator = FakeGeolocatorPlatform(position: _testPosition);
@@ -253,6 +257,8 @@ testWidgets(
       final bloc = _seededBloc();
 
       await tester.pumpWidget(_wrapOnboarding(bloc));
+      await tester.pump();
+      await tester.tap(find.text(l10n.medicalProfessional));
       await tester.pump();
 
       // Swipe left (fling) on the page area -> NextPageEvent. A fling is

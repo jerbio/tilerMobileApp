@@ -41,7 +41,6 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           preferredDaySection: "Morning",
           wakeUpTime: TimeOfDay(hour: 7, minute: 0),
           startingWorkDayTime: TimeOfDay(hour: 9, minute: 0),
-          profession: 'Medical Professional',
         )) {
     on<FetchOnboardingDataEvent>(_onFetchOnboardingData);
     on<NextPageEvent>(_onNextPageChanged);
@@ -153,9 +152,12 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       return;
     }
     if (!_canProceedToNextPage(state)) {
+      final l10n = LocalizationService.instance.translations;
       emit(state.copyWith(
           step: OnboardingStep.error,
-          error: LocalizationService.instance.translations.enter3chars));
+          error: state.isCustomProfession
+              ? l10n.enter3chars
+              : l10n.selectProfession));
       return;
     }
     if (state.step == OnboardingStep.suggestionLoading ||
@@ -212,7 +214,9 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   void _onSelectProfession(
       SelectProfessionEvent event, Emitter<OnboardingState> emit) {
     emit(state.copyWith(
-        profession: event.profession, isCustomProfession: event.isCustom));
+        step: OnboardingStep.dataLoaded,
+        profession: event.profession,
+        isCustomProfession: event.isCustom));
   }
 
   void _onAddRecurringTask(
@@ -511,7 +515,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
             ? OnboardingStep.suggestionRefreshing
             : OnboardingStep.suggestionLoading));
     try {
-      if (state.profession!.isNotEmpty && state.profession != null) {
+      if (state.profession?.isNotEmpty == true) {
         List<TileSuggestion> tiles =
             await onBoardingApi.generateSuggestionTiles(
           profession: state.profession!,

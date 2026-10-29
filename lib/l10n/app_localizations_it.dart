@@ -9,6 +9,32 @@ class AppLocalizationsIt extends AppLocalizations {
   AppLocalizationsIt([String locale = 'it']) : super(locale);
 
   @override
+  String professionTaskPreview(String profession) {
+    String _temp0 = intl.Intl.selectLogic(
+      profession,
+      {
+        'medical': 'Controlli dei pazienti → Pausa',
+        'software': 'Concentrazione → Revisione del codice',
+        'student': 'Sessione di studio → Preparare i compiti',
+        'engineer': 'Revisione del progetto → Pianificazione',
+        'sales': 'Chiamate ai clienti → Spostamenti',
+        'remote': 'Lavoro concentrato → Riunione di gruppo',
+        'parent': 'Accompagnare a scuola → Tempo per te',
+        'account': 'Incontro con i clienti → Attività di seguito',
+        'other': 'Concentrazione → Obiettivi personali',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get professionAiExplanation =>
+      'Aiuta l’IA a pianificare in base al tuo lavoro';
+
+  @override
+  String get selectProfession => 'Seleziona una professione per continuare.';
+
+  @override
   String get scheduleReadFailedTitle => 'Impossibile caricare i tuoi eventi.';
 
   @override

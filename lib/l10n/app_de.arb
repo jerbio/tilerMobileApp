@@ -1,4 +1,7 @@
 {
+  "professionTaskPreview": "{profession, select, medical{Patientennachsorge → Erholungspause} software{Fokuszeit → Code-Review} student{Lernzeit → Aufgaben vorbereiten} engineer{Entwurfsprüfung → Projektplanung} sales{Kundengespräche → Fahrzeit} remote{Konzentriertes Arbeiten → Teamabstimmung} parent{Schulweg → Zeit für dich} account{Kundenabstimmung → Nachbereitung} other{Fokuszeit → Persönliche Ziele}}",
+  "professionAiExplanation": "Hilf der KI, passend zu deiner Arbeit zu planen",
+  "selectProfession": "Wähle einen Beruf aus, um fortzufahren.",
   "notesLoadFailed": "Deine Notizen konnten nicht geladen werden. Öffne den Notizeditor erneut.",
   "onboardingSubmitFailed": "Deine Einrichtung konnte nicht gespeichert werden. Deine Auswahl bleibt erhalten. Versuche es erneut oder überspringe den Schritt vorerst.",
   "operationFailed": "{operation} ist fehlgeschlagen. Bitte versuche es erneut.",

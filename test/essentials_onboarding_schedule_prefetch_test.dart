@@ -167,6 +167,9 @@ void _mockTimezoneChannel(WidgetTester tester) {
 
 Future<void> _advanceToLocationPage(
     WidgetTester tester, OnboardingBloc bloc) async {
+  await tester.tap(find
+      .text(lookupAppLocalizations(const Locale('en')).medicalProfessional));
+  await tester.pump();
   await tester.tap(find.byIcon(Icons.arrow_forward));
   await tester.pumpAndSettle();
   expect(bloc.state.pageNumber, 1);

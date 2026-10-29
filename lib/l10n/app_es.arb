@@ -1,4 +1,7 @@
 {
+  "professionTaskPreview": "{profession, select, medical{Seguimiento de pacientes → Descanso} software{Concentración → Revisión de código} student{Sesión de estudio → Preparar tareas} engineer{Revisión de diseño → Planificar proyectos} sales{Llamadas a clientes → Traslados} remote{Trabajo profundo → Reunión de equipo} parent{Llevar al colegio → Tiempo para ti} account{Reunión con clientes → Seguimiento} other{Concentración → Metas personales}}",
+  "professionAiExplanation": "Ayuda a la IA a planificar según tu trabajo",
+  "selectProfession": "Selecciona una profesión para continuar.",
   "scheduleReadFailedTitle": "No se pudieron cargar tus eventos.",
   "scheduleReadFailedBody": "Vuelve a intentarlo en un momento.",
   "scheduleReadRefreshFailed": "No se pudieron actualizar tus eventos.",

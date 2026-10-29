@@ -242,6 +242,10 @@ void _mockTimezoneChannel(WidgetTester tester) {
 /// Advances from the profession page to the location page (page-1 Next).
 Future<void> _advanceToLocationPage(
     WidgetTester tester, OnboardingBloc bloc, AppLocalizations l10n) async {
+  if (bloc.state.profession == null) {
+    await tester.tap(find.text(l10n.medicalProfessional));
+    await tester.pump();
+  }
   await tester.tap(find.byIcon(Icons.arrow_forward));
   await tester.pumpAndSettle();
   expect(bloc.state.pageNumber, 1);
@@ -306,6 +310,8 @@ void main() {
       await tester.pump();
 
       // Page 1: Next merely advances; it never submits.
+      await tester.tap(find.text(l10n.medicalProfessional));
+      await tester.pump();
       await tester.tap(find.byIcon(Icons.arrow_forward));
       await tester.pumpAndSettle();
       expect(bloc.state.pageNumber, 1);
@@ -390,7 +396,7 @@ void main() {
       expect(payload.timeZone, 'America/New_York');
       expect(payload.timeZoneOffset, isNotNull);
       expect(payload.profession, 'Medical Professional',
-          reason: 'The seeded default profession is sent when unchanged.');
+          reason: 'The explicitly selected profession is sent.');
 
       await tester.pumpWidget(const SizedBox());
     });

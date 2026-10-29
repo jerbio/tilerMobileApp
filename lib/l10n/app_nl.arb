@@ -1,4 +1,7 @@
 {
+  "professionTaskPreview": "{profession, select, medical{Patiënten opvolgen → Herstelpauze} software{Focustijd → Code beoordelen} student{Studeren → Opdracht voorbereiden} engineer{Ontwerp beoordelen → Projectplanning} sales{Klantgesprekken → Reistijd} remote{Geconcentreerd werken → Teamoverleg} parent{Schoolrit → Tijd voor jezelf} account{Klantoverleg → Opvolging} other{Focustijd → Persoonlijke doelen}}",
+  "professionAiExplanation": "Help AI plannen op basis van je werk",
+  "selectProfession": "Selecteer een beroep om door te gaan.",
   "notesLoadFailed": "Je notities konden niet worden geladen. Open de notitie-editor opnieuw.",
   "onboardingSubmitFailed": "Je instellingen konden niet worden opgeslagen. Je keuzes blijven bewaard. Probeer het opnieuw of sla deze stap voorlopig over.",
   "operationFailed": "{operation} is mislukt. Probeer het opnieuw.",

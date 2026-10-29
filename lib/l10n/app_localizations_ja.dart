@@ -9,6 +9,31 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String professionTaskPreview(String profession) {
+    String _temp0 = intl.Intl.selectLogic(
+      profession,
+      {
+        'medical': '患者のフォロー → 休憩',
+        'software': '集中時間 → コードレビュー',
+        'student': '勉強 → 課題の準備',
+        'engineer': '設計レビュー → プロジェクト計画',
+        'sales': '顧客への電話 → 移動時間',
+        'remote': '集中作業 → チームとの打ち合わせ',
+        'parent': '学校への送迎 → 自分の時間',
+        'account': '顧客との打ち合わせ → フォローアップ',
+        'other': '集中時間 → 個人の目標',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get professionAiExplanation => 'AIがあなたの仕事に合った予定を提案';
+
+  @override
+  String get selectProfession => '続けるには職業を選択してください。';
+
+  @override
   String get scheduleReadFailedTitle => 'イベントを読み込めませんでした。';
 
   @override

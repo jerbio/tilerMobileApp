@@ -1,4 +1,7 @@
 {
+  "professionTaskPreview": "{profession, select, medical{Controlli dei pazienti → Pausa} software{Concentrazione → Revisione del codice} student{Sessione di studio → Preparare i compiti} engineer{Revisione del progetto → Pianificazione} sales{Chiamate ai clienti → Spostamenti} remote{Lavoro concentrato → Riunione di gruppo} parent{Accompagnare a scuola → Tempo per te} account{Incontro con i clienti → Attività di seguito} other{Concentrazione → Obiettivi personali}}",
+  "professionAiExplanation": "Aiuta l’IA a pianificare in base al tuo lavoro",
+  "selectProfession": "Seleziona una professione per continuare.",
   "notesLoadFailed": "Impossibile caricare le tue note. Riapri l’editor delle note per riprovare.",
   "onboardingSubmitFailed": "Impossibile salvare la configurazione. Le tue scelte sono mantenute. Riprova o salta questo passaggio per ora.",
   "operationFailed": "{operation} non è riuscito. Riprova.",

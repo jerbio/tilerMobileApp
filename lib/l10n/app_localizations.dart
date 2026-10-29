@@ -112,6 +112,24 @@ abstract class AppLocalizations {
     Locale('pt')
   ];
 
+  /// Illustrative task pairs floating beside profession choices during onboarding.
+  ///
+  /// In en, this message translates to:
+  /// **'{profession, select, medical{Patient follow-ups → Recovery break} software{Focus time → Code review} student{Study session → Assignment prep} engineer{Design review → Project planning} sales{Client calls → Travel time} remote{Deep work → Team check-in} parent{School run → Time for yourself} account{Client check-in → Follow-ups} other{Focus time → Personal goals}}'**
+  String professionTaskPreview(String profession);
+
+  /// No description provided for @professionAiExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Help AI plan around your work'**
+  String get professionAiExplanation;
+
+  /// No description provided for @selectProfession.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a profession to continue.'**
+  String get selectProfession;
+
   /// No description provided for @scheduleReadFailedTitle.
   ///
   /// In en, this message translates to:

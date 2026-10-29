@@ -1,4 +1,8 @@
  {
+  "professionTaskPreview": "{profession, select, medical{Patient follow-ups → Recovery break} software{Focus time → Code review} student{Study session → Assignment prep} engineer{Design review → Project planning} sales{Client calls → Travel time} remote{Deep work → Team check-in} parent{School run → Time for yourself} account{Client check-in → Follow-ups} other{Focus time → Personal goals}}",
+  "@professionTaskPreview": {"description":"Illustrative task pairs floating beside profession choices during onboarding.","placeholders":{"profession":{"type":"String"}}},
+  "professionAiExplanation": "Help AI plan around your work",
+  "selectProfession": "Select a profession to continue.",
   "scheduleReadFailedTitle": "Couldn't load your events.",
   "scheduleReadFailedBody": "Try again in a moment.",
   "scheduleReadRefreshFailed": "Couldn't refresh your events.",

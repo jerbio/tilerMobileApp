@@ -3,13 +3,26 @@ import 'package:flutter/material.dart';
 class OnboardingSubWidget extends StatelessWidget {
   final String? title;
   final String? questionText;
+  final Widget? questionExplanation;
   final String? questionSubText;
   final Widget? child;
   const OnboardingSubWidget(
-      {this.questionText, this.child, this.title, this.questionSubText});
+      {this.questionText,
+      this.questionExplanation,
+      this.child,
+      this.title,
+      this.questionSubText});
 
   @override
   Widget build(BuildContext context) {
+    final question = Text(
+      questionText!,
+      style: TextStyle(
+        fontSize: 18.0,
+        fontWeight: FontWeight.w400,
+      ),
+      textAlign: title != null ? TextAlign.center : TextAlign.left,
+    );
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -22,14 +35,12 @@ class OnboardingSubWidget extends StatelessWidget {
               style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
             ),
           ),
-        Text(
-          questionText!,
-          style: TextStyle(
-            fontSize: 18.0,
-            fontWeight: FontWeight.w400,
+        question,
+        if (questionExplanation != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
+            child: questionExplanation!,
           ),
-          textAlign: title != null ? TextAlign.center : TextAlign.left,
-        ),
         if (questionSubText != null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 40.0),
