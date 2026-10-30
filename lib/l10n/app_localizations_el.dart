@@ -70,6 +70,10 @@ class AppLocalizationsEl extends AppLocalizations {
   String get shareAddPerson => 'Προσθήκη ατόμου';
 
   @override
+  String get shareDeclinedHint =>
+      'You declined this tilette. You can still accept it.';
+
+  @override
   String get onboardingSubmitFailed =>
       'Δεν ήταν δυνατή η αποθήκευση της ρύθμισης. Οι επιλογές σας διατηρούνται. Δοκιμάστε ξανά ή παραλείψτε αυτό το βήμα προς το παρόν.';
 

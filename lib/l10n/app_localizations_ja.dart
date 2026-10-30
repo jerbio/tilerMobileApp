@@ -64,6 +64,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get shareAddPerson => '参加者を追加';
 
   @override
+  String get shareDeclinedHint =>
+      'You declined this tilette. You can still accept it.';
+
+  @override
   String get onboardingSubmitFailed =>
       '初期設定を保存できませんでした。選択内容は保持されています。もう一度試すか、今はスキップしてください。';
 

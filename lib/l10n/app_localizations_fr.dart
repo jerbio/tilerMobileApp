@@ -70,6 +70,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get shareAddPerson => 'Ajouter une personne';
 
   @override
+  String get shareDeclinedHint =>
+      'You declined this tilette. You can still accept it.';
+
+  @override
   String get onboardingSubmitFailed =>
       'Impossible d’enregistrer votre configuration. Vos choix sont conservés. Réessayez ou passez cette étape pour le moment.';
 

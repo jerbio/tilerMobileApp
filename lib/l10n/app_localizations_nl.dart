@@ -69,6 +69,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get shareAddPerson => 'Persoon toevoegen';
 
   @override
+  String get shareDeclinedHint =>
+      'You declined this tilette. You can still accept it.';
+
+  @override
   String get onboardingSubmitFailed =>
       'Je instellingen konden niet worden opgeslagen. Je keuzes blijven bewaard. Probeer het opnieuw of sla deze stap voorlopig over.';
 

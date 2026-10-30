@@ -521,9 +521,11 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
     final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final pending = response == InvitationStatus.none;
+    final declined = response == InvitationStatus.declined;
+    final canAccept = pending || declined;
     final canOpen = response == InvitationStatus.accepted &&
         widget.options.onOpenTile != null;
-    if (!pending &&
+    if (!canAccept &&
         !canOpen &&
         state.failure == null &&
         !state.scheduleRefreshFailed) return null;
@@ -558,7 +560,7 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
                   Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text(l.attentionScheduleRefreshFailed)),
-                if (pending) ...[
+                if (canAccept) ...[
                   if (widget.options.onPreview != null)
                     TextButton.icon(
                         key: const Key('tilette_check_fit'),
@@ -568,19 +570,22 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
                         label: Text(l.previewCheckFit)),
                   Text(l.shareYourResponse, style: theme.textTheme.titleSmall),
                   const SizedBox(height: 4),
-                  Text(l.shareInvitationHint, style: theme.textTheme.bodySmall),
+                  Text(declined ? l.shareDeclinedHint : l.shareInvitationHint,
+                      style: theme.textTheme.bodySmall),
                   const SizedBox(height: 12),
                   Row(children: [
-                    Expanded(
-                        child: OutlinedButton(
-                            key: const Key('tilette_decline'),
-                            onPressed: _answering
-                                ? null
-                                : () => _runAnswer(() => cubit.respond(
-                                    [widget.designatedTile.id!],
-                                    InvitationStatus.declined)),
-                            child: Text(l.attentionDecline))),
-                    const SizedBox(width: 12),
+                    if (pending) ...[
+                      Expanded(
+                          child: OutlinedButton(
+                              key: const Key('tilette_decline'),
+                              onPressed: _answering
+                                  ? null
+                                  : () => _runAnswer(() => cubit.respond(
+                                      [widget.designatedTile.id!],
+                                      InvitationStatus.declined)),
+                              child: Text(l.attentionDecline))),
+                      const SizedBox(width: 12),
+                    ],
                     Expanded(
                         child: FilledButton(
                             key: const Key('tilette_accept'),

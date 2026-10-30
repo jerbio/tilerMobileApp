@@ -152,8 +152,10 @@ class _CommitmentDetailState extends State<CommitmentDetail> {
             onOpenTile: widget.onOpenTile,
             onComments: widget.onComments,
             onNotes: widget.onNotes,
-            onPreview:
-                mode == TileShareMode.broadcast ? null : widget.onPreview,
+            onPreview: mode == TileShareMode.broadcast &&
+                    state.statuses[tile.id] != InvitationStatus.declined
+                ? null
+                : widget.onPreview,
             onOpenTilette: widget.onOpenTilette);
         return Column(
           key: const Key('commitment'),
@@ -415,6 +417,8 @@ class _TaskRow extends StatelessWidget {
     final double? completion = shareCompletion(tile.completionPercentage);
     final String notes = (tile.tileTemplate?.miscData?.userNote ?? '').trim();
     final bool accepted = status == InvitationStatus.accepted;
+    final bool declined = status == InvitationStatus.declined;
+    final bool canAccept = status == InvitationStatus.none || declined;
     return TiletteWorkCard(
       key: Key('commitment_task_$id'),
       title: name,
@@ -457,35 +461,32 @@ class _TaskRow extends StatelessWidget {
       notesKey: Key('commitment_notes_$id'),
       commentsKey: Key('commitment_comments_$id'),
       actions: [
-        if (status == InvitationStatus.none &&
-            id.isNotEmpty &&
-            onPreview != null)
+        if (canAccept && id.isNotEmpty && onPreview != null)
           TextButton.icon(
               key: Key('commitment_check_fit_$id'),
               onPressed: sending ? null : () => onPreview!(id),
               icon: const Icon(Icons.calendar_view_day_outlined, size: 18),
               label: Text(l10n.previewCheckFit)),
-        if (status == InvitationStatus.none && onOpenTilette != null)
+        if (canAccept && onOpenTilette != null)
           FilledButton.icon(
               key: Key('commitment_review_$id'),
               onPressed: sending ? null : () => onOpenTilette!(tile),
               icon: const Icon(Icons.chevron_right),
               label: Text(l10n.shareReviewRequest)),
-        if (perTask &&
-            status == InvitationStatus.none &&
-            onOpenTilette == null) ...[
+        if ((perTask || declined) && canAccept && onOpenTilette == null) ...[
           FilledButton(
             key: Key('commitment_accept_$id'),
             onPressed:
                 sending ? null : () => onRespond(InvitationStatus.accepted),
             child: Text(l10n.attentionAccept),
           ),
-          OutlinedButton(
-            key: Key('commitment_decline_$id'),
-            onPressed:
-                sending ? null : () => onRespond(InvitationStatus.declined),
-            child: Text(l10n.attentionDecline),
-          ),
+          if (!declined)
+            OutlinedButton(
+              key: Key('commitment_decline_$id'),
+              onPressed:
+                  sending ? null : () => onRespond(InvitationStatus.declined),
+              child: Text(l10n.attentionDecline),
+            ),
         ],
         if (accepted && onOpenTile != null)
           TextButton.icon(

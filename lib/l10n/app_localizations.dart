@@ -190,6 +190,12 @@ abstract class AppLocalizations {
   /// **'Add person'**
   String get shareAddPerson;
 
+  /// No description provided for @shareDeclinedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You declined this tilette. You can still accept it.'**
+  String get shareDeclinedHint;
+
   /// No description provided for @onboardingSubmitFailed.
   ///
   /// In en, this message translates to:

@@ -163,6 +163,81 @@ Finder _key(String k) => find.byKey(Key(k));
 Finder _task(String id) => _key('commitment_task_$id');
 
 void main() {
+  testWidgets('declined cards retain preview and acceptance in every density',
+      (tester) async {
+    for (final share in ['bc', 'kc', 'pj']) {
+      for (final density in TiletteDensity.values) {
+        final rig = _Rig(share);
+        final id = share == 'bc'
+            ? 'b1'
+            : share == 'kc'
+                ? 'k1'
+                : 'p1';
+        for (final tile in rig.assignments.tiles
+            .where((t) => t.tileTemplate?.clusterId == share)) {
+          tile.invitationStatus = 'declined';
+        }
+        await _open(tester, rig, density: density);
+        expect(_key('commitment_accept'), findsNothing,
+            reason: 'declined is not pending and is not bulk accepted');
+        if (density == TiletteDensity.list) {
+          await tapVisible(tester,
+              find.descendant(of: _task(id), matching: _key('tilette_expand')));
+          await _settle(tester);
+        }
+        await tapVisible(tester, _key('commitment_check_fit_$id'));
+        expect(rig.previewed, [id]);
+        expect(rig.responds(), isEmpty);
+        await tapVisible(tester, _key('commitment_accept_$id'));
+        await _settle(tester);
+        expect(rig.responds(), ['respond($id, accepted)']);
+        expect(_key('commitment_accept_$id'), findsNothing);
+        expect(_key('commitment_open_$id'), findsOneWidget);
+        await rig.detail.close();
+      }
+    }
+  });
+
+  testWidgets(
+      'declined requests open detail to reconsider and refresh the share',
+      (tester) async {
+    for (final share in ['bc', 'kc', 'pj']) {
+      final rig = _Rig(share);
+      final id = share == 'bc'
+          ? 'b1'
+          : share == 'kc'
+              ? 'k1'
+              : 'p1';
+      rig.assignments.tiles.firstWhere((t) => t.id == id).invitationStatus =
+          'declined';
+      await _open(tester, rig, detailScreen: true);
+      await tapVisible(tester, _key('commitment_review_$id'));
+      await _settle(tester);
+      expect(find.byType(TiletteDetailScreen), findsOneWidget);
+      await tester.tap(_key('tilette_accept'));
+      await _settle(tester);
+      await tester.pageBack();
+      await _settle(tester);
+      expect(rig.responds(), ['respond($id, accepted)']);
+      expect(_key('commitment_review_$id'), findsNothing);
+      expect(_key('commitment_open_$id'), findsOneWidget);
+      await rig.detail.close();
+    }
+  });
+
+  testWidgets('Class bulk acceptance preserves a declined tilette',
+      (tester) async {
+    final rig = _Rig('kc');
+    rig.assignments.tiles.firstWhere((t) => t.id == 'k1').invitationStatus =
+        'declined';
+    await _open(tester, rig);
+    await tapVisible(tester, _key('commitment_accept'));
+    await _settle(tester);
+    expect(rig.responds(), ['respond(k2, accepted)']);
+    expect(_key('commitment_accept_k1'), findsOneWidget);
+    await rig.detail.close();
+  });
+
   testWidgets('Review request opens the full detail before accepting',
       (tester) async {
     final rig = _Rig('pj');

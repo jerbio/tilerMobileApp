@@ -14,6 +14,7 @@
   "notesLoadFailed": "Couldn’t load your notes. Reopen the notes editor to try again.",
   "shareNotesLoadFailed": "Couldn't load notes. Try again.",
   "shareAddPerson": "Add person",
+  "shareDeclinedHint": "You declined this tilette. You can still accept it.",
   "onboardingSubmitFailed": "Couldn’t save your setup. Your choices are kept. Try again or skip for now.",
   "operationFailed": "{operation} failed. Please try again.",
   "scheduleLoadFailed": "Couldn’t load your schedule. Refresh to try again.",

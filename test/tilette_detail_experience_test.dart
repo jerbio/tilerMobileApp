@@ -483,15 +483,10 @@ void main() {
   });
 
   testWidgets(
-      'preview is hidden without permission, callback or pending request',
+      'preview is hidden without permission, callback or after acceptance',
       (tester) async {
-    for (final status in [
-      InvitationStatus.accepted,
-      InvitationStatus.declined
-    ]) {
-      await _open(tester, _Rig(status: status));
-      expect(find.byKey(const Key('tilette_check_fit')), findsNothing);
-    }
+    await _open(tester, _Rig(status: InvitationStatus.accepted));
+    expect(find.byKey(const Key('tilette_check_fit')), findsNothing);
     await _open(tester, _Rig(), canRespond: false);
     expect(find.byKey(const Key('tilette_check_fit')), findsNothing);
     await _open(tester, _Rig(), preview: false);
@@ -528,7 +523,49 @@ void main() {
     await tester.pumpAndSettle();
     expect(rig.responses, ['respond(assignment, declined)']);
     expect(rig.answered, 1);
-    expect(find.byKey(const Key('tilette_accept')), findsNothing);
+    expect(find.byKey(const Key('tilette_accept')), findsOneWidget);
+    expect(find.byKey(const Key('tilette_decline')), findsNothing);
+    await tester.tap(find.byKey(const Key('tilette_accept')));
+    await tester.pumpAndSettle();
+    expect(rig.responses,
+        ['respond(assignment, declined)', 'respond(assignment, accepted)']);
+    expect(find.byKey(const Key('tilette_open_tile')), findsOneWidget);
+  });
+
+  testWidgets('declined tilettes can be previewed and accepted in every mode',
+      (tester) async {
+    for (final mode in TileShareMode.values) {
+      final rig = _Rig(status: InvitationStatus.declined);
+      await _open(tester, rig, mode: mode);
+      expect(find.text('You declined this tilette. You can still accept it.'),
+          findsOneWidget);
+      expect(find.byKey(const Key('tilette_decline')), findsNothing);
+      await tester.tap(find.byKey(const Key('tilette_check_fit')));
+      await tester.pumpAndSettle();
+      expect(rig.previewed, 1);
+      expect(rig.responses, isEmpty);
+      await tester.tap(find.byKey(const Key('tilette_accept')));
+      await tester.pumpAndSettle();
+      expect(rig.responses, ['respond(assignment, accepted)']);
+      expect(rig.source.calls.where((c) => c == 'afterAccept()'), hasLength(1));
+      expect(find.byKey(const Key('tilette_open_tile')), findsOneWidget);
+    }
+  });
+
+  testWidgets('failed reconsideration keeps the declined response and retries',
+      (tester) async {
+    final rig = _Rig(status: InvitationStatus.declined);
+    await _open(tester, rig, size: const Size(320, 700), scale: 1.6);
+    rig.source.failNextOn('respond', StateError('offline'));
+    await tester.tap(find.byKey(const Key('tilette_accept')));
+    await tester.pumpAndSettle();
+    expect(rig.tile.invitationStatus, 'declined');
+    expect(find.byKey(const Key('tilette_accept')), findsOneWidget);
+    expect(find.byKey(const Key('tilette_open_tile')), findsNothing);
+    await tester.tap(find.byKey(const Key('tilette_response_retry')));
+    await tester.pumpAndSettle();
+    expect(rig.tile.invitationStatus, 'accepted');
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets(
