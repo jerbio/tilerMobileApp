@@ -1760,5 +1760,7 @@
   "@shareMissingAssignments": {"placeholders":{"count":{"type":"int"}}},
   "sharePeopleCount": "{count, plural, =1{1 Person} other{{count} Personen}}",
   "@sharePeopleCount": {"placeholders":{"count":{"type":"int"}}},
-  "shareAddPerson": "Person hinzufügen"
+  "shareAddPerson": "Person hinzufügen",
+  "shareDeclinedHint": "Du hast diese Tilette abgelehnt. Du kannst sie weiterhin annehmen.",
+  "shareDeclinedScheduleRefreshFailed": "Abgelehnt, aber dein Zeitplan konnte noch nicht aktualisiert werden."
 }

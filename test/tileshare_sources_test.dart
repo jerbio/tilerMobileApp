@@ -407,6 +407,19 @@ void main() {
       expect(log.single, 'statusUpdate(d1, accepted)');
     });
 
+    test('afterDecline rebuilds then refreshes the schedule as a removal',
+        () async {
+      await source.afterDecline();
+      expect(log, ['buzzSchedule(delete)', 'analyzeSchedule()']);
+    });
+
+    test('afterDecline propagates schedule refresh failures', () async {
+      final error = StateError('analysis failed');
+      api.failWith = error;
+      await expectLater(source.afterDecline(), throwsA(same(error)));
+      expect(log, ['buzzSchedule(delete)', 'analyzeSchedule()']);
+    });
+
     test('afterAccept re-analyzes the schedule and THEN buzzes it', () async {
       await source.afterAccept();
       // Named as part of the accept, not as a revise.

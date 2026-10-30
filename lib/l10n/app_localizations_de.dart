@@ -72,7 +72,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shareDeclinedHint =>
-      'You declined this tilette. You can still accept it.';
+      'Du hast diese Tilette abgelehnt. Du kannst sie weiterhin annehmen.';
+
+  @override
+  String get shareDeclinedScheduleRefreshFailed =>
+      'Abgelehnt, aber dein Zeitplan konnte noch nicht aktualisiert werden.';
 
   @override
   String get onboardingSubmitFailed =>

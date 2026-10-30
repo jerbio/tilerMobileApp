@@ -1760,5 +1760,7 @@
   "@shareMissingAssignments": {"placeholders":{"count":{"type":"int"}}},
   "sharePeopleCount": "{count, plural, =1{1 personne} other{{count} personnes}}",
   "@sharePeopleCount": {"placeholders":{"count":{"type":"int"}}},
-  "shareAddPerson": "Ajouter une personne"
+  "shareAddPerson": "Ajouter une personne",
+  "shareDeclinedHint": "Vous avez refusé cette tilette. Vous pouvez encore l’accepter.",
+  "shareDeclinedScheduleRefreshFailed": "Refusée, mais votre planning n’a pas encore pu être actualisé."
 }

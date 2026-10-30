@@ -522,11 +522,12 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
     final theme = Theme.of(context);
     final pending = response == InvitationStatus.none;
     final declined = response == InvitationStatus.declined;
+    final accepted = response == InvitationStatus.accepted;
     final canAccept = pending || declined;
     final canOpen = response == InvitationStatus.accepted &&
         widget.options.onOpenTile != null;
     if (!canAccept &&
-        !canOpen &&
+        !accepted &&
         state.failure == null &&
         !state.scheduleRefreshFailed) return null;
     return DecoratedBox(
@@ -559,7 +560,10 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
                 if (state.scheduleRefreshFailed)
                   Padding(
                       padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(l.attentionScheduleRefreshFailed)),
+                      child: Text(state.scheduleRefreshStatus ==
+                              InvitationStatus.declined
+                          ? l.shareDeclinedScheduleRefreshFailed
+                          : l.attentionScheduleRefreshFailed)),
                 if (canAccept) ...[
                   if (widget.options.onPreview != null)
                     TextButton.icon(
@@ -603,12 +607,28 @@ class _TiletteDetailScreenState extends State<TiletteDetailScreen> {
                                 : Text(l.attentionAccept))),
                   ]),
                 ],
-                if (canOpen)
-                  FilledButton.icon(
-                      key: const Key('tilette_open_tile'),
-                      onPressed: _answering ? null : widget.options.onOpenTile,
-                      icon: const Icon(Icons.calendar_today_outlined),
-                      label: Text(l.commitmentOpenTile)),
+                if (accepted)
+                  Row(children: [
+                    Expanded(
+                        child: OutlinedButton(
+                            key: const Key('tilette_decline'),
+                            onPressed: _answering
+                                ? null
+                                : () => _runAnswer(() => cubit.respond(
+                                    [widget.designatedTile.id!],
+                                    InvitationStatus.declined)),
+                            child: Text(l.attentionDecline))),
+                    if (canOpen) ...[
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: FilledButton.icon(
+                              key: const Key('tilette_open_tile'),
+                              onPressed:
+                                  _answering ? null : widget.options.onOpenTile,
+                              icon: const Icon(Icons.calendar_today_outlined),
+                              label: Text(l.commitmentOpenTile))),
+                    ],
+                  ]),
               ])),
     );
   }

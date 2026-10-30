@@ -552,6 +552,65 @@ void main() {
     }
   });
 
+  testWidgets(
+      'accepted tilettes can be declined and accepted again in every mode',
+      (tester) async {
+    for (final mode in TileShareMode.values) {
+      final rig = _Rig(status: InvitationStatus.accepted);
+      await _open(tester, rig, mode: mode);
+      await tester.tap(find.byKey(const Key('tilette_decline')));
+      await tester.pumpAndSettle();
+      expect(rig.responses, ['respond(assignment, declined)']);
+      expect(
+          rig.source.calls.where((c) => c == 'afterDecline()'), hasLength(1));
+      expect(find.byKey(const Key('tilette_open_tile')), findsNothing);
+      expect(find.byKey(const Key('tilette_accept')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('tilette_accept')));
+      await tester.pumpAndSettle();
+      expect(rig.responses,
+          ['respond(assignment, declined)', 'respond(assignment, accepted)']);
+      expect(find.byKey(const Key('tilette_decline')), findsOneWidget);
+      expect(find.byKey(const Key('tilette_open_tile')), findsOneWidget);
+    }
+  });
+
+  testWidgets(
+      'failed decline keeps acceptance, disables duplicate sends and retries',
+      (tester) async {
+    final rig = _Rig(status: InvitationStatus.accepted);
+    await _open(tester, rig, size: const Size(320, 700), scale: 1.6);
+    rig.source.hold();
+    rig.source.failNextOn('respond', StateError('offline'));
+    await tester.tap(find.byKey(const Key('tilette_decline')));
+    await tester.pump();
+    expect(
+        tester
+            .widget<OutlinedButton>(find.byKey(const Key('tilette_decline')))
+            .onPressed,
+        isNull);
+    rig.source.release();
+    await tester.pumpAndSettle();
+    expect(rig.tile.invitationStatus, 'accepted');
+    expect(find.byKey(const Key('tilette_open_tile')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('tilette_response_retry')));
+    await tester.pumpAndSettle();
+    expect(rig.tile.invitationStatus, 'declined');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('withdrawal schedule refresh failure does not report acceptance',
+      (tester) async {
+    final rig = _Rig(status: InvitationStatus.accepted);
+    await _open(tester, rig);
+    rig.source.failNextOn('afterDecline', StateError('offline'));
+    await tester.tap(find.byKey(const Key('tilette_decline')));
+    await tester.pumpAndSettle();
+    expect(find.text('Declined, but your schedule couldn’t refresh yet.'),
+        findsOneWidget);
+    expect(rig.tile.invitationStatus, 'declined');
+    expect(find.byKey(const Key('tilette_open_tile')), findsNothing);
+  });
+
   testWidgets('failed reconsideration keeps the declined response and retries',
       (tester) async {
     final rig = _Rig(status: InvitationStatus.declined);

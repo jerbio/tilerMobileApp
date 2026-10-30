@@ -1760,5 +1760,7 @@
   "@shareMissingAssignments": {"placeholders":{"count":{"type":"int"}}},
   "sharePeopleCount": "{count, plural, =1{1 άτομο} other{{count} άτομα}}",
   "@sharePeopleCount": {"placeholders":{"count":{"type":"int"}}},
-  "shareAddPerson": "Προσθήκη ατόμου"
+  "shareAddPerson": "Προσθήκη ατόμου",
+  "shareDeclinedHint": "Απέρριψες αυτή την tilette. Μπορείς ακόμη να την αποδεχτείς.",
+  "shareDeclinedScheduleRefreshFailed": "Έγινε απόρριψη, αλλά το πρόγραμμά σου δεν μπόρεσε ακόμη να ανανεωθεί."
 }

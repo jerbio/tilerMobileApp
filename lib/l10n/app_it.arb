@@ -1760,5 +1760,7 @@
   "@shareMissingAssignments": {"placeholders":{"count":{"type":"int"}}},
   "sharePeopleCount": "{count, plural, =1{1 persona} other{{count} persone}}",
   "@sharePeopleCount": {"placeholders":{"count":{"type":"int"}}},
-  "shareAddPerson": "Aggiungi persona"
+  "shareAddPerson": "Aggiungi persona",
+  "shareDeclinedHint": "Hai rifiutato questa tilette. Puoi ancora accettarla.",
+  "shareDeclinedScheduleRefreshFailed": "Rifiutata, ma non è stato ancora possibile aggiornare il tuo programma."
 }

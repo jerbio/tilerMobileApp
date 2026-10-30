@@ -1760,5 +1760,7 @@
   "@shareMissingAssignments": {"placeholders":{"count":{"type":"int"}}},
   "sharePeopleCount": "{count, plural, =1{1 persoon} other{{count} personen}}",
   "@sharePeopleCount": {"placeholders":{"count":{"type":"int"}}},
-  "shareAddPerson": "Persoon toevoegen"
+  "shareAddPerson": "Persoon toevoegen",
+  "shareDeclinedHint": "Je hebt dit tegeltje afgewezen. Je kunt het nog steeds accepteren.",
+  "shareDeclinedScheduleRefreshFailed": "Afgewezen, maar je planning kon nog niet worden vernieuwd."
 }

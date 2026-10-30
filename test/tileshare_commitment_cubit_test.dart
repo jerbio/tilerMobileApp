@@ -74,11 +74,61 @@ void main() {
     await rig.cubit.close();
   });
 
-  test('accepting all goes task by task, in order, one at a time, then one '
+  test('withdrawing accepted tasks refreshes the schedule once', () async {
+    final rig = _Rig(mine: [
+      tsDesignatedTile('d1', clusterId: 'k', status: InvitationStatus.accepted),
+      tsDesignatedTile('d2', clusterId: 'k', status: InvitationStatus.accepted),
+    ]);
+    await rig.cubit.respond(['d1', 'd2'], InvitationStatus.declined);
+    expect(rig.responds(), ['respond(d1, declined)', 'respond(d2, declined)']);
+    expect(rig.assignments.calls.where((c) => c == 'afterDecline()'),
+        hasLength(1));
+    expect(rig.refreshes(), 0);
+    expect(rig.cubit.state.statuses.values,
+        everyElement(InvitationStatus.declined));
+    expect(rig.answered, 1);
+    await rig.cubit.close();
+  });
+
+  test('failed withdrawal retains acceptance and retries only the response',
+      () async {
+    final rig = _Rig(mine: [
+      tsDesignatedTile('d1', clusterId: 'k', status: InvitationStatus.accepted),
+    ]);
+    rig.assignments.failNextOn('respond', StateError('offline'));
+    await rig.cubit.respond(['d1'], InvitationStatus.declined);
+    expect(rig.cubit.state.statuses['d1'], InvitationStatus.accepted);
+    expect(rig.assignments.calls.where((c) => c == 'afterDecline()'), isEmpty);
+    await rig.cubit.retry();
+    expect(rig.cubit.state.statuses['d1'], InvitationStatus.declined);
+    expect(rig.assignments.calls.where((c) => c == 'afterDecline()'),
+        hasLength(1));
+    await rig.cubit.close();
+  });
+
+  test('a withdrawal refresh failure preserves the response and its kind',
+      () async {
+    final rig = _Rig(mine: [
+      tsDesignatedTile('d1', clusterId: 'k', status: InvitationStatus.accepted),
+    ]);
+    rig.assignments.failNextOn('afterDecline', StateError('refresh down'));
+    await rig.cubit.respond(['d1'], InvitationStatus.declined);
+    expect(rig.cubit.state.statuses['d1'], InvitationStatus.declined);
+    expect(rig.cubit.state.scheduleRefreshFailed, isTrue);
+    expect(rig.cubit.state.scheduleRefreshStatus, InvitationStatus.declined);
+    expect(rig.cubit.state.failure, isNull);
+    rig.cubit.sync(rig.assignments.tiles);
+    expect(rig.cubit.state.scheduleRefreshStatus, InvitationStatus.declined);
+    await rig.cubit.close();
+  });
+
+  test(
+      'accepting all goes task by task, in order, one at a time, then one '
       'refresh', () async {
     final rig = _Rig();
     rig.assignments.hold();
-    final done = rig.cubit.respond(['d1', 'd2', 'd3'], InvitationStatus.accepted);
+    final done =
+        rig.cubit.respond(['d1', 'd2', 'd3'], InvitationStatus.accepted);
     await Future<void>.delayed(Duration.zero);
     expect(rig.responds(), ['respond(d1, accepted)']);
     expect(rig.cubit.state.sending, {'d1', 'd2', 'd3'});
@@ -94,7 +144,8 @@ void main() {
     await rig.cubit.close();
   });
 
-  test('a task that refuses leaves it and the rest pending, says how many '
+  test(
+      'a task that refuses leaves it and the rest pending, says how many '
       'went through, and Retry sends only those', () async {
     final rig = _Rig();
     rig.assignments.failNextOn('respond(d2', StateError('offline'));

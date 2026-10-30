@@ -34,14 +34,16 @@ class TileShareCommitmentState extends Equatable {
   final Set<String> sending;
   final CommitmentFailure? failure;
 
-  /// An accept went through but the schedule could not refresh yet.
+  /// A response went through but the schedule could not refresh yet.
   final bool scheduleRefreshFailed;
+  final InvitationStatus? scheduleRefreshStatus;
 
   const TileShareCommitmentState({
     this.statuses = const <String, InvitationStatus>{},
     this.sending = const <String>{},
     this.failure,
     this.scheduleRefreshFailed = false,
+    this.scheduleRefreshStatus,
   });
 
   /// My tasks not answered yet, in order.
@@ -51,8 +53,13 @@ class TileShareCommitmentState extends Equatable {
       ];
 
   @override
-  List<Object?> get props =>
-      [statuses, sending, failure, scheduleRefreshFailed];
+  List<Object?> get props => [
+        statuses,
+        sending,
+        failure,
+        scheduleRefreshFailed,
+        scheduleRefreshStatus
+      ];
 }
 
 /// Answering a share I was invited to, from its detail (redesign §5.8, T20):
@@ -61,7 +68,7 @@ class TileShareCommitmentState extends Equatable {
 /// * Answers go out **one task at a time, in order**; a task that refuses
 ///   stops there - it and the rest stay pending, the failure says how many
 ///   went through, and [retry] sends only those (never reported as done).
-/// * An accept that went through refreshes the schedule once, after the
+/// * Accepting or withdrawing an accepted task refreshes the schedule once, after the
 ///   answers; a refresh that fails is said separately and never undoes them.
 /// * An answer already going out is not sent again.
 class TileShareCommitmentCubit extends Cubit<TileShareCommitmentState> {
@@ -101,6 +108,7 @@ class TileShareCommitmentCubit extends Cubit<TileShareCommitmentState> {
       sending: state.sending,
       failure: state.failure,
       scheduleRefreshFailed: state.scheduleRefreshFailed,
+      scheduleRefreshStatus: state.scheduleRefreshStatus,
     ));
   }
 
@@ -119,13 +127,16 @@ class TileShareCommitmentCubit extends Cubit<TileShareCommitmentState> {
       scheduleRefreshFailed: false,
     ));
     int answered = 0;
+    int withdrawn = 0;
     CommitmentFailure? failure;
     for (int i = 0; i < todo.length; i++) {
       final String id = todo[i];
+      final wasAccepted = state.statuses[id] == InvitationStatus.accepted;
       try {
         TileShareLog.d(_tag, 'sending $id: ${status.name}');
         final DesignatedTile? result = await _assignments.respond(id, status);
         answered++;
+        if (wasAccepted && status == InvitationStatus.declined) withdrawn++;
         TileShareLog.d(
             _tag,
             'answered $id: ${status.name}; '
@@ -148,15 +159,22 @@ class TileShareCommitmentCubit extends Cubit<TileShareCommitmentState> {
       }
     }
     bool refreshFailed = false;
-    if (status == InvitationStatus.accepted && answered > 0) {
+    if (answered > 0 &&
+        (status == InvitationStatus.accepted || withdrawn > 0)) {
       try {
-        TileShareLog.d(_tag, 'refreshing schedule after $answered accepts');
-        await _assignments.afterAccept();
-        TileShareLog.d(_tag, 'schedule refreshed after accepting');
+        TileShareLog.d(
+            _tag, 'refreshing schedule after response=${status.name}');
+        if (status == InvitationStatus.accepted) {
+          await _assignments.afterAccept();
+        } else {
+          await _assignments.afterDecline();
+        }
+        TileShareLog.d(
+            _tag, 'schedule refreshed after response=${status.name}');
       } catch (error) {
         refreshFailed = true;
         TileShareLog.d(_tag,
-            'schedule refresh after accepting failed: ${TileShareLog.describe(error)}');
+            'schedule refresh after response=${status.name} failed: ${TileShareLog.describe(error)}');
       }
     }
     _emit(TileShareCommitmentState(
@@ -164,6 +182,7 @@ class TileShareCommitmentCubit extends Cubit<TileShareCommitmentState> {
       sending: <String>{...state.sending}..removeAll(todo),
       failure: failure,
       scheduleRefreshFailed: refreshFailed,
+      scheduleRefreshStatus: refreshFailed ? status : null,
     ));
     TileShareLog.d(
         _tag,

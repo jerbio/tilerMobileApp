@@ -1760,5 +1760,7 @@
   "@shareMissingAssignments": {"placeholders":{"count":{"type":"int"}}},
   "sharePeopleCount": "{count, plural, other{{count}人}}",
   "@sharePeopleCount": {"placeholders":{"count":{"type":"int"}}},
-  "shareAddPerson": "参加者を追加"
+  "shareAddPerson": "参加者を追加",
+  "shareDeclinedHint": "このTiletteを辞退しました。今からでも承諾できます。",
+  "shareDeclinedScheduleRefreshFailed": "辞退しましたが、予定はまだ更新できていません。"
 }

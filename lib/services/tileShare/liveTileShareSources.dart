@@ -103,6 +103,14 @@ class LiveTileShareAssignmentsSource implements TileShareAssignmentsSource {
     TileShareLog.d(
         'TileShareAssignments', 'afterAccept: analyze schedule finished');
   }
+
+  @override
+  Future<void> afterDecline() async {
+    TileShareLog.d('TileShareAssignments',
+        'afterDecline: refreshing schedule after withdrawing an accepted tilette');
+    await _scheduleApi.buzzSchedule(kind: ScheduleChangeKind.delete);
+    await _api.analyzeSchedule();
+  }
 }
 
 class LiveTileSharePreviewSource implements TileSharePreviewSource {

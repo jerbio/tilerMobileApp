@@ -64,8 +64,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get shareAddPerson => '参加者を追加';
 
   @override
-  String get shareDeclinedHint =>
-      'You declined this tilette. You can still accept it.';
+  String get shareDeclinedHint => 'このTiletteを辞退しました。今からでも承諾できます。';
+
+  @override
+  String get shareDeclinedScheduleRefreshFailed => '辞退しましたが、予定はまだ更新できていません。';
 
   @override
   String get onboardingSubmitFailed =>

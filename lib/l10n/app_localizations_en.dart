@@ -69,6 +69,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'You declined this tilette. You can still accept it.';
 
   @override
+  String get shareDeclinedScheduleRefreshFailed =>
+      'Declined, but your schedule couldn’t refresh yet.';
+
+  @override
   String get onboardingSubmitFailed =>
       'Couldn’t save your setup. Your choices are kept. Try again or skip for now.';
 

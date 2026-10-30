@@ -2169,5 +2169,7 @@
   "@shareMissingAssignments": {"placeholders":{"count":{"type":"int"}}},
   "sharePeopleCount": "{count, plural, =1{1 persona} other{{count} personas}}",
   "@sharePeopleCount": {"placeholders":{"count":{"type":"int"}}},
-  "shareAddPerson": "Añadir persona"
+  "shareAddPerson": "Añadir persona",
+  "shareDeclinedHint": "Has rechazado esta tilette. Aún puedes aceptarla.",
+  "shareDeclinedScheduleRefreshFailed": "Rechazada, pero aún no se pudo actualizar tu horario."
 }

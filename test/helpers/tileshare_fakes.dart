@@ -163,6 +163,8 @@ class FakeTileShareAssignmentsSource
 
   @override
   Future<void> afterAccept() => run('afterAccept()', () {});
+  @override
+  Future<void> afterDecline() => run('afterDecline()', () {});
 }
 
 /// What a [FakeTileSharePreviewSource] was asked to accept.

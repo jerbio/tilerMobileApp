@@ -55,6 +55,9 @@ abstract class TileShareAssignmentsSource {
   /// What must follow an acceptance so the new tiles appear: re-analyze the
   /// schedule, then refresh it.
   Future<void> afterAccept();
+
+  /// Refreshes the schedule after an accepted assignment is declined.
+  Future<void> afterDecline();
 }
 
 /// The accept preview (redesign T21): what accepting an assignment would do to

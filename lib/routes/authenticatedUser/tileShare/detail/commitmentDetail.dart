@@ -310,7 +310,11 @@ class _CommitmentDetailState extends State<CommitmentDetail> {
                 child: state.scheduleRefreshFailed
                     ? Padding(
                         padding: const EdgeInsets.only(top: 8),
-                        child: Text(l10n.attentionScheduleRefreshFailed,
+                        child: Text(
+                            state.scheduleRefreshStatus ==
+                                    InvitationStatus.declined
+                                ? l10n.shareDeclinedScheduleRefreshFailed
+                                : l10n.attentionScheduleRefreshFailed,
                             key: const Key('commitment_refresh_failed'),
                             style: theme.textTheme.bodySmall
                                 ?.copyWith(color: TileColors.progressMedium)),
@@ -491,9 +495,16 @@ class _TaskRow extends StatelessWidget {
         if (accepted && onOpenTile != null)
           TextButton.icon(
             key: Key('commitment_open_$id'),
-            onPressed: () => onOpenTile!(tile),
+            onPressed: sending ? null : () => onOpenTile!(tile),
             icon: const Icon(Icons.style_outlined, size: 18),
             label: Text(l10n.commitmentOpenTile),
+          ),
+        if (accepted)
+          OutlinedButton(
+            key: Key('commitment_decline_$id'),
+            onPressed:
+                sending ? null : () => onRespond(InvitationStatus.declined),
+            child: Text(l10n.attentionDecline),
           ),
       ],
     );

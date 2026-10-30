@@ -163,6 +163,65 @@ Finder _key(String k) => find.byKey(Key(k));
 Finder _task(String id) => _key('commitment_task_$id');
 
 void main() {
+  testWidgets('accepted cards offer Decline in every mode and density',
+      (tester) async {
+    for (final share in ['bc', 'kc', 'pj']) {
+      for (final density in TiletteDensity.values) {
+        final rig = _Rig(share);
+        final id = share == 'bc'
+            ? 'b1'
+            : share == 'kc'
+                ? 'k1'
+                : 'p1';
+        rig.assignments.tiles.firstWhere((t) => t.id == id).invitationStatus =
+            'accepted';
+        await _open(tester, rig, density: density);
+        if (density == TiletteDensity.list) {
+          await tapVisible(tester,
+              find.descendant(of: _task(id), matching: _key('tilette_expand')));
+          await _settle(tester);
+        }
+        await tapVisible(tester, _key('commitment_decline_$id'));
+        await _settle(tester);
+        expect(rig.responds(), ['respond($id, declined)']);
+        expect(rig.assignments.calls.where((c) => c == 'afterDecline()'),
+            hasLength(1));
+        expect(_key('commitment_decline_$id'), findsNothing);
+        expect(_key('commitment_open_$id'), findsNothing);
+        expect(_key('commitment_accept_$id'), findsOneWidget);
+        await rig.detail.close();
+      }
+    }
+  });
+
+  testWidgets('List detail withdrawal updates the share after navigating back',
+      (tester) async {
+    for (final share in ['bc', 'kc', 'pj']) {
+      final rig = _Rig(share);
+      final id = share == 'bc'
+          ? 'b1'
+          : share == 'kc'
+              ? 'k1'
+              : 'p1';
+      rig.assignments.tiles.firstWhere((t) => t.id == id).invitationStatus =
+          'accepted';
+      await _open(tester, rig,
+          detailScreen: true, density: TiletteDensity.list);
+      await tapVisible(tester,
+          find.descendant(of: _task(id), matching: _key('tilette_expand')));
+      await _settle(tester);
+      await tester.tap(_key('tilette_decline'));
+      await _settle(tester);
+      await tester.pageBack();
+      await _settle(tester);
+      expect(rig.responds(), ['respond($id, declined)']);
+      expect(find.descendant(of: _task(id), matching: find.text('Declined')),
+          findsOneWidget);
+      expect(_key('commitment_open_$id'), findsNothing);
+      await rig.detail.close();
+    }
+  });
+
   testWidgets('declined cards retain preview and acceptance in every density',
       (tester) async {
     for (final share in ['bc', 'kc', 'pj']) {

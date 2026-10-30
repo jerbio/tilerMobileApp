@@ -196,6 +196,12 @@ abstract class AppLocalizations {
   /// **'You declined this tilette. You can still accept it.'**
   String get shareDeclinedHint;
 
+  /// No description provided for @shareDeclinedScheduleRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined, but your schedule couldn’t refresh yet.'**
+  String get shareDeclinedScheduleRefreshFailed;
+
   /// No description provided for @onboardingSubmitFailed.
   ///
   /// In en, this message translates to:

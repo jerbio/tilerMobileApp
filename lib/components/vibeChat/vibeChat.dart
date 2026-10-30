@@ -382,42 +382,42 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin {
                           .add(SendAMessageEvent(prompt));
                     },
                   ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        DropdownButton<ChatSessionExecutionMode>(
-                          value: state.chatSessionExecutionMode,
-                          isExpanded: true,
-                          hint: Text(localization.vibeChatExecutionMode),
-                          onChanged: state.step == VibeChatStep.sending
-                              ? null
-                              : (value) {
-                                  if (value != null)
-                                    context.read<VibeChatBloc>().add(
-                                        SetChatSessionExecutionModeEvent(
-                                            value));
-                                },
-                          items: [
-                            DropdownMenuItem(
-                                value: ChatSessionExecutionMode.confirmFirst,
-                                child: Text(
-                                    '${localization.vibeChatExecutionMode}: ${localization.vibeConfirmFirst}')),
-                            DropdownMenuItem(
-                                value: ChatSessionExecutionMode.autoAct,
-                                child: Text(
-                                    '${localization.vibeChatExecutionMode}: ${localization.vibeAutoAct}'))
-                          ],
-                        ),
-                        Text(
-                            state.chatSessionExecutionMode ==
-                                    ChatSessionExecutionMode.autoAct
-                                ? localization.vibeAutoActNote
-                                : localization.vibeConfirmNote,
-                            style: Theme.of(context).textTheme.bodySmall),
-                      ]),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(horizontal: 20),
+                //   child: Column(
+                //       crossAxisAlignment: CrossAxisAlignment.start,
+                //       children: [
+                //         DropdownButton<ChatSessionExecutionMode>(
+                //           value: state.chatSessionExecutionMode,
+                //           isExpanded: true,
+                //           hint: Text(localization.vibeChatExecutionMode),
+                //           onChanged: state.step == VibeChatStep.sending
+                //               ? null
+                //               : (value) {
+                //                   if (value != null)
+                //                     context.read<VibeChatBloc>().add(
+                //                         SetChatSessionExecutionModeEvent(
+                //                             value));
+                //                 },
+                //           items: [
+                //             DropdownMenuItem(
+                //                 value: ChatSessionExecutionMode.confirmFirst,
+                //                 child: Text(
+                //                     '${localization.vibeChatExecutionMode}: ${localization.vibeConfirmFirst}')),
+                //             DropdownMenuItem(
+                //                 value: ChatSessionExecutionMode.autoAct,
+                //                 child: Text(
+                //                     '${localization.vibeChatExecutionMode}: ${localization.vibeAutoAct}'))
+                //           ],
+                //         ),
+                //         Text(
+                //             state.chatSessionExecutionMode ==
+                //                     ChatSessionExecutionMode.autoAct
+                //                 ? localization.vibeAutoActNote
+                //                 : localization.vibeConfirmNote,
+                //             style: Theme.of(context).textTheme.bodySmall),
+                //       ]),
+                // ),
                 MessageInput(
                   controller: _messageController,
                 ),
