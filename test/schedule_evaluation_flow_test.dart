@@ -648,6 +648,67 @@ void main() {
     await pending;
   });
 
+  for (final revision in [
+    const ScheduleRevision(null, 'e'),
+    const ScheduleRevision('', 'e'),
+    const ScheduleRevision('a', null),
+  ]) {
+    for (final kind in ScheduleChangeKind.values) {
+      test(
+          'a single revision ID admits ${kind.name} and preserves its baseline ($revision)',
+          () async {
+        api.status = ScheduleStatus.fromJson({
+          'analysisId': revision.analysisId,
+          'evaluationId': revision.evaluationId,
+        });
+        var sends = 0;
+        final wire = Completer<void>();
+        final pending = bloc.runScheduleChange(() {
+          sends++;
+          return wire.future;
+        }, kind: kind);
+        await flush();
+        expect(sends, 1);
+        expect(api.statusReads, 1);
+        expect(bloc.activeEvaluation!.baseline, revision);
+        expect(bloc.scheduleChangesBlocked, isTrue);
+        final restored = ScheduleEvaluation.fromRecord(
+            bloc.activeEvaluation!.toRecord(),
+            account: 'session',
+            now: DateTime.now(),
+            config: const ScheduleEvaluationConfig());
+        expect(restored!.baseline, revision);
+        wire.complete();
+        await pending;
+        expect(sends, 1);
+        expect(bloc.activeEvaluation, isNull);
+        expect(bloc.scheduleChangesBlocked, isFalse);
+      });
+    }
+  }
+
+  test('unchanged evaluation-only status does not fetch the schedule again',
+      () async {
+    api.status = ScheduleStatus.fromJson({'evaluationId': 'e'});
+    expect(await bloc.shouldGetRefreshedListOfTiles(api.status), isFalse);
+    api.status =
+        ScheduleStatus.fromJson({'analysisId': '', 'evaluationId': 'e'});
+    expect(
+        await bloc.shouldGetRefreshedListOfTiles(
+            ScheduleStatus.fromJson({'evaluationId': 'e'})),
+        isFalse);
+    api.status = ScheduleStatus.fromJson({'evaluationId': 'e2'});
+    expect(
+        await bloc.shouldGetRefreshedListOfTiles(
+            ScheduleStatus.fromJson({'evaluationId': 'e'})),
+        isTrue);
+  });
+
+  test('unknown status still requests a schedule refresh', () async {
+    api.status = ScheduleStatus();
+    expect(await bloc.shouldGetRefreshedListOfTiles(ScheduleStatus()), isTrue);
+  });
+
   test('unknown hashes abort initialization without sending or locking',
       () async {
     api.status = ScheduleStatus();
@@ -875,7 +936,7 @@ void main() {
       interrupted(
               startedAt: DateTime.now().subtract(const Duration(minutes: 5)))
           .toRecord(),
-      {...interrupted().toRecord(), 'analysisId': ''},
+      {...interrupted().toRecord(), 'analysisId': '', 'evaluationId': ''},
       interrupted(startedAt: DateTime.now().add(const Duration(minutes: 1)))
           .toRecord(),
     ]) {

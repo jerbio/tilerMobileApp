@@ -14,11 +14,13 @@ class ScheduleRevision extends Equatable {
 
   final String? analysisId;
   final String? evaluationId;
+  // The status endpoint can return an evaluation before analysis exists.
+  // Either identifier supplies a baseline; neither means status is unknown.
   bool get isKnown =>
-      (analysisId ?? '').isNotEmpty && (evaluationId ?? '').isNotEmpty;
+      (analysisId ?? '').isNotEmpty || (evaluationId ?? '').isNotEmpty;
 
   @override
-  List<Object?> get props => [analysisId, evaluationId];
+  List<Object?> get props => [analysisId ?? '', evaluationId ?? ''];
 }
 
 /// Shared status polling: consumers subscribe without starting their own polls.

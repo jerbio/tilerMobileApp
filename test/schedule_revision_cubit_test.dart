@@ -9,6 +9,54 @@ ScheduleStatus status(String id) => ScheduleStatus.fromJson({
     });
 
 void main() {
+  test('null and empty optional IDs do not publish a false revision change',
+      () async {
+    final cubit =
+        ScheduleRevisionCubit(fetchStatus: () async => status('unused'));
+    addTearDown(cubit.close);
+    cubit.observe(ScheduleStatus.fromJson({'evaluationId': 'e'}));
+    final changes = <ScheduleRevision?>[];
+    final subscription = cubit.stream.listen(changes.add);
+    addTearDown(subscription.cancel);
+    cubit.observe(
+        ScheduleStatus.fromJson({'analysisId': '', 'evaluationId': 'e'}));
+    await Future<void>.delayed(Duration.zero);
+    expect(changes, isEmpty);
+    expect(const ScheduleRevision(null, 'e'), const ScheduleRevision('', 'e'));
+  });
+
+  test('evaluation-only status is observed and later changes are published',
+      () async {
+    var now = DateTime(2026, 10, 31);
+    final cubit = ScheduleRevisionCubit(
+      fetchStatus: () async => ScheduleStatus.fromJson({'evaluationId': 'new'}),
+      now: () => now,
+      retryDelays: const [],
+    );
+    addTearDown(cubit.close);
+    cubit.observe(ScheduleStatus.fromJson({'evaluationId': 'old'}));
+    expect(cubit.state, const ScheduleRevision(null, 'old'));
+    expect(cubit.observedAt, now);
+    now = now.add(const Duration(seconds: 1));
+    final changed = cubit.stream.firstWhere((r) => r?.evaluationId == 'new');
+    cubit.checkAfterChange();
+    await changed;
+    expect(cubit.state, const ScheduleRevision(null, 'new'));
+    expect(cubit.observedAt, now);
+  });
+
+  test('status without either identifier never becomes a fresh baseline',
+      () async {
+    final cubit =
+        ScheduleRevisionCubit(fetchStatus: () async => ScheduleStatus());
+    addTearDown(cubit.close);
+    cubit.observe(ScheduleStatus());
+    cubit.observe(
+        ScheduleStatus.fromJson({'analysisId': '', 'evaluationId': ''}));
+    expect(cubit.state, isNull);
+    expect(cubit.observedAt, isNull);
+  });
+
   test(
       'observations refresh time even when hashes are unchanged; reset clears it',
       () async {

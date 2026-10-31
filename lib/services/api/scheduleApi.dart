@@ -224,7 +224,12 @@ class ScheduleApi extends AppApi {
   }
 
   Future<ScheduleStatus> getScheduleStatus() async {
-    if ((await this.authentication.isUserAuthenticated()).item1) {
+    final authenticationResult = await authentication.isUserAuthenticated();
+    if (!authenticationResult.item1 &&
+        authenticationResult.item2 == Constants.cannotVerifyError) {
+      throw TilerError(Message: 'Could not verify credentials. Try again.');
+    }
+    if (authenticationResult.item1) {
       await checkAndReplaceCredentialCache();
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
@@ -244,7 +249,7 @@ class ScheduleApi extends AppApi {
       Uri uri = Uri.https(url, 'api/Schedule/status', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(Message: 'Issues with authentication');
+        throw ScheduleAuthenticationRequired();
       }
       var response = await httpClient.get(uri, headers: header).timeout(
         AppApi.requestTimeout,
@@ -254,16 +259,24 @@ class ScheduleApi extends AppApi {
                   'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
         },
       );
-      var jsonResult = decodeServerJson(response, operation: 'schedule_status');
-      if (isJsonResponseOk(jsonResult)) {
-        if (isContentInResponse(jsonResult)) {
-          Map<String, dynamic> scheduleStatusJson = jsonResult['Content'];
-          return ScheduleStatus.fromJson(scheduleStatusJson);
-        }
+      if (response.statusCode == HttpStatus.unauthorized ||
+          response.statusCode == HttpStatus.forbidden) {
+        throw ScheduleAuthenticationRequired();
       }
-      throw TilerError();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw ScheduleServerUnavailable(
+            status: response.statusCode,
+            contentType: response.headers['content-type']);
+      }
+      var jsonResult = decodeServerJson(response, operation: 'schedule_status');
+      final content = jsonResult['Content'];
+      if (isJsonResponseOk(jsonResult) && content is Map<String, dynamic>) {
+        return ScheduleStatus.fromJson(content);
+      }
+      throw getTilerResponseError(jsonResult) ??
+          TilerError(Message: 'Tiler returned an unexpected schedule status.');
     }
-    throw TilerError();
+    throw ScheduleAuthenticationRequired();
   }
 
   Future<

@@ -48,9 +48,11 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   // Anchored on today so the day headers read Today / Tomorrow.
   final DateTime day1 = Utility.currentTime().dayDate;
-  final DateTime day2 = day1.add(const Duration(days: 1));
-  final DateTime day3 = day1.add(const Duration(days: 2));
-  final DateTime day4 = day1.add(const Duration(days: 3));
+  // Calendar dates stay distinct across daylight-saving transitions.
+  DateTime dayAfter(int days) => DateTime(day1.year, day1.month, day1.day + days);
+  final DateTime day2 = dayAfter(1);
+  final DateTime day3 = dayAfter(2);
+  final DateTime day4 = dayAfter(3);
 
   testWidgets('pins the title + affected count above the list',
       (tester) async {
@@ -138,7 +140,7 @@ void main() {
 
   testWidgets('tapping "N more days" extends the list to every day',
       (tester) async {
-    final DateTime day5 = day1.add(const Duration(days: 4));
+    final DateTime day5 = dayAfter(4);
     final summary = WhatIfSummary.from(
       tardy: [
         for (final d in [day1, day2, day3, day4, day5])

@@ -13,7 +13,10 @@ class TilerError {
   TilerError({this.Message, this.Code, this.cause});
 
   factory TilerError.fromJson(Map<String, dynamic> json) =>
-      _$TilerErrorFromJson(json);
+      _$TilerErrorFromJson({
+        ...json,
+        if (json['Code'] is num) 'Code': json['Code'].toString(),
+      });
 
   Map<String, dynamic> toJson() => _$TilerErrorToJson(this);
   static bool isUnexpectedCharacter(e) {

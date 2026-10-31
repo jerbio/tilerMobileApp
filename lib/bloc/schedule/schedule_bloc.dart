@@ -1547,24 +1547,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       if (isCurrent != null && !isCurrent()) return false;
       revisions.observe(value);
       _reconcileRevision();
-      bool isAnalyisTheSame = false;
-      bool isEvaluationTheSame = false;
-      if (value.analysisId == currentStatus.analysisId) {
-        isAnalyisTheSame = true;
-        if (currentStatus.analysisId == null ||
-            currentStatus.analysisId!.isEmpty) {
-          isAnalyisTheSame = false;
-        }
-      }
-      if (value.evaluationId == currentStatus.evaluationId) {
-        isEvaluationTheSame = true;
-        if (currentStatus.evaluationId == null ||
-            currentStatus.evaluationId!.isEmpty) {
-          isEvaluationTheSame = false;
-        }
-      }
-
-      bool retValue = !isAnalyisTheSame || !isEvaluationTheSame;
+      final revision = ScheduleRevision.fromStatus(value);
+      final currentRevision = ScheduleRevision.fromStatus(currentStatus);
+      // Missing optional IDs do not make an unchanged revision look new.
+      // With no usable revision, fetch rather than trusting an old snapshot.
+      final retValue = !revision.isKnown || revision != currentRevision;
       print("THere is a change to schedule: " + retValue.toString());
       return retValue;
     });

@@ -17,6 +17,7 @@
 // [AddTileSubmissionResult] flattens them into one shape and the shell has a
 // single path to handle.
 import 'package:tiler_app/data/request/NewTile.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/scheduleEventResponse.dart';
@@ -69,6 +70,11 @@ class ApiAddTileSubmission implements AddTileSubmission {
         return const AddTileSubmissionResult.failure('api_rejected');
       }
       return AddTileSubmissionResult.success(created);
+    } on ScheduleInitializationFailed catch (error) {
+      // This locally authored error means the baseline was unavailable,
+      // not that the add request timed out or reached the server.
+      return AddTileSubmissionResult.failure('api_rejected',
+          message: error.Message);
     } on ScheduleEventResponseError catch (error) {
       return AddTileSubmissionResult.failure('api_rejected',
           message: error.Message);

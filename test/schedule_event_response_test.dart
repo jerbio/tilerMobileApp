@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:tiler_app/bloc/schedule/schedule_evaluation.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileSubmission.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
 import 'package:tiler_app/services/api/retryHttpClient.dart';
@@ -43,6 +45,16 @@ class _Api extends ScheduleApi {
       Map<String, dynamic>.from(params);
 }
 
+class _MissingBaselineApi extends ScheduleApi {
+  _MissingBaselineApi() : super(getContextCallBack: () => null);
+
+  @override
+  Future<Tuple2<SubCalendarEvent?, TilerError?>> addNewTile(
+      NewTile tile) async {
+    throw ScheduleInitializationFailed();
+  }
+}
+
 final event = <String, dynamic>{
   'id': 'created-1',
   'name': 'Plan the week',
@@ -56,6 +68,18 @@ Map<String, dynamic> ok(Object? content) => {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('missing baseline surfaces refresh guidance instead of a timeout',
+      () async {
+    final api = _MissingBaselineApi();
+    addTearDown(api.dispose);
+    final result =
+        await ApiAddTileSubmission(scheduleApi: api).create(NewTile());
+    expect(result.failed, isTrue);
+    expect(result.tile, isNull);
+    expect(result.reasonCode, 'api_rejected');
+    expect(result.message, ScheduleInitializationFailed().Message);
+  });
 
   for (final rigid in [false, true]) {
     test('API and submission unwrap the current response (rigid=$rigid)',

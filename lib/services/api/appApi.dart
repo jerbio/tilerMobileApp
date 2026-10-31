@@ -120,11 +120,10 @@ abstract class AppApi {
   }
 
   bool isJsonResponseOk(Map jsonResult) {
-    bool retValue = (jsonResult.containsKey('Error') &&
-            jsonResult['Error'].containsKey('Code')) &&
-        jsonResult['Error']['Code'] == '0';
-
-    return retValue;
+    final error = jsonResult['Error'];
+    if (error is! Map) return false;
+    final code = error['Code'];
+    return code == '0' || code == 0;
   }
 
   bool isContentInResponse(Map jsonResult) {
@@ -142,10 +141,10 @@ abstract class AppApi {
   }
 
   bool isTilerRequestError(Map jsonResult) {
-    bool retValue = jsonResult.containsKey('Error') &&
-        jsonResult['Error'].containsKey('Code') &&
-        jsonResult['Error']['Code'] != '0';
-    return retValue;
+    final error = jsonResult['Error'];
+    if (error is! Map) return false;
+    final code = error['Code'];
+    return (code is String || code is num) && code != '0' && code != 0;
   }
 
   static String get analyzePath {
@@ -155,14 +154,13 @@ abstract class AppApi {
   String errorMessage(Map jsonResult) {
     bool isError = isTilerRequestError(jsonResult);
     if (isError) {
-      if (jsonResult['Error'].containsKey('Message') &&
-          jsonResult['Error']['Message'] != null &&
-          jsonResult['Error']['Message'].isNotEmpty) {
-        return Uri.decodeFull(jsonResult['Error']['Message'])
+      final message = jsonResult['Error']['Message'];
+      if (message is String && message.isNotEmpty) {
+        return Uri.decodeFull(message)
             .replaceAll('<br> ', '\n\n')
             .replaceAll('<br>', '\n');
       }
-      return 'Error: ' + Uri.decodeFull(jsonResult['Error']['Code']);
+      return 'Error: ' + Uri.decodeFull(jsonResult['Error']['Code'].toString());
     }
     return 'Unknown Tiler Error';
   }

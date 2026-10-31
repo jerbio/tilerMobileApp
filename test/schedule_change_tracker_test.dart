@@ -44,10 +44,21 @@ void main() {
     test('unknown revisions are refreshes and do not claim the change', () {
       tracker.begin(ScheduleChangeOrigin.tilerRevise, baseline: rev('r0'));
       expect(tracker.resolve(null).isRefresh, isTrue);
-      expect(
-          tracker.resolve(const ScheduleRevision(null, 'x')).isRefresh, isTrue);
+      expect(tracker.resolve(const ScheduleRevision(null, null)).isRefresh,
+          isTrue);
       expect(
           tracker.resolve(rev('r1')).origin, ScheduleChangeOrigin.tilerRevise);
+    });
+
+    test('an evaluation-only change claims attribution once', () {
+      tracker.begin(ScheduleChangeOrigin.userEdit,
+          baseline: const ScheduleRevision(null, 'old'));
+      expect(
+          tracker.resolve(const ScheduleRevision('', 'old')).isRefresh, isTrue);
+      expect(tracker.resolve(const ScheduleRevision(null, 'new')).origin,
+          ScheduleChangeOrigin.userEdit);
+      expect(tracker.resolve(const ScheduleRevision(null, 'next')).isRefresh,
+          isTrue);
     });
 
     test('abandon drops the pending change, but only for its token', () {

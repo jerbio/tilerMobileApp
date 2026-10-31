@@ -19,6 +19,15 @@ class ReadAuthentication extends Authentication {
   Future<Tuple2<bool, String>> isUserAuthenticated() async => result;
 }
 
+class _ReadApi extends ScheduleApi {
+  _ReadApi() : super(getContextCallBack: () => null);
+
+  @override
+  Future<Map<String, dynamic>> injectRequestParams(Map params,
+          {bool includeLocationParams = false}) async =>
+      Map<String, dynamic>.from(params);
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late ScheduleApi api;
@@ -26,7 +35,7 @@ void main() {
       Timeline.fromDateTime(DateTime(2026, 10, 27), DateTime(2026, 10, 28));
   setUp(() {
     SharedPreferences.setMockInitialValues({});
-    api = ScheduleApi(getContextCallBack: () => null);
+    api = _ReadApi();
   });
   tearDown(() => api.dispose());
 
@@ -75,5 +84,35 @@ void main() {
   test('a valid empty schedule is successful data', () async {
     respond(200, '{"Error":{"Code":"0"},"Content":{"subCalendarEvents":[]}}');
     expect((await api.getSubEvents(range)).item2, isEmpty);
+  });
+
+  test('numeric success codes work for schedule reads and status', () async {
+    respond(200,
+        '{"Error":{"Code":0},"Content":{"subCalendarEvents":[],"evaluationId":"e"}}');
+    expect((await api.getSubEvents(range)).item2, isEmpty);
+    expect((await api.getScheduleStatus()).evaluationId, 'e');
+  });
+
+  for (final status in [401, 403, 500, 503]) {
+    test('status HTTP $status cannot supply a mutation baseline', () async {
+      respond(status, '{"Error":{"Code":"0"},"Content":{"evaluationId":"e"}}');
+      await expectLater(
+          api.getScheduleStatus(),
+          throwsA(status < 500
+              ? isA<ScheduleAuthenticationRequired>()
+              : isA<ScheduleServerUnavailable>()));
+    });
+  }
+
+  test('status with missing credentials reports authentication failure',
+      () async {
+    api.authentication = ReadAuthentication(const Tuple2(false, ''));
+    await expectLater(api.getScheduleStatus(),
+        throwsA(isA<ScheduleAuthenticationRequired>()));
+  });
+
+  test('malformed status content produces a controlled API error', () async {
+    respond(200, '{"Error":{"Code":"0"},"Content":[]}');
+    await expectLater(api.getScheduleStatus(), throwsA(isA<TilerError>()));
   });
 }
