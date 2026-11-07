@@ -22,6 +22,13 @@ enum DayGridMode { idle, dragging, zooming }
 /// time(y)     = y / pxPerHour
 /// ```
 class DayGridController extends ChangeNotifier {
+  DayGridController({this.synchronizeScroll = false});
+
+  /// Daily carousel pages share the hour at the top of the viewport.
+  /// Standalone and preview grids retain their own initial scroll targets.
+  final bool synchronizeScroll;
+  final ValueNotifier<double?> scrollHour = ValueNotifier<double?>(null);
+
   /// "Whole day on screen" floor.
   static const double minPxPerHour = 40;
 
@@ -92,8 +99,7 @@ class DayGridController extends ChangeNotifier {
     double clamped = value.clamp(minPxPerHour, maxPxPerHour).toDouble();
     if (clamped != _pxPerHour) {
       if (value < minPxPerHour || value > maxPxPerHour) {
-        Utility.debugPrint(
-            'DayGrid:: pxPerHour clamped $value -> $clamped');
+        Utility.debugPrint('DayGrid:: pxPerHour clamped $value -> $clamped');
       }
       _pxPerHour = clamped;
       notifyListeners();
@@ -113,7 +119,8 @@ class DayGridController extends ChangeNotifier {
   void autoFit(double viewportHeight) {
     if (_hasExplicitZoom) return;
     if (viewportHeight <= 0) return;
-    double seed = (viewportHeight / 4).clamp(minPxPerHour, maxPxPerHour).toDouble();
+    double seed =
+        (viewportHeight / 4).clamp(minPxPerHour, maxPxPerHour).toDouble();
     if (seed != _pxPerHour) {
       Utility.debugPrint(
           'DayGrid:: auto-fit pxPerHour -> $seed (viewport $viewportHeight)');
@@ -155,6 +162,7 @@ class DayGridController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    scrollHour.dispose();
     super.dispose();
   }
 }

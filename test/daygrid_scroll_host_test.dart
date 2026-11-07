@@ -73,6 +73,7 @@ Widget _buildApp({
   required ScheduleBloc bloc,
   required DayGridController controller,
   required List<SubCalendarEvent> tiles,
+  Widget? body,
 }) {
   return MaterialApp(
     theme: TileThemeData.lightTheme,
@@ -86,21 +87,21 @@ Widget _buildApp({
     home: BlocProvider<ScheduleBloc>(
       create: (_) => bloc,
       child: Scaffold(
-        body: DayGridWidget(
-          tiles: tiles,
-          now: DateTime(2026, 5, 15, 14, 30),
-          day: DateTime(2027, 1, 15),
-          dayKey: 'd',
-          controller: controller,
-        ),
+        body: body ??
+            DayGridWidget(
+              tiles: tiles,
+              now: DateTime(2026, 5, 15, 14, 30),
+              day: DateTime(2027, 1, 15),
+              dayKey: 'd',
+              controller: controller,
+            ),
       ),
     ),
   );
 }
 
-ScrollController _scrollControllerOf(WidgetTester tester) => tester
-    .widget<CustomScrollView>(find.byType(CustomScrollView))
-    .controller!;
+ScrollController _scrollControllerOf(WidgetTester tester) =>
+    tester.widget<CustomScrollView>(find.byType(CustomScrollView)).controller!;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -137,5 +138,84 @@ void main() {
       expect(scrollController.position.pixels, 720.0);
       await _closeBloc(tester, bloc);
     });
+  });
+
+  testWidgets('day swipes preserve the visible hour in both directions',
+      (tester) async {
+    _setSurface(tester);
+    final bloc = _RecordingScheduleBloc();
+    final controller = DayGridController(synchronizeScroll: true)
+      ..setPxPerHour(220);
+    addTearDown(controller.dispose);
+    final pages = PageController();
+    addTearDown(pages.dispose);
+    await tester.pumpWidget(_buildApp(
+      bloc: bloc,
+      controller: controller,
+      tiles: const [],
+      body: PageView.builder(
+        controller: pages,
+        allowImplicitScrolling: true,
+        itemCount: 3,
+        itemBuilder: (_, index) {
+          final date = DateTime(2027, 1, 15 + index);
+          return DayGridWidget(
+            key: ValueKey(index),
+            controller: controller,
+            day: date,
+            dayKey: 'day_$index',
+            now: DateTime(2026, 5, 15),
+            tiles: index == 2
+                ? []
+                : [
+                    _tile(
+                        'tile_$index',
+                        date.add(Duration(hours: index == 0 ? 18 : 6)),
+                        date.add(Duration(hours: index == 0 ? 19 : 7))),
+                  ],
+          );
+        },
+      ),
+    ));
+    await tester.pumpAndSettle();
+    ScrollController scrollOf(int index) => tester
+        .widget<CustomScrollView>(find.descendant(
+          of: find.byKey(ValueKey(index), skipOffstage: false),
+          matching: find.byType(CustomScrollView, skipOffstage: false),
+          skipOffstage: false,
+        ))
+        .controller!;
+
+    // The neighbor is already mounted with a morning event. Scrolling the
+    // current day must align it before the horizontal swipe starts.
+    scrollOf(0).jumpTo(18.5 * controller.pxPerHour);
+    expect(scrollOf(1).position.pixels, 18.5 * controller.pxPerHour);
+    await tester.drag(find.byType(PageView), const Offset(-540, 0));
+    await tester.pumpAndSettle();
+    expect(pages.page, 1);
+    expect(scrollOf(1).position.pixels, 18.5 * controller.pxPerHour);
+
+    // A newly mounted empty day inherits the time, too.
+    expect(scrollOf(2).initialScrollOffset, 18.5 * controller.pxPerHour);
+    scrollOf(1).jumpTo(12.25 * controller.pxPerHour);
+    await tester.drag(find.byType(PageView), const Offset(540, 0));
+    await tester.pumpAndSettle();
+    expect(pages.page, 0);
+    expect(scrollOf(0).position.pixels, 12.25 * controller.pxPerHour);
+
+    controller.setPxPerHour(120);
+    await tester.pumpAndSettle();
+    expect(scrollOf(0).position.pixels, 12.25 * controller.pxPerHour);
+    expect(scrollOf(1).position.pixels, scrollOf(0).position.pixels);
+
+    // Finger scrolling (including its ballistic motion) updates the
+    // retained neighbor just as programmatic positioning does.
+    await tester.drag(find.byKey(const ValueKey(0)), const Offset(0, 180));
+    await tester.pumpAndSettle();
+    expect(scrollOf(0).position.pixels, lessThan(12.25 * controller.pxPerHour));
+    expect(scrollOf(1).position.pixels, scrollOf(0).position.pixels);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await _closeBloc(tester, bloc);
   });
 }

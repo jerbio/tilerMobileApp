@@ -402,9 +402,12 @@ class DayGridWidgetState extends State<DayGridWidget>
     with ScheduleChangeConsumer<DayGridWidget> {
   /// Created in [initState] with `initialScrollOffset` = the initial
   /// auto-scroll target, so a freshly mounted grid (a carousel day page
-  /// sliding into view) PAINTS its first frame already at the first tile
-  /// hour instead of at 12 AM and then jumping post-frame.
+  /// sliding into view) paints its first frame at the shared visible hour
+  /// or first tile hour instead of jumping after the first frame.
   late final ScrollController _scrollController;
+
+  bool _applyingSharedScroll = false;
+  bool get _sharesScroll => _controller.synchronizeScroll && !widget.preview;
 
   /// The zoom source. Either the caller's controller or a grid-owned
   /// default (disposed with the grid).
@@ -589,6 +592,8 @@ class DayGridWidgetState extends State<DayGridWidget>
     // `_applyPendingScroll` is then a no-op unless the target moved.
     _scrollController =
         ScrollController(initialScrollOffset: _initialScrollTarget());
+    _scrollController.addListener(_onScrollChanged);
+    _controller.scrollHour.addListener(_onSharedScrollChanged);
     _liveNow = widget.now ?? DateTime.now();
     if (widget.now == null) {
       _nowLineTimer = Timer.periodic(const Duration(minutes: 1), (_) {
@@ -627,10 +632,13 @@ class DayGridWidgetState extends State<DayGridWidget>
   void didUpdateWidget(covariant DayGridWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
+      _controller.scrollHour.removeListener(_onSharedScrollChanged);
       _ownedController?.dispose();
       _ownedController = null;
       _controller =
           widget.controller ?? (_ownedController = DayGridController());
+      _controller.scrollHour.addListener(_onSharedScrollChanged);
+      _resyncInitialScroll();
     }
     if (oldWidget.now != widget.now) {
       _liveNow = widget.now ?? _liveNow;
@@ -902,9 +910,13 @@ class DayGridWidgetState extends State<DayGridWidget>
     );
   }
 
-  /// The initial auto-scroll target: the first tile's start hour (or
-  /// [defaultScrollHour] on an empty day) at the current zoom.
+  /// Continue at the daily carousel's visible hour, or initially use the
+  /// first tile's hour ([defaultScrollHour] on an empty day).
   double _initialScrollTarget() {
+    final sharedHour = _sharesScroll ? _controller.scrollHour.value : null;
+    if (sharedHour != null) {
+      return sharedHour * _pxPerHour;
+    }
     final firstHour = _selectedTileStartHour() ?? _firstTileStartHour();
     return _pxPerHour * (firstHour ?? defaultScrollHour);
   }
@@ -925,9 +937,39 @@ class DayGridWidgetState extends State<DayGridWidget>
     return null;
   }
 
-  /// Queue an initial scroll to the first tile's start hour.
+  /// Queue the initial scroll, respecting the shared visible hour.
   void _resyncInitialScroll() {
     _pendingScrollTo = _initialScrollTarget();
+  }
+
+  /// Share time rather than pixels so navigation also works after zooming.
+  void _onScrollChanged() {
+    if (!_sharesScroll ||
+        _applyingSharedScroll ||
+        !_scrollController.hasClients) {
+      return;
+    }
+    final position = _scrollController.position;
+    if (!position.hasContentDimensions || position.outOfRange) return;
+    _controller.scrollHour.value = position.pixels / _pxPerHour;
+  }
+
+  /// Keep already-mounted neighboring days aligned before a swipe reveals
+  /// them. A follower's viewport clamp must not overwrite the source hour.
+  void _onSharedScrollChanged() {
+    if (!mounted || !_sharesScroll || !_scrollController.hasClients) return;
+    final hour = _controller.scrollHour.value;
+    final position = _scrollController.position;
+    if (hour == null || !position.hasContentDimensions) return;
+    final target = (hour * _pxPerHour).clamp(0.0, position.maxScrollExtent);
+    _applyingSharedScroll = true;
+    try {
+      if ((target - position.pixels).abs() > 0.5) {
+        _scrollController.jumpTo(target);
+      }
+    } finally {
+      _applyingSharedScroll = false;
+    }
   }
 
   int? _firstTileStartHour() {
@@ -1870,7 +1912,9 @@ class DayGridWidgetState extends State<DayGridWidget>
   }
 
   void _applyPendingScroll(Duration _) {
-    final target = _pendingScrollTo;
+    final sharedHour = _sharesScroll ? _controller.scrollHour.value : null;
+    final target =
+        sharedHour == null ? _pendingScrollTo : sharedHour * _pxPerHour;
     _pendingScrollTo = null;
     if (!mounted || target == null) {
       return;
@@ -1884,8 +1928,16 @@ class DayGridWidgetState extends State<DayGridWidget>
     }
     // Clamp — jumpTo asserts on out-of-range values in debug.
     final clamped = target.clamp(0.0, position.maxScrollExtent);
-    if ((clamped - position.pixels).abs() > 0.5) {
-      _scrollController.jumpTo(clamped);
+    _applyingSharedScroll = true;
+    try {
+      if ((clamped - position.pixels).abs() > 0.5) {
+        _scrollController.jumpTo(clamped);
+      }
+    } finally {
+      _applyingSharedScroll = false;
+    }
+    if (_sharesScroll && _controller.scrollHour.value == null) {
+      _onScrollChanged();
     }
     Utility.debugPrint('DayGrid:: initial scroll -> '
         '${clamped.toStringAsFixed(1)}px');
@@ -2348,6 +2400,13 @@ class DayGridWidgetState extends State<DayGridWidget>
 
             if (_pendingScrollTo != null) {
               WidgetsBinding.instance.addPostFrameCallback(_applyPendingScroll);
+            } else if (_sharesScroll) {
+              // Zoom and changing header heights update the scroll extents
+              // during layout. Retry with those extents so a neighbor does
+              // not remain clamped against the previous zoom's bounds.
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _onSharedScrollChanged();
+              });
             }
 
             // Apply the queued highlight auto-scroll
@@ -2627,6 +2686,7 @@ class DayGridWidgetState extends State<DayGridWidget>
     _stepPlayer.stop(notify: false); // no leaked step timers
     _handoffs.stop(notify: false); // no leaked chip timers
     _edgeScrollTimer?.cancel(); // no leaked drag auto-scroll timers
+    _controller.scrollHour.removeListener(_onSharedScrollChanged);
     _ownedController?.dispose(); // own resources first (dispose order)
     _scrollController.dispose();
     super.dispose();

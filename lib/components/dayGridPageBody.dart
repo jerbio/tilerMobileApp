@@ -17,10 +17,10 @@ import 'package:tiler_app/util.dart';
 
 /// Scope shared by every grid-mode day page (provided by
 /// [GridDailyPageBody]; looked up, dependency-free, by `DayGridPage`): the
-/// ONE `DayGridController` (zoom) for all day pages. Owned + restored from
-/// prefs once by the body, so a page sliding into view mounts already at
-/// the stored zoom (no per-page async restore re-laying every tile out),
-/// and a pinch on one day is live on every other day.
+/// ONE `DayGridController` (zoom and visible hour) for all day pages.
+/// Owned + restored from prefs once by the body, so a page sliding into
+/// view mounts at the stored zoom and current visible hour. A pinch on one
+/// day is live on every other day.
 ///
 /// Absent outside grid mode / in isolated tests — null-check [maybeOf].
 class DayGridScope extends InheritedWidget {
@@ -91,8 +91,9 @@ class GridDailyPageBody extends StatefulWidget {
 }
 
 class _GridDailyPageBodyState extends State<GridDailyPageBody> {
-  /// The shared zoom controller for every day page (see [DayGridScope]).
-  final DayGridController _gridController = DayGridController();
+  /// Shared zoom and visible hour for every day page (see [DayGridScope]).
+  final DayGridController _gridController =
+      DayGridController(synchronizeScroll: true);
 
   @override
   void initState() {
