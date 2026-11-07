@@ -185,7 +185,7 @@ void main() {
       expect(find.byIcon(Icons.home), findsOneWidget);
     });
 
-    testWidgets('does not show navigation icon for home (no outbound nav)',
+    testWidgets('shows navigation icon for a valid home destination',
         (tester) async {
       final tile = _buildLastTile(
         end: DateTime(2026, 6, 28, 19),
@@ -195,7 +195,7 @@ void main() {
       );
       await tester.pumpWidget(_wrap(ReturnConnector(lastTile: tile)));
       await tester.pump();
-      expect(find.byIcon(Icons.navigation_outlined), findsNothing);
+      expect(find.byIcon(Icons.navigation_outlined), findsOneWidget);
     });
 
     testWidgets('shows duration text for home with non-zero duration',

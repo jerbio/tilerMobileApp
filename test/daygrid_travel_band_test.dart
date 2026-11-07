@@ -1,7 +1,7 @@
 // DayGrid travel/return bands: pure geometry (TravelBand.bandsForTile),
 // DayGrid integration (keys, below-tiles ordering, fromTile, dayKey prefix,
 // geometry) and tap-to-directions gating (valid destination -> onTap present;
-// missing/default/home-return -> suppressed and non-intercepting).
+// missing/default -> suppressed; valid home-return -> directions offered).
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -551,7 +551,8 @@ void main() {
       expect(find.byType(Icon), findsOneWidget);
     });
 
-    testWidgets('a card is only rendered when the REAL gap fits it (no inflation)',
+    testWidgets(
+        'a card is only rendered when the REAL gap fits it (no inflation)',
         (tester) async {
       // 17px: not enough for the 18px compact card -> rail marker.
       await pumpBand(
@@ -678,15 +679,11 @@ void main() {
           reason: 'default destination -> no directions');
     });
 
-    testWidgets('a home-return post band suppresses onTap', (tester) async {
+    testWidgets('a valid home-return post band offers directions',
+        (tester) async {
       final controller = DayGridController()..setPxPerHour(80);
       addTearDown(controller.dispose);
-      // A valid (non-null, non-default) home destination -- so it would be
-      // tappable except for the home-return suppression.
-      final home = Location.fromDefault()
-        ..description = Location.homeLocationNickName
-        ..isNull = false
-        ..isDefault = false;
+      final home = realLocation()..description = Location.homeLocationNickName;
       final tile = makeTile(
         id: 'h',
         start: DateTime(2026, 5, 15, 10, 0),
@@ -702,8 +699,8 @@ void main() {
 
       final gesture = tester.widget<GestureDetector>(
           bandGestureDetector('h', TravelBandKind.post));
-      expect(gesture.onTap, isNull,
-          reason: 'home return -> no directions (ReturnConnector rule)');
+      expect(gesture.onTap, isNotNull,
+          reason: 'a valid home destination offers directions');
     });
 
     testWidgets('a non-tappable band is not a directions target',
@@ -758,7 +755,8 @@ void main() {
           travelTimeBefore: 30 * 60 * 1000,
         );
 
-    testWidgets('the full card (with the window line) only appears at height >= 56px',
+    testWidgets(
+        'the full card (with the window line) only appears at height >= 56px',
         (tester) async {
       // Below the compact threshold: gutter tier -> no Text inside the band.
       await pumpBand(
@@ -803,8 +801,7 @@ void main() {
           findsWidgets);
     });
 
-    testWidgets(
-        'the travel-medium icon is always visible (min-height clamp)',
+    testWidgets('the travel-medium icon is always visible (min-height clamp)',
         (tester) async {
       // Below the icon threshold: the band's effective height is clamped
       // to 18px so the icon is still rendered (the band extends into the

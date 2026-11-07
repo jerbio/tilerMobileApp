@@ -15,7 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 ///
 /// Two visual sections stacked vertically:
 ///   1. **Travel section** (optional) — only when return-travel data is present.
-///      Tappable: launches Google Maps for non-home destinations.
+///      Tappable: launches Google Maps for any valid destination, including home.
 ///      Consistent visual language with [TravelConnector] (gradient line + circle icon).
 ///   2. **End-of-day marker** (always shown) — sunset gradient icon + "End of Day"
 ///      label with optional time. Signals day conclusion rather than just a label.
@@ -85,9 +85,7 @@ class ReturnConnector extends StatelessWidget {
   }
 
   bool get _canOpenMaps =>
-      _hasLocation &&
-      !_isHome &&
-      (_afterData!.endLocation!.isNotNullAndNotDefault);
+      _afterData?.endLocation?.isNotNullAndNotDefault == true;
 
   TravelMedium get _travelMode =>
       TravelMediumExtension.fromString(_afterData?.travelMedium);
@@ -174,6 +172,7 @@ class ReturnConnector extends StatelessWidget {
     }
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: _canOpenMaps ? _launchMaps : null,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 2),

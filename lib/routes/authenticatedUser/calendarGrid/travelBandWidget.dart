@@ -252,8 +252,7 @@ class TravelBandWidget extends StatelessWidget {
   bool get _isTardy => tile.isTardy ?? false;
 
   /// True when the return destination is the user's home location -- the
-  /// same rule as `ReturnConnector._isHome` (no directions offered for
-  /// home).
+  /// same rule as `ReturnConnector._isHome` (used for the home icon).
   bool get _isHome =>
       kind == TravelBandKind.post &&
       _destination?.description?.toLowerCase() == Location.homeLocationNickName;
@@ -278,19 +277,10 @@ class TravelBandWidget extends StatelessWidget {
     return data?.endLocation;
   }
 
-  /// True when the band can open Google Maps -- a known, non-default
-  /// destination, and (for the return band) not the home location
+  /// True for any known, non-default destination, including the user's home
   /// (`ReturnConnector._canOpenMaps`).
-  bool get _canOpenDirections {
-    final destination = _destination;
-    if (destination?.isNotNullAndNotDefault != true) {
-      return false;
-    }
-    if (kind == TravelBandKind.post && _isHome) {
-      return false;
-    }
-    return true;
-  }
+  bool get _canOpenDirections =>
+      _destination?.isNotNullAndNotDefault == true;
 
   /// The duration shown in the expanded pill. ReturnConnector prefers
   /// the travel detail's duration and falls back to the tile field.
